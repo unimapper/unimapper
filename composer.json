@@ -1,0 +1,19 @@
+{
+    "name": "bauer01/unimapper",
+    "type": "library",
+    "description": "Universal mapping tool for collecting data from different sources",
+    "keywords": ["php", "mapping", "data", "orm", "database"],
+    "license": ["MIT"],
+    "authors": [
+        {
+            "name": "Bronislav Sedlak",
+            "homepage": "http://github.com/bauer01"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+            "classmap": ["src/"]
+    }
+}
