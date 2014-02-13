@@ -116,9 +116,9 @@ abstract class Mapper implements Mapper\IMapper
     /**
      * Get selection
      *
-     * @param \UniMapper\Query $query  Query object
+     * @param \UniMapper\Query $query Query object
      *
-     * @return \DibiFluent
+     * @return array
      */
     protected function getSelection(\UniMapper\Query $query)
     {

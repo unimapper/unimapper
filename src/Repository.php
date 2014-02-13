@@ -22,12 +22,17 @@ abstract class Repository
      */
     public function __construct(\UniMapper\Mapper $mapper = null)
     {
-        $this->attachMapper($mapper);
+        $this->addMapper($mapper);
     }
 
-    public function attachMapper(\UniMapper\Mapper $mapper)
+    public function addMapper(\UniMapper\Mapper $mapper)
     {
         $this->mappers[] = $mapper;
+    }
+
+    public function createQuery($entityClass)
+    {
+        return new QueryBuilder(new $entityClass, $this->mappers);
     }
 
 }

@@ -10,6 +10,13 @@ interface IMapper
 {
 
     /**
+     * Count
+     *
+     * @param \UniMapper\Query\Count $query
+     */
+    public function count(\UniMapper\Query\Count $query);
+
+    /**
      * Delete
      *
      * @param \UniMapper\Query\Delete $query Query

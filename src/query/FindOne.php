@@ -2,29 +2,20 @@
 
 namespace UniMapper\Query;
 
+use UniMapper\Entity;
+
 /**
  * Find single item as query object
  */
 class FindOne extends \UniMapper\Query implements \UniMapper\Query\IConditionable
 {
 
-    public $primaryProperty;
-    public $selection = array();
+    public $primaryValue = array();
 
-    /**
-     * Constructor
-     *
-     * @param \UniMapper\Entity $entity          Output entity
-     * @param mixed           $primaryProperty Primary property name
-     *
-     * @return \UniMapper\Find
-     *
-     * @todo Implement entity primary keys first
-     */
-    public function __construct($entityClass, $primaryProperty)
+    public function __construct(Entity $entity, array $mappers, $primaryValue)
     {
-        parent::__construct($entityClass);
-        $this->primaryProperty = $primaryProperty;
+        parent::__construct($entity, $mappers);
+        $this->primaryValue = $primaryValue;
     }
 
 }

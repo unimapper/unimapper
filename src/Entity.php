@@ -189,56 +189,6 @@ abstract class Entity implements \JsonSerializable
     }
 
     /**
-     * Find all records
-     *
-     * @return \UniMapper\Query\FindAll
-     *
-     * @throws \UniMapper\Exceptions\QueryException
-     */
-    public function findAll()
-    {
-        if (!$this->isActive()) {
-            throw new \Exception("Entity must have attached mappers!");
-        }
-
-        $query =  new Query\FindAll($this, $this->mappers);
-        foreach (func_get_args() as $name) {
-
-            $name = (string) $name;
-            if (isset($query->selection[$name])) {
-                throw new \Exception("Property " . $name . " already defined!");
-            }
-            $query->selection[$name] = $name;
-        }
-        return $query;
-    }
-
-    /**
-     * Find single record
-     *
-     * @return \UniMapper\Query\FindOne
-     *
-     * @throws \UniMapper\Exceptions\QueryException
-     */
-    public function findOne($primaryKey)
-    {
-        if (!$this->isActive()) {
-            throw new \Exception("Entity must have attached mappers!");
-        }
-
-        $query =  new Query\FindOne($this, $this->mappers);
-        foreach (func_get_args() as $name) {
-
-            $name = (string) $name;
-            if (isset($query->selection[$name])) {
-                throw new QueryException("Property " . $name . " already defined!");
-            }
-            $query->selection[$name] = $name;
-        }
-        return $query;
-    }
-
-    /**
      * Save entity
      *
      * @return void

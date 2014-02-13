@@ -3,23 +3,28 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exceptions\QueryException,
+    UniMapper\Entity,
     UniMapper\EntityCollection,
     UniMapper\Query\IConditionable,
-    UniMapper\Query\ICountable,
     UniMapper\Query\Object\Condition,
     UniMapper\Query\Object\Order;
 
 /**
  * ORM query object
  */
-class FindAll extends \UniMapper\Query implements IConditionable, ICountable
+class FindAll extends \UniMapper\Query implements IConditionable
 {
 
     public $limit = 0;
     public $offset = 0;
     public $orders = array(); // @todo split orders by mappers
-    public $count = false;
     public $selection = array();
+
+    public function __construct(Entity $entity, array $mappers, array $selection = array())
+    {
+        parent::__construct($entity, $mappers);
+        $this->selection = $selection;
+    }
 
     public function limit($limit)
     {
@@ -48,18 +53,8 @@ class FindAll extends \UniMapper\Query implements IConditionable, ICountable
         return $this;
     }
 
-    public function count()
-    {
-        $this->count = true;
-        return $this;
-    }
-
     public function execute()
     {
-        if ($this->count) {
-            return $this->executeCount();
-        }
-
         $result = false;
         $entityMappers = $this->entityReflection->getMappers();
 
@@ -85,27 +80,6 @@ class FindAll extends \UniMapper\Query implements IConditionable, ICountable
         }
 
         return $result;
-    }
-
-    protected function executeCount()
-    {
-        $hasHybridCondition = false;
-        if ($this->entityReflection->isHybrid()) {
-            foreach ($this->conditions as $condition) {
-                $property = $this->entityReflection->getProperty($condition->getExpression());
-                if ($property->getMapping()->isHybrid()) {
-                    $hasHybridCondition = true;
-                    break;
-                }
-            }
-        }
-
-        if ($hasHybridCondition) {
-            throw new Exception("Count for hybrid entities not yet implemented!");
-        } else {
-            $mapper = array_shift($this->mappers);
-            return $mapper->count($this);
-        }
     }
 
 }
