@@ -27,7 +27,7 @@ class NetteExtension extends \Nette\Config\CompilerExtension
             $builder->getDefinition("application")
                 ->addSetup(
                     'Nette\Diagnostics\Debugger::$blueScreen->addPanel(?)',
-                    array('UniMapper\Extension\NetteExtension::renderException')
+                    array(get_class() . '::renderException')
                 );
         }
     }
@@ -39,8 +39,9 @@ class NetteExtension extends \Nette\Config\CompilerExtension
      */
     public static function register(\Nette\Configurator $configurator)
     {
-        $configurator->onCompile[] = function ($config, \Nette\DI\Compiler $compiler) {
-            $compiler->addExtension("UniMapper", new NetteExtension);
+        $class = get_class();
+        $configurator->onCompile[] = function ($config, \Nette\DI\Compiler $compiler) use($class) {
+            $compiler->addExtension("unimapper", new $class);
         };
     }
 
@@ -65,19 +66,10 @@ class NetteExtension extends \Nette\Config\CompilerExtension
                 $exception->getEntityLine()
             );
             return array(
-                "tab" => "ORM Entity",
+                "tab" => "Entity",
                 "panel" =>  $link . "\n" . $code
             );
-	} elseif ($exception instanceof FlexibeeException) { // @todo move out
-            $request = $exception->getRequest();
-            return array(
-                "tab" => $request->method . " request",
-                "panel" => '<h3>URL</h3>'
-                    . '<a href="' . $request->uri . '">' . $request->uri . '</a>'
-                    . ' <h3>Detail</h3>'
-                    . Diagnostics\Helpers::clickableDump($request)
-            );
-        }
+	}
     }
 
 }
