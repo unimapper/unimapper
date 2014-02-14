@@ -47,7 +47,7 @@ abstract class Mapper implements Mapper\IMapper
             as $property
         ) {
 
-            if ($mapping) {
+            if ($mapping && $property->getMapping()) {
                 $mapDefinition = $property->getMapping()->getName((string) $this);
                 if ($mapDefinition) {
                     $output[] = $mapDefinition;
