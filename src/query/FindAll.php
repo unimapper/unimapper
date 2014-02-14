@@ -38,7 +38,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
         return $this;
     }
 
-    public function order($propertyName, $direction = "asc")
+    public function orderBy($propertyName, $direction = "asc")
     {
         $order = new Order($propertyName, $direction);
         $direction = strtolower($direction);
