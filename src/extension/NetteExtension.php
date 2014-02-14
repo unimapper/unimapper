@@ -22,13 +22,52 @@ class NetteExtension extends \Nette\Config\CompilerExtension
     public function loadConfiguration()
     {
         $builder = $this->getContainerBuilder();
-
         if ($builder->parameters["debugMode"]) {
-            $builder->getDefinition("application")
+
+            // Create panel service
+            $builder->addDefinition($this->prefix("panel"))
+                ->setClass("UniMapper\Extension\NetteExtension\Panel")
+                ->addSetup(
+                    'Nette\Diagnostics\Debugger::$bar->addPanel(?)',
+                    array('@self')
+                )
                 ->addSetup(
                     'Nette\Diagnostics\Debugger::$blueScreen->addPanel(?)',
-                    array(get_class() . '::renderException')
+                    array('UniMapper\Extension\NetteExtension::renderException')
                 );
+
+            // Create logger service
+            $builder->addDefinition($this->prefix("logger"))
+                ->setClass("UniMapper\Logger");
+        }
+    }
+
+    public function beforeCompile()
+    {
+        $builder = $this->getContainerBuilder();
+        if ($builder->parameters["debugMode"]) {
+
+            // Register panel
+            $builder->getDefinition("application")
+                ->addSetup(
+                    '$service->onStartup[] = ?',
+                    array(array($this->prefix("@panel"), "getTab"))
+                );
+
+            // Find registered repository services
+            $panel = $builder->getDefinition($this->prefix("panel"));
+            foreach ($builder->getDefinitions() as $serviceName => $serviceDefinition) {
+
+                $class = $serviceDefinition->class !== NULL ? $serviceDefinition->class : $serviceDefinition->factory->entity;
+                if (class_exists($class) && is_subclass_of($class, "UniMapper\Repository")) {
+
+
+                    $builder->getDefinition($serviceName)->addSetup("setLogger");
+
+                    // Register repository into the panel
+                    $panel->addSetup('registerRepository', "@" . $serviceName);
+                }
+            }
         }
     }
 
@@ -40,7 +79,7 @@ class NetteExtension extends \Nette\Config\CompilerExtension
     public static function register(\Nette\Configurator $configurator)
     {
         $class = get_class();
-        $configurator->onCompile[] = function ($config, \Nette\DI\Compiler $compiler) use($class) {
+        $configurator->onCompile[] = function ($config, \Nette\Config\Compiler $compiler) use ($class) {
             $compiler->addExtension("unimapper", new $class);
         };
     }
