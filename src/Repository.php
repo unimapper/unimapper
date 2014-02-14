@@ -13,16 +13,27 @@ abstract class Repository
     /** @var array $mappers Registered mappers */
     protected $mappers = array();
 
+    protected $logger = null;
+
     /**
      * Constructor
      *
      * @param \UniMapper\Mapper $mapper Orm mapper
-     *
-     * @return void
      */
-    public function __construct(\UniMapper\Mapper $mapper = null)
+    public function __construct(\UniMapper\Mapper $mapper = null, \UniMapper\Logger $logger = null)
     {
-        $this->addMapper($mapper);
+        if ($mapper) {
+            $this->addMapper($mapper);
+        }
+
+        if ($logger) {
+            $this->setLogger($logger);
+        }
+    }
+
+    public function setLogger(\UniMapper\Logger $logger)
+    {
+        $this->logger = $logger;
     }
 
     public function addMapper(\UniMapper\Mapper $mapper)
@@ -32,7 +43,12 @@ abstract class Repository
 
     public function createQuery($entityClass)
     {
-        return new QueryBuilder(new $entityClass, $this->mappers);
+        return new QueryBuilder(new $entityClass, $this->mappers, $this->logger);
+    }
+
+    public function getLogger()
+    {
+        return $this->logger;
     }
 
 }

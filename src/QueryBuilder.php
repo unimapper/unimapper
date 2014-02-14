@@ -11,11 +11,20 @@ class QueryBuilder
 
     protected $entity;
     protected $mappers;
+    protected $logger;
 
-    public function __construct(Entity $entity, array $mappers)
+    public function __construct(Entity $entity, array $mappers, \UniMapper\Logger $logger = null)
     {
         $this->entity = $entity;
         $this->mappers = $mappers;
+        $this->logger = $logger;
+    }
+
+    protected function logQuery(\UniMapper\Query $query)
+    {
+        if ($this->logger) {
+            $this->logger->logQuery($query);
+        }
     }
 
     /**
@@ -25,7 +34,9 @@ class QueryBuilder
      */
     public function count()
     {
-        return new Count($this->entity, $this->mappers);
+        $query = new Count($this->entity, $this->mappers);
+        $this->logQuery($query);
+        return $query;
     }
 
     /**
@@ -35,7 +46,9 @@ class QueryBuilder
      */
     public function findAll()
     {
-        return new FindAll($this->entity, $this->mappers, func_get_args());
+        $query = new FindAll($this->entity, $this->mappers, func_get_args());
+        $this->logQuery($query);
+        return $query;
     }
 
     /**
@@ -47,7 +60,9 @@ class QueryBuilder
      */
     public function findOne($primaryValue)
     {
-        return new FindOne($this->entity, $this->mappers, $primaryValue);
+        $query = new FindOne($this->entity, $this->mappers, $primaryValue);
+        $this->logQuery($query);
+        return $query;
     }
 
 }
