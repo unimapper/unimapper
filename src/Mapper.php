@@ -33,36 +33,10 @@ abstract class Mapper implements Mapper\IMapper
     }
 
     /**
-     * Get properties names list from entity
-     *
-     * @param string  $entityClass Entity class name
-     * @param boolean $mapping Prefer mapping
-     *
-     * @return array
-     */
-    protected function getEntityPropertiesList($entityClass, $mapping = false)
-    {
-        $output = array();
-        foreach (AnnotationParser::getEntityProperties($entityClass)
-            as $property
-        ) {
-
-            if ($mapping && $property->getMapping()) {
-                $mapDefinition = $property->getMapping()->getName((string) $this);
-                if ($mapDefinition) {
-                    $output[] = $mapDefinition;
-                    continue;
-                }
-            }
-            $output[] = $property->getName();
-        }
-        return $output;
-    }
-
-    /**
      * Get list of properties available for mapping
      *
      * @param \UniMapper\Query $query
+     *
      * @return type
      */
     protected function getMapperProperties(\UniMapper\Query $query)
@@ -123,7 +97,7 @@ abstract class Mapper implements Mapper\IMapper
     protected function getSelection(\UniMapper\Query $query)
     {
         if (count($query->selection) === 0) {
-            return $this->getEntityPropertiesList($query->entityReflection->getName(), true);
+            return $this->getMapperProperties($query);
         }
 
         // Add primary property automatically if not set
