@@ -57,7 +57,7 @@ class EntityReflection extends \ReflectionClass
                 return $property;
             }
         }
-        return false;
+        return null;
     }
 
 }
