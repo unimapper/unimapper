@@ -32,21 +32,20 @@ abstract class Mapper implements Mapper\IMapper
         return $mappers[(string) $this]->getResource();
     }
 
-    /**
-     * Get list of properties available for mapping
-     *
-     * @param \UniMapper\Query $query
-     *
-     * @return type
-     */
-    protected function getMapperProperties(\UniMapper\Query $query)
+    protected function mapProperties(array $properties)
     {
         $output = array();
-        foreach ($query->entityReflection->getProperties() as $property) {
+        foreach ($properties as $property) {
 
-            if ($property->getMapping() && $property->getMapping()->getName((string) $this) !== false) {
-                $output[$property->getName()] = $property;
+            if ($property->getMapping()) {
+
+                $mapDefinition = $property->getMapping()->getName((string) $this);
+                if ($mapDefinition) {
+                    $output[] = $mapDefinition;
+                    continue;
+                }
             }
+            $output[] = $property->getName();
         }
         return $output;
     }
@@ -96,8 +95,9 @@ abstract class Mapper implements Mapper\IMapper
      */
     protected function getSelection(\UniMapper\Query $query)
     {
+        $properties = $query->entityReflection->getProperties((string) $this);
         if (count($query->selection) === 0) {
-            return $this->getMapperProperties($query);
+            return $this->mapProperties($properties);
         }
 
         // Add primary property automatically if not set
@@ -107,24 +107,13 @@ abstract class Mapper implements Mapper\IMapper
         }
 
         $selection = array();
-        $properties = $this->getMapperProperties($query);
         foreach ($query->selection as $propertyName) {
 
-            // Skip properties not related to this mapper
-            if (!isset($properties[$propertyName])) {
-                continue;
-            }
-
-            // Get column name
-            $mappedPropertyName = $properties[$propertyName]->getMapping()->getName((string) $this);
-            if ($mappedPropertyName) {
-                $selection[] = $mappedPropertyName;
-            } else {
-                $selection[] = $propertyName;
+            if (isset($properties[$propertyName])) {
+                $selection[$propertyName] = $properties[$propertyName];
             }
         }
-
-        return $selection;
+        return $this->mapProperties($selection);
     }
 
     /**

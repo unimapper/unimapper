@@ -45,9 +45,20 @@ class EntityReflection extends \ReflectionClass
         return $this->properties[$name];
     }
 
-    public function getProperties($filter = null)
+    public function getProperties($mapperClass = null)
     {
-        return $this->properties;
+        if ($mapperClass === null) {
+            return $this->properties;
+        }
+
+        $properties = array();
+        foreach ($this->properties as $property) {
+
+            if ($property->getMapping() && $property->getMapping()->getName($mapperClass) !== false) {
+                $properties[$property->getName()] = $property;
+            }
+        }
+        return $properties;
     }
 
     public function getPrimaryProperty()
