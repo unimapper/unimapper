@@ -2,25 +2,33 @@
 <div class="nette-inner">
     <table>
         <thead>
+            <th>Elapsed time</th>
             <th>Repository</th>
             <th>Query</th>
             <th>Entity</th>
+            <th>Result</th>
         </thead>
         <tbody>
         <?php foreach ($this->repositories as $repository): ?>
             <?php foreach ($repository->getLogger()->getQueries() as $queryIndex => $query): ?>
-            <tr>
-                <td><?php echo get_class($repository) ?></td>
-                <td>
-                    <?php echo \Nette\Diagnostics\Helpers::clickableDump($query, true) ?>
-                </td>
-                <td>
-                    <a href="#" class="nette-toggler" rel="#unimapper-panel-entity-<?php echo $queryIndex ?>"><?php echo $query->entityReflection->getName() ?> ►</a>
-                    <div id="unimapper-panel-entity-<?php echo $queryIndex ?>" class="nette-collapsed">
-                        <?php echo \Nette\Diagnostics\Helpers::clickableDump($query->entityReflection, true) ?>
-                    </div>
-                </td>
-            </tr>
+                <?php if ($query->result !== null): ?>
+                <tr>
+                    <td><?php echo round($query->elapsed, 3) ?> ms</td>
+                    <td><?php echo get_class($repository) ?></td>
+                    <td>
+                        <?php echo \Nette\Diagnostics\Helpers::clickableDump($query, true) ?>
+                    </td>
+                    <td>
+                        <a href="#" class="nette-toggler" rel="#unimapper-panel-entity-<?php echo $queryIndex ?>"><?php echo $query->entityReflection->getName() ?> ►</a>
+                        <div id="unimapper-panel-entity-<?php echo $queryIndex ?>" class="nette-collapsed">
+                            <?php echo \Nette\Diagnostics\Helpers::clickableDump($query->entityReflection, true) ?>
+                        </div>
+                    </td>
+                    <td>
+                        <?php echo \Nette\Diagnostics\Helpers::clickableDump($query->result, true) ?>
+                    </td>
+                </tr>
+                <?php endif ?>
             <?php endforeach ?>
         <?php endforeach ?>
         </tbody>

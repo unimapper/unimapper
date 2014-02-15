@@ -13,6 +13,9 @@ abstract class Query
 
     public $conditions = array();
     public $mappers = array();
+    public $elapsed;
+    public $finished = false;
+    public $result = null;
 
     /** @var \UniMapper\Reflection\EntityReflection */
     public $entityReflection;
@@ -40,6 +43,14 @@ abstract class Query
         }
         $this->conditions[] = new Condition($propertyName, $operator, $value);
         return $this;
+    }
+
+    final public function execute()
+    {
+        $start = microtime(true);
+        $this->result = $this->onExecute();
+        $this->elapsed = microtime(true) - $start;
+        return $this->result;
     }
 
 }

@@ -8,7 +8,7 @@ namespace UniMapper\Query;
 class Count extends \UniMapper\Query implements IConditionable
 {
 
-    public function execute()
+    public function onExecute()
     {
         $hasHybridCondition = false;
         if ($this->entityReflection->isHybrid()) {
