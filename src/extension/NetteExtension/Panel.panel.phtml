@@ -8,15 +8,17 @@
         </thead>
         <tbody>
         <?php foreach ($this->repositories as $repository): ?>
-            <?php foreach ($repository->getLogger()->getQueries() as $query): ?>
+            <?php foreach ($repository->getLogger()->getQueries() as $queryIndex => $query): ?>
             <tr>
                 <td><?php echo get_class($repository) ?></td>
                 <td>
-                    <?php echo \Nette\Diagnostics\Helpers::clickableDump($query) ?>
+                    <?php echo \Nette\Diagnostics\Helpers::clickableDump($query, true) ?>
                 </td>
                 <td>
-                    <?php echo $query->entityReflection->getName() ?>
-                    <?php echo \Nette\Diagnostics\Helpers::clickableDump($query->entityReflection) ?>
+                    <a href="#" class="nette-toggler" rel="#unimapper-panel-entity-<?php echo $queryIndex ?>"><?php echo $query->entityReflection->getName() ?> ►</a>
+                    <div id="unimapper-panel-entity-<?php echo $queryIndex ?>" class="nette-collapsed">
+                        <?php echo \Nette\Diagnostics\Helpers::clickableDump($query->entityReflection, true) ?>
+                    </div>
                 </td>
             </tr>
             <?php endforeach ?>
