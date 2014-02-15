@@ -15,6 +15,14 @@ class Panel implements \Nette\Diagnostics\IBarPanel
     public function getTab()
     {
         ob_start();
+        $count = 0;
+        foreach ($this->repositories as $repository) {
+            foreach ($repository->getLogger()->getQueries() as $query) {
+                if ($query->result !== null) {
+                    $count++;
+                }
+            }
+        }
         require __DIR__ . "/Panel.tab.phtml";
         return ob_get_clean();
     }
@@ -22,7 +30,6 @@ class Panel implements \Nette\Diagnostics\IBarPanel
     public function getPanel()
     {
         ob_start();
-        $repositories = $this->repositories;
         require __DIR__ . "/Panel.panel.phtml";
         return ob_get_clean();
     }
