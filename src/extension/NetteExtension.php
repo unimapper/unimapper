@@ -35,10 +35,6 @@ class NetteExtension extends \Nette\Config\CompilerExtension
                     'Nette\Diagnostics\Debugger::$blueScreen->addPanel(?)',
                     array('UniMapper\Extension\NetteExtension::renderException')
                 );
-
-            // Create logger service
-            $builder->addDefinition($this->prefix("logger"))
-                ->setClass("UniMapper\Logger");
         }
     }
 
@@ -62,7 +58,7 @@ class NetteExtension extends \Nette\Config\CompilerExtension
                 if (class_exists($class) && is_subclass_of($class, "UniMapper\Repository")) {
 
 
-                    $builder->getDefinition($serviceName)->addSetup("setLogger");
+                    $builder->getDefinition($serviceName)->addSetup("setLogger", new \UniMapper\Logger);
 
                     // Register repository into the panel
                     $panel->addSetup('registerRepository', "@" . $serviceName);
