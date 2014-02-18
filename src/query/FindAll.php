@@ -40,7 +40,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
 
     public function orderBy($propertyName, $direction = "asc")
     {
-        $order = new Order($propertyName, $direction);
+        $order = new Order($propertyName);
         $direction = strtolower($direction);
         if ($direction === "asc") {
             $order->asc = true;
@@ -66,6 +66,9 @@ class FindAll extends \UniMapper\Query implements IConditionable
                     $this->conditions["hybrid"] = new Condition($this->entityReflection->getPrimaryProperty()->getName(), "IN", $result->getKeys());
                 }
                 $data = $mapper->findAll($this);
+                if ($data === false) {
+                    continue;
+                }
                 if (isset($this->conditions["hybrid"])) {
                     unset($this->conditions["hybrid"]);
                 }

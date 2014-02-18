@@ -27,7 +27,7 @@ class Order
      */
     public function __construct($propertyName)
     {
-        $this->operator = $propertyName;
+        $this->propertyName = $propertyName;
     }
 
 }
