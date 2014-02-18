@@ -40,6 +40,10 @@ class FindAll extends \UniMapper\Query implements IConditionable
 
     public function orderBy($propertyName, $direction = "asc")
     {
+        if (!$this->entityReflection->hasProperty($propertyName)) {
+            throw new QueryException("Invalid property name '" . $propertyName . "'!");
+        }
+
         $order = new Order($propertyName);
         $direction = strtolower($direction);
         if ($direction === "asc") {
