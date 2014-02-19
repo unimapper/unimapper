@@ -11,8 +11,8 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     /** @var string $entityClass Entity class */
     private $entityClass = null;
 
-    /** @var array $container Array container */
-    private $container = array();
+    /** @var array $data Data container */
+    private $data = array();
 
     /**
      * Constructor
@@ -43,7 +43,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
      */
     public function getIterator()
     {
-        return new \ArrayIterator($this->container);
+        return new \ArrayIterator($this->data);
     }
 
     /**
@@ -53,7 +53,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
      */
     public function count()
     {
-        return count($this->container);
+        return count($this->data);
     }
 
     /**
@@ -75,9 +75,9 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
             );
         }
         if (is_null($offset)) {
-            $this->container[] = $value;
+            $this->data[] = $value;
         } else {
-            $this->container[$offset] = $value;
+            $this->data[$offset] = $value;
         }
     }
 
@@ -90,8 +90,8 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
      */
     public function offsetGet($key)
     {
-        if (isset($this->container[$key])) {
-            return $this->container[$key];
+        if (isset($this->data[$key])) {
+            return $this->data[$key];
         }
         return null;
     }
@@ -105,11 +105,11 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
      */
     public function offsetExists($key)
     {
-        return isset($this->container[$key]) || array_key_exists($key, $this->container);
+        return isset($this->data[$key]) || array_key_exists($key, $this->data);
     }
 
     /**
-     * Removes the element at the specified position in this container.
+     * Removes the element at the specified position in this data.
      *
      * @param integer $offset Offset
      *
@@ -117,7 +117,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
      */
     public function offsetUnset($offset)
     {
-        unset($this->container[$offset]);
+        unset($this->data[$offset]);
     }
 
     /**
@@ -127,7 +127,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
      */
     public function toArray()
     {
-        return $this->container;
+        return $this->data;
     }
 
     /**
@@ -150,12 +150,12 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     public function merge(\UniMapper\EntityCollection $collection)
     {
         foreach ($collection as $primary => $entity) {
-            if (isset($this->container[$primary])
+            if (isset($this->data[$primary])
                 && isset($collection[$primary])
             ) {
-                $this->container[$primary]->merge($collection[$primary]);
+                $this->data[$primary]->merge($collection[$primary]);
             } else {
-                unset($this->container[$primary]);
+                unset($this->data[$primary]);
             }
         }
         return $this;
@@ -163,7 +163,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
 
     public function getKeys()
     {
-        return array_keys($this->container);
+        return array_keys($this->data);
     }
 
 }
