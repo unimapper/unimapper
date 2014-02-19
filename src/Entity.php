@@ -15,6 +15,7 @@ abstract class Entity implements \JsonSerializable
 
     protected $mappers = array();
     protected $reflection;
+    private $data = array();
 
     public function __construct(\UniMapper\Mapper $mapper = null)
     {
@@ -51,10 +52,15 @@ abstract class Entity implements \JsonSerializable
      */
     public function __get($name)
     {
+        if (isset($this->data[$name])) {
+            return $this->data[$name];
+        }
+
         $properties = $this->reflection->getProperties();
         if (isset($properties[$name])) {
             return null;
         }
+
         throw new PropertyAccessException(
             "Undefined property with name '" . $name . "'!",
             $this->reflection
@@ -98,9 +104,9 @@ abstract class Entity implements \JsonSerializable
             foreach ($value as $key => $item) {
                 $collection[$key] = $item;
             }
-            $this->$name = $collection;
+            $this->data[$name] = $collection;
         } else {
-            $this->$name = $value;
+            $this->data[$name] = $value;
         }
     }
 
@@ -124,13 +130,13 @@ abstract class Entity implements \JsonSerializable
                 && $property->getType() instanceof \UniMapper\EntityCollection
             ) {
                 $output[$name] = array();
-                if (isset($this->{$name})) {
-                    foreach ($this->{$name} as $entity) {
+                if (isset($this->data[$name])) {
+                    foreach ($this->data[$name] as $entity) {
                         $output[$name][] = $entity->toArray($collections);
                     }
                 }
             } else {
-                $output[$name] = $this->{$name};
+                $output[$name] = $this->data[$name];
             }
         }
 
@@ -151,7 +157,7 @@ abstract class Entity implements \JsonSerializable
 
         foreach ($itemsToLoad as $item) {
             if (isset($sourceData->{$item})) {
-                $this->{$item} = $sourceData->{$item};
+                $this->data[$item] = $sourceData->{$item};
             }
         }
     }
@@ -181,8 +187,8 @@ abstract class Entity implements \JsonSerializable
         }
 
         foreach ($entity as $name => $value) {
-            if (!isset($this->{$name})) {
-                $this->{$name} = $value;
+            if (!isset($this->data[$name])) {
+                $this->data[$name] = $value;
             }
         }
         return $this;
@@ -214,7 +220,7 @@ abstract class Entity implements \JsonSerializable
         }
 
         $query = new Query\Delete($this, $this->mappers);
-        $query->where($primaryProperty->getName(), "=", $this->{$primaryProperty->getName()});
+        $query->where($primaryProperty->getName(), "=", $this->data[$primaryProperty->getName()]);
         $query->limit(1);
         return $query->execute();
     }
