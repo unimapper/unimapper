@@ -50,4 +50,11 @@ interface IMapper
      * @param \UniMapper\Query\Update $query Query
      */
     public function update(\UniMapper\Query\Update $query);
+
+    /**
+     * Custom query
+     *
+     * @param \UniMapper\Query\Custom $query Query
+     */
+    public function custom(\UniMapper\Query\Custom $query);
 }

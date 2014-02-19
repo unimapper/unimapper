@@ -2,6 +2,8 @@
 
 namespace UniMapper;
 
+use UniMapper\Exceptions\RepositoryException;
+
 /**
  * Repository is ancestor for every new repository. It contains common
  * parameters or methods used in its descendants. Repository is intended as a
@@ -38,7 +40,11 @@ abstract class Repository
 
     public function addMapper(\UniMapper\Mapper $mapper)
     {
-        $this->mappers[] = $mapper;
+        $class = get_class($mapper);
+        if (isset($this->mappers[$class])) {
+            throw new RepositoryException("Mapper " . $class . " already set!");
+        }
+        $this->mappers[$class] = $mapper;
     }
 
     public function createQuery($entityClass)

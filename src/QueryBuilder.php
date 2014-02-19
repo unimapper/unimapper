@@ -4,6 +4,7 @@ namespace UniMapper;
 
 use UniMapper\Query\FindOne,
     UniMapper\Query\Count,
+    UniMapper\Query\Custom,
     UniMapper\Query\FindAll;
 
 class QueryBuilder
@@ -13,14 +14,14 @@ class QueryBuilder
     protected $mappers;
     protected $logger;
 
-    public function __construct(Entity $entity, array $mappers, \UniMapper\Logger $logger = null)
+    public function __construct(Entity $entity, array $mappers, Logger $logger = null)
     {
         $this->entity = $entity;
         $this->mappers = $mappers;
         $this->logger = $logger;
     }
 
-    protected function logQuery(\UniMapper\Query $query)
+    protected function logQuery(Query $query)
     {
         if ($this->logger) {
             $this->logger->logQuery($query);
@@ -61,6 +62,22 @@ class QueryBuilder
     public function findOne($primaryValue)
     {
         $query = new FindOne($this->entity, $this->mappers, $primaryValue);
+        $this->logQuery($query);
+        return $query;
+    }
+
+    /**
+     * Custom query
+     *
+     * @param string $mapperClass Mapper class
+     *
+     * @return \UniMapper\Query\Custom
+     *
+     * @throws \Exception
+     */
+    public function custom($mapperClass)
+    {
+        $query = new Custom($this->entity, $this->mappers, $mapperClass);
         $this->logQuery($query);
         return $query;
     }
