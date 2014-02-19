@@ -24,7 +24,7 @@ abstract class Query
     {
         $this->entityReflection = $entity->getReflection();
         if (count($this->entityReflection->getMappers()) === 0) {
-            throw new QueryException("Query can not be used without mapper definition in entity " . $this->entityReflection->getName() . "!");
+            throw new QueryException("Missing mapper definition in entity " . $this->entityReflection->getName() . "!");
         }
 
         $this->mappers = $mappers;
