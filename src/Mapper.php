@@ -5,6 +5,7 @@ namespace UniMapper;
 use UniMapper\EntityCollection,
     UniMapper\Exceptions\MapperException,
     UniMapper\Utils\Property,
+    UniMapper\Reflection\EntityReflection,
     UniMapper\Utils\AnnotationParser;
 
 /**
@@ -26,9 +27,9 @@ abstract class Mapper implements Mapper\IMapper
         return get_called_class();
     }
 
-    final public function getResource(\UniMapper\Query $query)
+    final public function getResource(EntityReflection $entityReflection)
     {
-        $mappers = $query->entityReflection->getMappers();
+        $mappers = $entityReflection->getMappers();
         return $mappers[(string) $this]->getResource();
     }
 
@@ -89,31 +90,32 @@ abstract class Mapper implements Mapper\IMapper
     /**
      * Get selection
      *
-     * @param \UniMapper\Query $query Query object
+     * @param \UniMapper\Reflection\EntityReflection $entityReflection Entity reflection
+     * @param string                                 $selection        Required selection
      *
      * @return array
      */
-    protected function getSelection(\UniMapper\Query $query)
+    protected function getSelection(EntityReflection $entityReflection, array $selection = array())
     {
-        $properties = $query->entityReflection->getProperties((string) $this);
-        if (count($query->selection) === 0) {
+        $properties = $entityReflection->getProperties((string) $this);
+        if (count($selection) === 0) {
             return $this->mapProperties($properties);
         }
 
         // Add primary property automatically if not set
-        $primaryPropertyName = $query->entityReflection->getPrimaryProperty()->getName();
-        if (!in_array($primaryPropertyName, $query->selection)) {
-            $query->selection[] = $primaryPropertyName;
+        $primaryPropertyName = $entityReflection->getPrimaryProperty()->getName();
+        if (!in_array($primaryPropertyName, $selection)) {
+            $selection[] = $primaryPropertyName;
         }
 
-        $selection = array();
-        foreach ($query->selection as $propertyName) {
+        $result = array();
+        foreach ($selection as $propertyName) {
 
             if (isset($properties[$propertyName])) {
-                $selection[$propertyName] = $properties[$propertyName];
+                $result[$propertyName] = $properties[$propertyName];
             }
         }
-        return $this->mapProperties($selection);
+        return $this->mapProperties($result);
     }
 
     /**
