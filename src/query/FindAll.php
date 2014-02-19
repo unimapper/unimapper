@@ -62,6 +62,16 @@ class FindAll extends \UniMapper\Query implements IConditionable
         $result = false;
         $entityMappers = $this->entityReflection->getMappers();
 
+        // Add properties from conditions to the selection if not set
+        if (count($this->conditions) > 0 && count($this->selection) > 0) {
+            foreach ($this->conditions as $condition) {
+                $propertyName = $condition->getExpression();
+                if (!isset($this->selection[$propertyName])) {
+                    $this->selection[] = $propertyName;
+                }
+            }
+        }
+
         foreach ($this->mappers as $mapper) {
 
             if (isset($entityMappers[get_class($mapper)])) {
