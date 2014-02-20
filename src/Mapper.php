@@ -30,7 +30,11 @@ abstract class Mapper implements Mapper\IMapper
     final public function getResource(EntityReflection $entityReflection)
     {
         $mappers = $entityReflection->getMappers();
-        return $mappers[(string) $this]->getResource();
+        $mapperClass = (string) $this;
+        if (!isset($mappers[$mapperClass])) {
+            throw new MapperException("Entity does not define mapper " . $mapperClass . "!");
+        }
+        return $mappers[$mappers[$mapperClass]]->getResource();
     }
 
     protected function mapProperties(array $properties)
