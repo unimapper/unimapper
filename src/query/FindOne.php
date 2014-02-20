@@ -24,9 +24,9 @@ class FindOne extends \UniMapper\Query implements \UniMapper\Query\IConditionabl
         $result = false;
         $entityMappers = $this->entityReflection->getMappers();
 
-        foreach ($this->mappers as $mapper) {
+        foreach ($this->mappers as $mapperName => $mapper) {
 
-            if (isset($entityMappers[get_class($mapper)])) {
+            if (isset($entityMappers[$mapperName])) {
 
                 $data = $mapper->findOne($this);
                 if ($data === false) {

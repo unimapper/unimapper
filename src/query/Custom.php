@@ -20,13 +20,13 @@ class Custom extends \UniMapper\Query
     public $mapper;
     public $data;
 
-    public function __construct(\UniMapper\Entity $entity, array $mappers, $mapperClass)
+    public function __construct(\UniMapper\Entity $entity, array $mappers, $mapperName)
     {
         parent::__construct($entity, $mappers);
-        if (!isset($this->mappers[$mapperClass])) {
-            throw new QueryException("Mapper " . $mapperClass . " not set!");
+        if (!isset($this->mappers[$mapperName])) {
+            throw new QueryException("Mapper " . $mapperName . " not set!");
         }
-        $this->mapper = $this->mappers[$mapperClass];
+        $this->mapper = $this->mappers[$mapperName];
     }
 
     public function get($query)

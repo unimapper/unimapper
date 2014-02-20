@@ -13,9 +13,6 @@ class Mapper
     /** @var string */
     protected $name = null;
 
-    /** @var string */
-    protected $class = null;
-
     /** @var \ReflectionClass $reflection Entity reflection */
     protected $reflection;
 
@@ -41,7 +38,17 @@ class Mapper
             );
         }
 
-        $this->readDefinition($definition);
+        if (preg_match("#(.*?)\((.*?)\)#s", $definition, $matches)) {
+            // eg. MyMapperName(resource_name)
+            $this->name = $matches[1];
+            $this->resource = $matches[2];
+        } else {
+            throw new PropertyException(
+                "Invalid mapper definition!",
+                $this->reflection,
+                $this->rawDefinition
+            );
+        }
     }
 
     /**
@@ -61,53 +68,6 @@ class Mapper
             );
         }
         return $this->name;
-    }
-
-    /**
-     * Get mapper class
-     *
-     * @return string
-     *
-     * @throws \UniMapper\Exceptions\PropertyException
-     */
-    public function getClass()
-    {
-        if ($this->class === null) {
-            throw new PropertyException(
-                "Mapper class is not set!",
-                $this->reflection,
-                $this->rawDefinition
-            );
-        }
-        return $this->class;
-    }
-
-    /**
-     * Read and set mapper definition from docblock
-     *
-     * @param string $definition Docblok definition
-     *
-     * @return void
-     *
-     * @throws \UniMapper\Exceptions\PropertyException
-     */
-    protected function readDefinition($definition)
-    {
-        if (preg_match("#(.*?)\((.*?)\)#s", $definition, $matches)) {
-            // eg. MyMapperName(database_tableName)
-            $name = $matches[1];
-            $this->resource = $matches[2];
-        } elseif (class_exists("UniMapper\Mapper\\" . $definition . "Mapper")) {
-            $name = $definition;
-        } else {
-            throw new PropertyException(
-                "Invalid mapper definition!",
-                $this->reflection,
-                $this->rawDefinition
-            );
-        }
-        $this->name = $name;
-        $this->class = "UniMapper\Mapper\\" . $name . "Mapper";
     }
 
     /**

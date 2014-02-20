@@ -11,30 +11,30 @@ use UniMapper\EntityCollection,
 /**
  * Mapper is ancestor for every new mapper. It defines common methods or
  * parameters used in its descendants.  Mappers are generally used to
- * communicate between repository and database abstract layer or php database
- * class itself.
+ * communicate between repository and data source.
  */
 abstract class Mapper implements Mapper\IMapper
 {
 
-    /**
-     * Return class name when it is treated like a string
-     *
-     * @return string
-     */
-    public function __toString()
+    protected $name;
+
+    public function __construct($name)
     {
-        return get_called_class();
+        $this->name = (string) $name;
+    }
+
+    public function getName()
+    {
+        return $this->name;
     }
 
     final public function getResource(EntityReflection $entityReflection)
     {
         $mappers = $entityReflection->getMappers();
-        $mapperClass = (string) $this;
-        if (!isset($mappers[$mapperClass])) {
-            throw new MapperException("Entity does not define mapper " . $mapperClass . "!");
+        if (!isset($mappers[$this->name])) {
+            throw new MapperException("Entity does not define mapper with name " . $this->name . "!");
         }
-        return $mappers[$mappers[$mapperClass]]->getResource();
+        return $mappers[$this->name]->getResource();
     }
 
     protected function mapProperties(array $properties)
@@ -44,7 +44,7 @@ abstract class Mapper implements Mapper\IMapper
 
             if ($property->getMapping()) {
 
-                $mapDefinition = $property->getMapping()->getName((string) $this);
+                $mapDefinition = $property->getMapping()->getName($this->name);
                 if ($mapDefinition) {
                     $output[] = $mapDefinition;
                     continue;
@@ -74,7 +74,7 @@ abstract class Mapper implements Mapper\IMapper
             }
 
             // Property mapping definition required
-            $mapping = $properties[$name]->getMapping()->getName((string) $this);
+            $mapping = $properties[$name]->getMapping()->getName($this->name);
             if ($mapping === false) {
                 continue;
             }
@@ -101,7 +101,7 @@ abstract class Mapper implements Mapper\IMapper
      */
     protected function getSelection(EntityReflection $entityReflection, array $selection = array())
     {
-        $properties = $entityReflection->getProperties((string) $this);
+        $properties = $entityReflection->getProperties($this->name);
         if (count($selection) === 0) {
             return $this->mapProperties($properties);
         }
@@ -183,7 +183,7 @@ abstract class Mapper implements Mapper\IMapper
             // Try to find property mapping first
             foreach ($properties as $item) {
                 $mapping = $item->getMapping();
-                if ($mapping && $mapping->getName((string) $this) === $name) {
+                if ($mapping && $mapping->getName($this->name) === $name) {
                     $property = $item;
                     $name = $property->getName();
                     break;

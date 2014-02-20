@@ -70,16 +70,16 @@ class Mapping
     }
 
     /**
-     * Get mapped entity property name according to mapper class
+     * Get mapped entity property name
      *
-     * @param string $mapperClass Mapper class
+     * @param string $mapperName
      *
      * @return string | false
      */
-    public function getName($mapperClass)
+    public function getName($mapperName)
     {
-        if (isset($this->definitions[$mapperClass])) {
-            return $this->definitions[$mapperClass];
+        if (isset($this->definitions[$mapperName])) {
+            return $this->definitions[$mapperName];
         }
         return false;
     }

@@ -27,7 +27,7 @@ abstract class Entity implements \JsonSerializable
 
     public function addMapper(\UniMapper\Mapper $mapper)
     {
-        $this->mappers[get_class($mapper)] = $mapper;
+        $this->mappers[$mapper->getName()] = $mapper;
     }
 
     public function isActive()

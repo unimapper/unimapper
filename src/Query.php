@@ -22,14 +22,14 @@ abstract class Query
 
     public function __construct(\UniMapper\Entity $entity, array $mappers)
     {
+        if (count($mappers) === 0) {
+            throw new QueryException("Query can not be used without mappers!");
+        }
+        $this->mappers = $mappers;
+
         $this->entityReflection = $entity->getReflection();
         if (count($this->entityReflection->getMappers()) === 0) {
             throw new QueryException("Missing mapper definition in entity " . $this->entityReflection->getName() . "!");
-        }
-
-        $this->mappers = $mappers;
-        if (count($mappers) === 0) {
-            throw new QueryException("Query can not be used without mappers!");
         }
     }
 

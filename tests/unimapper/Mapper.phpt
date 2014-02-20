@@ -5,18 +5,29 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 require __DIR__ . '/common/TestMapper.php';
 
-/**
- * @property integer $id
- * @property string  $text
- */
 class NoMapperEntity extends \UniMapper\Entity
 {}
 
-Assert::type("UniMapper\Mapper", new TestMapper);
+/**
+ * @mapper myTestMapper(resource_name)
+ *
+ * @property integer $id
+ * @property string  $text
+ */
+class Entity extends \UniMapper\Entity
+{}
 
-// Property not exists
-Assert::exception(function() {
+$mapper = new TestMapper("myTestMapper");
+
+// Get name
+Assert::same("myTestMapper", $mapper->getName());
+
+// Mapper not defined in entity
+Assert::exception(function() use ($mapper) {
     $entity = new NoMapperEntity;
-    $mapper = new TestMapper;
     $mapper->getResource($entity->getReflection());
-}, "UniMapper\Exceptions\MapperException", "Entity does not define mapper TestMapper!");
+}, "UniMapper\Exceptions\MapperException", "Entity does not define mapper with name myTestMapper!");
+
+// Get resource
+$entity = new Entity;
+Assert::same("resource_name", $mapper->getResource($entity->getReflection()));

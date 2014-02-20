@@ -72,9 +72,9 @@ class FindAll extends \UniMapper\Query implements IConditionable
             }
         }
 
-        foreach ($this->mappers as $mapperClass => $mapper) {
+        foreach ($this->mappers as $mapperName => $mapper) {
 
-            if (isset($entityMappers[$mapperClass])) {
+            if (isset($entityMappers[$mapperName])) {
 
                 if ($result instanceof EntityCollection && $this->entityReflection->getPrimaryProperty()) {
                     $this->conditions["hybrid"] = new Condition($this->entityReflection->getPrimaryProperty()->getName(), "IN", $result->getKeys());

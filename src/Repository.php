@@ -17,17 +17,8 @@ abstract class Repository
 
     protected $logger = null;
 
-    /**
-     * Constructor
-     *
-     * @param \UniMapper\Mapper $mapper Orm mapper
-     */
-    public function __construct(\UniMapper\Mapper $mapper = null, \UniMapper\Logger $logger = null)
+    public function __construct(\UniMapper\Logger $logger = null)
     {
-        if ($mapper) {
-            $this->addMapper($mapper);
-        }
-
         if ($logger) {
             $this->setLogger($logger);
         }
@@ -38,17 +29,19 @@ abstract class Repository
         $this->logger = $logger;
     }
 
-    public function addMapper(\UniMapper\Mapper $mapper)
+    public function addMapper($name, \UniMapper\Mapper $mapper)
     {
-        $class = get_class($mapper);
-        if (isset($this->mappers[$class])) {
-            throw new RepositoryException("Mapper " . $class . " already set!");
+        if (isset($this->mappers[$name])) {
+            throw new RepositoryException("Mapper with name " . $name . " already set!");
         }
-        $this->mappers[$class] = $mapper;
+        $this->mappers[$name] = $mapper;
     }
 
     public function createQuery($entityClass)
     {
+        if (count($this->mappers) === 0) {
+            throw new RepositoryException("You must set one mapper at least!");
+        }
         return new QueryBuilder(new $entityClass, $this->mappers, $this->logger);
     }
 

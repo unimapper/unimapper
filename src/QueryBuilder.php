@@ -69,15 +69,15 @@ class QueryBuilder
     /**
      * Custom query
      *
-     * @param string $mapperClass Mapper class
+     * @param string $mapperName
      *
      * @return \UniMapper\Query\Custom
      *
      * @throws \Exception
      */
-    public function custom($mapperClass)
+    public function custom($mapperName)
     {
-        $query = new Custom($this->entity, $this->mappers, $mapperClass);
+        $query = new Custom($this->entity, $this->mappers, $mapperName);
         $this->logQuery($query);
         return $query;
     }

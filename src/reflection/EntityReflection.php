@@ -45,16 +45,16 @@ class EntityReflection extends \ReflectionClass
         return $this->properties[$name];
     }
 
-    public function getProperties($mapperClass = null)
+    public function getProperties($mapperName = null)
     {
-        if ($mapperClass === null) {
+        if ($mapperName === null) {
             return $this->properties;
         }
 
         $properties = array();
         foreach ($this->properties as $property) {
 
-            if ($property->getMapping() && $property->getMapping()->getName($mapperClass) !== false) {
+            if ($property->getMapping() && $property->getMapping()->getName($mapperName) !== false) {
                 $properties[$property->getName()] = $property;
             }
         }

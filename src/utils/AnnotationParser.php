@@ -70,18 +70,18 @@ class AnnotationParser
         );
         $mappers = array();
         foreach ($annotations[0] as $annotation) {
-            $mapper = new Mapper(
-                trim(ltrim($annotation, "@mapper ")),
+            $mapperReflection = new Mapper(
+                substr($annotation, 8),
                 $reflection
             );
-            if (isset($mappers[$mapper->getClass()])) {
+            if (isset($mappers[$mapperReflection->getName()])) {
                 throw new \UniMapper\Exceptions\PropertyException(
                     "Duplicate mapper definition!",
                     $reflection,
                     $annotation
                 );
             }
-            $mappers[$mapper->getClass()] = $mapper;
+            $mappers[$mapperReflection->getName()] = $mapperReflection;
         }
         return $mappers;
     }
