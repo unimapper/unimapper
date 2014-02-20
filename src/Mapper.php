@@ -5,8 +5,8 @@ namespace UniMapper;
 use UniMapper\EntityCollection,
     UniMapper\Exceptions\MapperException,
     UniMapper\Utils\Property,
-    UniMapper\Reflection\EntityReflection,
-    UniMapper\Utils\AnnotationParser;
+    UniMapper\Utils\Validator,
+    UniMapper\Reflection\EntityReflection;
 
 /**
  * Mapper is ancestor for every new mapper. It defines common methods or
@@ -60,7 +60,7 @@ abstract class Mapper implements Mapper\IMapper
      */
     public function entityToData(\UniMapper\Entity $entity)
     {
-        $properties = AnnotationParser::getEntityProperties(get_class($entity));
+        $properties = $entity->getReflection()->getProperties();
 
         $output = array();
         foreach ($entity as $name => $value) {
@@ -121,10 +121,9 @@ abstract class Mapper implements Mapper\IMapper
     /**
      * Convert data to entity collection
      *
-     * @param mixed                   $data        Input data to convert,
-     *                                             expected iterable structure.
-     * @param \UniMapper\Entity         $entityClass Entity
-     * @param \UniMapper\Utils\Property $property    Property
+     * @param mixed                     $data
+     * @param \UniMapper\Entity         $entityClass
+     * @param \UniMapper\Utils\Property $primaryProperty
      *
      * @return \UniMapper\EntityCollection
      *
@@ -132,45 +131,52 @@ abstract class Mapper implements Mapper\IMapper
      */
     public function dataToCollection($data, $entityClass, Property $primaryProperty = null)
     {
-        if (!is_array($data) && $data instanceof \Traversable) {
-            throw new MapperException(
-                "Input data must be array or implement an iterator!"
-            );
+        if (!Validator::isTraversable($data)) {
+            throw new MapperException("Input data must be traversable!");
         }
 
         $collection = new EntityCollection($entityClass);
-
         foreach ($data as $key => $value) {
+
             $entity = $this->dataToEntity($value, new $entityClass);
+
+            // Get primary property key if defined
+            $primaryProperty = $entity->getReflection()->getPrimaryProperty();
             if ($primaryProperty !== null) {
                 $primaryValue = $entity->{$primaryProperty->getName()};
-                if ($primaryValue === NULL) {
-                    throw new MapperException("Missing primary property " . $primaryProperty->getName() . "!");
+                if ($primaryValue === null) {
+                    throw new MapperException("Missing value in primary property " . $primaryProperty->getName() . "!");
                 }
                 $key = $primaryValue;
             }
+
             $collection[$key] = $entity;
         }
-
         return $collection;
     }
 
     /**
      * Map data to defined entity
      *
-     * @param mixed           $data   Input data to convert
-     * @param \UniMapper\Entity $entity Entity
+     * @param mixed             $data
+     * @param \UniMapper\Entity $entity
      *
      * @return \UniMapper\Entity
+     *
+     * @throws \UniMapper\Exceptions\MapperException
      */
     public function dataToEntity($data, \UniMapper\Entity $entity)
     {
-        $properties = AnnotationParser::getEntityProperties(get_class($entity));
+        if (!Validator::isTraversable($data)) {
+            throw new MapperException("Input data must be traversable!");
+        }
+
+        $properties = $entity->getReflection()->getProperties();
         foreach ($data as $name => $value) {
 
             $property = null;
 
-            // Find property in mapping first
+            // Try to find property mapping first
             foreach ($properties as $item) {
                 $mapping = $item->getMapping();
                 if ($mapping && $mapping->getName((string) $this) === $name) {
@@ -180,7 +186,7 @@ abstract class Mapper implements Mapper\IMapper
                 }
             }
 
-            // If not found then check if property exist
+            // If not found then check if property exists
             if ($property === null && isset($properties[$name])) {
                 $property = $properties[$name];
             }
@@ -194,27 +200,28 @@ abstract class Mapper implements Mapper\IMapper
             $value = $this->modifyResultValue($value);
 
             // Convert value to defined type in entity property
-            $entity->{$name} = $this->mapToValue($property, $value);
+            $entity->{$name} = $this->convertPropertyValue($property, $value);
         }
         return $entity;
     }
 
     /**
-     * Convert value to defined entity property format
+     * Convert value to defined property format
      *
      * @param \UniMapper\Utils\Property $property Property
-     * @param mixed                   $value    Value
+     * @param mixed                     $value    Value
      *
      * @return mixed
      *
      * @throws \UniMapper\Exceptions\MapperException
      */
-    protected function mapToValue(Property $property, $value)
+    public function convertPropertyValue(Property $property, $value)
     {
         $type = $property->getType();
 
         if (in_array($type, $property->getBasicTypes())) {
-            // Basic types
+            // Basic type
+
             if ($type === "boolean" && $value === "false") {
                 return false; // covers string "false" of flexibee response @todo move out
             }
@@ -229,17 +236,17 @@ abstract class Mapper implements Mapper\IMapper
 
             if (settype($value, $type)) {
                 return $value;
-            } else {
-                throw new MapperException(
-                    "Can not convert value to entity @property"
-                    . " \${$property->getName()}. Expected {$type} but "
-                    . "conversion of " . gettype($value) . " failed!"
-                );
             }
-        }
 
-        if ($type instanceof EntityCollection) {
+            throw new MapperException(
+                "Can not convert value to entity @property"
+                . " \${$property->getName()}. Expected {$type} but "
+                . "conversion of " . gettype($value) . " failed!"
+            );
+
+        } elseif ($type instanceof EntityCollection) {
             // Entity collection
+
             $entityClass = $type->getEntityClass();
             foreach ($value as $item) {
                 $type[] = $this->dataToEntity(
@@ -248,18 +255,18 @@ abstract class Mapper implements Mapper\IMapper
                 );
             }
             return $type;
-        }
 
-        if ($value instanceof \stdClass
+        } elseif ($value instanceof \stdClass
             && isset($value->date)
             && isset($value->timezone_type)
             && isset($value->timezone)
         ) {
             // Datetime in stdClass
-            return new \DateTime($value->date);
-        }
 
-        if (class_exists($type)) {
+            return new \DateTime($value->date);
+
+        } elseif (class_exists($type)) {
+
             if ($value instanceof $type) {
                 // Expected object already given
                 return $value;
