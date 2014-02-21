@@ -2,7 +2,8 @@
 
 namespace UniMapper\Utils\Property;
 
-use UniMapper\Exceptions\PropertyException;
+use UniMapper\Reflection\EntityReflection,
+    UniMapper\Exceptions\PropertyException;
 
 /**
  * Entity property mapping object
@@ -16,56 +17,51 @@ class Mapping
     /**
      * Constructor
      *
-     * @param string           $propertyName  Property name
-     * @param string           $definition    Mapping definition
-     * @param string           $rawDefinition Raw property definition
-     * @param \ReflectionClass $reflection    Entity reflection
-     *
-     * @return void
+     * @param string                                 $propertyName
+     * @param string                                 $definition       Mapping definition
+     * @param string                                 $rawDefinition    Raw property definition
+     * @param \UniMapper\Reflection\EntityReflection $entityReflection
      *
      * @throws \UniMapper\Exceptions\PropertyException
      */
-    public function __construct($propertyName, $definition, $rawDefinition, \ReflectionClass $reflection)
+    public function __construct($propertyName, $definition, $rawDefinition, EntityReflection $entityReflection)
     {
         $definition = trim($definition);
-
-        if (empty($definition)) {
+        if ($definition === "") {
             throw new PropertyException(
-                "Empty mapping definition found!",
-                $reflection,
+                "Mapping definition can not be empty!",
+                $entityReflection,
                 $rawDefinition
             );
         }
 
-        $definitionItems = explode("|", $definition);
+        foreach (explode("|", $definition) as $definitionItem) {
 
-        foreach ($definitionItems as $definitionItem) {
-
-            list($class, $name) = explode(":", $definitionItem);
-
-            $class = "UniMapper\Mapper\\" . $class . "Mapper";
-            if (!class_exists($class)) {
-                throw new PropertyException(
-                    "Mapper " . $class . " not found!",
-                    $reflection,
-                    $rawDefinition
-                );
-            }
-
-            // Only one mapping definition allowed for every mapper
-            if (isset($this->definitions[$class])) {
-                throw new PropertyException(
-                    "Only one mapping is allowed for every mapper!",
-                    $reflection,
-                    $rawDefinition
-                );
-            }
+            list($mapperName, $name) = explode(":", $definitionItem);
 
             if ($name == null) {
                 $name = $propertyName;
             }
 
-            $this->definitions[$class] = $name;
+            $entityMappers = $entityReflection->getMappers();
+            if (!isset($entityMappers[$mapperName])) {
+                throw new PropertyException(
+                    "Mapper with name " . $mapperName . " not defined!",
+                    $entityReflection,
+                    $rawDefinition
+                );
+            }
+
+            // Only one mapping definition allowed for every mapper
+            if (isset($this->definitions[$mapperName])) {
+                throw new PropertyException(
+                    "Only one mapping is allowed for mapper " . $mapperName . "!",
+                    $entityReflection,
+                    $rawDefinition
+                );
+            }
+
+            $this->definitions[$mapperName] = $name;
         }
     }
 

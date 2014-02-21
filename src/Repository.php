@@ -29,12 +29,9 @@ abstract class Repository
         $this->logger = $logger;
     }
 
-    public function addMapper($name, \UniMapper\Mapper $mapper)
+    public function addMapper(\UniMapper\Mapper $mapper)
     {
-        if (isset($this->mappers[$name])) {
-            throw new RepositoryException("Mapper with name " . $name . " already set!");
-        }
-        $this->mappers[$name] = $mapper;
+        $this->mappers[$mapper->getName()] = $mapper;
     }
 
     public function createQuery($entityClass)
