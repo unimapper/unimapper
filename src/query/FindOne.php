@@ -3,7 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\EntityCollection,
-    UniMapper\Entity;
+    UniMapper\Reflection\EntityReflection;
 
 /**
  * Find single item as query object
@@ -13,9 +13,9 @@ class FindOne extends \UniMapper\Query implements \UniMapper\Query\IConditionabl
 
     public $primaryValue = array();
 
-    public function __construct(Entity $entity, array $mappers, $primaryValue)
+    public function __construct(EntityReflection $entityReflection, array $mappers, $primaryValue)
     {
-        parent::__construct($entity, $mappers);
+        parent::__construct($entityReflection, $mappers);
         $this->primaryValue = $primaryValue;
     }
 

@@ -2,7 +2,8 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exceptions\QueryException;
+use UniMapper\Reflection\EntityReflection,
+    UniMapper\Exceptions\QueryException;
 
 /**
  * ORM query object
@@ -20,9 +21,9 @@ class Custom extends \UniMapper\Query
     public $mapper;
     public $data;
 
-    public function __construct(\UniMapper\Entity $entity, array $mappers, $mapperName)
+    public function __construct(EntityReflection $entityReflection, array $mappers, $mapperName)
     {
-        parent::__construct($entity, $mappers);
+        parent::__construct($entityReflection, $mappers);
         if (!isset($this->mappers[$mapperName])) {
             throw new QueryException("Mapper " . $mapperName . " not set!");
         }

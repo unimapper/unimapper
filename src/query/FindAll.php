@@ -3,7 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exceptions\QueryException,
-    UniMapper\Entity,
+    UniMapper\Reflection\EntityReflection,
     UniMapper\EntityCollection,
     UniMapper\Query\IConditionable,
     UniMapper\Query\Object\Condition,
@@ -20,9 +20,9 @@ class FindAll extends \UniMapper\Query implements IConditionable
     public $orders = array(); // @todo split orders by mappers
     public $selection = array();
 
-    public function __construct(Entity $entity, array $mappers, array $selection = array())
+    public function __construct(EntityReflection $entityReflection, array $mappers, array $selection = array())
     {
-        parent::__construct($entity, $mappers);
+        parent::__construct($entityReflection, $mappers);
         $this->selection = $selection;
     }
 

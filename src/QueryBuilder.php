@@ -2,7 +2,8 @@
 
 namespace UniMapper;
 
-use UniMapper\Query\FindOne,
+use UniMapper\Reflection\EntityReflection,
+    UniMapper\Query\FindOne,
     UniMapper\Query\Count,
     UniMapper\Query\Custom,
     UniMapper\Query\FindAll;
@@ -10,13 +11,13 @@ use UniMapper\Query\FindOne,
 class QueryBuilder
 {
 
-    protected $entity;
+    protected $entityReflection;
     protected $mappers;
     protected $logger;
 
-    public function __construct(Entity $entity, array $mappers, Logger $logger = null)
+    public function __construct(EntityReflection $entityReflection, array $mappers, Logger $logger = null)
     {
-        $this->entity = $entity;
+        $this->entityReflection = $entityReflection;
         $this->mappers = $mappers;
         $this->logger = $logger;
     }
@@ -35,7 +36,7 @@ class QueryBuilder
      */
     public function count()
     {
-        $query = new Count($this->entity, $this->mappers);
+        $query = new Count($this->entityReflection, $this->mappers);
         $this->logQuery($query);
         return $query;
     }
@@ -47,7 +48,7 @@ class QueryBuilder
      */
     public function findAll()
     {
-        $query = new FindAll($this->entity, $this->mappers, func_get_args());
+        $query = new FindAll($this->entityReflection, $this->mappers, func_get_args());
         $this->logQuery($query);
         return $query;
     }
@@ -61,7 +62,7 @@ class QueryBuilder
      */
     public function findOne($primaryValue)
     {
-        $query = new FindOne($this->entity, $this->mappers, $primaryValue);
+        $query = new FindOne($this->entityReflection, $this->mappers, $primaryValue);
         $this->logQuery($query);
         return $query;
     }
@@ -77,7 +78,7 @@ class QueryBuilder
      */
     public function custom($mapperName)
     {
-        $query = new Custom($this->entity, $this->mappers, $mapperName);
+        $query = new Custom($this->entityReflection, $this->mappers, $mapperName);
         $this->logQuery($query);
         return $query;
     }

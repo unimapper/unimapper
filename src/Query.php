@@ -2,7 +2,8 @@
 
 namespace UniMapper;
 
-use UniMapper\Query\Object\Condition,
+use UniMapper\Reflection\EntityReflection,
+    UniMapper\Query\Object\Condition,
     UniMapper\Exceptions\QueryException;
 
 /**
@@ -20,14 +21,14 @@ abstract class Query
     /** @var \UniMapper\Reflection\EntityReflection */
     public $entityReflection;
 
-    public function __construct(\UniMapper\Entity $entity, array $mappers)
+    public function __construct(EntityReflection $entityReflection, array $mappers)
     {
         if (count($mappers) === 0) {
             throw new QueryException("Query can not be used without mappers!");
         }
         $this->mappers = $mappers;
 
-        $this->entityReflection = $entity->getReflection();
+        $this->entityReflection = $entityReflection;
         if (count($this->entityReflection->getMappers()) === 0) {
             throw new QueryException("Missing mapper definition in entity " . $this->entityReflection->getName() . "!");
         }
