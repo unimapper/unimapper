@@ -103,7 +103,7 @@ class EntityReflection extends \ReflectionClass
 
     public function hasProperty($name)
     {
-        return isset($this->properties[$name]);
+        return isset($this->getProperties()[$name]); // PHP 5.4
     }
 
     public function getProperty($name)
@@ -138,7 +138,7 @@ class EntityReflection extends \ReflectionClass
 
     public function getPrimaryProperty()
     {
-        foreach ($this->properties as $property) {
+        foreach ($this->getProperties() as $property) {
             if ($property->isPrimary()) {
                 return $property;
             }
