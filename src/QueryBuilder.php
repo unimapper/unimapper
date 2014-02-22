@@ -3,6 +3,8 @@
 namespace UniMapper;
 
 use UniMapper\Reflection\EntityReflection,
+    UniMapper\Entity,
+    UniMapper\Query\Insert,
     UniMapper\Query\FindOne,
     UniMapper\Query\Count,
     UniMapper\Query\Custom,
@@ -79,6 +81,13 @@ class QueryBuilder
     public function custom($mapperName)
     {
         $query = new Custom($this->entityReflection, $this->mappers, $mapperName);
+        $this->logQuery($query);
+        return $query;
+    }
+
+    public function insert(Entity $entity)
+    {
+        $query = new Insert($this->entityReflection, $this->mappers, $entity);
         $this->logQuery($query);
         return $query;
     }

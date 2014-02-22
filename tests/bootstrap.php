@@ -8,3 +8,6 @@ if (@!include __DIR__ . '/../vendor/autoload.php') {
 Tester\Environment::setup();
 
 date_default_timezone_set('Europe/Prague');
+
+require __DIR__ . '/common/Entities.php';
+require __DIR__ . '/common/Mappers.php';

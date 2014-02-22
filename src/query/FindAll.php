@@ -72,27 +72,24 @@ class FindAll extends \UniMapper\Query implements IConditionable
             }
         }
 
-        foreach ($this->mappers as $mapperName => $mapper) {
+        foreach ($this->mappers as $mapper) {
 
-            if (isset($entityMappers[$mapperName])) {
+            if ($result instanceof EntityCollection && $this->entityReflection->getPrimaryProperty()) {
+                $this->conditions["hybrid"] = new Condition($this->entityReflection->getPrimaryProperty()->getName(), "IN", $result->getKeys());
+            }
+            $data = $mapper->findAll($this);
+            if ($data === false) {
+                continue;
+            }
+            if (isset($this->conditions["hybrid"])) {
+                unset($this->conditions["hybrid"]);
+            }
 
-                if ($result instanceof EntityCollection && $this->entityReflection->getPrimaryProperty()) {
-                    $this->conditions["hybrid"] = new Condition($this->entityReflection->getPrimaryProperty()->getName(), "IN", $result->getKeys());
-                }
-                $data = $mapper->findAll($this);
-                if ($data === false) {
-                    continue;
-                }
-                if (isset($this->conditions["hybrid"])) {
-                    unset($this->conditions["hybrid"]);
-                }
-
-                if ($result instanceof EntityCollection && $data instanceof EntityCollection) {
-                    // There are some results from previous queries, so merge it
-                    $result->merge($data);
-                } else {
-                    $result = $data;
-                }
+            if ($result instanceof EntityCollection && $data instanceof EntityCollection) {
+                // There are some results from previous queries, so merge it
+                $result->merge($data);
+            } else {
+                $result = $data;
             }
         }
 

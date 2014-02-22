@@ -67,25 +67,22 @@ abstract class Mapper implements Mapper\IMapper
         $properties = $entity->getReflection()->getProperties();
 
         $output = array();
-        foreach ($entity as $name => $value) {
-
-            if (!isset($properties[$name])) {
-                continue;
-            }
+        foreach ($entity->toArray() as $name => $value) {
 
             // Property mapping definition required
-            $mapping = $properties[$name]->getMapping()->getName($this->name);
+            $mapping = $properties[$name]->getMapping();
             if ($mapping === false) {
                 continue;
             }
+            $mappedPropertyName = $mapping->getName($this->name);
 
             if ($value instanceof EntityCollection) {
                 // Collection of entities
                 foreach ($value as $subEntity) {
-                    $output[$mapping][] = $this->entityToData($subEntity);
+                    $output[$mappedPropertyName][] = $this->entityToData($subEntity);
                 }
             } else {
-                $output[$mapping] = $value;
+                $output[$mappedPropertyName] = $value;
             }
         }
         return $output;

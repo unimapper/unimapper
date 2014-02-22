@@ -4,14 +4,6 @@ use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
-/**
- * @property integer $id
- * @property string  $text
- * @property string  $empty
- */
-class Entity extends \UniMapper\Entity
-{}
-
 $entity = new Entity;
 $entity->text = "test";
 $entity->id = 1;
