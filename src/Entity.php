@@ -124,22 +124,18 @@ abstract class Entity implements \JsonSerializable
      */
     final public function toArray($collections = false)
     {
-        $output = array();
-        foreach ($this->reflection->getProperties() as $name => $property) {
-            if ($collections
-                && $property->getType() instanceof \UniMapper\EntityCollection
-            ) {
-                $output[$name] = array();
-                if (isset($this->data[$name])) {
-                    foreach ($this->data[$name] as $entity) {
-                        $output[$name][] = $entity->toArray($collections);
-                    }
-                }
-            } else {
-                $output[$name] = $this->data[$name];
-            }
+        if ($collections === false) {
+            return $this->data;
         }
 
+        $output = array();
+        foreach ($this->data as $name => $value) {
+            if ($value instanceof \UniMapper\EntityCollection) {
+                $output[$name] = $value->toArray($collections);
+            } else {
+                $output[$name] = $value;
+            }
+        }
         return $output;
     }
 

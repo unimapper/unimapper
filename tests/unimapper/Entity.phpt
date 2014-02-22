@@ -7,6 +7,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @property integer $id
  * @property string  $text
+ * @property string  $empty
  */
 class Entity extends \UniMapper\Entity
 {}
@@ -21,10 +22,10 @@ Assert::type("UniMapper\Entity", $entity);
 Assert::equal(1, $entity->id);
 
 // toArray()
-Assert::same(array('id' => 1, 'text' => 'test'), $entity->toArray());
+Assert::same(array('text' => 'test', 'id' => 1), $entity->toArray());
 
 // JsonSerializable
-Assert::same('{"id":1,"text":"test"}', json_encode($entity));
+Assert::same('{"text":"test","id":1}', json_encode($entity));
 
 // Invalid property type
 Assert::exception(function() use ($entity) {
