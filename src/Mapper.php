@@ -124,13 +124,12 @@ abstract class Mapper implements Mapper\IMapper
      *
      * @param mixed                     $data
      * @param \UniMapper\Entity         $entityClass
-     * @param \UniMapper\Utils\Property $primaryProperty
      *
      * @return \UniMapper\EntityCollection
      *
      * @throws \UniMapper\Exceptions\MapperException
      */
-    public function dataToCollection($data, $entityClass, Property $primaryProperty = null)
+    public function dataToCollection($data, $entityClass)
     {
         if (!Validator::isTraversable($data)) {
             throw new MapperException("Input data must be traversable!");
