@@ -65,7 +65,9 @@ class Insert extends \UniMapper\Query
             if ($primaryValue === null) {
                 $primaryValue = $result;
             } elseif ($result !== $primaryValue) {
-                throw new QueryException("Primary");
+                throw new QueryException(
+                    "Primary value " . $result . " from mapper " . $mapperName . " is not equal to primary value " . $primaryValue . " from the first mapper!"
+                );
             }
 
             // Make entity active
