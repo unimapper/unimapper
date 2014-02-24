@@ -63,7 +63,7 @@ class Insert extends \UniMapper\Query
 
             $result = $mapper->insert($this);
             if ($primaryValue === null) {
-                $primaryValue = $result;
+                $this->entity->{$primaryProperty->getName()} = $primaryValue = $result; // Set primary value automatically for all next mappers
             } elseif ($result !== $primaryValue) {
                 throw new QueryException(
                     "Primary value " . $result . " from mapper " . $mapperName . " is not equal to primary value " . $primaryValue . " from the first mapper!"
