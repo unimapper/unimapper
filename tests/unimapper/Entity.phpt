@@ -10,7 +10,20 @@ $entity->id = 1;
 
 Assert::type("UniMapper\Entity", $entity);
 
+// isset()
+Assert::true(isset($entity->id));
+Assert::false(isset($entity->missing));
+
+// empty()
+Assert::true(empty($entity->missing));
+Assert::false(empty($entity->id));
+
+// unset()
+unset($entity->id);
+Assert::null($entity->id);
+
 // Valid property
+$entity->id = 1;
 Assert::equal(1, $entity->id);
 
 // toArray()

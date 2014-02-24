@@ -110,6 +110,16 @@ abstract class Entity implements \JsonSerializable
         }
     }
 
+    public function __isset($name)
+    {
+        return isset($this->data[$name]);
+    }
+
+    public function __unset($name)
+    {
+        unset($this->data[$name]);
+    }
+
     public function getReflection()
     {
         return $this->reflection;
