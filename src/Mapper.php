@@ -64,10 +64,14 @@ abstract class Mapper implements Mapper\IMapper
      */
     public function entityToData(\UniMapper\Entity $entity)
     {
-        $properties = $entity->getReflection()->getProperties();
+        $properties = $entity->getReflection()->getProperties($this->name);
 
         $output = array();
         foreach ($entity->toArray() as $name => $value) {
+
+            if (!isset($properties[$name])) {
+                continue;
+            }
 
             // Property mapping definition required
             $mapping = $properties[$name]->getMapping();
