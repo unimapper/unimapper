@@ -13,6 +13,7 @@ class Insert extends \UniMapper\Query
 {
 
     public $entity;
+    public $returnPrimaryValue = true;
 
     public function __construct(EntityReflection $entityReflection, array $mappers, Entity $entity)
     {
@@ -59,21 +60,20 @@ class Insert extends \UniMapper\Query
         $primaryValue = $this->entity->{$primaryProperty->getName()};
         foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
 
-            $mapper = $this->mappers[$mapperName];
+            if ($primaryValue) {
+                $this->returnPrimaryValue = false;
+            }
 
-            $result = $mapper->insert($this);
-            if ($primaryValue === null) {
-                $this->entity->{$primaryProperty->getName()} = $primaryValue = $result; // Set primary value automatically for all next mappers
-            } elseif ($result !== $primaryValue) {
-                throw new QueryException(
-                    "Primary value " . $result . " from mapper " . $mapperName . " is not equal to primary value " . $primaryValue . " from the first mapper!"
-                );
+            $insertedPrimaryValue = $this->mappers[$mapperName]->insert($this);
+            if ($insertedPrimaryValue) {
+                // Set primary value automatically for all next mappers
+                $this->entity->{$primaryProperty->getName()} = $primaryValue = $insertedPrimaryValue;
             }
 
             // Make entity active
-            $this->entity->addMapper($mapper);
+            $this->entity->addMapper($this->mappers[$mapperName]);
         }
-        $this->entity->{$primaryProperty->getName()} = $primaryValue;
+
         return $this->entity;
     }
 
