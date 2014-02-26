@@ -255,7 +255,7 @@ abstract class Mapper implements Mapper\IMapper
             foreach ($value as $item) {
                 $type[] = $this->dataToEntity(
                     $item,
-                    new $entityClass
+                    $entityClass
                 );
             }
             return $type;
