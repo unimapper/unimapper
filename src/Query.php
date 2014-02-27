@@ -54,4 +54,17 @@ abstract class Query
         return $this->result;
     }
 
+    protected function hasHybridCondition()
+    {
+        if ($this->entityReflection->isHybrid()) {
+            foreach ($this->conditions as $condition) {
+                $property = $this->entityReflection->getProperty($condition->getExpression());
+                if ($property->getMapping()->isHybrid()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }
