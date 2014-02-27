@@ -7,6 +7,7 @@ use UniMapper\Reflection\EntityReflection,
     UniMapper\Query\Insert,
     UniMapper\Query\FindOne,
     UniMapper\Query\Count,
+    UniMapper\Query\Update,
     UniMapper\Query\Custom,
     UniMapper\Query\FindAll;
 
@@ -88,6 +89,13 @@ class QueryBuilder
     public function insert(Entity $entity)
     {
         $query = new Insert($this->entityReflection, $this->mappers, $entity);
+        $this->logQuery($query);
+        return $query;
+    }
+
+    public function update(Entity $entity)
+    {
+        $query = new Update($this->entityReflection, $this->mappers, $entity);
         $this->logQuery($query);
         return $query;
     }
