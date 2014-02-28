@@ -93,9 +93,9 @@ class QueryBuilder
         return $query;
     }
 
-    public function update(Entity $entity)
+    public function update(array $data)
     {
-        $query = new Update($this->entityReflection, $this->mappers, $entity);
+        $query = new Update($this->entityReflection, $this->mappers, $data);
         $this->logQuery($query);
         return $query;
     }

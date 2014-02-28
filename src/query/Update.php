@@ -5,8 +5,7 @@ namespace UniMapper\Query;
 use UniMapper\Reflection\EntityReflection,
     UniMapper\Exceptions\QueryException,
     UniMapper\Query\Object\Condition,
-    UniMapper\Utils\Property,
-    UniMapper\Entity;
+    UniMapper\Utils\Property;
 
 /**
  * Update query object
@@ -23,10 +22,11 @@ class Update extends \UniMapper\Query implements \UniMapper\Query\IConditionable
      *
      * @return void
      */
-    public function __construct(EntityReflection $entityReflection, array $mappers, Entity $entity)
+    public function __construct(EntityReflection $entityReflection, array $mappers, array $data)
     {
         parent::__construct($entityReflection, $mappers);
-        $this->entity = $entity;
+        $class = $entityReflection->getName();
+        $this->entity = new $class(null, $data);
     }
 
     protected function onExecute()
