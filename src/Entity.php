@@ -17,12 +17,17 @@ abstract class Entity implements \JsonSerializable
     protected $reflection;
     private $data = array();
 
-    public function __construct(\UniMapper\Mapper $mapper = null)
+    public function __construct(\UniMapper\Mapper $mapper = null, array $defaults = array())
     {
         if ($mapper) {
             $this->addMapper($mapper);
         }
         $this->reflection = new Reflection\EntityReflection($this);
+        if (!empty($defaults)) {
+            foreach ($defaults as $name => $value) {
+                $this->{$name} = $value;
+            }
+        }
     }
 
     public function addMapper(\UniMapper\Mapper $mapper)
