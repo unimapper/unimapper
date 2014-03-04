@@ -11,7 +11,8 @@ use UniMapper\Reflection\EntityReflection,
 class Custom extends \UniMapper\Query
 {
 
-    const METHOD_GET = "get",
+    const METHOD_RAW = "raw",
+          METHOD_GET = "get",
           METHOD_PUT = "put",
           METHOD_POST = "post",
           METHOD_DELETE = "delete";
@@ -28,6 +29,14 @@ class Custom extends \UniMapper\Query
             throw new QueryException("Mapper " . $mapperName . " not set!");
         }
         $this->mapper = $this->mappers[$mapperName];
+    }
+
+    public function raw($args)
+    {
+        $args = func_get_args();
+        $this->method = self::METHOD_RAW;
+        $this->query = $args;
+        return $this;
     }
 
     public function get($query)
