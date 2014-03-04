@@ -39,7 +39,7 @@ class Custom extends \UniMapper\Query
 
     public function put($query, $data)
     {
-        $this->method = self::METHOD_PUI;
+        $this->method = self::METHOD_PUT;
         $this->query = $query;
         $this->data = $data;
         return $this;
