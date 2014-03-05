@@ -6,7 +6,6 @@ use UniMapper\Exceptions\QueryException,
     UniMapper\Reflection\EntityReflection,
     UniMapper\EntityCollection,
     UniMapper\Query\IConditionable,
-    UniMapper\Query\Object\Condition,
     UniMapper\Query\Object\Order;
 
 /**
@@ -64,7 +63,8 @@ class FindAll extends \UniMapper\Query implements IConditionable
         // Add properties from conditions to the selection if not set
         if (count($this->conditions) > 0 && count($this->selection) > 0) {
             foreach ($this->conditions as $condition) {
-                $propertyName = $condition->getExpression();
+
+                list($propertyName) = $condition;
                 if (!isset($this->selection[$propertyName])) {
                     $this->selection[] = $propertyName;
                 }
@@ -76,7 +76,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
             $mapper = $this->mappers[$mapperName];
 
             if ($result instanceof EntityCollection && $this->entityReflection->getPrimaryProperty()) {
-                $this->conditions["hybrid"] = new Condition($this->entityReflection->getPrimaryProperty()->getName(), "IN", $result->getKeys());
+                $this->conditions["hybrid"] = array($this->entityReflection->getPrimaryProperty()->getName(), "IN", $result->getKeys(), "AND");
             }
             $data = $mapper->findAll($this);
             if ($data === false) {

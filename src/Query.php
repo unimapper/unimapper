@@ -3,7 +3,6 @@
 namespace UniMapper;
 
 use UniMapper\Reflection\EntityReflection,
-    UniMapper\Query\Object\Condition,
     UniMapper\Exceptions\QueryException;
 
 /**
@@ -13,6 +12,7 @@ abstract class Query
 {
 
     public $conditions = array();
+    protected $conditionOperators = array("=", "<", ">", "<>", ">=", "<=", "IS", "IS NOT", "!=", "LIKE", "COMPARE", "IN");
     public $mappers = array();
     public $elapsed;
     public $finished = false;
@@ -34,15 +34,33 @@ abstract class Query
         }
     }
 
-    public function where($propertyName, $operator, $value)
+    protected function addCondition($propertyName, $operator, $value, $joiner = 'AND')
     {
         if (!$this instanceof Query\IConditionable) {
             throw new QueryException("Conditions should be called only on conditionable queries!");
         }
+
         if (!$this->entityReflection->hasProperty($propertyName)) {
             throw new QueryException("Invalid property name '" . $propertyName . "'!");
         }
-        $this->conditions[] = new Condition($propertyName, $operator, $value);
+
+        if ($operator !== null && !in_array($operator, $this->conditionOperators)) {
+            throw new QueryException("Condition operator " . $operator . " not allowed! You can use one of the following " . implode(" ", $this->conditionOperators) . ".");
+        }
+
+        $this->conditions[] = array($propertyName, $operator, $value, $joiner);
+        return $this;
+    }
+
+    public function where($propertyName, $operator, $value)
+    {
+        $this->addCondition($propertyName, $operator, $value);
+        return $this;
+    }
+
+    public function orWhere($propertyName, $operator, $value)
+    {
+        $this->addCondition($propertyName, $operator, $value, "OR");
         return $this;
     }
 
@@ -57,8 +75,12 @@ abstract class Query
     protected function hasHybridCondition()
     {
         if ($this->entityReflection->isHybrid()) {
+
             foreach ($this->conditions as $condition) {
-                $property = $this->entityReflection->getProperty($condition->getExpression());
+
+                list($propertyName) = $condition;
+
+                $property = $this->entityReflection->getProperty($propertyName);
                 if ($property->getMapping()->isHybrid()) {
                     return true;
                 }
