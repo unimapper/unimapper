@@ -13,8 +13,9 @@ class Count extends \UniMapper\Query implements IConditionable
         if ($this->hasHybridCondition()) {
             throw new \Exception("Count for hybrid entities not yet implemented!");
         } else {
-            $mapper = array_shift($this->mappers);
-            return $mapper->count($this);
+            foreach ($this->entityReflection->getMappers() as $name => $mapper) {
+                return $this->mappers[$name]->count($this);
+            }
         }
     }
 
