@@ -62,6 +62,11 @@ class Enumeration
         }
     }
 
+    public function getValues()
+    {
+        return $this->values;
+    }
+
     /**
      * Tells wheter given value is from enumeration
      *
