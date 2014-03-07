@@ -34,7 +34,7 @@ class Update extends \UniMapper\Query implements \UniMapper\Query\IConditionable
             throw new QueryException("At least one condition must be set!");
         }
 
-        // @todo primary property
+        // @todo primary property must be required
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
         if ($primaryProperty === null) {
             throw new QueryException("Entity does not have primary property!");
