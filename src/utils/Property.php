@@ -2,7 +2,8 @@
 
 namespace UniMapper\Utils;
 
-use UniMapper\EntityCollection,
+use UniMapper\Entity,
+    UniMapper\EntityCollection,
     UniMapper\Exceptions\PropertyException,
     UniMapper\Exceptions\PropertyTypeException;
 
@@ -310,6 +311,80 @@ class Property
     public function isPrimary()
     {
         return $this->primary;
+    }
+
+    /**
+     * Convert value to defined property format
+     *
+     * @param mixed    $value         Value
+     * @param string   $mapperName    Import only mapper data
+     * @param callable $valueCallback Callback when converting data // PHP 5.4
+     *
+     * @return mixed
+     *
+     * @throws \Exception
+     */
+    public function convertValue($value, $mapperName = null, callable $valueCallback = null)
+    {
+        $type = $this->getType();
+
+        if (in_array($type, $this->getBasicTypes())) {
+            // Basic type
+
+            if ($value === null) {
+                return null;
+            }
+
+            if ($type === "boolean" && $value === "false") {
+                return false;
+            }
+
+            if ($type === "boolean" && $value === "true") {
+                return true;
+            }
+
+            if (settype($value, $type)) {
+                return $value;
+            }
+
+            throw new \Exception(
+                "Can not convert value to entity @property"
+                . " $" . $this->getName() . ". Expected " . $type . " but "
+                . "conversion of " . gettype($value) . " failed!"
+            );
+
+        } elseif ($type instanceof EntityCollection) {
+
+            $type->importData($value, $mapperName, $valueCallback);
+            return $type;
+
+        } elseif ($value instanceof \stdClass
+            && isset($value->date)
+            && isset($value->timezone_type)
+            && isset($value->timezone)
+        ) {
+
+            return new \DateTime($value->date);
+
+        } elseif (class_exists($type)) {
+
+            if ($value instanceof $type) {
+                // Expected object already given
+                return $value;
+            } elseif ($type instanceof Entity) {
+                // Entity
+                $entity = new $type;
+                $entity->importData($value, $mapperName, $valueCallback);
+            }
+
+        }
+
+        // Unexpected value type
+        throw new \Exception(
+            "Unexpected value type given. Can not convert value to entity "
+            . "@property $" . $this->getName() . ". Expected " . $type
+            . " but " . gettype($value) . " given!"
+        );
     }
 
 }

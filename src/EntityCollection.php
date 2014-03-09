@@ -2,6 +2,9 @@
 
 namespace UniMapper;
 
+use UniMapper\Utils\Validator,
+    UniMapper\Reflection\EntityReflection;
+
 /**
  * Entity collection as ArrayList
  */
@@ -123,11 +126,22 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     /**
      * Convert to array
      *
+     * @param boolean $nesting Convert nested entities and collections too
+     *
      * @return array
      */
-    public function toArray()
+    public function toArray($nesting = false, $mapperName = null)
     {
-        return $this->data;
+        $output = array();
+        foreach ($this->data as $index => $entity) {
+
+            if ($nesting) {
+                $output[$index] = $entity->toArray($nesting, $mapperName);
+            } else {
+                $output[$index] = $entity;
+            }
+        }
+        return $output;
     }
 
     /**
@@ -163,7 +177,45 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
 
     public function getKeys()
     {
-        return array_keys($this->data);
+        $keys = array();
+
+        $reflection = new EntityReflection($this->entityClass);
+
+        $primaryProperty = $reflection->getPrimaryProperty();
+        if ($primaryProperty === null) {
+            throw new \Exception("primary property not set in entity " . $this->entityClass . "!");
+        }
+
+        foreach ($this->data as $entity) {
+
+            if (isset($entity->{$primaryProperty->getName()})) {
+                $keys[] = $entity->{$primaryProperty->getName()};
+            }
+        }
+        return $keys;
+    }
+
+    /**
+     * Import data
+     *
+     * @param mixed    $data          Traversable data
+     * @param string   $mapperName    Import only mapper data
+     * @param callable $valueCallback Callback when converting data
+     *
+     * @throws \Exception
+     */
+    public function importData($data, $mapperName = null, callable $valueCallback = null)
+    {
+        if (!Validator::isTraversable($data)) {
+            throw new \Exception("Input data must be traversable!");
+        }
+
+        foreach ($data as $value) {
+
+            $entity = new $this->entityClass; // PHP 5.4
+            $entity->importData($value, $mapperName, $valueCallback);
+            $this->data[] = $entity;
+        }
     }
 
 }

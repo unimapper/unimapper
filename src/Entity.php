@@ -2,12 +2,15 @@
 
 namespace UniMapper;
 
-use UniMapper\EntityCollection,
+use UniMapper\Mapper,
+    UniMapper\Utils\Validator,
+    UniMapper\EntityCollection,
+    UniMapper\Reflection\EntityReflection,
     UniMapper\Exceptions\PropertyTypeException,
     UniMapper\Exceptions\PropertyAccessException;
 
 /**
- * Entity is ancestor for all ORM entities and provides global methods, which
+ * Entity is ancestor for all entities and provides global methods, which
  * can be used in every new entity object.
  */
 abstract class Entity implements \JsonSerializable
@@ -17,20 +20,18 @@ abstract class Entity implements \JsonSerializable
     protected $reflection;
     private $data = array();
 
-    public function __construct(\UniMapper\Mapper $mapper = null, array $defaults = array())
+    public function __construct(Mapper $mapper = null, $defaults = null)
     {
         if ($mapper) {
             $this->addMapper($mapper);
         }
-        $this->reflection = new Reflection\EntityReflection($this);
-        if (!empty($defaults)) {
-            foreach ($defaults as $name => $value) {
-                $this->{$name} = $value;
-            }
+        $this->reflection = new EntityReflection($this);
+        if ($defaults !== null) {
+            $this->importData($defaults);
         }
     }
 
-    public function addMapper(\UniMapper\Mapper $mapper)
+    public function addMapper(Mapper $mapper)
     {
         $this->mappers[$mapper->getName()] = $mapper;
     }
@@ -86,7 +87,7 @@ abstract class Entity implements \JsonSerializable
         if (!isset($properties[$name])) {
             throw new PropertyAccessException(
                 "Undefined property with name '" . $name . "'!",
-                $reflection
+                $this->reflection
             );
         }
 
@@ -133,22 +134,34 @@ abstract class Entity implements \JsonSerializable
     /**
      * Get entity values as array
      *
-     * @param boolean $collections Convert collections too
+     * @param boolean $nesting    Convert nested entities and collections too
+     * @param string  $mapperName Map properties automatically
      *
      * @return array
      */
-    final public function toArray($collections = false)
+    public function toArray($nesting = false, $mapperName = null)
     {
-        if ($collections === false) {
-            return $this->data;
+        if ($mapperName !== null) {
+            $properties = $this->reflection->getProperties($mapperName);
         }
 
         $output = array();
-        foreach ($this->data as $name => $value) {
-            if ($value instanceof \UniMapper\EntityCollection) {
-                $output[$name] = $value->toArray($collections);
+        foreach ($this->data as $propertyName => $value) {
+
+            if ($mapperName !== null) {
+
+                // Property mapping definition required
+                $mapping = $properties[$propertyName]->getMapping();
+                if ($mapping === false) {
+                    continue;
+                }
+                $propertyName = $mapping->getName($mapperName);
+            }
+
+            if (($value instanceof EntityCollection || $value instanceof Entity) && $nesting) {
+                $output[$propertyName] = $value->toArray($nesting, $mapperName);
             } else {
-                $output[$name] = $value;
+                $output[$propertyName] = $value;
             }
         }
         return $output;
@@ -174,6 +187,7 @@ abstract class Entity implements \JsonSerializable
     }
 
     /**
+
      * Convert to json representation of entity collection
      *
      * @return array
@@ -234,6 +248,53 @@ abstract class Entity implements \JsonSerializable
         $query->where($primaryProperty->getName(), "=", $this->data[$primaryProperty->getName()]);
         $query->limit(1);
         return $query->execute();
+    }
+
+    /**
+     * Map data to defined entity
+     *
+     * @param mixed    $data          Traversable data
+     * @param string   $mapperName    Import only mapper data
+     * @param callable $valueCallback Callback when converting data
+     *
+     * @return \UniMapper\Entity
+     *
+     * @throws \Exception
+     */
+    public function importData($data, $mapperName = null, callable $valueCallback = null)
+    {
+        if (!Validator::isTraversable($data)) {
+            throw new \Exception("Input data must be traversable!");
+        }
+
+        $properties = $this->getReflection()->getProperties($mapperName);
+        foreach ($data as $propertyName => $value) {
+
+            // Mapping
+            if ($mapperName !== null) {
+
+                foreach ($properties as $property) {
+
+                    $mapping = $property->getMapping();
+                    if ($mapping && $mapping->getName($mapperName) === $propertyName) {
+
+                        $propertyName = $property->getName();
+                        break;
+                    }
+                }
+            }
+
+            if (!isset($properties[$propertyName])) {
+                continue;
+            }
+
+            if ($valueCallback !== null) {
+                $value = $valueCallback($value);
+            }
+
+            $this->{$propertyName} = $properties[$propertyName]->convertValue($value, $mapperName, $valueCallback);
+        }
+        return $this;
     }
 
 }
