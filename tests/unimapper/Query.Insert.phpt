@@ -5,7 +5,6 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 // Simple entity
-$mockista = new \Mockista\Registry;
 $mapperMock = $mockista->create("TestMapper");
 $mapperMock->expects("insert")->once()->andReturn(1);
 
