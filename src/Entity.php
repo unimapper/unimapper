@@ -25,9 +25,19 @@ abstract class Entity implements \JsonSerializable
         if ($mapper) {
             $this->addMapper($mapper);
         }
+
         $this->reflection = new EntityReflection($this);
+
+        // Set default data
         if ($defaults !== null) {
-            $this->importData($defaults);
+
+            if (!Validator::isTraversable($defaults)) {
+                throw new \Exception("Default data must be traversable!");
+            }
+
+            foreach ($defaults as $propertyName => $value) {
+                $this->{$propertyName} = $value;
+            }
         }
     }
 
@@ -168,26 +178,6 @@ abstract class Entity implements \JsonSerializable
     }
 
     /**
-     * Load entity from sourceData
-     *
-     * @param \UniMapper\Entity $sourceData  Source data (entity) for load
-     * @param array           $itemsToLoad If null, properties from annotation will be loaded
-     */
-    public function loadFromSource($sourceData, $itemsToLoad = null)
-    {
-        if ($itemsToLoad === null) {
-            $itemsToLoad = array_keys($this->reflection->getProperties());
-        }
-
-        foreach ($itemsToLoad as $item) {
-            if (isset($sourceData->{$item})) {
-                $this->data[$item] = $sourceData->{$item};
-            }
-        }
-    }
-
-    /**
-
      * Convert to json representation of entity collection
      *
      * @return array
@@ -248,53 +238,6 @@ abstract class Entity implements \JsonSerializable
         $query->where($primaryProperty->getName(), "=", $this->data[$primaryProperty->getName()]);
         $query->limit(1);
         return $query->execute();
-    }
-
-    /**
-     * Map data to defined entity
-     *
-     * @param mixed    $data          Traversable data
-     * @param string   $mapperName    Import only mapper data
-     * @param callable $valueCallback Callback when converting data
-     *
-     * @return \UniMapper\Entity
-     *
-     * @throws \Exception
-     */
-    public function importData($data, $mapperName = null, callable $valueCallback = null)
-    {
-        if (!Validator::isTraversable($data)) {
-            throw new \Exception("Input data must be traversable!");
-        }
-
-        $properties = $this->getReflection()->getProperties($mapperName);
-        foreach ($data as $propertyName => $value) {
-
-            // Mapping
-            if ($mapperName !== null) {
-
-                foreach ($properties as $property) {
-
-                    $mapping = $property->getMapping();
-                    if ($mapping && $mapping->getName($mapperName) === $propertyName) {
-
-                        $propertyName = $property->getName();
-                        break;
-                    }
-                }
-            }
-
-            if (!isset($properties[$propertyName])) {
-                continue;
-            }
-
-            if ($valueCallback !== null) {
-                $value = $valueCallback($value);
-            }
-
-            $this->{$propertyName} = $properties[$propertyName]->convertValue($value, $mapperName, $valueCallback);
-        }
-        return $this;
     }
 
 }

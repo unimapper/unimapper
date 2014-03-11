@@ -3,7 +3,10 @@
 namespace UniMapper;
 
 use UniMapper\Exceptions\MapperException,
+    UniMapper\Entity,
     UniMapper\EntityCollection,
+    UniMapper\Utils\Property,
+    UniMapper\Utils\Validator,
     UniMapper\Reflection\EntityReflection;
 
 /**
@@ -84,17 +87,123 @@ abstract class Mapper implements Mapper\IMapper
         return $this->mapProperties($result);
     }
 
+    /**
+     * Convert value to defined property format
+     *
+     * @param \UniMapper\Utils\Property $property      Property reflection
+     * @param string                    $data          Input data
+     * @param callable                  $valueCallback Callback when converting data // PHP 5.4
+     *
+     * @return mixed
+     *
+     * @throws \UniMapper\Exceptions\MapperException
+     */
+    public function createValue(Property $property, $data, callable $valueCallback = null)
+    {
+        $type = $property->getType();
+
+        if (in_array($type, $property->getBasicTypes())) {
+            // Basic type
+
+            if ($data === null || $data === "") {
+                return null;
+            }
+
+            if ($type === "boolean" && $data === "false") {
+                return false;
+            }
+
+            if ($type === "boolean" && $data === "true") {
+                return true;
+            }
+
+            if (settype($data, $type)) {
+                return $data;
+            }
+
+            throw new MapperException(
+                "Can not convert value to entity @property"
+                . " $" . $this->getName() . ". Expected " . $type . " but "
+                . "conversion of " . gettype($data) . " failed!"
+            );
+
+        } elseif ($type instanceof EntityCollection) {
+
+            return $this->createCollection($type->getEntityClass(), $data, $valueCallback);
+
+        } elseif ($data instanceof \stdClass
+            && isset($data->date)
+            && isset($data->timezone_type)
+            && isset($data->timezone)
+        ) {
+
+            return new \DateTime($data->date);
+
+        } elseif (class_exists($type)) {
+
+            if ($data instanceof $type) {
+                // Expected object already given
+                return $data;
+            } elseif ($type instanceof Entity) {
+                // Entity
+                return $this->createEntity(get_class($type), $data, $valueCallback);
+            }
+        }
+
+        // Unexpected value type
+        throw new MapperException(
+            "Unexpected value type given. Can not convert value to entity "
+            . "@property $" . $property->getName() . ". Expected " . $type
+            . " but " . gettype($data) . " given!"
+        );
+    }
+
     public function createCollection($entityClass, $data, callable $valueCallback = null)
     {
+        if (!Validator::isTraversable($data)) {
+            throw new \Exception("Input data must be traversable!");
+        }
+
         $collection = new EntityCollection($entityClass);
-        $collection->importData($data, $this->name, $valueCallback);
+        foreach ($data as $value) {
+            $collection[] = $this->createEntity($entityClass, $value, $valueCallback);
+        }
         return $collection;
     }
 
     public function createEntity($entityClass, $data, callable $valueCallback = null)
     {
+        if (!Validator::isTraversable($data)) {
+            throw new MapperException("Input data must be traversable!");
+        }
+
         $entity = new $entityClass;
-        $entity->importData($data, $this->name, $valueCallback);
+
+        $properties = $entity->getReflection()->getProperties($this->name);
+        foreach ($data as $propertyName => $value) {
+
+            // Mapping
+            foreach ($properties as $property) {
+
+                $mapping = $property->getMapping();
+                if ($mapping && $mapping->getName($this->name) === $propertyName) {
+
+                    $propertyName = $property->getName();
+                    break;
+                }
+            }
+
+            if (!isset($properties[$propertyName])) {
+                continue;
+            }
+
+            if ($valueCallback !== null) {
+                $value = $valueCallback($value);
+            }
+
+            $entity->{$propertyName} = $this->createValue($properties[$propertyName], $value, $valueCallback);
+        }
+
         return $entity;
     }
 

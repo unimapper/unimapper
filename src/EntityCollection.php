@@ -2,8 +2,7 @@
 
 namespace UniMapper;
 
-use UniMapper\Utils\Validator,
-    UniMapper\Reflection\EntityReflection;
+use UniMapper\Reflection\EntityReflection;
 
 /**
  * Entity collection as ArrayList
@@ -20,12 +19,15 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     /**
      * Constructor
      *
-     * @param string $entity Pass entity class and define collection type
+     * @param string $entityClass Pass entity class and define collection type
      *
      * @return void
      */
     public function __construct($entityClass)
     {
+        if (!is_subclass_of($entityClass, "UniMapper\Entity")) {
+            throw new \Exception("Class must be instance of entity!");
+        }
         $this->entityClass = $entityClass;
     }
 
@@ -195,27 +197,9 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
         return $keys;
     }
 
-    /**
-     * Import data
-     *
-     * @param mixed    $data          Traversable data
-     * @param string   $mapperName    Import only mapper data
-     * @param callable $valueCallback Callback when converting data
-     *
-     * @throws \Exception
-     */
-    public function importData($data, $mapperName = null, callable $valueCallback = null)
+    public function getByPosition($number)
     {
-        if (!Validator::isTraversable($data)) {
-            throw new \Exception("Input data must be traversable!");
-        }
-
-        foreach ($data as $value) {
-
-            $entity = new $this->entityClass; // PHP 5.4
-            $entity->importData($value, $mapperName, $valueCallback);
-            $this->data[] = $entity;
-        }
+        return array_values($this->data)[(int) $number];
     }
 
 }

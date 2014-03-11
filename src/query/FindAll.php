@@ -94,6 +94,10 @@ class FindAll extends \UniMapper\Query implements IConditionable
             }
         }
 
+        if ($result === false) {
+            return new \UniMapper\EntityCollection($this->entityReflection->getName());
+        }
+
         return $result;
     }
 

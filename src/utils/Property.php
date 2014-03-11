@@ -2,8 +2,7 @@
 
 namespace UniMapper\Utils;
 
-use UniMapper\Entity,
-    UniMapper\EntityCollection,
+use UniMapper\EntityCollection,
     UniMapper\Exceptions\PropertyException,
     UniMapper\Exceptions\PropertyTypeException;
 
@@ -186,7 +185,7 @@ class Property
             // Entity collection definition as UniMapper\Entity\Abc[] for example
             $entityClass = rtrim($definition, "[]");
             if (class_exists($entityClass)) {
-                $collection = new EntityCollection(new $entityClass);
+                $collection = new EntityCollection($entityClass);
                 $this->type = $collection;
             } else {
                 throw new PropertyTypeException(
@@ -231,7 +230,6 @@ class Property
         }
     }
 
-
     /**
      * Validate property value type
      *
@@ -245,6 +243,7 @@ class Property
     public function validateValue($value)
     {
         if ($this->type === null) {
+
             throw new PropertyException(
                 "Property type is not set!",
                 $this->reflection,
@@ -253,6 +252,7 @@ class Property
         }
 
         if ($this->enumeration !== null) {
+
             if (!$this->enumeration->isValueFromEnum($value)) {
                 throw new PropertyTypeException(
                     "Value " . $value . " is not from defined entity enumeration"
@@ -270,19 +270,22 @@ class Property
 
             // Validate entity collection
             if ($given === "array") {
+
                 foreach ($value as $item) {
-                    $expectedEntity = $expected->getEntity();
-                    if (!($item instanceof $expectedEntity)) {
+
+                    $expectedEntityClass = $expected->getEntityClass();
+                    if (!$item instanceof $expectedEntityClass) {
                         throw new PropertyTypeException(
                             "Array collection contains object type "
                                 . get_class($item) . " but "
-                                . "expected is " . get_class($expectedEntity),
+                                . "expected is " . $expectedEntityClass,
                             $this->reflection,
                             $this->rawDefinition
                         );
                     }
                 }
             } elseif (!($value instanceof EntityCollection)) {
+
                 throw new PropertyTypeException(
                     "Expected is array or UniMapper\EntityCollection but "
                         . $given . " given!",
@@ -291,6 +294,7 @@ class Property
                 );
             }
         } elseif ($given === "object") {
+
             if (!($value instanceof $expected)) {
                 throw new PropertyTypeException(
                     "Expected entity " . $expected . " but " . get_class($value)
@@ -300,6 +304,7 @@ class Property
                 );
             }
         } elseif ($given !== "NULL" && $expected !== $given) {
+
             throw new PropertyTypeException(
                 "Expected " . $expected . " but " . $given . " given!",
                 $this->reflection,
@@ -311,80 +316,6 @@ class Property
     public function isPrimary()
     {
         return $this->primary;
-    }
-
-    /**
-     * Convert value to defined property format
-     *
-     * @param mixed    $value         Value
-     * @param string   $mapperName    Import only mapper data
-     * @param callable $valueCallback Callback when converting data // PHP 5.4
-     *
-     * @return mixed
-     *
-     * @throws \Exception
-     */
-    public function convertValue($value, $mapperName = null, callable $valueCallback = null)
-    {
-        $type = $this->getType();
-
-        if (in_array($type, $this->getBasicTypes())) {
-            // Basic type
-
-            if ($value === null) {
-                return null;
-            }
-
-            if ($type === "boolean" && $value === "false") {
-                return false;
-            }
-
-            if ($type === "boolean" && $value === "true") {
-                return true;
-            }
-
-            if (settype($value, $type)) {
-                return $value;
-            }
-
-            throw new \Exception(
-                "Can not convert value to entity @property"
-                . " $" . $this->getName() . ". Expected " . $type . " but "
-                . "conversion of " . gettype($value) . " failed!"
-            );
-
-        } elseif ($type instanceof EntityCollection) {
-
-            $type->importData($value, $mapperName, $valueCallback);
-            return $type;
-
-        } elseif ($value instanceof \stdClass
-            && isset($value->date)
-            && isset($value->timezone_type)
-            && isset($value->timezone)
-        ) {
-
-            return new \DateTime($value->date);
-
-        } elseif (class_exists($type)) {
-
-            if ($value instanceof $type) {
-                // Expected object already given
-                return $value;
-            } elseif ($type instanceof Entity) {
-                // Entity
-                $entity = new $type;
-                $entity->importData($value, $mapperName, $valueCallback);
-            }
-
-        }
-
-        // Unexpected value type
-        throw new \Exception(
-            "Unexpected value type given. Can not convert value to entity "
-            . "@property $" . $this->getName() . ". Expected " . $type
-            . " but " . gettype($value) . " given!"
-        );
     }
 
 }
