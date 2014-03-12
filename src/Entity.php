@@ -106,29 +106,20 @@ abstract class Entity implements \JsonSerializable
             );
         }
 
+        // @todo elaborate null values
+        if ($value === null) {
+            return;
+        }
+
         // Validate value
         try {
             $properties[$name]->validateValue($value);
         } catch (PropertyTypeException $exception) {
-            throw new PropertyAccessException(
-                $exception->getMessage(),
-                $properties[$name]->getEntityReflection(),
-                $properties[$name]->getRawDefinition()
-            );
+            throw new PropertyAccessException($exception->getMessage(), $properties[$name]->getEntityReflection(), $properties[$name]->getRawDefinition());
         }
 
         // Set value
-        if ($properties[$name]->getType() instanceof EntityCollection
-            && gettype($value) === "array"
-        ) {
-            $collection = $properties[$name]->getType();
-            foreach ($value as $key => $item) {
-                $collection[$key] = $item;
-            }
-            $this->data[$name] = $collection;
-        } else {
-            $this->data[$name] = $value;
-        }
+        $this->data[$name] = $value;
     }
 
     public function __isset($name)

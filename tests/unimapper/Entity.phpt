@@ -27,10 +27,19 @@ $entity->id = 1;
 Assert::equal(1, $entity->id);
 
 // toArray()
-Assert::same(array('text' => 'test', 'id' => 1), $entity->toArray());
+Assert::same(
+    array('id' => 1, 'text' => 'test', 'empty' => NULL, 'entity' => NULL, 'collection' => $entity->toArray()["collection"]),
+    $entity->toArray()
+);
+
+// getData()
+Assert::same(
+    array('text' => 'test', 'id' => 1),
+    $entity->getData()
+);
 
 // JsonSerializable
-Assert::same('{"text":"test","id":1}', json_encode($entity));
+Assert::same('{"id":1,"text":"test","empty":null,"entity":null,"collection":[]}', json_encode($entity));
 
 // Invalid property type
 Assert::exception(function() use ($entity) {

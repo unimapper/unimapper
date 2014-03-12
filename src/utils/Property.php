@@ -235,82 +235,40 @@ class Property
      *
      * @param mixed $value Given value
      *
-     * @return void
-     *
-     * @throws \UniMapper\Exceptions\PropertyTypeException
      * @throws \UniMapper\Exceptions\PropertyException
+     * @throws \UniMapper\Exceptions\PropertyTypeException
+     * @throws \Exception
      */
     public function validateValue($value)
     {
-        if ($this->type === null) {
-
-            throw new PropertyException(
-                "Property type is not set!",
-                $this->reflection,
-                $this->rawDefinition
-            );
+        if ($this->type === null) { // @todo check entity validity first => move out
+            throw new PropertyException("Property type not defined!", $this->reflection, $this->rawDefinition);
         }
 
-        if ($this->enumeration !== null) {
-
-            if (!$this->enumeration->isValueFromEnum($value)) {
-                throw new PropertyTypeException(
-                    "Value " . $value . " is not from defined entity enumeration"
-                        . " range!",
-                    $this->reflection,
-                    $this->rawDefinition
-                );
-            }
+        // Enumeration
+        if ($this->enumeration !== null && !$this->enumeration->isValueFromEnum($value)) {
+            throw new PropertyTypeException("Value " . $value . " is not from defined entity enumeration range!", $this->reflection, $this->rawDefinition);
         }
 
-        $given = gettype($value);
-        $expected = $this->type;
+        // Basic type
+        if (in_array($this->type, $this->basicTypes)) {
 
-        if ($expected instanceof EntityCollection) {
-
-            // Validate entity collection
-            if ($given === "array") {
-
-                foreach ($value as $item) {
-
-                    $expectedEntityClass = $expected->getEntityClass();
-                    if (!$item instanceof $expectedEntityClass) {
-                        throw new PropertyTypeException(
-                            "Array collection contains object type "
-                                . get_class($item) . " but "
-                                . "expected is " . $expectedEntityClass,
-                            $this->reflection,
-                            $this->rawDefinition
-                        );
-                    }
-                }
-            } elseif (!($value instanceof EntityCollection)) {
-
-                throw new PropertyTypeException(
-                    "Expected is array or UniMapper\EntityCollection but "
-                        . $given . " given!",
-                    $this->reflection,
-                    $this->rawDefinition
-                );
+            if (gettype($value) === $this->type) {
+                return;
             }
-        } elseif ($given === "object") {
-
-            if (!($value instanceof $expected)) {
-                throw new PropertyTypeException(
-                    "Expected entity " . $expected . " but " . get_class($value)
-                        . " given!",
-                    $this->reflection,
-                    $this->rawDefinition
-                );
-            }
-        } elseif ($given !== "NULL" && $expected !== $given) {
-
-            throw new PropertyTypeException(
-                "Expected " . $expected . " but " . $given . " given!",
-                $this->reflection,
-                $this->rawDefinition
-            );
+            throw new PropertyTypeException("Expected " . $this->type . " but " . gettype($value) . " given!", $this->reflection, $this->rawDefinition);
         }
+
+        // Object
+        if (is_object($this->type)) {
+
+            if ($value instanceof $this->type) {
+                return;
+            }
+            throw new PropertyTypeException("Expected " . get_class($this->type) . " but " . gettype($value) . " given!", $this->reflection, $this->rawDefinition);
+        }
+
+        throw new \Exception("Something unexpected given!");
     }
 
     public function isPrimary()
