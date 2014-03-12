@@ -3,6 +3,8 @@
 namespace UniMapper\Query;
 
 use UniMapper\EntityCollection,
+    UniMapper\Exceptions\PropertyTypeException,
+    UniMapper\Exceptions\QueryException,
     UniMapper\Reflection\EntityReflection;
 
 /**
@@ -16,6 +18,13 @@ class FindOne extends \UniMapper\Query implements \UniMapper\Query\IConditionabl
     public function __construct(EntityReflection $entityReflection, array $mappers, $primaryValue)
     {
         parent::__construct($entityReflection, $mappers);
+
+        try {
+            $entityReflection->getPrimaryProperty()->validateValue($primaryValue);
+        } catch (PropertyTypeException $exception) {
+            throw new QueryException($exception->getMessage());
+        }
+
         $this->primaryValue = $primaryValue;
     }
 
