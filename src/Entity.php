@@ -74,6 +74,11 @@ abstract class Entity implements \JsonSerializable
 
         $properties = $this->reflection->getProperties();
         if (isset($properties[$name])) {
+
+            $type = $properties[$name]->getType();
+            if ($type instanceof EntityCollection) {
+                return $type;
+            }
             return null;
         }
 
@@ -142,36 +147,32 @@ abstract class Entity implements \JsonSerializable
     }
 
     /**
-     * Get entity values as array
-     *
-     * @param boolean $nesting    Convert nested entities and collections too
-     * @param string  $mapperName Map properties automatically
+     * Get changed data only
      *
      * @return array
      */
-    public function toArray($nesting = false, $mapperName = null)
+    public function getData()
     {
-        if ($mapperName !== null) {
-            $properties = $this->reflection->getProperties($mapperName);
-        }
+        return $this->data;
+    }
 
+    /**
+     * Get entity values as array
+     *
+     * @param boolean $nesting Convert nested entities and collections too
+     *
+     * @return array
+     */
+    public function toArray($nesting = false)
+    {
         $output = array();
-        foreach ($this->data as $propertyName => $value) {
+        foreach ($this->reflection->getProperties() as $propertyName => $property) {
 
-            if ($mapperName !== null) {
-
-                // Property mapping definition required
-                $mapping = $properties[$propertyName]->getMapping();
-                if ($mapping === false) {
-                    continue;
-                }
-                $propertyName = $mapping->getName($mapperName);
-            }
-
-            if (($value instanceof EntityCollection || $value instanceof Entity) && $nesting) {
-                $output[$propertyName] = $value->toArray($nesting, $mapperName);
+            $type = $property->getType();
+            if (($type instanceof EntityCollection || $type instanceof Entity) && $nesting) {
+                $output[$propertyName] = $this->{$propertyName}->toArray($nesting);
             } else {
-                $output[$propertyName] = $value;
+                $output[$propertyName] = $this->{$propertyName};
             }
         }
         return $output;

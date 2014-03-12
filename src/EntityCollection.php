@@ -126,22 +126,15 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     }
 
     /**
-     * Convert to array
-     *
-     * @param boolean $nesting Convert nested entities and collections too
+     * Convert collection to array
      *
      * @return array
      */
-    public function toArray($nesting = false, $mapperName = null)
+    public function toArray()
     {
         $output = array();
         foreach ($this->data as $index => $entity) {
-
-            if ($nesting) {
-                $output[$index] = $entity->toArray($nesting, $mapperName);
-            } else {
-                $output[$index] = $entity;
-            }
+            $output[$index] = $entity->toArray(true);
         }
         return $output;
     }

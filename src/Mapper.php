@@ -216,7 +216,43 @@ abstract class Mapper implements Mapper\IMapper
      */
     public function entityToData(\UniMapper\Entity $entity)
     {
-        return $entity->toArray(true, $this->name);
+        $properties = $entity->reflection->getProperties($this->name);
+
+        $output = array();
+        foreach ($entity->getData() as $propertyName => $value) {
+
+            // Property mapping definition required
+            $mapping = $properties[$propertyName]->getMapping();
+            if ($mapping === false) {
+                continue;
+            }
+            $propertyName = $mapping->getName($this->name);
+
+            if ($value instanceof EntityCollection) {
+                $output[$propertyName] = $this->collectionToData($value);
+            } elseif ($value instanceof Entity) {
+                $output[$propertyName] = $this->entityToData($value);
+            } else {
+                $output[$propertyName] = $value;
+            }
+        }
+        return $output;
+    }
+
+    /*
+     * Convert entity to simple array
+     *
+     *  @param \UniMapper\EntityCollection $collection Entity collection
+     *
+     *  @return array
+     */
+    public function collectionToData(\UniMapper\EntityCollection $collection)
+    {
+        $data = array();
+        foreach ($collection as $index => $entity) {
+            $data[$index] = $this->entityToData($entity);
+        }
+        return $data;
     }
 
 }
