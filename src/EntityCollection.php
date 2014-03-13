@@ -64,7 +64,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     /**
      * Replaces or appends a item.
      *
-     * @param integer         $offset Index
+     * @param integer           $offset Index
      * @param \UniMapper\Entity $value  Value
      *
      * @return void
@@ -74,10 +74,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     public function offsetSet($offset, $value)
     {
         if (!$value instanceof $this->entityClass) {
-            throw new \Exception(
-                "Expected entity " . $this->entityClass . " but instance of "
-                . get_class($value) . " given!"
-            );
+            throw new \Exception("Expected entity " . $this->entityClass . " but " . gettype($value) . " given!");
         }
         if (is_null($offset)) {
             $this->data[] = $value;
