@@ -7,7 +7,7 @@ use UniMapper\Mapper,
     UniMapper\EntityCollection,
     UniMapper\Reflection\EntityReflection,
     UniMapper\Exceptions\PropertyTypeException,
-    UniMapper\Exceptions\PropertyAccessException;
+    UniMapper\Exceptions\PropertyUndefinedException;
 
 /**
  * Entity is ancestor for all entities and provides global methods, which
@@ -20,25 +20,43 @@ abstract class Entity implements \JsonSerializable
     protected $reflection;
     private $data = array();
 
-    public function __construct(Mapper $mapper = null, $defaults = null)
+    public function __construct()
     {
-        if ($mapper) {
-            $this->addMapper($mapper);
-        }
-
         $this->reflection = new EntityReflection($this);
+    }
 
-        // Set default data
-        if ($defaults !== null) {
+    public static function create($values = null)
+    {
+        $class = get_called_class();
+        $entity = new $class;
 
-            if (!Validator::isTraversable($defaults)) {
-                throw new \Exception("Default data must be traversable!");
+        if ($values !== null) {
+
+            if (!Validator::isTraversable($values)) {
+                throw new \Exception("Values must be traversable data!");
             }
 
-            foreach ($defaults as $propertyName => $value) {
-                $this->{$propertyName} = $value;
+            $properties = $entity->getReflection()->getProperties();
+            foreach ($values as $propertyName => $value) {
+
+                $property = $properties[$propertyName];
+
+                try {
+                    $entity->{$propertyName} = $value;
+                } catch (PropertyTypeException $exception) {
+
+                    if ($property->isBasicType()) {
+                        if (settype($value, $property->getType())) {
+                            $entity->{$propertyName} = $value;
+                            continue;
+                        }
+                    }
+                    throw new \Exception("Can not set value automatically!");
+                }
             }
         }
+
+        return $entity;
     }
 
     public function addMapper(Mapper $mapper)
@@ -82,7 +100,7 @@ abstract class Entity implements \JsonSerializable
             return null;
         }
 
-        throw new PropertyAccessException(
+        throw new PropertyUndefinedException(
             "Undefined property with name '" . $name . "'!",
             $this->reflection
         );
@@ -94,16 +112,13 @@ abstract class Entity implements \JsonSerializable
      * @param string $name  Property name
      * @param mixed  $value Property value
      *
-     * @throws \UniMapper\Exceptions\PropertyAccessException
+     * @throws \UniMapper\Exceptions\PropertyUndefinedException
      */
     public function __set($name, $value)
     {
         $properties = $this->reflection->getProperties();
         if (!isset($properties[$name])) {
-            throw new PropertyAccessException(
-                "Undefined property with name '" . $name . "'!",
-                $this->reflection
-            );
+            throw new PropertyUndefinedException("Undefined property with name '" . $name . "'!", $this->reflection);
         }
 
         // @todo elaborate null values
@@ -115,7 +130,7 @@ abstract class Entity implements \JsonSerializable
         try {
             $properties[$name]->validateValue($value);
         } catch (PropertyTypeException $exception) {
-            throw new PropertyAccessException($exception->getMessage(), $properties[$name]->getEntityReflection(), $properties[$name]->getRawDefinition());
+            throw new PropertyTypeException($exception->getMessage(), $properties[$name]->getEntityReflection(), $properties[$name]->getRawDefinition());
         }
 
         // Set value

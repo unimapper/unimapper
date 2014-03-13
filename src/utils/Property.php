@@ -271,6 +271,11 @@ class Property
         throw new \Exception("Something unexpected given!");
     }
 
+    public function isBasicType()
+    {
+        return in_array($this->getType(), $this->getBasicTypes());
+    }
+
     public function isPrimary()
     {
         return $this->primary;

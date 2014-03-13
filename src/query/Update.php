@@ -25,7 +25,7 @@ class Update extends \UniMapper\Query implements \UniMapper\Query\IConditionable
     {
         parent::__construct($entityReflection, $mappers);
         $class = $entityReflection->getName();
-        $this->entity = new $class(null, $data);
+        $this->entity = $class::create($data); // @todo better validation, maybe pass whole entity and prevent updating primary property
     }
 
     protected function onExecute()
