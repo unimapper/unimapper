@@ -40,7 +40,7 @@ class Update extends \UniMapper\Query implements \UniMapper\Query\IConditionable
             throw new QueryException("Entity does not have primary property!");
         }
 
-        // Ignore primary proparty value
+        // Ignore primary property value
         if (isset($this->entity->{$primaryProperty->getName()})) {
             unset($this->entity->{$primaryProperty->getName()});
         }
