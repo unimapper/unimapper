@@ -216,10 +216,15 @@ abstract class Mapper implements Mapper\IMapper
      */
     public function entityToData(\UniMapper\Entity $entity)
     {
-        $properties = $entity->reflection->getProperties($this->name);
+        $properties = $entity->getReflection()->getProperties($this->name);
 
         $output = array();
         foreach ($entity->getData() as $propertyName => $value) {
+
+            // Skip properties unrelated to this mapper
+            if (!isset($properties[$propertyName])) {
+                continue;
+            }
 
             // Property mapping definition required
             $mapping = $properties[$propertyName]->getMapping();
