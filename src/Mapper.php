@@ -123,7 +123,7 @@ abstract class Mapper implements Mapper\IMapper
 
             throw new MapperException(
                 "Can not convert value to entity @property"
-                . " $" . $this->getName() . ". Expected " . $type . " but "
+                . " $" . $property->getName() . ". Expected " . $type . " but "
                 . "conversion of " . gettype($data) . " failed!"
             );
 
