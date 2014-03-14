@@ -1,0 +1,22 @@
+<table>
+    <tr>
+        <th>Mapper</th>
+        <td><?php echo $query->mapper->getName() ?></td>
+    </tr>
+    <tr>
+        <th>Method</th>
+        <td><?php echo $query->method ?></td>
+    </tr>
+    <tr>
+        <th>Query</th>
+        <td><?php echo $query->query ?></td>
+    </tr>
+    <?php if ($query->data): ?>
+    <tr>
+        <th>Data</th>
+        <td><?php echo \Nette\Diagnostics\Helpers::clickableDump($query->data, true) ?></td>
+    </tr>
+    <?php endif ?>
+</table>
+
+

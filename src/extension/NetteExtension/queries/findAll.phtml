@@ -1,0 +1,24 @@
+<table>
+    <tr>
+        <th>Selection</th>
+        <td>
+            <?php if (count($query->selection) === 0): ?>
+                *
+            <?php else: ?>
+                <?php echo implode(",", $query->selection) ?>
+            <?php endif ?>
+        </td>
+    </tr>
+    <?php foreach ($query->conditions as $condition) { ?>
+        <tr>
+            <th>
+                <?php if ($condition[3] === "AND"): ?>
+                    where
+                <?php else: ?>
+                    or
+                <?php endif ?>
+            </th>
+            <td><?php echo $condition[0] ?> <?php echo $condition[1] ?> <?php echo $condition[2] ?></td>
+        </tr>
+    <?php } ?>
+</table>

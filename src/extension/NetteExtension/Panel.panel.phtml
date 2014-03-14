@@ -15,7 +15,21 @@
                     <td><?php echo round($query->elapsed, 3) ?> ms</td>
                     <td><?php echo get_class($repository) ?></td>
                     <td>
-                        <?php echo \Nette\Diagnostics\Helpers::clickableDump($query, true) ?>
+                        <?php if ($query instanceof \UniMapper\Query\Custom): ?>
+                            <a href="#" class="nette-toggler" rel="#unimapper-panel-query-<?php echo $queryIndex ?>">
+                                <strong>custom ►</strong>
+                            </a>
+                            <div id="unimapper-panel-query-<?php echo $queryIndex ?>" class="nette-collapsed">
+                                <?php include __DIR__ . '/queries/custom.phtml' ?>
+                            </div>
+                        <?php elseif ($query instanceof \UniMapper\Query\FindAll): ?>
+                            <a href="#" class="nette-toggler" rel="#unimapper-panel-query-<?php echo $queryIndex ?>">
+                                <strong>findAll ►</strong>
+                            </a>
+                            <div id="unimapper-panel-query-<?php echo $queryIndex ?>" class="nette-collapsed">
+                                <?php include __DIR__ . '/queries/findAll.phtml' ?>
+                            </div>
+                        <?php endif ?>
                     </td>
                     <td>
                         <?php if ($query->result instanceof \UniMapper\EntityCollection): ?>
