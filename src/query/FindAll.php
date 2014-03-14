@@ -58,8 +58,6 @@ class FindAll extends \UniMapper\Query implements IConditionable
 
     public function onExecute()
     {
-        $result = false;
-
         // Add properties from conditions to the selection if not set
         if (count($this->conditions) > 0 && count($this->selection) > 0) {
             foreach ($this->conditions as $condition) {
@@ -70,6 +68,24 @@ class FindAll extends \UniMapper\Query implements IConditionable
                 }
             }
         }
+
+        if ($this->entityReflection->isHybrid()) {
+            return $this->executeHybrid();
+        }
+
+        foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
+
+            $result = $this->mappers[$mapperName]->findAll($this);
+            if ($result === false) {
+                return $this->mappers[$mapperName]->createCollection($this->entityReflection->getName(), array());
+            }
+            return $result;
+        }
+    }
+
+    public function executeHybrid()
+    {
+        $result = false;
 
         foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
 
@@ -95,7 +111,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
         }
 
         if ($result === false) {
-            return new \UniMapper\EntityCollection($this->entityReflection->getName());
+            return $mapper->createCollection($this->entityReflection->getName(), array());
         }
 
         return $result;
