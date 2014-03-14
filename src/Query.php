@@ -15,7 +15,6 @@ abstract class Query
     protected $conditionOperators = array("=", "<", ">", "<>", ">=", "<=", "IS", "IS NOT", "!=", "LIKE", "COMPARE", "IN");
     public $mappers = array();
     public $elapsed;
-    public $finished = false;
     public $result = null;
 
     /** @var \UniMapper\Reflection\EntityReflection */
