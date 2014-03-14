@@ -251,7 +251,7 @@ class Property
         }
 
         // Basic type
-        if (in_array($this->type, $this->basicTypes)) {
+        if ($this->isBasicType()) {
 
             if (gettype($value) === $this->type) {
                 return;
@@ -259,21 +259,30 @@ class Property
             throw new PropertyTypeException("Expected " . $this->type . " but " . gettype($value) . " given!", $this->reflection, $this->rawDefinition);
         }
 
+        if ($this->type instanceof EntityCollection && $value instanceof EntityCollection) {
+           return;
+        }
+
         // Object
-        if (is_object($this->type)) {
+        if (class_exists($this->type)) {
 
             if ($value instanceof $this->type) {
                 return;
             }
-            throw new PropertyTypeException("Expected " . get_class($this->type) . " but " . gettype($value) . " given!", $this->reflection, $this->rawDefinition);
+
+            $givenType = gettext($value);
+            if ($givenType === "object") {
+                $givenType = get_class($value);
+            }
+            throw new PropertyTypeException("Expected " . get_class($this->type) . " but " . $givenType . " given!", $this->reflection, $this->rawDefinition);
         }
 
-        throw new \Exception("Something unexpected given!");
+        throw new \Exception("Expected " . $this->type . " but " . gettype($value) . " given! It could be an internal library error.");
     }
 
     public function isBasicType()
     {
-        return in_array($this->getType(), $this->getBasicTypes());
+        return in_array($this->type, $this->getBasicTypes());
     }
 
     public function isPrimary()
