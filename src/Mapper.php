@@ -102,7 +102,7 @@ abstract class Mapper implements Mapper\IMapper
     {
         $type = $property->getType();
 
-        if (in_array($type, $property->getBasicTypes())) {
+        if ($property->isBasicType()) {
             // Basic type
 
             if ($data === null || $data === "") {
@@ -131,14 +131,6 @@ abstract class Mapper implements Mapper\IMapper
 
             return $this->createCollection($type->getEntityClass(), $data, $valueCallback);
 
-        } elseif ($data instanceof \stdClass
-            && isset($data->date)
-            && isset($data->timezone_type)
-            && isset($data->timezone)
-        ) {
-
-            return new \DateTime($data->date);
-
         } elseif (class_exists($type)) {
 
             if ($data instanceof $type) {
@@ -147,6 +139,13 @@ abstract class Mapper implements Mapper\IMapper
             } elseif ($type instanceof Entity) {
                 // Entity
                 return $this->createEntity(get_class($type), $data, $valueCallback);
+            } elseif ($type instanceof \DateTime) {
+                // DateTime
+                try {
+                    return new \DateTime($data);
+                } catch (\Exception $e) {
+                    throw new MapperException("Can not map value to DateTime automatically! " . $e->getMessage());
+                }
             }
         }
 
