@@ -32,6 +32,16 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     }
 
     /**
+     * Get changed data only
+     *
+     * @return array
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    /**
      * Get entity class
      *
      * @return string
