@@ -27,7 +27,9 @@
                                     <?php echo $query->result->getEntityClass() ?> ►
                                 </a>
                                 <div id="unimapper-panel-result-<?php echo $queryIndex ?>" class="nette-collapsed">
-                                    <?php echo \Nette\Diagnostics\Helpers::clickableDump($query->result, true) ?>
+                                    <?php foreach ($query->result as $entity) { ?>
+                                        <?php echo \Nette\Diagnostics\Helpers::clickableDump($entity->getData(), true) ?>
+                                    <?php } ?>
                                 </div>
                             <?php endif ?>
                         <?php elseif ($query->result instanceof \UniMapper\Entity): ?>
