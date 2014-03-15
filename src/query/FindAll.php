@@ -5,8 +5,7 @@ namespace UniMapper\Query;
 use UniMapper\Exceptions\QueryException,
     UniMapper\Reflection\EntityReflection,
     UniMapper\EntityCollection,
-    UniMapper\Query\IConditionable,
-    UniMapper\Query\Object\Order;
+    UniMapper\Query\IConditionable;
 
 /**
  * ORM query object
@@ -16,7 +15,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
 
     public $limit = 0;
     public $offset = 0;
-    public $orders = array(); // @todo split orders by mappers
+    public $orderBy = array();
     public $selection = array();
 
     public function __construct(EntityReflection $entityReflection, array $mappers, array $selection = array())
@@ -43,16 +42,11 @@ class FindAll extends \UniMapper\Query implements IConditionable
             throw new QueryException("Invalid property name '" . $propertyName . "'!");
         }
 
-        $order = new Order($propertyName);
         $direction = strtolower($direction);
-        if ($direction === "asc") {
-            $order->asc = true;
-        } elseif ($direction === "desc") {
-            $order->desc = true;
-        } else {
+        if ($direction !== "asc" && $direction !== "desc") {
             throw new QueryException("Order direction must be 'asc' or 'desc'!");
         }
-        $this->orders[] = $order;
+        $this->orderBy[] = array($propertyName, $direction);
         return $this;
     }
 
