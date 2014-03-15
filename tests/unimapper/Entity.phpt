@@ -44,9 +44,9 @@ Assert::same('{"id":1,"text":"test","empty":null,"entity":null,"collection":[]}'
 // Invalid property type
 Assert::exception(function() use ($entity) {
     $entity->id = "invalidType";
-}, "UniMapper\Exceptions\PropertyAccessException", "Expected integer but string given!");
+}, "UniMapper\Exceptions\PropertyTypeException", "Expected integer but string given!");
 
 // Property not exists
 Assert::exception(function() use ($entity) {
     $entity->undefined;
-}, "UniMapper\Exceptions\PropertyAccessException", "Undefined property with name 'undefined'!");
+}, "UniMapper\Exceptions\PropertyUndefinedException", "Undefined property with name 'undefined'!");
