@@ -1,0 +1,10 @@
+<tr>
+    <th>Selection</th>
+    <td>
+        <?php if (count($query->selection) === 0): ?>
+            *
+        <?php else: ?>
+            <?php echo implode(",", $query->selection) ?>
+        <?php endif ?>
+    </td>
+</tr>
