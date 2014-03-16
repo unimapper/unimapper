@@ -17,7 +17,7 @@ class Delete extends \UniMapper\Query implements \UniMapper\Query\IConditionable
         }
 
         if ($this->entityReflection->isHybrid()) {
-            throw new \Exception("Not yet implemented");
+            $this->deleteHybrid();
         } else {
             foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
                 return $this->mappers[$mapperName]->delete($this);
