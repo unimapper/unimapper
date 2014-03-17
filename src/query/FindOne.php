@@ -2,7 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\EntityCollection,
+use UniMapper\Entity,
     UniMapper\Exceptions\PropertyTypeException,
     UniMapper\Exceptions\QueryException,
     UniMapper\Reflection\EntityReflection;
@@ -42,7 +42,7 @@ class FindOne extends \UniMapper\Query implements \UniMapper\Query\IConditionabl
                     continue;
                 }
 
-                if ($result instanceof EntityCollection && $data instanceof EntityCollection) {
+                if ($result instanceof Entity && $data instanceof Entity) {
                     // There are some results from previous queries, so merge it
                     $result->merge($data);
                 } else {
