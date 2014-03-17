@@ -35,7 +35,7 @@ abstract class Repository
         $this->mappers[$mapper->getName()] = $mapper;
     }
 
-    public function createQuery($entityClass)
+    protected function createQuery($entityClass)
     {
         if (count($this->mappers) === 0) {
             throw new RepositoryException("You must set one mapper at least!");
