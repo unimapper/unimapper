@@ -39,14 +39,16 @@ abstract class Entity implements \JsonSerializable
             $properties = $entity->getReflection()->getProperties();
             foreach ($values as $propertyName => $value) {
 
-                $property = $properties[$propertyName];
+                if (!isset($properties[$propertyName])) {
+                    throw new \Exception("Property " . $propertyName . " does not exist in entity " . $class . "!");
+                }
 
                 try {
                     $entity->{$propertyName} = $value;
                 } catch (PropertyTypeException $exception) {
 
-                    if ($property->isBasicType()) {
-                        if (settype($value, $property->getType())) {
+                    if ($properties[$propertyName]->isBasicType()) {
+                        if (settype($value, $properties[$propertyName]->getType())) {
                             $entity->{$propertyName} = $value;
                             continue;
                         }
