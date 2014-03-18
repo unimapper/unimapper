@@ -3,9 +3,9 @@
 namespace UniMapper;
 
 use UniMapper\Mapper,
-    UniMapper\Utils\Validator,
+    UniMapper\Validator,
     UniMapper\EntityCollection,
-    UniMapper\Reflection\EntityReflection,
+    UniMapper\Reflection,
     UniMapper\Exceptions\PropertyTypeException,
     UniMapper\Exceptions\PropertyUndefinedException;
 
@@ -22,7 +22,7 @@ abstract class Entity implements \JsonSerializable
 
     public function __construct()
     {
-        $this->reflection = new EntityReflection($this);
+        $this->reflection = new Reflection\Entity($this);
     }
 
     public static function create($values = null)

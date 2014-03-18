@@ -1,8 +1,8 @@
 <?php
 
-namespace UniMapper\Utils\Property;
+namespace UniMapper\Reflection\Entity\Property;
 
-use UniMapper\Reflection\EntityReflection,
+use UniMapper\Reflection,
     UniMapper\Exceptions\PropertyException;
 
 /**
@@ -14,17 +14,7 @@ class Mapping
     /** @var array $definitions Collection of mapping */
     protected $definitions = array();
 
-    /**
-     * Constructor
-     *
-     * @param string                                 $propertyName
-     * @param string                                 $definition       Mapping definition
-     * @param string                                 $rawDefinition    Raw property definition
-     * @param \UniMapper\Reflection\EntityReflection $entityReflection
-     *
-     * @throws \UniMapper\Exceptions\PropertyException
-     */
-    public function __construct($propertyName, $definition, $rawDefinition, EntityReflection $entityReflection)
+    public function __construct($propertyName, $definition, $rawDefinition, Reflection\Entity $entityReflection)
     {
         $definition = trim($definition);
         if ($definition === "") {

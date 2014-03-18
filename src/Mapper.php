@@ -5,9 +5,8 @@ namespace UniMapper;
 use UniMapper\Exceptions\MapperException,
     UniMapper\Entity,
     UniMapper\EntityCollection,
-    UniMapper\Utils\Property,
-    UniMapper\Utils\Validator,
-    UniMapper\Reflection\EntityReflection;
+    UniMapper\Validator,
+    UniMapper\Reflection;
 
 /**
  * Mapper is ancestor for every new mapper. It defines common methods or
@@ -29,7 +28,7 @@ abstract class Mapper implements Mapper\IMapper
         return $this->name;
     }
 
-    final public function getResource(EntityReflection $entityReflection)
+    final public function getResource(Reflection\Entity $entityReflection)
     {
         $mappers = $entityReflection->getMappers();
         if (!isset($mappers[$this->name])) {
@@ -56,15 +55,7 @@ abstract class Mapper implements Mapper\IMapper
         return $output;
     }
 
-    /**
-     * Get selection
-     *
-     * @param \UniMapper\Reflection\EntityReflection $entityReflection Entity reflection
-     * @param string                                 $selection        Required selection
-     *
-     * @return array
-     */
-    protected function getSelection(EntityReflection $entityReflection, array $selection = array())
+    protected function getSelection(Reflection\Entity $entityReflection, array $selection = array())
     {
         $properties = $entityReflection->getProperties($this->name);
         if (count($selection) === 0) {
@@ -90,15 +81,15 @@ abstract class Mapper implements Mapper\IMapper
     /**
      * Convert value to defined property format
      *
-     * @param \UniMapper\Utils\Property $property      Property reflection
-     * @param string                    $data          Input data
-     * @param mixed                     $valueCallback Callback when converting data
+     * @param \UniMapper\Reflection\Entity\Property $property      Property reflection
+     * @param string                                $data          Input data
+     * @param mixed                                 $valueCallback Callback when converting data
      *
      * @return mixed
      *
      * @throws \UniMapper\Exceptions\MapperException
      */
-    public function createValue(Property $property, $data, $valueCallback = null)
+    public function createValue(Reflection\Entity\Property $property, $data, $valueCallback = null)
     {
         if ($valueCallback !== null && !is_callable($valueCallback)) {
             throw new MapperException("Expected callback!");

@@ -2,7 +2,7 @@
 
 namespace UniMapper;
 
-use UniMapper\Reflection\EntityReflection;
+use UniMapper\Reflection;
 
 /**
  * Entity collection as ArrayList
@@ -181,7 +181,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     {
         $keys = array();
 
-        $reflection = new EntityReflection($this->entityClass);
+        $reflection = new Reflection\Entity($this->entityClass);
 
         $primaryProperty = $reflection->getPrimaryProperty();
         if ($primaryProperty === null) {

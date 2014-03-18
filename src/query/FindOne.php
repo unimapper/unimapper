@@ -5,7 +5,7 @@ namespace UniMapper\Query;
 use UniMapper\Entity,
     UniMapper\Exceptions\PropertyTypeException,
     UniMapper\Exceptions\QueryException,
-    UniMapper\Reflection\EntityReflection;
+    UniMapper\Reflection;
 
 /**
  * Find single item as query object
@@ -15,7 +15,7 @@ class FindOne extends \UniMapper\Query implements \UniMapper\Query\IConditionabl
 
     public $primaryValue = array();
 
-    public function __construct(EntityReflection $entityReflection, array $mappers, $primaryValue)
+    public function __construct(Reflection\Entity $entityReflection, array $mappers, $primaryValue)
     {
         parent::__construct($entityReflection, $mappers);
 

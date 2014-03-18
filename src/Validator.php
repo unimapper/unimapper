@@ -1,6 +1,6 @@
 <?php
 
-namespace UniMapper\Utils;
+namespace UniMapper;
 
 class Validator
 {

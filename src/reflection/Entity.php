@@ -2,14 +2,12 @@
 
 namespace UniMapper\Reflection;
 
-use UniMapper\Exceptions\PropertyException,
-    UniMapper\Utils\Mapper,
-    UniMapper\Utils\Property;
+use UniMapper\Exceptions\PropertyException;
 
 /**
  * Entity reflection
  */
-class EntityReflection extends \ReflectionClass
+class Entity extends \ReflectionClass
 {
 
     protected $mappers = null;
@@ -18,7 +16,7 @@ class EntityReflection extends \ReflectionClass
     /**
      * Parse properties from annotations
      *
-     * @return array Collection of \UniMapper\Utils\Property
+     * @return array Collection of \UniMapper\Reflection\Entity\Property
      *
      * @throws \UniMapper\Exceptions\PropertyException
      */
@@ -32,7 +30,7 @@ class EntityReflection extends \ReflectionClass
         );
         $properties = array();
         foreach ($annotations[0] as $annotation) {
-            $property = new Property($annotation, $this);
+            $property = new Entity\Property($annotation, $this);
             if (isset($properties[$property->getName()])) {
                 throw new PropertyException(
                     "Duplicate property name $" . $property->getName(),
@@ -57,7 +55,7 @@ class EntityReflection extends \ReflectionClass
     /**
      * Get defined class mappers from annotations
      *
-     * @return array Collection of \UniMapper\Utils\Mapper
+     * @return array Collection of \UniMapper\Reflection\Entity\Mapper
      *
      * @throws \UniMapper\Exceptions\PropertyException
      */

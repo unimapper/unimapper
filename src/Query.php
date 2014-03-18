@@ -2,7 +2,7 @@
 
 namespace UniMapper;
 
-use UniMapper\Reflection\EntityReflection,
+use UniMapper\Reflection,
     UniMapper\Exceptions\QueryException;
 
 /**
@@ -17,10 +17,10 @@ abstract class Query
     public $elapsed;
     public $result = null;
 
-    /** @var \UniMapper\Reflection\EntityReflection */
+    /** @var \UniMapper\Reflection\Entity */
     public $entityReflection;
 
-    public function __construct(EntityReflection $entityReflection, array $mappers)
+    public function __construct(Reflection\Entity $entityReflection, array $mappers)
     {
         if (count($mappers) === 0) {
             throw new QueryException("Query can not be used without mappers!");

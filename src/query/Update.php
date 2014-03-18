@@ -2,9 +2,8 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Reflection\EntityReflection,
-    UniMapper\Exceptions\QueryException,
-    UniMapper\Utils\Property;
+use UniMapper\Exceptions\QueryException,
+    UniMapper\Reflection;
 
 /**
  * Update query object
@@ -14,14 +13,7 @@ class Update extends \UniMapper\Query implements \UniMapper\Query\IConditionable
 
     public $entity;
 
-    /**
-     * Constructor
-     *
-     * @param \UniMapper\Entity $entity Input entity
-     *
-     * @return void
-     */
-    public function __construct(EntityReflection $entityReflection, array $mappers, array $data)
+    public function __construct(Reflection\Entity $entityReflection, array $mappers, array $data)
     {
         parent::__construct($entityReflection, $mappers);
         $class = $entityReflection->getName();
@@ -59,7 +51,7 @@ class Update extends \UniMapper\Query implements \UniMapper\Query\IConditionable
         }
     }
 
-    private function updateHybrid(Property $primaryProperty)
+    private function updateHybrid(Reflection\Entity\Property $primaryProperty)
     {
         // Try to get appropriate records first
         $query = new FindAll($this->entityReflection, $this->mappers, array($primaryProperty->getName()));

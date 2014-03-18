@@ -1,13 +1,13 @@
 <?php
 
-namespace UniMapper\Utils;
+namespace UniMapper\Reflection\Entity;
 
 use UniMapper\EntityCollection,
     UniMapper\Exceptions\PropertyException,
     UniMapper\Exceptions\PropertyTypeException;
 
 /**
- * Entity property definition
+ * Entity property reflection
  */
 class Property
 {
@@ -18,7 +18,7 @@ class Property
     /** @var string */
     protected $name = null;
 
-    /** @var \UniMapper\Utils\Property\Mapping $mapping Mapping object */
+    /** @var \UniMapper\Reflection\Entity\Property\Mapping $mapping Mapping object */
     protected $mapping = null;
 
     /** @var array $basicTypes */
@@ -27,7 +27,7 @@ class Property
     /** @var \ReflectionClass $reflection Entity reflection */
     protected $reflection;
 
-    /** @var \UniMapper\Utils\Property\Enumeration $enumeration */
+    /** @var \UniMapper\Reflection\Entity\Property\Enumeration $enumeration */
     protected $enumeration = null;
 
     /** @var string $definition Raw property docblok definition */

@@ -2,7 +2,7 @@
 
 namespace UniMapper;
 
-use UniMapper\Reflection\EntityReflection,
+use UniMapper\Reflection,
     UniMapper\Exceptions\QueryBuilderException;
 
 class QueryBuilder
@@ -21,7 +21,7 @@ class QueryBuilder
         "update" => "UniMapper\Query\Update"
     );
 
-    public function __construct(EntityReflection $entityReflection, array $mappers, Logger $logger = null)
+    public function __construct(Reflection\Entity $entityReflection, array $mappers, Logger $logger = null)
     {
         $this->entityReflection = $entityReflection;
         $this->mappers = $mappers;

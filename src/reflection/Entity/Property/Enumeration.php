@@ -1,6 +1,6 @@
 <?php
 
-namespace UniMapper\Utils\Property;
+namespace UniMapper\Reflection\Entity\Property;
 
 use UniMapper\Exceptions\PropertyException;
 

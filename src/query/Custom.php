@@ -2,7 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Reflection\EntityReflection,
+use UniMapper\Reflection,
     UniMapper\Exceptions\QueryException;
 
 /**
@@ -22,7 +22,7 @@ class Custom extends \UniMapper\Query
     public $mapper;
     public $data;
 
-    public function __construct(EntityReflection $entityReflection, array $mappers, $mapperName)
+    public function __construct(Reflection\Entity $entityReflection, array $mappers, $mapperName)
     {
         parent::__construct($entityReflection, $mappers);
         if (!isset($this->mappers[$mapperName])) {

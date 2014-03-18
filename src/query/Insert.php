@@ -3,7 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\Entity,
-    UniMapper\Reflection\EntityReflection,
+    UniMapper\Reflection,
     UniMapper\Exceptions\QueryException;
 
 /**
@@ -15,7 +15,7 @@ class Insert extends \UniMapper\Query
     public $entity;
     public $returnPrimaryValue = true;
 
-    public function __construct(EntityReflection $entityReflection, array $mappers, Entity $entity)
+    public function __construct(Reflection\Entity $entityReflection, array $mappers, Entity $entity)
     {
         parent::__construct($entityReflection, $mappers);
 

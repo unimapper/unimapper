@@ -3,7 +3,7 @@
 namespace UniMapper;
 
 use UniMapper\Exceptions\RepositoryException,
-    UniMapper\Reflection\EntityReflection;
+    UniMapper\Reflection;
 
 /**
  * Repository is ancestor for every new repository. It contains common
@@ -40,7 +40,7 @@ abstract class Repository
         if (count($this->mappers) === 0) {
             throw new RepositoryException("You must set one mapper at least!");
         }
-        return new QueryBuilder(new EntityReflection($entityClass), $this->mappers, $this->logger);
+        return new QueryBuilder(new Reflection\Entity($entityClass), $this->mappers, $this->logger);
     }
 
     public function getLogger()
