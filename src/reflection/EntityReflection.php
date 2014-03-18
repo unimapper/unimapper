@@ -103,7 +103,8 @@ class EntityReflection extends \ReflectionClass
 
     public function hasProperty($name)
     {
-        return isset($this->getProperties()[$name]); // PHP 5.4
+        $properties = $this->getProperties();
+        return isset($properties[$name]);
     }
 
     public function getProperty($name)

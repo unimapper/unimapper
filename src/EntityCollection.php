@@ -199,7 +199,8 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
 
     public function getByPosition($number)
     {
-        return array_values($this->data)[(int) $number];
+        $values = array_values($this->data);
+        return $values[(int) $number];
     }
 
 }

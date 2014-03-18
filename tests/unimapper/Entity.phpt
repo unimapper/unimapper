@@ -27,9 +27,10 @@ $entity->id = 1;
 Assert::equal(1, $entity->id);
 
 // toArray()
+$entityArray = $entity->toArray();
 Assert::same(
-    array('id' => 1, 'text' => 'test', 'empty' => NULL, 'entity' => NULL, 'collection' => $entity->toArray()["collection"]),
-    $entity->toArray()
+    array('id' => 1, 'text' => 'test', 'empty' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"]),
+    $entityArray
 );
 
 // getData()

@@ -92,14 +92,17 @@ abstract class Mapper implements Mapper\IMapper
      *
      * @param \UniMapper\Utils\Property $property      Property reflection
      * @param string                    $data          Input data
-     * @param callable                  $valueCallback Callback when converting data // PHP 5.4
+     * @param mixed                     $valueCallback Callback when converting data
      *
      * @return mixed
      *
      * @throws \UniMapper\Exceptions\MapperException
      */
-    public function createValue(Property $property, $data, callable $valueCallback = null)
+    public function createValue(Property $property, $data, $valueCallback = null)
     {
+        if ($valueCallback !== null && !is_callable($valueCallback)) {
+            throw new MapperException("Expected callback!");
+        }
         $type = $property->getType();
 
         if ($property->isBasicType()) {
@@ -157,8 +160,12 @@ abstract class Mapper implements Mapper\IMapper
         );
     }
 
-    public function createCollection($entityClass, $data, callable $valueCallback = null)
+    public function createCollection($entityClass, $data, $valueCallback = null)
     {
+        if ($valueCallback !== null && !is_callable($valueCallback)) {
+            throw new MapperException("Expected callback!");
+        }
+        
         if (!Validator::isTraversable($data)) {
             throw new \Exception("Input data must be traversable!");
         }
@@ -170,8 +177,12 @@ abstract class Mapper implements Mapper\IMapper
         return $collection;
     }
 
-    public function createEntity($entityClass, $data, callable $valueCallback = null)
+    public function createEntity($entityClass, $data, $valueCallback = null)
     {
+        if ($valueCallback !== null && !is_callable($valueCallback)) {
+            throw new MapperException("Expected callback!");
+        }
+        
         if (!Validator::isTraversable($data)) {
             throw new MapperException("Input data must be traversable!");
         }
