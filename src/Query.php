@@ -27,10 +27,15 @@ abstract class Query
         }
         $this->mappers = $mappers;
 
-        $this->entityReflection = $entityReflection;
-        if (count($this->entityReflection->getMappers()) === 0) {
-            throw new QueryException("Missing mapper definition in entity " . $this->entityReflection->getName() . "!");
+        if (count($entityReflection->getMappers()) === 0) {
+            throw new QueryException("Missing mapper definition in entity " . $entityReflection->getName() . "!");
         }
+        $this->entityReflection = $entityReflection;
+    }
+
+    public static function getName()
+    {
+        return lcfirst(\ReflectionClass::getShortName(get_called_class()));
     }
 
     protected function addCondition($propertyName, $operator, $value, $joiner = 'AND')

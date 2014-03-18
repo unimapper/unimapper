@@ -3,13 +3,7 @@
 namespace UniMapper;
 
 use UniMapper\Reflection\EntityReflection,
-    UniMapper\Entity,
-    UniMapper\Query\Insert,
-    UniMapper\Query\FindOne,
-    UniMapper\Query\Count,
-    UniMapper\Query\Update,
-    UniMapper\Query\Custom,
-    UniMapper\Query\FindAll;
+    UniMapper\Exceptions\QueryBuilderException;
 
 class QueryBuilder
 {
@@ -17,6 +11,15 @@ class QueryBuilder
     protected $entityReflection;
     protected $mappers;
     protected $logger;
+    protected $queries = array(
+        "count" => "UniMapper\Query\Count",
+        "custom" => "UniMapper\Query\Custom",
+        "delete" => "UniMapper\Query\Delete",
+        "findAll" => "UniMapper\Query\FindAll",
+        "findOne" => "UniMapper\Query\FindOne",
+        "insert" => "UniMapper\Query\Insert",
+        "update" => "UniMapper\Query\Update"
+    );
 
     public function __construct(EntityReflection $entityReflection, array $mappers, Logger $logger = null)
     {
@@ -25,79 +28,27 @@ class QueryBuilder
         $this->logger = $logger;
     }
 
-    protected function logQuery(Query $query)
+    public function __call($name, $arguments)
     {
-        if ($this->logger) {
-            $this->logger->logQuery($query);
+        if (!isset($this->queries[$name])) {
+            throw new QueryBuilderException("Query with name " . $name . " not registered!");
         }
-    }
 
-    /**
-     * Count
-     *
-     * @return \UniMapper\Query\Countl
-     */
-    public function count()
-    {
-        $query = new Count($this->entityReflection, $this->mappers);
-        $this->logQuery($query);
+        array_unshift($arguments, $this->entityReflection, $this->mappers);
+
+        $class = new \ReflectionClass($this->queries[$name]);
+        $query = $class->newInstanceArgs($arguments);
+        $this->logger->logQuery($query);
         return $query;
     }
 
-    /**
-     * Find all records
-     *
-     * @return \UniMapper\Query\FindAll
-     */
-    public function findAll()
+    public function registerQuery($class)
     {
-        $query = new FindAll($this->entityReflection, $this->mappers, func_get_args());
-        $this->logQuery($query);
-        return $query;
-    }
-
-    /**
-     * Find single record
-     *
-     * @param mixed $primaryValue Primary property value
-     *
-     * @return \UniMapper\Query\FindOne
-     */
-    public function findOne($primaryValue)
-    {
-        $query = new FindOne($this->entityReflection, $this->mappers, $primaryValue);
-        $this->logQuery($query);
-        return $query;
-    }
-
-    /**
-     * Custom query
-     *
-     * @param string $mapperName
-     *
-     * @return \UniMapper\Query\Custom
-     *
-     * @throws \Exception
-     */
-    public function custom($mapperName)
-    {
-        $query = new Custom($this->entityReflection, $this->mappers, $mapperName);
-        $this->logQuery($query);
-        return $query;
-    }
-
-    public function insert(Entity $entity)
-    {
-        $query = new Insert($this->entityReflection, $this->mappers, $entity);
-        $this->logQuery($query);
-        return $query;
-    }
-
-    public function update(array $data)
-    {
-        $query = new Update($this->entityReflection, $this->mappers, $data);
-        $this->logQuery($query);
-        return $query;
+        $name = $class::getName();
+        if (isset($this->queries[$name]) || in_array($class, $this->queries)) {
+            throw new QueryBuilderException("Query with name " . $name . " and class " . $class . " already registered!");
+        }
+        $this->queries[$name] = $class;
     }
 
 }
