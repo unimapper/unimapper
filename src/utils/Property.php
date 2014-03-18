@@ -270,14 +270,23 @@ class Property
                 return;
             }
 
-            $givenType = gettext($value);
+            $givenType = gettype($value);
             if ($givenType === "object") {
                 $givenType = get_class($value);
             }
             throw new PropertyTypeException("Expected " . get_class($this->type) . " but " . $givenType . " given!", $this->reflection, $this->rawDefinition);
         }
 
-        throw new \Exception("Expected " . $this->type . " but " . gettype($value) . " given! It could be an internal library error.");
+        // Convert to string
+        $expectedType = $this->type;
+        if (is_object($expectedType)) {
+            $expectedType = get_class($expectedType);
+        }
+        $givenType = gettype($value);
+        if ($givenType === "object") {
+            $givenType = get_class($value);
+        }
+        throw new \Exception("Expected " . $expectedType . " but " . $givenType . " given! It could be an internal library error.");
     }
 
     public function isBasicType()
