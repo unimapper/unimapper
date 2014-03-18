@@ -3,7 +3,7 @@
 namespace UniMapper\Exceptions;
 
 /**
- * Throws when something wrong at query object
+ * Throws when something wrong at query builder object
  */
 class QueryBuilderException extends \Exception
 {
