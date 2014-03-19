@@ -35,16 +35,12 @@ class Insert extends \UniMapper\Query
 
         foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
 
-            $mapper = $this->mappers[$mapperName];
-            $result = $mapper->insert($this);
+            $result = $this->mappers[$mapperName]->insert($this);
 
             $primaryProperty = $this->entityReflection->getPrimaryProperty();
             if ($primaryProperty !== null) {
                 $this->entity->{$primaryProperty->getName()} = $result;
             }
-
-            // Make entity active
-            $this->entity->addMapper($mapper);
 
             return $this->entity;
         }
@@ -69,9 +65,6 @@ class Insert extends \UniMapper\Query
                 // Set primary value automatically for all next mappers
                 $this->entity->{$primaryProperty->getName()} = $primaryValue = $insertedPrimaryValue;
             }
-
-            // Make entity active
-            $this->entity->addMapper($this->mappers[$mapperName]);
         }
 
         return $this->entity;

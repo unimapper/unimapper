@@ -19,4 +19,3 @@ $resultEntity = $query->execute();
 
 Assert::type("Entity", $resultEntity);
 Assert::same(1, $resultEntity->id);
-Assert::same(true, $resultEntity->isActive());

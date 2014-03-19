@@ -2,10 +2,8 @@
 
 namespace UniMapper;
 
-use UniMapper\Mapper,
-    UniMapper\Validator,
+use UniMapper\Validator,
     UniMapper\EntityCollection,
-    UniMapper\Reflection,
     UniMapper\Exceptions\PropertyTypeException,
     UniMapper\Exceptions\PropertyUndefinedException;
 
@@ -59,24 +57,6 @@ abstract class Entity implements \JsonSerializable
         }
 
         return $entity;
-    }
-
-    public function addMapper(Mapper $mapper)
-    {
-        $this->mappers[$mapper->getName()] = $mapper;
-    }
-
-    public function isActive()
-    {
-        return count($this->mappers) > 0;
-    }
-
-    public function getMappers()
-    {
-        if (!$this->isActive()) {
-            throw new \Exception("Entity is not active!");
-        }
-        return $this->mappers;
     }
 
     /**
@@ -216,37 +196,6 @@ abstract class Entity implements \JsonSerializable
             }
         }
         return $this;
-    }
-
-    /**
-     * Save entity
-     *
-     * @return void
-     */
-    public function save()
-    {
-        if (!$this->isActive()) {
-            throw new \Exception("Entity must have attached mappers!");
-        }
-
-        return new Query\Insert($this, $this->mappers);
-    }
-
-    public function delete()
-    {
-        if (!$this->isActive()) {
-            throw new \Exception("Entity must have attached mappers!");
-        }
-
-        $primaryProperty = $this->reflection->getPrimaryProperty();
-        if (!$primaryProperty) {
-            throw new \Exception("No primary property defined!");
-        }
-
-        $query = new Query\Delete($this, $this->mappers);
-        $query->where($primaryProperty->getName(), "=", $this->data[$primaryProperty->getName()]);
-        $query->limit(1);
-        return $query->execute();
     }
 
 }
