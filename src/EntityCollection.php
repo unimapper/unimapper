@@ -2,8 +2,6 @@
 
 namespace UniMapper;
 
-use UniMapper\Reflection;
-
 /**
  * Entity collection as ArrayList
  */
@@ -175,26 +173,6 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
             }
         }
         return $this;
-    }
-
-    public function getKeys()
-    {
-        $keys = array();
-
-        $reflection = new Reflection\Entity($this->entityClass);
-
-        $primaryProperty = $reflection->getPrimaryProperty();
-        if ($primaryProperty === null) {
-            throw new \Exception("primary property not set in entity " . $this->entityClass . "!");
-        }
-
-        foreach ($this->data as $entity) {
-
-            if (isset($entity->{$primaryProperty->getName()})) {
-                $keys[] = $entity->{$primaryProperty->getName()};
-            }
-        }
-        return $keys;
     }
 
     public function getByPosition($number)

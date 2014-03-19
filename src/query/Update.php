@@ -63,7 +63,9 @@ class Update extends \UniMapper\Query implements \UniMapper\Query\IConditionable
         }
 
         $status = false;
-        $this->conditions = array(array($primaryProperty->getName(), "IN", $entities->getKeys(), "AND"));
+        $this->conditions = array(
+            array($primaryProperty->getName(), "IN", $this->getPrimaryValuesFromCollection($entities), "AND")
+        );
         foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
             if ($this->mappers[$mapperName]->update($this)) {
                 $status = true;

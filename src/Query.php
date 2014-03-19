@@ -3,6 +3,7 @@
 namespace UniMapper;
 
 use UniMapper\Reflection,
+    UniMapper\EntityCollection,
     UniMapper\Exceptions\QueryException;
 
 /**
@@ -93,4 +94,21 @@ abstract class Query
         return false;
     }
 
+    protected function getPrimaryValuesFromCollection(EntityCollection $collection)
+    {
+        $keys = array();
+
+        $primaryProperty = $this->entityReflection->getPrimaryProperty();
+        if ($primaryProperty === null) {
+            throw new \Exception("Primary property not set in entity " . $this->entityReflection->getName() . "!"); // @todo remove when primary property is required
+        }
+
+        foreach ($collection as $entity) {
+
+            if (isset($entity->{$primaryProperty->getName()})) {
+                $keys[] = $entity->{$primaryProperty->getName()};
+            }
+        }
+        return $keys;
+    }
 }

@@ -86,7 +86,12 @@ class FindAll extends \UniMapper\Query implements IConditionable
             $mapper = $this->mappers[$mapperName];
 
             if ($result instanceof EntityCollection && $this->entityReflection->getPrimaryProperty()) {
-                $this->conditions["hybrid"] = array($this->entityReflection->getPrimaryProperty()->getName(), "IN", $result->getKeys(), "AND");
+                $this->conditions["hybrid"] = array(
+                    $this->entityReflection->getPrimaryProperty()->getName(),
+                    "IN",
+                    $this->getPrimaryValuesFromCollection($result),
+                    "AND"
+                );
             }
             $data = $mapper->findAll($this);
             if ($data === false) {
