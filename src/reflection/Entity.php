@@ -55,7 +55,7 @@ class Entity extends \ReflectionClass
         if (stripos($classDoc, "{@inheritDoc}") !== false) {
             $properties = array_merge(
                 $properties,
-                $this->getEntityProperties($this->getParentClass()->name)
+                $this->getEntityProperties($this->getParentClass()->name) // @todo undefined method, needs some refactoring
             );
         }
 
