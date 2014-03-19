@@ -3,6 +3,7 @@
 namespace UniMapper;
 
 use UniMapper\Exceptions\MapperException,
+    UniMapper\Cache\ICache,
     UniMapper\Entity,
     UniMapper\EntityCollection,
     UniMapper\Validator,
@@ -18,9 +19,17 @@ abstract class Mapper implements Mapper\IMapper
 
     protected $name;
 
+    /** @var \UniMapper\Cache\ICache */
+    protected $cache;
+
     public function __construct($name)
     {
         $this->name = (string) $name;
+    }
+
+    public function setCache(ICache $cache)
+    {
+        $this->cache = $cache;
     }
 
     public function getName()
@@ -156,7 +165,7 @@ abstract class Mapper implements Mapper\IMapper
         if ($valueCallback !== null && !is_callable($valueCallback)) {
             throw new MapperException("Expected callback!");
         }
-        
+
         if (!Validator::isTraversable($data)) {
             throw new \Exception("Input data must be traversable!");
         }
@@ -173,12 +182,12 @@ abstract class Mapper implements Mapper\IMapper
         if ($valueCallback !== null && !is_callable($valueCallback)) {
             throw new MapperException("Expected callback!");
         }
-        
+
         if (!Validator::isTraversable($data)) {
             throw new MapperException("Input data must be traversable!");
         }
 
-        $entity = new $entityClass;
+        $entity = new $entityClass($this->cache);
 
         $properties = $entity->getReflection()->getProperties($this->name);
         foreach ($data as $propertyName => $value) {
