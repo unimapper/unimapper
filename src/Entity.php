@@ -4,6 +4,7 @@ namespace UniMapper;
 
 use UniMapper\Validator,
     UniMapper\EntityCollection,
+    UniMapper\Cache\ICache,
     UniMapper\Exceptions\PropertyTypeException,
     UniMapper\Exceptions\PropertyUndefinedException;
 
@@ -18,15 +19,21 @@ abstract class Entity implements \JsonSerializable
     protected $reflection;
     private $data = array();
 
-    public function __construct()
+    public function __construct(ICache $cache = null)
     {
-        $this->reflection = new Reflection\Entity($this);
+        $this->reflection = new Reflection\Entity($this, $cache);
     }
 
+    /**
+     * Create new entity instance.
+     *
+     * @todo slower than constructor way because of cache absence
+     */
     public static function create($values = null)
     {
-        $class = get_called_class();
-        $entity = new $class;
+        $reflection = new Reflection\Entity(get_called_class());
+
+        $entity = $reflection->newInstance();
 
         if ($values !== null) {
 
@@ -34,7 +41,7 @@ abstract class Entity implements \JsonSerializable
                 throw new \Exception("Values must be traversable data!");
             }
 
-            $properties = $entity->getReflection()->getProperties();
+            $properties = $reflection->getProperties();
             foreach ($values as $propertyName => $value) {
 
                 if (!isset($properties[$propertyName])) {
