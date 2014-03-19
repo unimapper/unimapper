@@ -3,6 +3,7 @@
 namespace UniMapper\Reflection\Entity;
 
 use UniMapper\EntityCollection,
+    UniMapper\Reflection,
     UniMapper\Exceptions\PropertyException,
     UniMapper\Exceptions\PropertyTypeException;
 
@@ -24,8 +25,8 @@ class Property
     /** @var array $basicTypes */
     protected $basicTypes = array("boolean", "integer", "double", "string", "array");
 
-    /** @var \ReflectionClass $reflection Entity reflection */
-    protected $reflection;
+    /** @var \UniMapper\Reflection\Entity */
+    protected $entityReflection;
 
     /** @var \UniMapper\Reflection\Entity\Property\Enumeration $enumeration */
     protected $enumeration = null;
@@ -36,16 +37,10 @@ class Property
     /** @var boolean $primary Is property defined as primary? */
     protected $primary = false;
 
-    /**
-     * Constructor
-     *
-     * @param string           $definition Property definition
-     * @param \ReflectionClass $reflection Entity reflection class
-     */
-    public function __construct($definition, \ReflectionClass $reflection)
+    public function __construct($definition, Reflection\Entity $entityReflection)
     {
         $this->rawDefinition = $definition;
-        $this->reflection = $reflection;
+        $this->entityReflection = $entityReflection;
         $arguments = preg_split('/\s+/', ltrim($definition, "@property "), null, PREG_SPLIT_NO_EMPTY);
         foreach ($arguments as $key => $argument) {
             if ($key === 0) {
@@ -80,7 +75,7 @@ class Property
         if ($this->name === null) {
             throw new PropertyException(
                 "Property name is not set!",
-                $this->reflection,
+                $this->entityReflection,
                 $this->rawDefinition
             );
         }
@@ -104,7 +99,7 @@ class Property
      */
     public function getEntityReflection()
     {
-        return $this->reflection;
+        return $this->entityReflection;
     }
 
     /**
@@ -122,7 +117,7 @@ class Property
         if ($length === 1 || substr($definition, 0, 1) !== "$") {
             throw new PropertyException(
                 "Invalid property name definition!",
-                $this->reflection,
+                $this->entityReflection,
                 $this->rawDefinition
             );
         }
@@ -158,7 +153,7 @@ class Property
         if ($this->type === null) {
             throw new PropertyTypeException(
                 "Property type is not set!",
-                $this->reflection,
+                $this->entityReflection,
                 $this->rawDefinition
             );
         }
@@ -190,14 +185,14 @@ class Property
             } else {
                 throw new PropertyTypeException(
                     "Class " . $entityClass . " not found!",
-                    $this->reflection,
+                    $this->entityReflection,
                     $this->rawDefinition
                 );
             }
         } else {
             throw new PropertyTypeException(
                 "Unsupported type '" . $definition . "'!",
-                $this->reflection,
+                $this->entityReflection,
                 $this->rawDefinition
             );
         }
@@ -217,13 +212,13 @@ class Property
                 $this->name,
                 $matches[1],
                 $definition,
-                $this->reflection
+                $this->entityReflection
             );
         } elseif (preg_match("#m:enum\(([a-zA-Z0-9]+|self|parent)::([a-zA-Z0-9_]+)\*\)#", $definition, $matches)) {
             $this->enumeration = new Property\Enumeration(
                 $matches,
                 $definition,
-                $this->reflection
+                $this->entityReflection
             );
         } elseif (preg_match("#m:primary#s", $definition, $matches)) {
             $this->primary = true;
@@ -242,12 +237,12 @@ class Property
     public function validateValue($value)
     {
         if ($this->type === null) { // @todo check entity validity first => move out
-            throw new PropertyException("Property type not defined!", $this->reflection, $this->rawDefinition);
+            throw new PropertyException("Property type not defined!", $this->entityReflection, $this->rawDefinition);
         }
 
         // Enumeration
         if ($this->enumeration !== null && !$this->enumeration->isValueFromEnum($value)) {
-            throw new PropertyTypeException("Value " . $value . " is not from defined entity enumeration range!", $this->reflection, $this->rawDefinition);
+            throw new PropertyTypeException("Value " . $value . " is not from defined entity enumeration range!", $this->entityReflection, $this->rawDefinition);
         }
 
         // Basic type
@@ -256,7 +251,7 @@ class Property
             if (gettype($value) === $this->type) {
                 return;
             }
-            throw new PropertyTypeException("Expected " . $this->type . " but " . gettype($value) . " given!", $this->reflection, $this->rawDefinition);
+            throw new PropertyTypeException("Expected " . $this->type . " but " . gettype($value) . " given!", $this->entityReflection, $this->rawDefinition);
         }
 
         if ($this->type instanceof EntityCollection && $value instanceof EntityCollection) {
@@ -274,7 +269,7 @@ class Property
             if ($givenType === "object") {
                 $givenType = get_class($value);
             }
-            throw new PropertyTypeException("Expected " . get_class($this->type) . " but " . $givenType . " given!", $this->reflection, $this->rawDefinition);
+            throw new PropertyTypeException("Expected " . get_class($this->type) . " but " . $givenType . " given!", $this->entityReflection, $this->rawDefinition);
         }
 
         // Convert to string
