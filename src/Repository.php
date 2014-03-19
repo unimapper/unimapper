@@ -3,6 +3,7 @@
 namespace UniMapper;
 
 use UniMapper\Exceptions\RepositoryException,
+    UniMapper\Cache\ICache,
     UniMapper\Reflection;
 
 /**
@@ -16,13 +17,13 @@ abstract class Repository
     /** @var array $mappers Registered mappers */
     protected $mappers = array();
 
-    protected $logger = null;
+    protected $logger;
 
-    public function __construct(\UniMapper\Logger $logger = null)
+    protected $cache;
+
+    public function setCache(ICache $cache)
     {
-        if ($logger) {
-            $this->setLogger($logger);
-        }
+        $this->cache = $cache;
     }
 
     public function setLogger(\UniMapper\Logger $logger)
@@ -40,7 +41,7 @@ abstract class Repository
         if (count($this->mappers) === 0) {
             throw new RepositoryException("You must set one mapper at least!");
         }
-        return new QueryBuilder(new Reflection\Entity($entityClass), $this->mappers, $this->logger);
+        return new QueryBuilder(new Reflection\Entity($entityClass, $this->cache), $this->mappers, $this->logger);
     }
 
     public function getLogger()

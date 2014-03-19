@@ -2,7 +2,8 @@
 
 namespace UniMapper\Reflection;
 
-use UniMapper\Exceptions\PropertyException;
+use UniMapper\Cache\ICache,
+    UniMapper\Exceptions\PropertyException;
 
 /**
  * Entity reflection
@@ -12,6 +13,15 @@ class Entity extends \ReflectionClass
 
     protected $mappers = null;
     protected $properties = null;
+
+    /** @var \UniMapper\Cache\ICache */
+    protected $cache;
+
+    public function __construct($class, ICache $cache = null)
+    {
+        parent::__construct($class);
+        $this->cache = $cache;
+    }
 
     /**
      * Parse properties from annotations
@@ -92,10 +102,22 @@ class Entity extends \ReflectionClass
 
     public function getMappers()
     {
-        // Parse if needed
+        // Lazy load
         if ($this->mappers === null) {
-            return $this->mappers = $this->parseMappers();
+
+            if ($this->cache) {
+
+                $key = "mappers-" . $this->getName();
+                $this->mappers = $this->cache->load($key);
+                if (!$this->mappers) {
+                    $this->mappers = $this->parseMappers();
+                    $this->cache->save($key, $this->mappers, $this->getFileName());
+                }
+            } else {
+                $this->mappers = $this->parseMappers();
+            }
         }
+
         return $this->mappers;
     }
 
@@ -115,9 +137,20 @@ class Entity extends \ReflectionClass
 
     public function getProperties($mapperName = null)
     {
-        // Parse if needed
+        // Lazy load
         if ($this->properties === null) {
-            $this->properties = $this->parseProperties();
+
+            if ($this->cache) {
+
+                $key = "properties-" . $this->getName();
+                $this->properties = $this->cache->load($key);
+                if (!$this->properties) {
+                    $this->properties = $this->parseProperties();
+                    $this->cache->save($key, $this->properties, $this->getFileName());
+                }
+            } else {
+                $this->properties = $this->parseProperties();
+            }
         }
 
         // Get all if mapping not defined
