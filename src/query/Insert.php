@@ -21,7 +21,7 @@ class Insert extends \UniMapper\Query
 
         $requiredClass = $this->entityReflection->getName();
         if (!$entity instanceof $requiredClass) {
-            throw new QueryException("Inserted entity must be instance of " . $requiredClass . " but " . $entity->getReflection()->getName() . "given!");
+            throw new QueryException("Inserted entity must be instance of " . $requiredClass . " but " . get_class($entity) . "given!");
         }
 
         $this->entity = $entity;
