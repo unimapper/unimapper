@@ -17,9 +17,9 @@ abstract class Repository
     /** @var array $mappers Registered mappers */
     protected $mappers = array();
 
-    protected $logger;
+    private $logger;
 
-    protected $cache;
+    private $cache;
 
     public function setCache(ICache $cache)
     {
