@@ -15,8 +15,7 @@ use UniMapper\Validator,
 abstract class Entity implements \JsonSerializable
 {
 
-    protected $mappers = array();
-    protected $reflection;
+    private $reflection;
     private $data = array();
 
     public function __construct(ICache $cache = null)
