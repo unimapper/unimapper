@@ -92,17 +92,15 @@ abstract class Mapper implements Mapper\IMapper
      *
      * @param \UniMapper\Reflection\Entity\Property $property      Property reflection
      * @param string                                $data          Input data
-     * @param mixed                                 $valueCallback Callback when converting data
      *
      * @return mixed
      *
      * @throws \UniMapper\Exceptions\MapperException
      */
-    public function createValue(Reflection\Entity\Property $property, $data, $valueCallback = null)
+    public function createValue(Reflection\Entity\Property $property, $data)
     {
-        if ($valueCallback !== null && !is_callable($valueCallback)) {
-            throw new MapperException("Expected callback!");
-        }
+        $data = $this->beforeCreateValue($data);
+
         $type = $property->getType();
 
         if ($property->isBasicType()) {
@@ -132,7 +130,7 @@ abstract class Mapper implements Mapper\IMapper
 
         } elseif ($type instanceof EntityCollection) {
 
-            return $this->createCollection($type->getEntityClass(), $data, $valueCallback);
+            return $this->createCollection($type->getEntityClass(), $data);
 
         } elseif (class_exists($type)) {
 
@@ -141,7 +139,7 @@ abstract class Mapper implements Mapper\IMapper
                 return $data;
             } elseif ($type instanceof Entity) {
                 // Entity
-                return $this->createEntity(get_class($type), $data, $valueCallback);
+                return $this->createEntity(get_class($type), $data);
             } elseif ($type instanceof \DateTime) {
                 // DateTime
                 try {
@@ -160,29 +158,21 @@ abstract class Mapper implements Mapper\IMapper
         );
     }
 
-    public function createCollection($entityClass, $data, $valueCallback = null)
+    public function createCollection($entityClass, $data)
     {
-        if ($valueCallback !== null && !is_callable($valueCallback)) {
-            throw new MapperException("Expected callback!");
-        }
-
         if (!Validator::isTraversable($data)) {
             throw new \Exception("Input data must be traversable!");
         }
 
         $collection = new EntityCollection($entityClass);
         foreach ($data as $value) {
-            $collection[] = $this->createEntity($entityClass, $value, $valueCallback);
+            $collection[] = $this->createEntity($entityClass, $value);
         }
         return $collection;
     }
 
-    public function createEntity($entityClass, $data, $valueCallback = null)
+    public function createEntity($entityClass, $data)
     {
-        if ($valueCallback !== null && !is_callable($valueCallback)) {
-            throw new MapperException("Expected callback!");
-        }
-
         if (!Validator::isTraversable($data)) {
             throw new MapperException("Input data must be traversable!");
         }
@@ -207,11 +197,7 @@ abstract class Mapper implements Mapper\IMapper
                 continue;
             }
 
-            if ($valueCallback !== null) {
-                $value = $valueCallback($value);
-            }
-
-            $entity->{$propertyName} = $this->createValue($properties[$propertyName], $value, $valueCallback);
+            $entity->{$propertyName} = $this->createValue($properties[$propertyName], $value);
         }
 
         return $entity;
@@ -268,6 +254,11 @@ abstract class Mapper implements Mapper\IMapper
             $data[$index] = $this->entityToData($entity);
         }
         return $data;
+    }
+
+    protected function beforeCreateValue($value)
+    {
+        return $value;
     }
 
 }
