@@ -18,10 +18,10 @@ class FindAll extends \UniMapper\Query implements IConditionable
     public $orderBy = array();
     public $selection = array();
 
-    public function __construct(Reflection\Entity $entityReflection, array $mappers, array $selection = array())
+    public function __construct(Reflection\Entity $entityReflection, array $mappers)
     {
         parent::__construct($entityReflection, $mappers);
-        $this->selection = $selection;
+        $this->selection = array_slice(func_get_args(), 2);
     }
 
     public function limit($limit)
