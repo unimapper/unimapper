@@ -38,7 +38,11 @@ class QueryBuilder
 
         $class = new \ReflectionClass($this->queries[$name]);
         $query = $class->newInstanceArgs($arguments);
-        $this->logger->logQuery($query);
+
+        if ($this->logger) {
+            $this->logger->logQuery($query);
+        }
+
         return $query;
     }
 
