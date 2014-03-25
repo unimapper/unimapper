@@ -93,12 +93,15 @@ class FindAll extends \UniMapper\Query implements IConditionable
                     "AND"
                 );
             }
+
             $data = $mapper->findAll($this);
-            if ($data === false) {
-                continue;
-            }
+
             if (isset($this->conditions["hybrid"])) {
                 unset($this->conditions["hybrid"]);
+            }
+
+            if ($data === false) {
+                continue;
             }
 
             if ($result instanceof EntityCollection && $data instanceof EntityCollection) {
