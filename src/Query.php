@@ -36,7 +36,8 @@ abstract class Query
 
     public static function getName()
     {
-        return lcfirst(\ReflectionClass::getShortName(get_called_class()));
+        $reflection = new \ReflectionClass(get_called_class());
+        return lcfirst($reflection->getShortName());
     }
 
     protected function addCondition($propertyName, $operator, $value, $joiner = 'AND')
