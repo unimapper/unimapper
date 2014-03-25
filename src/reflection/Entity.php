@@ -130,7 +130,7 @@ class Entity extends \ReflectionClass
     public function getProperty($name)
     {
         if (!$this->hasProperty($name)) {
-            throw new Exception("Uknown property " . $name . "!");
+            throw new \Exception("Unknown property " . $name . "!");
         }
         return $this->properties[$name];
     }
