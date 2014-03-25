@@ -21,7 +21,17 @@ class FindAll extends \UniMapper\Query implements IConditionable
     public function __construct(Reflection\Entity $entityReflection, array $mappers)
     {
         parent::__construct($entityReflection, $mappers);
+
+        // Set selection
         $this->selection = array_slice(func_get_args(), 2);
+
+        // Add primary property automatically if not set in selection
+        if (count($this->selection) > 0) {
+            $primaryPropertyName = $entityReflection->getPrimaryProperty()->getName();
+            if (!in_array($primaryPropertyName, $this->selection)) {
+                $this->selection[] = $primaryPropertyName;
+            }
+        }
     }
 
     public function limit($limit)

@@ -71,12 +71,6 @@ abstract class Mapper implements Mapper\IMapper
             return $this->mapProperties($properties);
         }
 
-        // Add primary property automatically if not set
-        $primaryPropertyName = $entityReflection->getPrimaryProperty()->getName();
-        if (!in_array($primaryPropertyName, $selection)) {
-            $selection[] = $primaryPropertyName;
-        }
-
         $result = array();
         foreach ($selection as $propertyName) {
 
