@@ -34,7 +34,7 @@ class Delete extends \UniMapper\Query implements \UniMapper\Query\IConditionable
         }
 
         // Try to get appropriate records first
-        $query = new FindAll($this->entityReflection, $this->mappers);
+        $query = new FindAll($this->entityReflection, $this->mappers, $primaryProperty->getName());
         $query->conditions = $this->conditions;
         $entities = $query->execute();
 
