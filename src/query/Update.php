@@ -54,7 +54,7 @@ class Update extends \UniMapper\Query implements \UniMapper\Query\IConditionable
     private function updateHybrid(Reflection\Entity\Property $primaryProperty)
     {
         // Try to get appropriate records first
-        $query = new FindAll($this->entityReflection, $this->mappers, array($primaryProperty->getName()));
+        $query = new FindAll($this->entityReflection, $this->mappers, $primaryProperty->getName());
         $query->conditions = $this->conditions;
         $entities = $query->execute();
 
