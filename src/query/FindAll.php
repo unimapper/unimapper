@@ -67,7 +67,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
             foreach ($this->conditions as $condition) {
 
                 list($propertyName) = $condition;
-                if (!isset($this->selection[$propertyName])) {
+                if (!in_array($propertyName, $this->selection)) {
                     $this->selection[] = $propertyName;
                 }
             }
