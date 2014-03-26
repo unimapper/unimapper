@@ -55,12 +55,41 @@ abstract class Query
         }
 
         $this->conditions[] = array($propertyName, $operator, $value, $joiner);
-        return $this;
+    }
+
+    protected function addNestedConditions(\Closure $callback, $joiner = 'AND')
+    {
+        $query = new $this($this->entityReflection, $this->mappers);
+
+        call_user_func($callback, $query);
+
+        if (count($query->conditions) === 0) {
+            throw new QueryException("Nested query must contain one condition at least!");
+        }
+
+        // @todo conditions from one mapper in hybrid entities allowed
+        if ($query->hasHybridCondition()) {
+            throw new QueryException("Can not combine hybrid properties from different sources in nested conditions!");
+        }
+
+        $this->conditions[] = array($query->conditions, $joiner);
     }
 
     public function where($propertyName, $operator, $value)
     {
         $this->addCondition($propertyName, $operator, $value);
+        return $this;
+    }
+
+    public function whereAre(\Closure $callback)
+    {
+        $this->addNestedConditions($callback);
+        return $this;
+    }
+
+    public function orWhereAre(\Closure $callback)
+    {
+        $this->addNestedConditions($callback, "OR");
         return $this;
     }
 
@@ -84,11 +113,17 @@ abstract class Query
 
             foreach ($this->conditions as $condition) {
 
-                list($propertyName) = $condition;
+                if (is_array($condition[0])) {
+                    // Nested conditions
+                    continue; // @todo 
+                } else {
+                    // Simple condition
+                    list($propertyName) = $condition;
 
-                $property = $this->entityReflection->getProperty($propertyName);
-                if ($property->getMapping()->isHybrid()) {
-                    return true;
+                    $property = $this->entityReflection->getProperty($propertyName);
+                    if ($property->getMapping()->isHybrid()) {
+                        return true;
+                    }
                 }
             }
         }
