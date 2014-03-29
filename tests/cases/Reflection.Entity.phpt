@@ -6,7 +6,7 @@ require __DIR__ . '/../bootstrap.php';
 
 
 // Basic entity, no mappers
-$reflection = new UniMapper\Reflection\Entity("NoMapperEntity");
+$reflection = new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoMapper");
 Assert::same(array(), $reflection->getMappers());
 Assert::false($reflection->isHybrid());
 Assert::true($reflection->hasProperty("id"));
@@ -27,7 +27,7 @@ Assert::null($reflection->getPrimaryProperty());
 
 
 // Simple entity with mapper
-$reflection = new UniMapper\Reflection\Entity("Entity");
+$reflection = new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple");
 Assert::isEqual(
     array('FirstMapper' => new UniMapper\Reflection\Mapper('FirstMapper(first_resource)', $reflection)),
     $reflection->getMappers()
@@ -38,8 +38,8 @@ Assert::isEqual(
         "id" => new UniMapper\Reflection\Entity\Property('@property integer $id', $reflection),
         "text" => new UniMapper\Reflection\Entity\Property('@property string  $text', $reflection),
         "empty" => new UniMapper\Reflection\Entity\Property('@property string  $empty', $reflection),
-        "entity" => new UniMapper\Reflection\Entity\Property('@property Entity   $entity', $reflection),
-        "collection" => new UniMapper\Reflection\Entity\Property('@property Entity[] $collection', $reflection),
+        "entity" => new UniMapper\Reflection\Entity\Property('@property UniMapper\Tests\Fixtures\Entity\NoMapper   $entity', $reflection),
+        "collection" => new UniMapper\Reflection\Entity\Property('@property UniMapper\Tests\Fixtures\Entity\NoMapper[] $collection', $reflection),
     ),
     $reflection->getProperties()
 );
@@ -50,7 +50,7 @@ Assert::isEqual(
 
 
 // Hybrid entity
-$reflection = new UniMapper\Reflection\Entity("HybridEntity");
+$reflection = new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Hybrid");
 Assert::isEqual(
     array(
         'FirstMapper' => new UniMapper\Reflection\Mapper('FirstMapper(first_resource)', $reflection),

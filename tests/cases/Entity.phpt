@@ -1,10 +1,12 @@
 <?php
 
-use Tester\Assert;
+use Tester\Assert,
+    UniMapper\Tests\Fixtures;
+
 
 require __DIR__ . '/../bootstrap.php';
 
-$entity = new Entity;
+$entity = new Fixtures\Entity\Simple;
 $entity->text = "test";
 $entity->id = 1;
 

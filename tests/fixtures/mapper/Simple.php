@@ -1,6 +1,8 @@
 <?php
 
-class TestMapper extends UniMapper\Mapper
+namespace UniMapper\Tests\Fixtures\Mapper;
+
+class Simple extends \UniMapper\Mapper
 {
     public function count(\UniMapper\Query\Count $query)
     {

@@ -1,13 +1,14 @@
 <?php
 
-use Tester\Assert;
+use Tester\Assert,
+    UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
 
-$entity = new Entity;
+$entity = new Fixtures\Entity\Simple;
 
-$firstMapperMock = $mockista->create("TestMapper");
-$secondMapperMock = $mockista->create("TestMapper");
+$firstMapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+$secondMapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
 
 $mappers = array();
 $mappers["FirstMapper"] = $firstMapperMock;
@@ -25,5 +26,5 @@ Assert::type("UniMapper\Query\Custom", $builder->custom("FirstMapper"));
 Assert::type("UniMapper\Query\Delete", $builder->delete());
 
 // Custom query
-$builder->registerQuery("TestQuery");
-Assert::type("TestQuery", $builder->testQuery());
+$builder->registerQuery("UniMapper\Tests\Fixtures\Query\Simple");
+Assert::type("UniMapper\Tests\Fixtures\Query\Simple", $builder->simple());

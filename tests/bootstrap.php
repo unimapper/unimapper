@@ -1,17 +1,13 @@
 <?php
 
-if (@!include __DIR__ . '/../vendor/autoload.php') {
+$loader = @include __DIR__ . '/../vendor/autoload.php';
+if (!$loader) {
     echo 'Install Nette Tester using `composer update --dev`';
     exit(1);
 }
 
-Tester\Environment::setup();
+$loader->addPsr4("UniMapper\Tests\Fixtures\\", __DIR__ . "/fixtures");
 
-require __DIR__ . '/common/Entities.php';
-require __DIR__ . '/common/Mappers.php';
-require __DIR__ . '/common/TestQuery.php';
-require __DIR__ . '/common/TestQueryConditionable.php';
-require __DIR__ . '/common/repository/EntityRepository.php';
-require __DIR__ . '/common/repository/BadConvention.php';
+Tester\Environment::setup();
 
 $mockista = new \Mockista\Registry;

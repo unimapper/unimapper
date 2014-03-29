@@ -1,6 +1,8 @@
 <?php
 
-class TestQuery extends UniMapper\Query
+namespace UniMapper\Tests\Fixtures\Query;
+
+class Simple extends \UniMapper\Query
 {
     public function onExecute()
     {
