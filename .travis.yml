@@ -1,4 +1,5 @@
 language: php
+
 php:
     - 5.4
     - 5.5
@@ -13,8 +14,10 @@ notifications:
     on_success: never
     on_failure: change
 
-before_script:
+install:
   - composer self-update
-  - composer install --no-interaction --dev
+
+before_script:
+  - composer update --no-interaction --dev
 
 script: php ./vendor/nette/tester/Tester/tester.php tests/
