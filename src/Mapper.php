@@ -82,6 +82,52 @@ abstract class Mapper implements Mapper\IMapper
     }
 
     /**
+     * Translate conditions
+     */
+    protected function translateConditions(Reflection\Entity $entityReflection, array $conditions)
+    {
+        $properties = $entityReflection->getProperties($this->name);
+
+        $result = array();
+        foreach ($conditions as $condition) {
+
+            if (is_array($condition[0])) {
+                // Nested conditions
+
+                list($nestedConditions, $joiner) = $condition;
+                $condition[0] = $this->translateConditions($entityReflection, $nestedConditions);
+
+                // Skip empty conditions
+                if (empty($condition[0])) {
+                    continue;
+                }
+            } else {
+                // Simple condition
+
+                $propertyName = $condition[0];
+
+                // Skip conditions unrelated to this mapper
+                if (!isset($properties[$propertyName])) {
+                    continue;
+                }
+
+                // Apply defined mapping from entity
+                $mapping = $properties[$propertyName]->getMapping();
+                if ($mapping) {
+                    $mappedPropertyName = $mapping->getName($this->name);
+                    if ($mappedPropertyName) {
+                        $condition[0] = $mappedPropertyName;
+                    }
+                }
+            }
+
+            $result[] = $condition;
+        }
+
+        return $result;
+    }
+
+    /**
      * Convert value to defined property format
      *
      * @param \UniMapper\Reflection\Entity\Property $property      Property reflection
