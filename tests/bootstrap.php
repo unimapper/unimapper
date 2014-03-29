@@ -11,5 +11,7 @@ require __DIR__ . '/common/Entities.php';
 require __DIR__ . '/common/Mappers.php';
 require __DIR__ . '/common/TestQuery.php';
 require __DIR__ . '/common/TestQueryConditionable.php';
+require __DIR__ . '/common/repository/EntityRepository.php';
+require __DIR__ . '/common/repository/BadConvention.php';
 
 $mockista = new \Mockista\Registry;

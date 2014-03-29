@@ -21,6 +21,44 @@ abstract class Repository
 
     private $cache;
 
+    private $entityClass;
+
+    public function __construct($entityClass = "")
+    {
+        $this->setEntityClass($entityClass);
+    }
+
+    public function detectEntityClass()
+    {
+        $name = explode("\\", get_called_class());
+        $name = end($name);
+        return substr($name, 0, strrpos($name, "Repository"));
+    }
+
+    public function setEntityClass($class)
+    {
+        if (!empty($class)) {
+            $entityClass = $class;
+        } else {
+            // Try to detect entity class automatically
+            $entityClass = $this->detectEntityClass();
+        }
+
+        if (!$entityClass) {
+            throw new RepositoryException("You must set default entity class in repository " .  get_class($this) . "!");
+        }
+        if (!is_subclass_of($entityClass, "UniMapper\Entity")) {
+            throw new RepositoryException("Can not set class '" . $entityClass . "' as default entity in repository " .  get_class($this) . "!");
+        }
+
+        $this->entityClass = $entityClass;
+    }
+
+    public function getEntityClass()
+    {
+        return $this->entityClass;
+    }
+
     public function setCache(ICache $cache)
     {
         $this->cache = $cache;
