@@ -137,10 +137,8 @@ abstract class Mapper implements Mapper\IMapper
      *
      * @throws \UniMapper\Exceptions\MapperException
      */
-    private function mapValue(Reflection\Entity\Property $property, $data)
+    protected function mapValue(Reflection\Entity\Property $property, $data)
     {
-        $data = $this->beforeMapValue($data);
-
         $type = $property->getType();
 
         if ($data === null || $data === "") {
@@ -267,17 +265,21 @@ abstract class Mapper implements Mapper\IMapper
             if ($mapping === false) {
                 continue;
             }
-            $propertyName = $mapping->getName($this->name);
 
-            if ($value instanceof EntityCollection) {
-                $output[$propertyName] = $this->unmapCollection($value);
-            } elseif ($value instanceof Entity) {
-                $output[$propertyName] = $this->entityToData($value);
-            } else {
-                $output[$propertyName] = $value;
-            }
+            $output[$mapping->getName($this->name)] = $this->unmapValue($value);
         }
         return $output;
+    }
+
+    protected function unmapValue($value)
+    {
+        if ($value instanceof EntityCollection) {
+            return $this->unmapCollection($value);
+        } elseif ($value instanceof Entity) {
+            return $this->entityToData($value);
+        }
+
+        return value;
     }
 
     /*
@@ -294,11 +296,6 @@ abstract class Mapper implements Mapper\IMapper
             $data[$index] = $this->entityToData($entity);
         }
         return $data;
-    }
-
-    protected function beforeMapValue($value)
-    {
-        return $value;
     }
 
 }
