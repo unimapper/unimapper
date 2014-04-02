@@ -81,7 +81,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
 
             $result = $this->mappers[$mapperName]->findAll($this);
             if ($result === false) {
-                return $this->mappers[$mapperName]->createCollection($this->entityReflection->getName(), array());
+                return $this->mappers[$mapperName]->mapCollection($this->entityReflection->getName(), array());
             }
             return $result;
         }
@@ -123,7 +123,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
         }
 
         if ($result === false) {
-            return $mapper->createCollection($this->entityReflection->getName(), array());
+            return $mapper->mapCollection($this->entityReflection->getName(), array());
         }
 
         return $result;
