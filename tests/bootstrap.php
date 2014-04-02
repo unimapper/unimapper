@@ -18,4 +18,6 @@ require __DIR__ . "/fixtures/query/Simple.php";
 
 Tester\Environment::setup();
 
+date_default_timezone_set('Europe/Prague');
+
 $mockista = new \Mockista\Registry;
