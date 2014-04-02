@@ -137,9 +137,9 @@ abstract class Mapper implements Mapper\IMapper
      *
      * @throws \UniMapper\Exceptions\MapperException
      */
-    public function createValue(Reflection\Entity\Property $property, $data)
+    private function mapValue(Reflection\Entity\Property $property, $data)
     {
-        $data = $this->beforeCreateValue($data);
+        $data = $this->beforeMapValue($data);
 
         $type = $property->getType();
 
@@ -170,7 +170,7 @@ abstract class Mapper implements Mapper\IMapper
 
         } elseif ($type instanceof EntityCollection) {
 
-            return $this->createCollection($type->getEntityClass(), $data);
+            return $this->mapCollection($type->getEntityClass(), $data);
 
         } elseif (class_exists($type)) {
 
@@ -179,7 +179,7 @@ abstract class Mapper implements Mapper\IMapper
                 return $data;
             } elseif ($type instanceof Entity) {
                 // Entity
-                return $this->createEntity(get_class($type), $data);
+                return $this->mapEntity(get_class($type), $data);
             } elseif ($type instanceof \DateTime) {
                 // DateTime
                 try {
@@ -198,7 +198,7 @@ abstract class Mapper implements Mapper\IMapper
         );
     }
 
-    public function createCollection($entityClass, $data)
+    public function mapCollection($entityClass, $data)
     {
         if (!Validator::isTraversable($data)) {
             throw new \Exception("Input data must be traversable!");
@@ -206,12 +206,12 @@ abstract class Mapper implements Mapper\IMapper
 
         $collection = new EntityCollection($entityClass);
         foreach ($data as $value) {
-            $collection[] = $this->createEntity($entityClass, $value);
+            $collection[] = $this->mapEntity($entityClass, $value);
         }
         return $collection;
     }
 
-    public function createEntity($entityClass, $data)
+    public function mapEntity($entityClass, $data)
     {
         if (!Validator::isTraversable($data)) {
             throw new MapperException("Input data must be traversable!");
@@ -237,20 +237,20 @@ abstract class Mapper implements Mapper\IMapper
                 continue;
             }
 
-            $entity->{$propertyName} = $this->createValue($properties[$propertyName], $value);
+            $entity->{$propertyName} = $this->mapValue($properties[$propertyName], $value);
         }
 
         return $entity;
     }
 
-    /*
+    /**
      * Convert entity to simple array
      *
      *  @param \UniMapper\Entity $entity Entity
      *
      *  @return array
      */
-    public function entityToData(\UniMapper\Entity $entity)
+    public function unmapEntity(\UniMapper\Entity $entity)
     {
         $properties = $entity->getReflection()->getProperties($this->name);
 
@@ -270,7 +270,7 @@ abstract class Mapper implements Mapper\IMapper
             $propertyName = $mapping->getName($this->name);
 
             if ($value instanceof EntityCollection) {
-                $output[$propertyName] = $this->collectionToData($value);
+                $output[$propertyName] = $this->unmapCollection($value);
             } elseif ($value instanceof Entity) {
                 $output[$propertyName] = $this->entityToData($value);
             } else {
@@ -287,7 +287,7 @@ abstract class Mapper implements Mapper\IMapper
      *
      *  @return array
      */
-    public function collectionToData(\UniMapper\EntityCollection $collection)
+    public function unmapCollection(\UniMapper\EntityCollection $collection)
     {
         $data = array();
         foreach ($collection as $index => $entity) {
@@ -296,7 +296,7 @@ abstract class Mapper implements Mapper\IMapper
         return $data;
     }
 
-    protected function beforeCreateValue($value)
+    protected function beforeMapValue($value)
     {
         return $value;
     }
