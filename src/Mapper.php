@@ -279,7 +279,7 @@ abstract class Mapper implements Mapper\IMapper
             return $this->entityToData($value);
         }
 
-        return value;
+        return $value;
     }
 
     /*
