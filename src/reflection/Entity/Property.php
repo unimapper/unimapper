@@ -265,11 +265,15 @@ class Property
                 return;
             }
 
+            $expectedType = $this->type;
+            if (is_object($expectedType)) {
+                $expectedType = get_class($expectedType);
+            }
             $givenType = gettype($value);
             if ($givenType === "object") {
                 $givenType = get_class($value);
             }
-            throw new PropertyTypeException("Expected " . get_class($this->type) . " but " . $givenType . " given!", $this->entityReflection, $this->rawDefinition);
+            throw new PropertyTypeException("Expected " . $expectedType . " but " . $givenType . " given!", $this->entityReflection, $this->rawDefinition);
         }
 
         // Convert to string

@@ -8,6 +8,7 @@ namespace UniMapper\Tests\Fixtures\Entity;
  * @property integer                                    $id         m:map(FirstMapper:) m:primary
  * @property string                                     $text       m:map(FirstMapper:)
  * @property string                                     $empty
+ * @property DateTime                                   $time
  * @property UniMapper\Tests\Fixtures\Entity\NoMapper   $entity
  * @property UniMapper\Tests\Fixtures\Entity\NoMapper[] $collection
  */

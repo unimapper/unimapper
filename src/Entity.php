@@ -56,7 +56,11 @@ abstract class Entity implements \JsonSerializable
                             $entity->{$propertyName} = $value;
                             continue;
                         }
+                    } elseif ($properties[$propertyName]->getType() === "DateTime") {
+                        $entity->{$propertyName} = new \DateTime($value);
+                        continue;
                     }
+
                     throw new \Exception("Can not set value automatically!");
                 }
             }
@@ -118,7 +122,7 @@ abstract class Entity implements \JsonSerializable
         try {
             $properties[$name]->validateValue($value);
         } catch (PropertyTypeException $exception) {
-            throw new PropertyTypeException($exception->getMessage(), $properties[$name]->getEntityReflection(), $properties[$name]->getRawDefinition());
+            throw new PropertyTypeException($exception->getMessage(), $this->reflection, $properties[$name]->getRawDefinition());
         }
 
         // Set value
