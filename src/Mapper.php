@@ -143,12 +143,12 @@ abstract class Mapper implements Mapper\IMapper
 
         $type = $property->getType();
 
+        if ($data === null || $data === "") {
+            return null;
+        }
+
         if ($property->isBasicType()) {
             // Basic type
-
-            if ($data === null || $data === "") {
-                return null;
-            }
 
             if ($type === "boolean" && $data === "false") {
                 return false;
@@ -180,7 +180,7 @@ abstract class Mapper implements Mapper\IMapper
             } elseif ($type instanceof Entity) {
                 // Entity
                 return $this->mapEntity(get_class($type), $data);
-            } elseif ($type instanceof \DateTime) {
+            } elseif ($type === "DateTime") {
                 // DateTime
                 try {
                     return new \DateTime($data);
