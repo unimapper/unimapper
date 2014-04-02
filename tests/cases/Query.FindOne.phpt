@@ -18,3 +18,4 @@ $query = new \UniMapper\Query\FindOne(new UniMapper\Reflection\Entity("UniMapper
 $result = $query->execute();
 
 Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $result);
+Assert::true($result->isActive());

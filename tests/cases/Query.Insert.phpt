@@ -16,7 +16,8 @@ $entity = new Fixtures\Entity\Simple;
 
 $query = new \UniMapper\Query\Insert($entity->getReflection(), $mappers, $entity);
 
-$resultEntity = $query->execute();
+$result = $query->execute();
 
-Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $resultEntity);
-Assert::same(1, $resultEntity->id);
+Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $result);
+Assert::same(1, $result->id);
+Assert::true($result->isActive());

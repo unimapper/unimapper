@@ -103,6 +103,16 @@ abstract class Query
     {
         $start = microtime(true);
         $this->result = $this->onExecute();
+
+        // Set entities active
+        if ($this->result instanceof Entity) {
+            $this->result->setActive($this->mappers);
+        } elseif ($this->result instanceof EntityCollection) {
+            foreach ($this->result as $entity) {
+                $entity->setActive($this->mappers);
+            }
+        }
+
         $this->elapsed = microtime(true) - $start;
         return $this->result;
     }
@@ -115,7 +125,7 @@ abstract class Query
 
                 if (is_array($condition[0])) {
                     // Nested conditions
-                    continue; // @todo 
+                    continue; // @todo
                 } else {
                     // Simple condition
                     list($propertyName) = $condition;

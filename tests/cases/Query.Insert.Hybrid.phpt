@@ -21,8 +21,9 @@ $query = new \UniMapper\Query\Insert($entity->getReflection(), $mappers, $entity
 
 Assert::true($query->returnPrimaryValue);
 
-$resultEntity = $query->execute();
+$result = $query->execute();
 
-Assert::type("UniMapper\Tests\Fixtures\Entity\Hybrid", $resultEntity);
-Assert::same(1, $resultEntity->id);
+Assert::type("UniMapper\Tests\Fixtures\Entity\Hybrid", $result);
+Assert::same(1, $result->id);
+Assert::true($result->isActive());
 Assert::false($query->returnPrimaryValue);

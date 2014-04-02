@@ -4,6 +4,7 @@ namespace UniMapper;
 
 use UniMapper\Validator,
     UniMapper\EntityCollection,
+    UniMapper\Query,
     UniMapper\Cache\ICache,
     UniMapper\Exceptions\PropertyTypeException,
     UniMapper\Exceptions\PropertyUndefinedException;
@@ -17,10 +18,70 @@ abstract class Entity implements \JsonSerializable
 
     private $reflection;
     private $data = array();
+    private $mappers = array();
 
     public function __construct(ICache $cache = null)
     {
         $this->reflection = new Reflection\Entity($this, $cache);
+    }
+
+    public function isActive()
+    {
+        return count($this->mappers) > 0;
+    }
+
+    public function setActive(array $mappers)
+    {
+        if ($this->isActive()) {
+            throw new \Exception("Entity is already active!");
+        }
+        $this->mappers = $mappers;
+    }
+
+    public function getMappers()
+    {
+        if (!$this->isActive()) {
+            throw new \Exception("Entity is not active!");
+        }
+        return $this->mappers;
+    }
+
+    public function save()
+    {
+        if (!$this->isActive()) {
+            \Exception("Entity is not active!");
+        }
+
+        $primaryName = $this->reflection->getPrimaryProperty()->getName();
+        $primaryValue = $this->{$primaryName};
+
+        if ($primaryValue === null) {
+            // Insert
+            $query = new Query\Insert($this->reflection, $this->mappers, $this);
+        } else {
+            // Update
+            $data = $this->data;
+            unset($data[$primaryName]);
+            $query = new Query\Update($this->reflection, $this->mappers, $data);
+        }
+
+        $query->execute();
+    }
+
+    public function delete()
+    {
+        if (!$this->isActive()) {
+            \Exception("Entity is not active!");
+        }
+
+        $primaryName = $this->reflection->getPrimaryProperty()->getName();
+        $primaryValue = $this->{$primaryName};
+        if ($primaryValue === null) {
+            throw new \Exception("Primary value not set!");
+        }
+
+        $query = new Query\Delete($this->reflection, $this->mappers);
+        $query->where($primaryName, "=", $primaryValue)->execute();
     }
 
     /**
