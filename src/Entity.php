@@ -13,7 +13,7 @@ use UniMapper\Validator,
  * Entity is ancestor for all entities and provides global methods, which
  * can be used in every new entity object.
  */
-abstract class Entity implements \JsonSerializable
+abstract class Entity implements \JsonSerializable, \Serializable
 {
 
     private $reflection;
@@ -23,6 +23,16 @@ abstract class Entity implements \JsonSerializable
     public function __construct(ICache $cache = null)
     {
         $this->reflection = new Reflection\Entity($this, $cache);
+    }
+
+    public function serialize()
+    {
+        return serialize($this->data);
+    }
+
+    public function unserialize($data)
+    {
+        $this->data = unserialize($data);
     }
 
     public function isActive()
