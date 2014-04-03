@@ -3,17 +3,16 @@
 namespace UniMapper\Query;
 
 use UniMapper\Entity,
+    UniMapper\Query\IConditionable,
     UniMapper\Exceptions\PropertyTypeException,
     UniMapper\Exceptions\QueryException,
     UniMapper\Reflection;
 
-/**
- * Find single item as query object
- */
-class FindOne extends \UniMapper\Query implements \UniMapper\Query\IConditionable
+class FindOne extends \UniMapper\Query implements IConditionable
 {
 
-    public $primaryValue = array();
+    /** @var mixed */
+    public $primaryValue;
 
     public function __construct(Reflection\Entity $entityReflection, array $mappers, $primaryValue)
     {
@@ -28,26 +27,38 @@ class FindOne extends \UniMapper\Query implements \UniMapper\Query\IConditionabl
         $this->primaryValue = $primaryValue;
     }
 
-    public function onExecute()
+    public function executeSimple()
+    {
+        return array_values($this->mappers)[0]->findOne($this);
+    }
+
+    public function executeHybrid()
     {
         $result = false;
-        $entityMappers = $this->entityReflection->getMappers();
 
-        foreach ($this->mappers as $mapperName => $mapper) {
+        $i = 0;
+        foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
 
-            if (isset($entityMappers[$mapperName])) {
+            $mapper = $this->mappers[$mapperName];
 
-                $data = $mapper->findOne($this);
-                if ($data === false) {
-                    continue;
-                }
+            // Nothing found in previous queries
+            if (!$result && $i > 0) {
+                return false;
+            }
 
-                if ($result instanceof Entity && $data instanceof Entity) {
-                    // There are some results from previous queries, so merge it
-                    $result->merge($data);
-                } else {
-                    $result = $data;
-                }
+            $data = $mapper->findOne($this);
+
+            $i++;
+
+            if ($data === false) {
+                continue;
+            }
+
+            if ($result instanceof Entity && $data instanceof Entity) {
+                // There are some results from previous queries, so merge it
+                $result->merge($data);
+            } else {
+                $result = $data;
             }
         }
 

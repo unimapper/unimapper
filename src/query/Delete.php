@@ -2,31 +2,23 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Query\FindAll;
+use UniMapper\Query\FindAll,
+    UniMapper\Exceptions\QueryException,
+    UniMapper\Query\IConditionable;
 
-/**
- * Delete query
- */
-class Delete extends \UniMapper\Query implements \UniMapper\Query\IConditionable
+class Delete extends \UniMapper\Query implements IConditionable
 {
 
-    protected function onExecute()
+    public function executeSimple()
     {
-        if (count($this->conditions) === 0) {
-            throw new QueryException("At least one condition must be set!");
-        }
-
-        if ($this->entityReflection->isHybrid()) {
-            $this->deleteHybrid();
-        } else {
-            foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
-                return $this->mappers[$mapperName]->delete($this);
-            }
-        }
+        $this->beforeExecute();
+        return array_values($this->mappers)[0]->delete($this);
     }
 
-    private function deleteHybrid()
+    public function executeHybrid()
     {
+        $this->beforeExecute();
+
         // @todo primary property must be required
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
         if ($primaryProperty === null) {
@@ -48,6 +40,13 @@ class Delete extends \UniMapper\Query implements \UniMapper\Query\IConditionable
         }
 
         return true;
+    }
+
+    private function beforeExecute()
+    {
+        if (count($this->conditions) === 0) {
+            throw new QueryException("At least one condition must be set!");
+        }
     }
 
 }

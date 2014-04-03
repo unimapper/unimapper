@@ -7,9 +7,6 @@ use UniMapper\Exceptions\QueryException,
     UniMapper\EntityCollection,
     UniMapper\Query\IConditionable;
 
-/**
- * ORM query object
- */
 class FindAll extends \UniMapper\Query implements IConditionable
 {
 
@@ -60,37 +57,26 @@ class FindAll extends \UniMapper\Query implements IConditionable
         return $this;
     }
 
-    public function onExecute()
+    public function executeSimple()
     {
-        // Add properties from conditions to the selection if not set
-        if (count($this->conditions) > 0 && count($this->selection) > 0) {
-            foreach ($this->conditions as $condition) {
+        $this->beforeExecute();
 
-                list($propertyName) = $condition;
-                if (!in_array($propertyName, $this->selection)) {
-                    $this->selection[] = $propertyName;
-                }
-            }
+        $mapper = array_values($this->mappers)[0];
+        $result = $mapper->findAll($this);
+        if ($result === false) {
+            return $mapper->mapCollection($this->entityReflection->getName(), array());
         }
 
-        if ($this->entityReflection->isHybrid()) {
-            return $this->executeHybrid();
-        }
-
-        foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
-
-            $result = $this->mappers[$mapperName]->findAll($this);
-            if ($result === false) {
-                return $this->mappers[$mapperName]->mapCollection($this->entityReflection->getName(), array());
-            }
-            return $result;
-        }
+        return $result;
     }
 
     public function executeHybrid()
     {
+        $this->beforeExecute();
+
         $result = false;
 
+        $i = 0;
         foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
 
             $mapper = $this->mappers[$mapperName];
@@ -104,12 +90,18 @@ class FindAll extends \UniMapper\Query implements IConditionable
                 );
             }
 
-            $data = $mapper->findAll($this);
+            if ($result === false && $i > 0) {
+                // If nothing found, there is no need to continue
+                $data = false;
+            } else {
+                $data = $mapper->findAll($this);
+            }
 
             if (isset($this->conditions["hybrid"])) {
                 unset($this->conditions["hybrid"]);
             }
 
+            $i++;
             if ($data === false) {
                 continue;
             }
@@ -127,6 +119,20 @@ class FindAll extends \UniMapper\Query implements IConditionable
         }
 
         return $result;
+    }
+
+    private function beforeExecute()
+    {
+        // Add properties from conditions to the selection if not set
+        if (count($this->conditions) > 0 && count($this->selection) > 0) {
+            foreach ($this->conditions as $condition) {
+
+                list($propertyName) = $condition;
+                if (!in_array($propertyName, $this->selection)) {
+                    $this->selection[] = $propertyName;
+                }
+            }
+        }
     }
 
 }

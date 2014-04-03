@@ -2,21 +2,21 @@
 
 namespace UniMapper\Query;
 
-/**
- * ORM query object
- */
 class Count extends \UniMapper\Query implements IConditionable
 {
 
-    public function onExecute()
+    public function executeSimple()
+    {
+        return array_values($this->mappers)[0]->count($this);
+    }
+
+    public function executeHybrid()
     {
         if ($this->hasHybridCondition()) {
             throw new \Exception("Count for hybrid entities not yet implemented!");
-        } else {
-            foreach ($this->entityReflection->getMappers() as $name => $mapper) {
-                return $this->mappers[$name]->count($this);
-            }
         }
+
+        return $this->executeSimple(); // @todo
     }
 
 }

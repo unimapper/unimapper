@@ -3,13 +3,11 @@
 namespace UniMapper;
 
 use UniMapper\Reflection,
+    UniMapper\Query\IQuery,
     UniMapper\EntityCollection,
     UniMapper\Exceptions\QueryException;
 
-/**
- * ORM query object
- */
-abstract class Query
+abstract class Query implements IQuery
 {
 
     public $conditions = array();
@@ -102,7 +100,12 @@ abstract class Query
     final public function execute()
     {
         $start = microtime(true);
-        $this->result = $this->onExecute();
+
+        if ($this->entityReflection->isHybrid()) {
+            $this->result = $this->executeHybrid();
+        } else {
+            $this->result = $this->executeSimple();
+        }
 
         // Set entities active
         if ($this->result instanceof Entity) {
@@ -157,4 +160,5 @@ abstract class Query
         }
         return $keys;
     }
+
 }

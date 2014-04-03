@@ -5,9 +5,6 @@ namespace UniMapper\Query;
 use UniMapper\Reflection,
     UniMapper\Exceptions\QueryException;
 
-/**
- * ORM query object
- */
 class Custom extends \UniMapper\Query
 {
 
@@ -69,9 +66,14 @@ class Custom extends \UniMapper\Query
         return $this;
     }
 
-    public function onExecute()
+    public function executeSimple()
     {
         return $this->mapper->custom($this);
+    }
+
+    public function executeHybrid()
+    {
+        return $this->executeSimple(); // @todo
     }
 
 }

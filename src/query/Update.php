@@ -3,14 +3,13 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exceptions\QueryException,
+    UniMapper\Query\IConditionable,
     UniMapper\Reflection;
 
-/**
- * Update query object
- */
-class Update extends \UniMapper\Query implements \UniMapper\Query\IConditionable
+class Update extends \UniMapper\Query implements IConditionable
 {
 
+    /** @var \UniMapper\Entity */
     public $entity;
 
     public function __construct(Reflection\Entity $entityReflection, array $mappers, array $data)
@@ -20,39 +19,18 @@ class Update extends \UniMapper\Query implements \UniMapper\Query\IConditionable
         $this->entity = $class::create($data); // @todo better validation, maybe pass whole entity and prevent updating primary property
     }
 
-    protected function onExecute()
+    public function executeSimple()
     {
-        if (count($this->conditions) === 0) {
-            throw new QueryException("At least one condition must be set!");
-        }
+        $this->beforeExecute();
+        return array_values($this->mappers)[0]->update($this);
+    }
 
-        // @todo primary property must be required
+    public function executeHybrid()
+    {
+        $this->beforeExecute();
+
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
-        if ($primaryProperty === null) {
-            throw new QueryException("Entity does not have primary property!");
-        }
 
-        // Ignore primary property value
-        if (isset($this->entity->{$primaryProperty->getName()})) {
-            unset($this->entity->{$primaryProperty->getName()});
-        }
-
-        if ($this->entityReflection->isHybrid()) {
-            return $this->updateHybrid($primaryProperty);
-        } else {
-            return $this->update();
-        }
-    }
-
-    private function update()
-    {
-        foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
-            return $this->mappers[$mapperName]->update($this);
-        }
-    }
-
-    private function updateHybrid(Reflection\Entity\Property $primaryProperty)
-    {
         // Try to get appropriate records first
         $query = new FindAll($this->entityReflection, $this->mappers, $primaryProperty->getName());
         $query->conditions = $this->conditions;
@@ -72,6 +50,24 @@ class Update extends \UniMapper\Query implements \UniMapper\Query\IConditionable
             }
         }
         return true;
+    }
+
+    private function beforeExecute()
+    {
+        if (count($this->conditions) === 0) {
+            throw new QueryException("At least one condition must be set!");
+        }
+
+        // @todo will be removed when primary property must be required
+        $primaryProperty = $this->entityReflection->getPrimaryProperty();
+        if ($primaryProperty === null) {
+            throw new QueryException("Entity does not have primary property!");
+        }
+
+        // Ignore primary property value
+        if (isset($this->entity->{$primaryProperty->getName()})) {
+            unset($this->entity->{$primaryProperty->getName()});
+        }
     }
 
 }

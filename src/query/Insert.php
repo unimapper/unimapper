@@ -6,13 +6,13 @@ use UniMapper\Entity,
     UniMapper\Reflection,
     UniMapper\Exceptions\QueryException;
 
-/**
- * Insert query object
- */
 class Insert extends \UniMapper\Query
 {
 
+    /** @var \UniMapper\Entity */
     public $entity;
+
+    /** @var boolean */
     public $returnPrimaryValue = true;
 
     public function __construct(Reflection\Entity $entityReflection, array $mappers, Entity $entity)
@@ -27,26 +27,19 @@ class Insert extends \UniMapper\Query
         $this->entity = $entity;
     }
 
-    public function onExecute()
+    public function executeSimple()
     {
-        if ($this->entityReflection->isHybrid()) {
-            return $this->insertHybrid();
+        $result = array_values($this->mappers)[0]->insert($this);
+
+        $primaryProperty = $this->entityReflection->getPrimaryProperty();
+        if ($primaryProperty !== null) {
+            $this->entity->{$primaryProperty->getName()} = $result;
         }
 
-        foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
-
-            $result = $this->mappers[$mapperName]->insert($this);
-
-            $primaryProperty = $this->entityReflection->getPrimaryProperty();
-            if ($primaryProperty !== null) {
-                $this->entity->{$primaryProperty->getName()} = $result;
-            }
-
-            return $this->entity;
-        }
+        return $this->entity;
     }
 
-    private function insertHybrid()
+    public function executeHybrid()
     {
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
         if ($primaryProperty === null) {
