@@ -9,10 +9,10 @@ use UniMapper\Query\FindAll,
 class Delete extends \UniMapper\Query implements IConditionable
 {
 
-    public function executeSimple()
+    public function executeSimple(\UniMapper\Mapper $mapper)
     {
         $this->beforeExecute();
-        return array_values($this->mappers)[0]->delete($this);
+        return $mapper->delete($this);
     }
 
     public function executeHybrid()

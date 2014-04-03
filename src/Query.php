@@ -104,7 +104,10 @@ abstract class Query implements IQuery
         if ($this->entityReflection->isHybrid()) {
             $this->result = $this->executeHybrid();
         } else {
-            $this->result = $this->executeSimple();
+            foreach ($this->entityReflection->getMappers() as $name => $mapperReflection) {
+                $this->result = $this->executeSimple($this->mappers[$name]);
+                break;
+            }
         }
 
         // Set entities active

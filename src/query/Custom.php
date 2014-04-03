@@ -66,14 +66,14 @@ class Custom extends \UniMapper\Query
         return $this;
     }
 
-    public function executeSimple()
+    public function executeSimple(\UniMapper\Mapper $mapper)
     {
         return $this->mapper->custom($this);
     }
 
     public function executeHybrid()
     {
-        return $this->executeSimple(); // @todo
+        return $this->executeSimple($this->mapper); // @todo
     }
 
 }

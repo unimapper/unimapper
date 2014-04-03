@@ -5,9 +5,9 @@ namespace UniMapper\Query;
 class Count extends \UniMapper\Query implements IConditionable
 {
 
-    public function executeSimple()
+    public function executeSimple(\UniMapper\Mapper $mapper)
     {
-        return array_values($this->mappers)[0]->count($this);
+        return $mapper->count($this);
     }
 
     public function executeHybrid()
@@ -16,7 +16,10 @@ class Count extends \UniMapper\Query implements IConditionable
             throw new \Exception("Count for hybrid entities not yet implemented!");
         }
 
-        return $this->executeSimple(); // @todo
+        // @todo
+        foreach ($this->entityReflection->getMappers() as $name => $mapperReflection) {
+            return $this->executeSimple($this->mappers[$name]);
+        }
     }
 
 }

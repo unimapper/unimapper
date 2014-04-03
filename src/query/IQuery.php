@@ -5,7 +5,7 @@ namespace UniMapper\Query;
 interface IQuery
 {
 
-    public function executeSimple();
+    public function executeSimple(\UniMapper\Mapper $mapper);
     public function executeHybrid();
 
 }

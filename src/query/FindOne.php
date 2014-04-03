@@ -27,9 +27,9 @@ class FindOne extends \UniMapper\Query implements IConditionable
         $this->primaryValue = $primaryValue;
     }
 
-    public function executeSimple()
+    public function executeSimple(\UniMapper\Mapper $mapper)
     {
-        return array_values($this->mappers)[0]->findOne($this);
+        return $mapper->findOne($this);
     }
 
     public function executeHybrid()

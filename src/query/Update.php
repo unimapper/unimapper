@@ -19,10 +19,10 @@ class Update extends \UniMapper\Query implements IConditionable
         $this->entity = $class::create($data); // @todo better validation, maybe pass whole entity and prevent updating primary property
     }
 
-    public function executeSimple()
+    public function executeSimple(\UniMapper\Mapper $mapper)
     {
         $this->beforeExecute();
-        return array_values($this->mappers)[0]->update($this);
+        return $mapper->update($this);
     }
 
     public function executeHybrid()

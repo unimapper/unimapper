@@ -57,11 +57,10 @@ class FindAll extends \UniMapper\Query implements IConditionable
         return $this;
     }
 
-    public function executeSimple()
+    public function executeSimple(\UniMapper\Mapper $mapper)
     {
         $this->beforeExecute();
 
-        $mapper = array_values($this->mappers)[0];
         $result = $mapper->findAll($this);
         if ($result === false) {
             return $mapper->mapCollection($this->entityReflection->getName(), array());

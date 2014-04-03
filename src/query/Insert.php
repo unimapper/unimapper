@@ -27,9 +27,9 @@ class Insert extends \UniMapper\Query
         $this->entity = $entity;
     }
 
-    public function executeSimple()
+    public function executeSimple(\UniMapper\Mapper $mapper)
     {
-        $result = array_values($this->mappers)[0]->insert($this);
+        $result = $mapper->insert($this);
 
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
         if ($primaryProperty !== null) {
