@@ -276,7 +276,7 @@ abstract class Mapper implements Mapper\IMapper
         if ($value instanceof EntityCollection) {
             return $this->unmapCollection($value);
         } elseif ($value instanceof Entity) {
-            return $this->entityToData($value);
+            return $this->unmapEntity($value);
         }
 
         return $value;
@@ -293,7 +293,7 @@ abstract class Mapper implements Mapper\IMapper
     {
         $data = array();
         foreach ($collection as $index => $entity) {
-            $data[$index] = $this->entityToData($entity);
+            $data[$index] = $this->unmapEntity($entity);
         }
         return $data;
     }
