@@ -38,7 +38,7 @@ abstract class Repository
         $this->logger = $logger;
     }
 
-    public function addMapper(\UniMapper\Mapper $mapper)
+    public function registerMapper(\UniMapper\Mapper $mapper)
     {
         $this->mappers[$mapper->getName()] = $mapper;
     }
