@@ -53,3 +53,9 @@ Assert::exception(function() use ($entity) {
 Assert::exception(function() use ($entity) {
     $entity->undefined;
 }, "UniMapper\Exceptions\PropertyUndefinedException", "Undefined property with name 'undefined'!");
+
+// Serializable
+// @todo
+$serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":41:{a:2:{s:4:"text";s:4:"test";s:2:"id";i:1;}}';
+Assert::same($serialized, serialize($entity));
+Assert::equal($entity->getData(), unserialize($serialized)->getData());
