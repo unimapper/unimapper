@@ -47,7 +47,7 @@ Assert::same('{"id":1,"text":"test","empty":null,"time":null,"entity":null,"coll
 // Invalid property type
 Assert::exception(function() use ($entity) {
     $entity->id = "invalidType";
-}, "UniMapper\Exceptions\PropertyTypeException", "Expected integer but string given!");
+}, "UniMapper\Exceptions\PropertyTypeException", "Expected integer but string given on property id!");
 
 // Property not exists
 Assert::exception(function() use ($entity) {

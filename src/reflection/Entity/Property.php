@@ -237,12 +237,12 @@ class Property
     public function validateValue($value)
     {
         if ($this->type === null) { // @todo check entity validity first => move out
-            throw new PropertyException("Property type not defined!", $this->entityReflection, $this->rawDefinition);
+            throw new PropertyException("Property type not defined on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
         }
 
         // Enumeration
         if ($this->enumeration !== null && !$this->enumeration->isValueFromEnum($value)) {
-            throw new PropertyTypeException("Value " . $value . " is not from defined entity enumeration range!", $this->entityReflection, $this->rawDefinition);
+            throw new PropertyTypeException("Value " . $value . " is not from defined entity enumeration range on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
         }
 
         // Basic type
@@ -251,7 +251,7 @@ class Property
             if (gettype($value) === $this->type) {
                 return;
             }
-            throw new PropertyTypeException("Expected " . $this->type . " but " . gettype($value) . " given!", $this->entityReflection, $this->rawDefinition);
+            throw new PropertyTypeException("Expected " . $this->type . " but " . gettype($value) . " given on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
         }
 
         if ($this->type instanceof EntityCollection && $value instanceof EntityCollection) {
@@ -273,7 +273,7 @@ class Property
             if ($givenType === "object") {
                 $givenType = get_class($value);
             }
-            throw new PropertyTypeException("Expected " . $expectedType . " but " . $givenType . " given!", $this->entityReflection, $this->rawDefinition);
+            throw new PropertyTypeException("Expected " . $expectedType . " but " . $givenType . " given on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
         }
 
         // Convert to string
@@ -285,7 +285,7 @@ class Property
         if ($givenType === "object") {
             $givenType = get_class($value);
         }
-        throw new \Exception("Expected " . $expectedType . " but " . $givenType . " given! It could be an internal library error.");
+        throw new \Exception("Expected " . $expectedType . " but " . $givenType . " given on property " . $this->name . ". It could be an internal ORM error!");
     }
 
     public function isBasicType()
