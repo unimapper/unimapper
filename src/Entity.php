@@ -190,11 +190,7 @@ abstract class Entity implements \JsonSerializable, \Serializable
         }
 
         // Validate value
-        try {
-            $properties[$name]->validateValue($value);
-        } catch (PropertyTypeException $exception) {
-            throw new PropertyTypeException($exception->getMessage(), $this->reflection, $properties[$name]->getRawDefinition());
-        }
+        $properties[$name]->validateValue($value);
 
         // Set value
         $this->data[$name] = $value;
