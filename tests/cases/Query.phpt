@@ -44,14 +44,49 @@ Assert::same($expectedConditions, $query->conditions);
 
 // orWhereAre()
 $query->orWhereAre(function($query) {
-    $query->where("id", "<", 5)
-          ->orWhere("text", "LIKE", "yetAnotherFoo");
+    $query->where("id", "<", 5);
+    $query->orWhere("text", "LIKE", "yetAnotherFoo");
 });
 $expectedConditions[] = array(
     array(
 	array('id', '<', 5, 'AND'),
         array('text', 'LIKE', 'yetAnotherFoo', 'OR'),
     ),
-    'OR',
+    'OR'
+);
+Assert::same($expectedConditions, $query->conditions);
+
+
+// Deep nesting
+$query->whereAre(function($query) {
+    $query->where("id", "=", 4);
+    $query->orWhereAre(function($query) {
+        $query->where("text", "LIKE", "yetAnotherFoo2");
+        $query->whereAre(function($query) {
+            $query->orWhere("text", "LIKE", "yetAnotherFoo3");
+            $query->orWhere("text", "LIKE", "yetAnotherFoo4");
+        });
+        $query->orWhere("text", "LIKE", "yetAnotherFoo5");
+    });
+});
+$expectedConditions[] = array(
+    array(
+        array('id', '=', 4, 'AND'),
+        array(
+            array(
+                array('text', 'LIKE', 'yetAnotherFoo2', 'AND'),
+                array(
+                    array(
+                        array('text', 'LIKE', 'yetAnotherFoo3', 'OR'),
+                        array('text', 'LIKE', 'yetAnotherFoo4', 'OR'),
+                    ),
+                    'AND'
+                ),
+                array('text', 'LIKE', 'yetAnotherFoo5', 'OR')
+            ),
+            'OR'
+        )
+    ),
+    'AND'
 );
 Assert::same($expectedConditions, $query->conditions);
