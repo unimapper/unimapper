@@ -155,26 +155,52 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     }
 
     /**
-     * Merge collection
+     * Merge two entity collections together by primary values
      *
-     * @param \UniMapper\EntityCollection $collection
+     * @param \UniMapper\EntityCollection $originalCollection
+     * @param \UniMapper\EntityCollection $newCollection
      *
      * @return \UniMapper\EntityCollection
      */
-    public function merge(\UniMapper\EntityCollection $collection)
+    public static function mergeByPrimary(EntityCollection $originalCollection, EntityCollection $newCollection)
     {
-        foreach ($collection as $primary => $entity) {
-            if (isset($this->data[$primary])
-                && isset($collection[$primary])
-            ) {
-                $this->data[$primary]->merge($collection[$primary]);
-            } else {
-                unset($this->data[$primary]);
+        $result = new EntityCollection($originalCollection->getEntityClass());
+        foreach ($newCollection as $newEntity) {
+
+            $primaryPropertyName = $newEntity->getReflection()->getPrimaryProperty()->getName();
+            $newPrimaryValue = $newEntity->{$primaryPropertyName};
+
+            $originalEntity = $originalCollection->getByPrimary($newPrimaryValue);
+            if ($originalEntity && $originalEntity->{$primaryPropertyName} === $newPrimaryValue) {
+                $result[] = $originalEntity->merge($newEntity);
             }
         }
-        return $this;
+        return $result;
     }
 
+    /**
+     * Get entity by primary value
+     *
+     * @param mixed $value
+     *
+     * @return \UniMapper\Entity|false
+     */
+    public function getByPrimary($value)
+    {
+        foreach ($this->data as $entity) {
+
+            $primaryPropertyName = $entity->getReflection()->getPrimaryProperty()->getName();
+            $primaryValue = $entity->{$primaryPropertyName};
+            if ($primaryValue === $value && $primaryValue !== null) {
+                return $entity;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @todo useless -> remove
+     */
     public function getByPosition($number)
     {
         $values = array_values($this->data);
