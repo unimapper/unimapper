@@ -19,7 +19,7 @@ class Insert extends \UniMapper\Query
     {
         parent::__construct($entityReflection, $mappers);
 
-        $requiredClass = $this->entityReflection->getName();
+        $requiredClass = $this->entityReflection->getClassName();
         if (!$entity instanceof $requiredClass) {
             throw new QueryException("Inserted entity must be instance of " . $requiredClass . " but " . get_class($entity) . "given!");
         }
@@ -43,7 +43,7 @@ class Insert extends \UniMapper\Query
     {
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
         if ($primaryProperty === null) {
-            throw new QueryException("Primary property required for hybrid entity " . $this->entityReflection->getName() . "!");
+            throw new QueryException("Primary property required for hybrid entity " . $this->entityReflection->getClassName() . "!");
         }
 
         $primaryValue = $this->entity->{$primaryProperty->getName()};

@@ -2,28 +2,22 @@
 
 namespace UniMapper\Exceptions;
 
+use UniMapper\Reflection;
+
 /**
  * Throws when wrong property definition detected.
  */
 class PropertyException extends \Exception
 {
 
-    /** @var \ReflectionClass $entityReflection Entity reflection */
+    /** @var \UniMapper\Reflection\Entity $entityReflection */
     protected $entityReflection;
 
     /** @var string $definition Property definition */
     protected $definition;
 
-    /**
-     * Constructor
-     *
-     * @param string           $message          Message
-     * @param \ReflectionClass $entityReflection Entity reflection
-     * @param string           $definition       Definition
-     */
-    public function __construct($message,
-        \ReflectionClass $entityReflection, $definition = null
-    ) {
+    public function __construct($message, Reflection\Entity $entityReflection, $definition = null)
+    {
         parent::__construct($message, 0);
         $this->entityReflection = $entityReflection;
         $this->definition = (string) $definition;

@@ -13,27 +13,21 @@ class Mapper
     /** @var string */
     protected $name = null;
 
-    /** @var \ReflectionClass $reflection Entity reflection */
-    protected $reflection;
+    /** @var \UniMapper\Reflection\Entity $entityReflection */
+    protected $entityReflection;
 
     /** @var string $definition Raw property docblok definition */
     protected $rawDefinition;
 
-    /**
-     * Constructor
-     *
-     * @param string           $definition Property definition
-     * @param \ReflectionClass $reflection Entity reflection class
-     */
-    public function __construct($definition, \ReflectionClass $reflection)
+    public function __construct($definition, Entity $entityReflection)
     {
         $this->rawDefinition = $definition;
-        $this->reflection = $reflection;
+        $this->entityReflection = $entityReflection;
 
         if ($definition === "") {
             throw new PropertyException(
                 "Mapper name is not set!",
-                $this->reflection,
+                $this->entityReflection,
                 $this->rawDefinition
             );
         }
@@ -45,7 +39,7 @@ class Mapper
         } else {
             throw new PropertyException(
                 "Invalid mapper definition!",
-                $this->reflection,
+                $this->entityReflection,
                 $this->rawDefinition
             );
         }
@@ -63,7 +57,7 @@ class Mapper
         if ($this->name === null) {
             throw new PropertyException(
                 "Mapper name is not set!",
-                $this->reflection,
+                $this->entityReflection,
                 $this->rawDefinition
             );
         }

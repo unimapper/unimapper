@@ -8,7 +8,7 @@ use UniMapper\Cache\ICache,
 /**
  * Entity reflection
  */
-class Entity extends \ReflectionClass
+class Entity
 {
 
     protected $mappers = null;
@@ -17,10 +17,45 @@ class Entity extends \ReflectionClass
     /** @var \UniMapper\Cache\ICache */
     protected $cache;
 
+    /** @var string */
+    private $className;
+
+    /** @var string */
+    private $parentClassName;
+
+    /** @var string */
+    private $fileName;
+
+    /** @var string */
+    private $docComment;
+
+    private $constants;
+
     public function __construct($class, ICache $cache = null)
     {
-        parent::__construct($class);
         $this->cache = $cache;
+
+        $reflection = new \ReflectionClass($class);
+        $this->className = $reflection->getName();
+        $this->fileName = $reflection->getFileName();
+        $this->docComment = $reflection->getDocComment();
+        $this->parentClassName = $reflection->getParentClass()->name; // @todo undefined method, needs some refactoring
+        $this->constants = $reflection->getConstants();
+    }
+
+    public function getConstants()
+    {
+        return $this->constants;
+    }
+
+    public function getClassName()
+    {
+        return $this->className;
+    }
+
+    public function getFileName()
+    {
+        return $this->fileName;
     }
 
     /**
@@ -32,10 +67,9 @@ class Entity extends \ReflectionClass
      */
     protected function parseProperties()
     {
-        $classDoc = $this->getDocComment();
         preg_match_all(
             '#@property (.*?)\n#s',
-            $classDoc,
+            $this->docComment,
             $annotations
         );
         $properties = array();
@@ -52,11 +86,8 @@ class Entity extends \ReflectionClass
         }
 
         // Include inherited doc comments too
-        if (stripos($classDoc, "{@inheritDoc}") !== false) {
-            $properties = array_merge(
-                $properties,
-                $this->getEntityProperties($this->getParentClass()->name) // @todo undefined method, needs some refactoring
-            );
+        if (stripos($this->docComment, "{@inheritDoc}") !== false) {
+            $properties = array_merge($properties, $this->getEntityProperties($this->parentClassName)); // @todo
         }
 
         return $properties;
@@ -71,10 +102,9 @@ class Entity extends \ReflectionClass
      */
     protected function parseMappers()
     {
-        $classDoc = $this->getDocComment();
         preg_match_all(
             '#@mapper (.*?)\n#s',
-            $classDoc,
+            $this->docComment,
             $annotations
         );
         $mappers = array();
@@ -107,11 +137,11 @@ class Entity extends \ReflectionClass
 
             if ($this->cache) {
 
-                $key = "mappers-" . $this->getName();
+                $key = "mappers-" . $this->className;
                 $this->mappers = $this->cache->load($key);
                 if (!$this->mappers) {
                     $this->mappers = $this->parseMappers();
-                    $this->cache->save($key, $this->mappers, $this->getFileName());
+                    $this->cache->save($key, $this->mappers, $this->fileName);
                 }
             } else {
                 $this->mappers = $this->parseMappers();
@@ -142,7 +172,7 @@ class Entity extends \ReflectionClass
 
             if ($this->cache) {
 
-                $key = "properties-" . $this->getName();
+                $key = "properties-" . $this->className;
                 $this->properties = $this->cache->load($key);
                 if (!$this->properties) {
                     $this->properties = $this->parseProperties();

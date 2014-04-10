@@ -95,7 +95,7 @@ class Property
     /**
      * Get entity reflection
      *
-     * @return \ReflectionClass
+     * @return \UniMapper\Reflection\Entity
      */
     public function getEntityReflection()
     {

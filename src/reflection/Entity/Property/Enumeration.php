@@ -2,7 +2,8 @@
 
 namespace UniMapper\Reflection\Entity\Property;
 
-use UniMapper\Exceptions\PropertyException;
+use UniMapper\Exceptions\PropertyException,
+    UniMapper\Reflection;
 
 /**
  * Entity property enumeration object
@@ -16,40 +17,29 @@ class Enumeration
     /** @var array */
     protected $index = array();
 
-    /**
-     * Constructor
-     *
-     * @param string           $definition    Enumeration definition
-     * @param string           $rawDefinition Raw property definition
-     * @param \ReflectionClass $reflection    Entity reflection
-     *
-     * @return void
-     *
-     * @throws \UniMapper\Exceptions\PropertyException
-     */
-    public function __construct($definition, $rawDefinition, \ReflectionClass $reflection)
+    public function __construct($definition, $rawDefinition, Reflection\Entity $entityReflection)
     {
         if (empty($definition)) {
             throw new PropertyException(
                 "Enumeration definition can not be empty!",
-                $reflection,
+                $entityReflection,
                 $rawDefinition
             );
         }
 
         list(, $class, $prefix) = $definition;
         if ($class === 'self') {
-            $constants = $reflection->getConstants();
+            $constants = $entityReflection->getConstants();
         } elseif ($class === 'parent') {
-            $constants = $reflection->getParentClass()->getConstants();
+            $constants = $entityReflection->getParent()->getConstants(); // @todo
         } elseif (class_exists($class)) {
-            $aliases = $reflection->getAliases();
+            $aliases = $entityReflection->getAliases();
             $reflectionClass = new \ReflectionClass($aliases->map($class));
             $constants = $reflectionClass->getConstants();
         } else {
             throw new PropertyException(
                 "Invalid enumeration definition!",
-                $reflection,
+                $entityReflection,
                 $rawDefinition
             );
         }
