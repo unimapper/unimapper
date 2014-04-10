@@ -18,6 +18,7 @@ class Custom extends \UniMapper\Query
     public $method;
     public $mapper;
     public $data;
+    public $contentType;
 
     public function __construct(Reflection\Entity $entityReflection, array $mappers, $mapperName)
     {
@@ -43,11 +44,12 @@ class Custom extends \UniMapper\Query
         return $this;
     }
 
-    public function put($query, $data)
+    public function put($query, $data, $contentType = "")
     {
         $this->method = self::METHOD_PUT;
         $this->query = $query;
         $this->data = $data;
+        $this->contentType = $contentType;
         return $this;
     }
 
