@@ -5,6 +5,7 @@ namespace UniMapper;
 use UniMapper\Validator,
     UniMapper\EntityCollection,
     UniMapper\Query,
+    UniMapper\Reflection,
     UniMapper\Cache\ICache,
     UniMapper\Exceptions\PropertyTypeException,
     UniMapper\Exceptions\PropertyUndefinedException;
@@ -22,7 +23,19 @@ abstract class Entity implements \JsonSerializable, \Serializable
 
     public function __construct(ICache $cache = null)
     {
-        $this->reflection = new Reflection\Entity($this, $cache);
+        $className = get_called_class();
+
+        if ($cache) {
+
+            $key = "entity-" . $className;
+            $this->reflection = $cache->load($key);
+            if (!$this->reflection) {
+                $this->reflection = new Reflection\Entity($className);
+                $cache->save($key, $this->reflection, $this->reflection->getFileName());
+            }
+        } else {
+            $this->reflection = new Reflection\Entity($className);
+        }
     }
 
     public function serialize()

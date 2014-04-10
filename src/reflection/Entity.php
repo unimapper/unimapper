@@ -2,8 +2,7 @@
 
 namespace UniMapper\Reflection;
 
-use UniMapper\Cache\ICache,
-    UniMapper\Exceptions\PropertyException;
+use UniMapper\Exceptions\PropertyException;
 
 /**
  * Entity reflection
@@ -11,11 +10,11 @@ use UniMapper\Cache\ICache,
 class Entity
 {
 
-    protected $mappers = null;
-    protected $properties = null;
+    /** @var array */
+    private $mappers;
 
-    /** @var \UniMapper\Cache\ICache */
-    protected $cache;
+    /** @var array */
+    private $properties;
 
     /** @var string */
     private $className;
@@ -31,16 +30,18 @@ class Entity
 
     private $constants;
 
-    public function __construct($class, ICache $cache = null)
+    public function __construct($class)
     {
-        $this->cache = $cache;
-
         $reflection = new \ReflectionClass($class);
+
         $this->className = $reflection->getName();
         $this->fileName = $reflection->getFileName();
         $this->docComment = $reflection->getDocComment();
         $this->parentClassName = $reflection->getParentClass()->name; // @todo undefined method, needs some refactoring
         $this->constants = $reflection->getConstants();
+
+        $this->mappers = $this->parseMappers();
+        $this->properties = $this->parseProperties();
     }
 
     public function getConstants()
@@ -65,7 +66,7 @@ class Entity
      *
      * @throws \UniMapper\Exceptions\PropertyException
      */
-    protected function parseProperties()
+    private function parseProperties()
     {
         preg_match_all(
             '#@property (.*?)\n#s',
@@ -100,7 +101,7 @@ class Entity
      *
      * @throws \UniMapper\Exceptions\PropertyException
      */
-    protected function parseMappers()
+    private function parseMappers()
     {
         preg_match_all(
             '#@mapper (.*?)\n#s',
@@ -132,29 +133,12 @@ class Entity
 
     public function getMappers()
     {
-        // Lazy load
-        if ($this->mappers === null) {
-
-            if ($this->cache) {
-
-                $key = "mappers-" . $this->className;
-                $this->mappers = $this->cache->load($key);
-                if (!$this->mappers) {
-                    $this->mappers = $this->parseMappers();
-                    $this->cache->save($key, $this->mappers, $this->fileName);
-                }
-            } else {
-                $this->mappers = $this->parseMappers();
-            }
-        }
-
         return $this->mappers;
     }
 
     public function hasProperty($name)
     {
-        $properties = $this->getProperties();
-        return isset($properties[$name]);
+        return isset($this->properties[$name]);
     }
 
     public function getProperty($name)
@@ -167,22 +151,6 @@ class Entity
 
     public function getProperties($mapperName = null)
     {
-        // Lazy load
-        if ($this->properties === null) {
-
-            if ($this->cache) {
-
-                $key = "properties-" . $this->className;
-                $this->properties = $this->cache->load($key);
-                if (!$this->properties) {
-                    $this->properties = $this->parseProperties();
-                    $this->cache->save($key, $this->properties, $this->getFileName());
-                }
-            } else {
-                $this->properties = $this->parseProperties();
-            }
-        }
-
         // Get all if mapping not defined
         if ($mapperName === null) {
             return $this->properties;
@@ -200,7 +168,7 @@ class Entity
 
     public function getPrimaryProperty()
     {
-        foreach ($this->getProperties() as $property) {
+        foreach ($this->properties as $property) {
             if ($property->isPrimary()) {
                 return $property;
             }

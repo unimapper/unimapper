@@ -57,7 +57,20 @@ abstract class Repository
         if (count($this->mappers) === 0) {
             throw new RepositoryException("You must set one mapper at least!");
         }
-        return new QueryBuilder(new Reflection\Entity($entityClass, $this->cache), $this->mappers, $this->logger);
+
+        if ($this->cache) {
+
+            $key = "entity-" . $entityClass;
+            $reflection = $this->cache->load($key);
+            if (!$reflection) {
+                $reflection = new Reflection\Entity($entityClass);
+                $this->cache->save($key, $reflection, $reflection->getFileName());
+            }
+        } else {
+            $reflection = new Reflection\Entity($entityClass);
+        }
+
+        return new QueryBuilder($reflection, $this->mappers, $this->logger);
     }
 
     public function getLogger()
