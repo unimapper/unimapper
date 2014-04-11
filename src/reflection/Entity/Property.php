@@ -236,7 +236,9 @@ class Property
      */
     public function validateValue($value)
     {
-        if ($this->type === null) { // @todo check entity validity first => move out
+        $expectedType = $this->type;
+
+        if ($expectedType === null) { // @todo check entity validity first => move out
             throw new PropertyException("Property type not defined on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
         }
 
@@ -248,27 +250,23 @@ class Property
         // Basic type
         if ($this->isBasicType()) {
 
-            if (gettype($value) === $this->type) {
+            if (gettype($value) === $expectedType) {
                 return;
             }
-            throw new PropertyTypeException("Expected " . $this->type . " but " . gettype($value) . " given on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
-        }
-
-        if ($this->type instanceof EntityCollection && $value instanceof EntityCollection) {
-           return;
+            throw new PropertyTypeException("Expected " . $expectedType . " but " . gettype($value) . " given on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
         }
 
         // Object
-        if (class_exists($this->type)) {
+        if (is_object($expectedType)) {
+            $expectedType = get_class($expectedType);
+        }
 
-            if ($value instanceof $this->type) {
+        if (class_exists($expectedType)) {
+
+            if ($value instanceof $expectedType) {
                 return;
             }
 
-            $expectedType = $this->type;
-            if (is_object($expectedType)) {
-                $expectedType = get_class($expectedType);
-            }
             $givenType = gettype($value);
             if ($givenType === "object") {
                 $givenType = get_class($value);
@@ -276,11 +274,6 @@ class Property
             throw new PropertyTypeException("Expected " . $expectedType . " but " . $givenType . " given on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
         }
 
-        // Convert to string
-        $expectedType = $this->type;
-        if (is_object($expectedType)) {
-            $expectedType = get_class($expectedType);
-        }
         $givenType = gettype($value);
         if ($givenType === "object") {
             $givenType = get_class($value);
