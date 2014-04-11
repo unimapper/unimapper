@@ -36,3 +36,13 @@ $reflection->validateValue(new DateTime);
 Assert::exception(function() use ($reflection) {
     $reflection->validateValue("foo");
 }, "UniMapper\Exceptions\PropertyTypeException", "Expected DateTime but string given on property time!");
+
+// Validate collection
+$reflection = new UniMapper\Reflection\Entity\Property(
+    '@property UniMapper\Tests\Fixtures\Entity\NoMapper[] $collection',
+    new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
+);
+$reflection->validateValue(new UniMapper\EntityCollection("UniMapper\Tests\Fixtures\Entity\Simple"));
+Assert::exception(function() use ($reflection) {
+    $reflection->validateValue("foo");
+}, "UniMapper\Exceptions\PropertyTypeException", "Expected UniMapper\EntityCollection but string given on property collection!");
