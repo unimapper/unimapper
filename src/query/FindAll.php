@@ -63,7 +63,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
 
         $result = $mapper->findAll($this);
         if ($result === false) {
-            return new EntityCollection($this->entityReflection->getName());
+            return new EntityCollection($this->entityReflection->getClassName());
         }
 
         return $result;
@@ -83,7 +83,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
 
                 $previous = $this->mappers[$mapperName]->findAll($this);
                 if (!$previous) {
-                    return new EntityCollection($this->entityReflection->getName());
+                    return new EntityCollection($this->entityReflection->getClassName());
                 }
             } else {
                 // Other calls
@@ -105,7 +105,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
                 $this->offset = $originalOffset;
 
                 if (!$data) {
-                    return new EntityCollection($this->entityReflection->getName());
+                    return new EntityCollection($this->entityReflection->getClassName());
                 }
 
                 $previous = EntityCollection::mergeByPrimary($previous, $data);

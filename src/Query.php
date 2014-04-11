@@ -27,7 +27,7 @@ abstract class Query implements IQuery
         $this->mappers = $mappers;
 
         if (count($entityReflection->getMappers()) === 0) {
-            throw new QueryException("Missing mapper definition in entity " . $entityReflection->getName() . "!");
+            throw new QueryException("Missing mapper definition in entity " . $entityReflection->getClassName() . "!");
         }
         $this->entityReflection = $entityReflection;
     }
@@ -152,7 +152,7 @@ abstract class Query implements IQuery
 
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
         if ($primaryProperty === null) {
-            throw new \Exception("Primary property not set in entity " . $this->entityReflection->getName() . "!"); // @todo remove when primary property is required
+            throw new \Exception("Primary property not set in entity " . $this->entityReflection->getClassName() . "!"); // @todo remove when primary property is required
         }
 
         foreach ($collection as $entity) {

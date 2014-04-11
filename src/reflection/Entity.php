@@ -2,25 +2,61 @@
 
 namespace UniMapper\Reflection;
 
-use UniMapper\Cache\ICache,
-    UniMapper\Exceptions\PropertyException;
+use UniMapper\Exceptions\PropertyException;
 
 /**
  * Entity reflection
  */
-class Entity extends \ReflectionClass
+class Entity
 {
 
-    protected $mappers = null;
-    protected $properties = null;
+    /** @var array */
+    private $mappers;
 
-    /** @var \UniMapper\Cache\ICache */
-    protected $cache;
+    /** @var array */
+    private $properties;
 
-    public function __construct($class, ICache $cache = null)
+    /** @var string */
+    private $className;
+
+    /** @var string */
+    private $parentClassName;
+
+    /** @var string */
+    private $fileName;
+
+    /** @var string */
+    private $docComment;
+
+    private $constants;
+
+    public function __construct($class)
     {
-        parent::__construct($class);
-        $this->cache = $cache;
+        $reflection = new \ReflectionClass($class);
+
+        $this->className = $reflection->getName();
+        $this->fileName = $reflection->getFileName();
+        $this->docComment = $reflection->getDocComment();
+        $this->parentClassName = $reflection->getParentClass()->name; // @todo undefined method, needs some refactoring
+        $this->constants = $reflection->getConstants();
+
+        $this->mappers = $this->parseMappers();
+        $this->properties = $this->parseProperties();
+    }
+
+    public function getConstants()
+    {
+        return $this->constants;
+    }
+
+    public function getClassName()
+    {
+        return $this->className;
+    }
+
+    public function getFileName()
+    {
+        return $this->fileName;
     }
 
     /**
@@ -30,12 +66,11 @@ class Entity extends \ReflectionClass
      *
      * @throws \UniMapper\Exceptions\PropertyException
      */
-    protected function parseProperties()
+    private function parseProperties()
     {
-        $classDoc = $this->getDocComment();
         preg_match_all(
             '#@property (.*?)\n#s',
-            $classDoc,
+            $this->docComment,
             $annotations
         );
         $properties = array();
@@ -52,11 +87,8 @@ class Entity extends \ReflectionClass
         }
 
         // Include inherited doc comments too
-        if (stripos($classDoc, "{@inheritDoc}") !== false) {
-            $properties = array_merge(
-                $properties,
-                $this->getEntityProperties($this->getParentClass()->name) // @todo undefined method, needs some refactoring
-            );
+        if (stripos($this->docComment, "{@inheritDoc}") !== false) {
+            $properties = array_merge($properties, $this->getEntityProperties($this->parentClassName)); // @todo
         }
 
         return $properties;
@@ -69,12 +101,11 @@ class Entity extends \ReflectionClass
      *
      * @throws \UniMapper\Exceptions\PropertyException
      */
-    protected function parseMappers()
+    private function parseMappers()
     {
-        $classDoc = $this->getDocComment();
         preg_match_all(
             '#@mapper (.*?)\n#s',
-            $classDoc,
+            $this->docComment,
             $annotations
         );
         $mappers = array();
@@ -102,29 +133,12 @@ class Entity extends \ReflectionClass
 
     public function getMappers()
     {
-        // Lazy load
-        if ($this->mappers === null) {
-
-            if ($this->cache) {
-
-                $key = "mappers-" . $this->getName();
-                $this->mappers = $this->cache->load($key);
-                if (!$this->mappers) {
-                    $this->mappers = $this->parseMappers();
-                    $this->cache->save($key, $this->mappers, $this->getFileName());
-                }
-            } else {
-                $this->mappers = $this->parseMappers();
-            }
-        }
-
         return $this->mappers;
     }
 
     public function hasProperty($name)
     {
-        $properties = $this->getProperties();
-        return isset($properties[$name]);
+        return isset($this->properties[$name]);
     }
 
     public function getProperty($name)
@@ -137,22 +151,6 @@ class Entity extends \ReflectionClass
 
     public function getProperties($mapperName = null)
     {
-        // Lazy load
-        if ($this->properties === null) {
-
-            if ($this->cache) {
-
-                $key = "properties-" . $this->getName();
-                $this->properties = $this->cache->load($key);
-                if (!$this->properties) {
-                    $this->properties = $this->parseProperties();
-                    $this->cache->save($key, $this->properties, $this->getFileName());
-                }
-            } else {
-                $this->properties = $this->parseProperties();
-            }
-        }
-
         // Get all if mapping not defined
         if ($mapperName === null) {
             return $this->properties;
@@ -170,7 +168,7 @@ class Entity extends \ReflectionClass
 
     public function getPrimaryProperty()
     {
-        foreach ($this->getProperties() as $property) {
+        foreach ($this->properties as $property) {
             if ($property->isPrimary()) {
                 return $property;
             }

@@ -58,3 +58,16 @@ Assert::exception(function() use ($entity) {
 $serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":41:{a:2:{s:4:"text";s:4:"test";s:2:"id";i:1;}}';
 Assert::same($serialized, serialize($entity));
 Assert::isEqual($entity, unserialize($serialized));
+
+// create()
+Assert::type(
+    "UniMapper\Tests\Fixtures\Entity\Simple",
+    Fixtures\Entity\Simple::create(
+        array("text" => "foo", "collection" => array())
+    )
+);
+
+// create() fail
+Assert::exception(function() {
+    Fixtures\Entity\Simple::create(array("collection" => "foo"));
+}, "Exception", "Can not set value automatically!");
