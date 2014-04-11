@@ -114,9 +114,11 @@ abstract class Entity implements \JsonSerializable, \Serializable
      */
     public static function create($values = null)
     {
-        $reflection = new Reflection\Entity(get_called_class());
+        $class = get_called_class();
 
-        $entity = $reflection->newInstance();
+        $reflection = new Reflection\Entity($class);
+
+        $entity = new $class;
 
         if ($values !== null) {
 
@@ -135,14 +137,31 @@ abstract class Entity implements \JsonSerializable, \Serializable
                     $entity->{$propertyName} = $value;
                 } catch (PropertyTypeException $exception) {
 
-                    if ($properties[$propertyName]->isBasicType()) {
-                        if (settype($value, $properties[$propertyName]->getType())) {
+                    $property = $properties[$propertyName];
+                    $propertyType = $property->getType();
+
+                    if ($property->isBasicType()) {
+
+                        if (settype($value, $propertyType)) {
                             $entity->{$propertyName} = $value;
                             continue;
                         }
-                    } elseif ($properties[$propertyName]->getType() === "DateTime") {
+                    } elseif ($propertyType === "DateTime") {
+
                         $entity->{$propertyName} = new \DateTime($value);
                         continue;
+                    } elseif (is_object($propertyType)) {
+
+                        if ($propertyType instanceof EntityCollection && Validator::isTraversable($value)) {
+
+                            $entityClass = $propertyType->getEntityClass();
+                            $collection = new EntityCollection($entityClass);
+                            foreach ($value as $data) {
+                                $collection[] = $entityClass::create($data);
+                            }
+                            $entity->{$propertyName} = $collection;
+                            continue;
+                        }
                     }
 
                     throw new \Exception("Can not set value automatically!");
