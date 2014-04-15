@@ -78,13 +78,13 @@ abstract class Entity implements \JsonSerializable, \Serializable
         $primaryName = $this->reflection->getPrimaryProperty()->getName();
         $primaryValue = $this->{$primaryName};
 
+        $data = $this->data;
         if ($primaryValue === null) {
             // Insert
-            $query = new Query\Insert($this->reflection, $this->mappers, $this);
+            $query = new Query\Insert($this->reflection, $this->mappers, $data);
         } else {
             // Update
-            $data = $this->data;
-            unset($data[$primaryName]);
+            unset($data[$primaryName]); // Changing primary value forbidden
             $query = new Query\Update($this->reflection, $this->mappers, $data);
         }
 
