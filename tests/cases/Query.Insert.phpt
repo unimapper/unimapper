@@ -12,9 +12,7 @@ $mapperMock->expects("insert")->once()->andReturn(1);
 $mappers = array();
 $mappers["FirstMapper"] = $mapperMock;
 
-$entity = new Fixtures\Entity\Simple;
-
-$query = new \UniMapper\Query\Insert($entity->getReflection(), $mappers, $entity);
+$query = new \UniMapper\Query\Insert(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mappers, ["text" => "foo"]);
 
 $result = $query->execute();
 

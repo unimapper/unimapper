@@ -1,7 +1,6 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Tests\Fixtures;
+use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -15,9 +14,7 @@ $mappers = array();
 $mappers["FirstMapper"] = $firstMapperMock;
 $mappers["SecondMapper"] = $secondMapperMock;
 
-$entity = new Fixtures\Entity\Hybrid;
-
-$query = new \UniMapper\Query\Insert($entity->getReflection(), $mappers, $entity);
+$query = new \UniMapper\Query\Insert(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Hybrid"), $mappers, ["first" => "foo"]);
 
 Assert::true($query->returnPrimaryValue);
 

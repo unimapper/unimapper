@@ -2,8 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Entity,
-    UniMapper\Reflection,
+use UniMapper\Reflection,
     UniMapper\Exceptions\QueryException;
 
 class Insert extends \UniMapper\Query
@@ -15,16 +14,11 @@ class Insert extends \UniMapper\Query
     /** @var boolean */
     public $returnPrimaryValue = true;
 
-    public function __construct(Reflection\Entity $entityReflection, array $mappers, Entity $entity)
+    public function __construct(Reflection\Entity $entityReflection, array $mappers, array $data)
     {
         parent::__construct($entityReflection, $mappers);
-
-        $requiredClass = $this->entityReflection->getClassName();
-        if (!$entity instanceof $requiredClass) {
-            throw new QueryException("Inserted entity must be instance of " . $requiredClass . " but " . get_class($entity) . "given!");
-        }
-
-        $this->entity = $entity;
+        $class = $this->entityReflection->getClassName();
+        $this->entity = $class::create($data); // @todo better validation?
     }
 
     public function executeSimple(\UniMapper\Mapper $mapper)
