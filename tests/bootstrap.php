@@ -1,6 +1,6 @@
 <?php
 
-$loader = @include __DIR__ . '/../vendor/autoload.php';
+$loader = @include __DIR__ . '/../../../autoload.php';
 if (!$loader) {
     echo 'Install Nette Tester using `composer update --dev`';
     exit(1);
