@@ -40,6 +40,9 @@ class Property
     /** @var \UniMapper\Reflection\Entity\Property\Validators */
     protected $validators;
 
+    /** @var boolean $computed Is property computed? */
+    protected $computed = false;
+
     public function __construct($definition, Reflection\Entity $entityReflection)
     {
         $this->rawDefinition = $definition;
@@ -210,39 +213,46 @@ class Property
      */
     protected function readFilters($definition)
     {
-        if (preg_match("#m:map\((.*?)\)#s", $definition, $matches)) {
+        if (preg_match("#m:computed#s", $definition, $matches)) {
+            // m:computed
+
+            $computedMethodName = $this->getComputedMethodName();
+            if (!method_exists($this->entityReflection->getClassName(), $computedMethodName)) {
+                throw new PropertyException("Can not find computed method with name " . $computedMethodName . "!", $this->entityReflection, $definition);
+            }
+            $this->computed = true;
+        } elseif (preg_match("#m:map\((.*?)\)#s", $definition, $matches)) {
             // m:map(Mapper:)
             // m:map(Mapper1:column|Mapper2:column)
 
-            $this->mapping = new Property\Mapping(
-                $this->name,
-                $matches[1],
-                $definition,
-                $this->entityReflection
-            );
+            if ($this->computed) {
+                throw new PropertyException("Can not combine m:computed with m:map!", $this->entityReflection, $definition);
+            }
+            $this->mapping = new Property\Mapping($this->name, $matches[1], $definition, $this->entityReflection);
         } elseif (preg_match("#m:enum\(([a-zA-Z0-9]+|self|parent)::([a-zA-Z0-9_]+)\*\)#", $definition, $matches)) {
             // m:enum(self::CUSTOM_*)
             // m:enum(parent::CUSTOM_*)
             // m:enum(MY_CLASS::CUSTOM_*)
 
-            $this->enumeration = new Property\Enumeration(
-                $matches,
-                $definition,
-                $this->entityReflection
-            );
+            if ($this->computed) {
+                throw new PropertyException("Can not combine m:computed with m:enum!", $this->entityReflection, $definition);
+            }
+            $this->enumeration = new Property\Enumeration($matches, $definition, $this->entityReflection);
         } elseif (preg_match("#m:primary#s", $definition, $matches)) {
             // m:primary
 
+            if ($this->computed) {
+                throw new PropertyException("Can not combine m:computed with m:primary!", $this->entityReflection, $definition);
+            }
             $this->primary = true;
         } elseif (preg_match("#m:validate\((.*?)\)#s", $definition, $matches)) {
             // m:validate:(url)
             // m:validate:(ipv4|ipv6)
 
-            $this->validators = new Property\Validators(
-                $matches[1],
-                $definition,
-                $this->entityReflection
-            );
+            if ($this->computed) {
+                throw new PropertyException("Can not combine m:computed with m:validate!", $this->entityReflection, $definition);
+            }
+            $this->validators = new Property\Validators($matches[1], $definition, $this->entityReflection);
         }
     }
 
@@ -317,9 +327,19 @@ class Property
         return in_array($this->type, $this->getBasicTypes());
     }
 
+    public function isComputed()
+    {
+        return $this->computed;
+    }
+
     public function isPrimary()
     {
         return $this->primary;
+    }
+
+    public function getComputedMethodName()
+    {
+       return "compute" . ucfirst($this->name);
     }
 
 }

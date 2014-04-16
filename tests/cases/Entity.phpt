@@ -31,7 +31,7 @@ Assert::equal(1, $entity->id);
 // toArray()
 $entityArray = $entity->toArray();
 Assert::same(
-    ['id' => 1, 'text' => 'test', 'empty' => NULL, 'url' => NULL, 'email' => NULL, 'time' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"]],
+    ['id' => 1, 'text' => 'test', 'empty' => NULL, 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"]],
     $entityArray
 );
 
@@ -42,7 +42,7 @@ Assert::same(
 );
 
 // JsonSerializable
-Assert::same('{"id":1,"text":"test","empty":null,"url":null,"email":null,"time":null,"ip":null,"mark":null,"entity":null,"collection":[]}', json_encode($entity));
+Assert::same('{"id":1,"text":"test","empty":null,"url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[]}', json_encode($entity));
 
 // Invalid property type
 Assert::exception(function() use ($entity) {
@@ -105,3 +105,9 @@ Assert::type(
 Assert::exception(function() {
     Fixtures\Entity\Simple::create(["mark" => 6]);
 }, "Exception", "Value 6 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateMark on property mark!");
+
+// computed
+$computedEntity = new Fixtures\Entity\Simple;
+Assert::same(null, $computedEntity->year);
+$computedEntity->time = new DateTime;
+Assert::same((int) date("Y"), $computedEntity->year);
