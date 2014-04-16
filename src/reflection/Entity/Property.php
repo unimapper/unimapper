@@ -37,6 +37,9 @@ class Property
     /** @var boolean $primary Is property defined as primary? */
     protected $primary = false;
 
+    /** @var \UniMapper\Reflection\Entity\Property\Validators */
+    protected $validators;
+
     public function __construct($definition, Reflection\Entity $entityReflection)
     {
         $this->rawDefinition = $definition;
@@ -208,6 +211,9 @@ class Property
     protected function readFilters($definition)
     {
         if (preg_match("#m:map\((.*?)\)#s", $definition, $matches)) {
+            // m:map(Mapper:)
+            // m:map(Mapper1:column|Mapper2:column)
+
             $this->mapping = new Property\Mapping(
                 $this->name,
                 $matches[1],
@@ -215,13 +221,28 @@ class Property
                 $this->entityReflection
             );
         } elseif (preg_match("#m:enum\(([a-zA-Z0-9]+|self|parent)::([a-zA-Z0-9_]+)\*\)#", $definition, $matches)) {
+            // m:enum(self::CUSTOM_*)
+            // m:enum(parent::CUSTOM_*)
+            // m:enum(MY_CLASS::CUSTOM_*)
+
             $this->enumeration = new Property\Enumeration(
                 $matches,
                 $definition,
                 $this->entityReflection
             );
         } elseif (preg_match("#m:primary#s", $definition, $matches)) {
+            // m:primary
+
             $this->primary = true;
+        } elseif (preg_match("#m:validate\((.*?)\)#s", $definition, $matches)) {
+            // m:validate:(url)
+            // m:validate:(ipv4|ipv6)
+
+            $this->validators = new Property\Validators(
+                $matches[1],
+                $definition,
+                $this->entityReflection
+            );
         }
     }
 
@@ -240,6 +261,16 @@ class Property
 
         if ($expectedType === null) { // @todo check entity validity first => move out
             throw new PropertyException("Property type not defined on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
+        }
+
+        // Validators
+        if ($this->validators) {
+
+            foreach ($this->validators->getCallbacks() as $callback) {
+                if (!call_user_func_array($callback, [$value])) {
+                    throw new PropertyTypeException("Value " . $value . " is not valid for " . $callback[0] . "::" . $callback[1] . " on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
+                }
+            }
         }
 
         // Enumeration
