@@ -70,7 +70,7 @@ Assert::exception(function() {
     Fixtures\Entity\Simple::create(array("collection" => "foo"));
 }, "Exception", "Can not set value automatically!");
 
-// validate email
+// m:validate email
 Assert::type(
     "UniMapper\Tests\Fixtures\Entity\Simple",
     Fixtures\Entity\Simple::create(["email" => "john.doe@example.com"])
@@ -79,7 +79,7 @@ Assert::exception(function() {
     Fixtures\Entity\Simple::create(["email" => "foo"]);
 }, "Exception", "Value foo is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateEmail on property email!");
 
-// validate url
+// m:validate url
 Assert::type(
     "UniMapper\Tests\Fixtures\Entity\Simple",
     Fixtures\Entity\Simple::create(["url" => "http://www.example.com"])
@@ -88,7 +88,7 @@ Assert::exception(function() {
     Fixtures\Entity\Simple::create(["url" => "example.com"]);
 }, "Exception", "Value example.com is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateUrl on property url!");
 
-// validate ip
+// m:validate ip
 Assert::type(
     "UniMapper\Tests\Fixtures\Entity\Simple",
     Fixtures\Entity\Simple::create(["ip" => "192.168.0.1"])
@@ -97,7 +97,7 @@ Assert::exception(function() {
     Fixtures\Entity\Simple::create(["ip" => "255.255.255.256"]);
 }, "Exception", "Value 255.255.255.256 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateIp on property ip!");
 
-// validate mark
+// m:validate mark
 Assert::type(
     "UniMapper\Tests\Fixtures\Entity\Simple",
     Fixtures\Entity\Simple::create(["mark" => 1])
@@ -106,8 +106,11 @@ Assert::exception(function() {
     Fixtures\Entity\Simple::create(["mark" => 6]);
 }, "Exception", "Value 6 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateMark on property mark!");
 
-// computed
+// m:computed
 $computedEntity = new Fixtures\Entity\Simple;
 Assert::same(null, $computedEntity->year);
 $computedEntity->time = new DateTime;
 Assert::same((int) date("Y"), $computedEntity->year);
+Assert::exception(function() use ($computedEntity) {
+   $computedEntity->year = 1999;
+}, "UniMapper\Exceptions\PropertyException", "Can not set computed property with name 'year'!");
