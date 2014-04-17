@@ -31,7 +31,7 @@ Assert::equal(1, $entity->id);
 // toArray()
 $entityArray = $entity->toArray();
 Assert::same(
-    array('id' => 1, 'text' => 'test', 'empty' => NULL, 'time' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"]),
+    ['id' => 1, 'text' => 'test', 'empty' => NULL, 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"]],
     $entityArray
 );
 
@@ -42,7 +42,7 @@ Assert::same(
 );
 
 // JsonSerializable
-Assert::same('{"id":1,"text":"test","empty":null,"time":null,"entity":null,"collection":[]}', json_encode($entity));
+Assert::same('{"id":1,"text":"test","empty":null,"url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[]}', json_encode($entity));
 
 // Invalid property type
 Assert::exception(function() use ($entity) {
@@ -66,8 +66,51 @@ Assert::type(
         array("text" => "foo", "collection" => array())
     )
 );
-
-// create() fail
 Assert::exception(function() {
     Fixtures\Entity\Simple::create(array("collection" => "foo"));
 }, "Exception", "Can not set value automatically!");
+
+// m:validate email
+Assert::type(
+    "UniMapper\Tests\Fixtures\Entity\Simple",
+    Fixtures\Entity\Simple::create(["email" => "john.doe@example.com"])
+);
+Assert::exception(function() {
+    Fixtures\Entity\Simple::create(["email" => "foo"]);
+}, "Exception", "Value foo is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateEmail on property email!");
+
+// m:validate url
+Assert::type(
+    "UniMapper\Tests\Fixtures\Entity\Simple",
+    Fixtures\Entity\Simple::create(["url" => "http://www.example.com"])
+);
+Assert::exception(function() {
+    Fixtures\Entity\Simple::create(["url" => "example.com"]);
+}, "Exception", "Value example.com is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateUrl on property url!");
+
+// m:validate ip
+Assert::type(
+    "UniMapper\Tests\Fixtures\Entity\Simple",
+    Fixtures\Entity\Simple::create(["ip" => "192.168.0.1"])
+);
+Assert::exception(function() {
+    Fixtures\Entity\Simple::create(["ip" => "255.255.255.256"]);
+}, "Exception", "Value 255.255.255.256 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateIp on property ip!");
+
+// m:validate mark
+Assert::type(
+    "UniMapper\Tests\Fixtures\Entity\Simple",
+    Fixtures\Entity\Simple::create(["mark" => 1])
+);
+Assert::exception(function() {
+    Fixtures\Entity\Simple::create(["mark" => 6]);
+}, "Exception", "Value 6 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateMark on property mark!");
+
+// m:computed
+$computedEntity = new Fixtures\Entity\Simple;
+Assert::same(null, $computedEntity->year);
+$computedEntity->time = new DateTime;
+Assert::same((int) date("Y"), $computedEntity->year);
+Assert::exception(function() use ($computedEntity) {
+   $computedEntity->year = 1999;
+}, "UniMapper\Exceptions\PropertyException", "Can not set computed property with name 'year'!");

@@ -7,6 +7,7 @@ use UniMapper\Validator,
     UniMapper\Query,
     UniMapper\Reflection,
     UniMapper\Cache\ICache,
+    UniMapper\Exceptions\PropertyException,
     UniMapper\Exceptions\PropertyTypeException,
     UniMapper\Exceptions\PropertyUndefinedException;
 
@@ -36,6 +37,31 @@ abstract class Entity implements \JsonSerializable, \Serializable
         } else {
             $this->reflection = new Reflection\Entity($className);
         }
+    }
+
+    public static function validateUrl($value)
+    {
+        return Validator::isUrl($value);
+    }
+
+    public static function validateEmail($value)
+    {
+        return Validator::isEmail($value);
+    }
+
+    public static function validateIp($value)
+    {
+        return Validator::isIp($value);
+    }
+
+    public static function validateIpv4($value)
+    {
+        return Validator::isIpv4($value);
+    }
+
+    public static function validateIpv6($value)
+    {
+        return Validator::isIpv6($value);
     }
 
     public function serialize()
@@ -188,17 +214,27 @@ abstract class Entity implements \JsonSerializable, \Serializable
         $properties = $this->reflection->getProperties();
         if (isset($properties[$name])) {
 
+            // computed property
+            if ($properties[$name]->isComputed()) {
+
+                $computedValue = $this->{$properties[$name]->getComputedMethodName()}();
+                if ($computedValue === null) {
+                    return null;
+                }
+                $properties[$name]->validateValue($computedValue);
+                return $computedValue;
+            }
+
+            // empty collection
             $type = $properties[$name]->getType();
             if ($type instanceof EntityCollection) {
                 return $type;
             }
+
             return null;
         }
 
-        throw new PropertyUndefinedException(
-            "Undefined property with name '" . $name . "'!",
-            $this->reflection
-        );
+        throw new PropertyUndefinedException("Undefined property with name '" . $name . "'!", $this->reflection);
     }
 
     /**
@@ -214,6 +250,10 @@ abstract class Entity implements \JsonSerializable, \Serializable
         $properties = $this->reflection->getProperties();
         if (!isset($properties[$name])) {
             throw new PropertyUndefinedException("Undefined property with name '" . $name . "'!", $this->reflection);
+        }
+
+        if ($properties[$name]->isComputed()) {
+            throw new PropertyException("Can not set computed property with name '" . $name . "'!", $this->reflection);
         }
 
         // @todo elaborate null values
