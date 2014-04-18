@@ -70,7 +70,7 @@ abstract class Repository
     {
         $entityClass = NC::nameToClass($name, NC::$entityMask);
         if (!is_subclass_of($entityClass, "UniMapper\Entity")) {
-            throw new RepositoryException("Can not set class '" . $entityClass . "' as default entity in repository " .  get_class($this) . "!");
+            throw new RepositoryException("Entity with class '" . $entityClass . "' not found!");
         }
 
         if (count($this->mappers) === 0) {
