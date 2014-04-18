@@ -5,6 +5,14 @@ namespace UniMapper;
 use UniMapper\Reflection,
     UniMapper\Exceptions\QueryBuilderException;
 
+/**
+ * @method \UniMapper\Query\FindAll findAll()
+ * @method \UniMapper\Query\FindOne findOne($primaryValue)
+ * @method \UniMapper\Query\Insert  insert(array $data)
+ * @method \UniMapper\Query\Update  update(array $data)
+ * @method \UniMapper\Query\Delete  delete()
+ * @method \UniMapper\Query\Count   count()
+ */
 class QueryBuilder
 {
 
