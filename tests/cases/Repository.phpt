@@ -7,6 +7,7 @@ require __DIR__ . '/../bootstrap.php';
 
 
 $repository = new Fixtures\Repository\SimpleRepository;
+Assert::same("Simple", $repository->getName());
 Assert::same("Simple", $repository->getEntityName());
 Assert::exception(function() use ($repository) {
     $repository->query();

@@ -29,6 +29,11 @@ abstract class Repository
      */
     public function getEntityName()
     {
+        return $this->getName();
+    }
+
+    public function getName()
+    {
         return NC::classToName(get_called_class(), NC::$repositoryMask);
     }
 
