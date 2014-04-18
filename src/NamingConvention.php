@@ -28,7 +28,9 @@ class NamingConvention
         if ($mask === "*") {
             return $class;
         }
-        return explode("*", $class)[0];
+
+        preg_match("/" . str_replace("*", "(.*)", $mask) . "/", $class, $match);
+        return $match[1];
     }
 
     public static function nameToClass($name, $mask)
@@ -45,10 +47,7 @@ class NamingConvention
             return false;
         }
         $mask = self::trimNamespace($mask);
-        if ($mask === "*" || self::startsWith($mask, "*") || self::endsWith($mask, "*")) {
-            return true;
-        }
-        return false;
+        return $mask === "*" || self::startsWith($mask, "*") || self::endsWith($mask, "*");
     }
 
     public static function trimNamespace($class)

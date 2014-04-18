@@ -21,13 +21,18 @@ Assert::same(false, NC::isValidMask("UniMapper\Tests\Fixtures\*\Entity"));
 Assert::same(false, NC::isValidMask("UniMapper\Tests\Fixtures\Entity"));
 
 // nameToClass()
-Assert::same("UniMapper\Tests\Fixtures\Entity\Simple", NC::nameToClass("Simple", "UniMapper\Tests\Fixtures\Entity\*"));
+Assert::same("UniMapper\Tests\Fixtures\Entity\Simple", NC::nameToClass("Simple", NC::$entityMask));
+Assert::same("UniMapper\Tests\Fixtures\Repository\SimpleRepository", NC::nameToClass("Simple", NC::$repositoryMask));
 Assert::exception(function() {
     NC::nameToClass("Simple", "foo");
 }, "UniMapper\Exceptions\InvalidArgumentException", "Invalid mask 'foo'!");
 
 // classToName()
-Assert::same("Simple", NC::classToName("UniMapper\Tests\Fixtures\Entity\Simple", "UniMapper\Tests\Fixtures\Entity\*"));
+Assert::same("Simple", NC::classToName("UniMapper\Tests\Fixtures\Entity\Simple", NC::$entityMask));
+Assert::same("Simple", NC::classToName("UniMapper\Tests\Fixtures\Repository\SimpleRepository", NC::$repositoryMask));
 Assert::exception(function() {
-    NC::nameToClass("UniMapper\Tests\Fixtures\Entity\Simple", "foo");
+    NC::classToName("UniMapper\Tests\Fixtures\Entity\Simple", "foo");
 }, "UniMapper\Exceptions\InvalidArgumentException", "Invalid mask 'foo'!");
+Assert::exception(function() {
+    NC::classToName("foo", NC::$entityMask);
+}, "UniMapper\Exceptions\InvalidArgumentException", "Class 'foo' not found!");
