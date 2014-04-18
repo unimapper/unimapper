@@ -22,6 +22,11 @@ abstract class Repository
 
     private $cache;
 
+    /**
+     * Get related entity name
+     *
+     * @return string
+     */
     public function getEntityName()
     {
         return NC::classToName(get_called_class(), NC::$repositoryMask);
@@ -42,17 +47,32 @@ abstract class Repository
         $this->mappers[$mapper->getName()] = $mapper;
     }
 
-    protected function createQuery($entityClass = "")
+    /**
+     * Query on entity related to actual repository
+     *
+     * @return \UniMapper\QueryBuilder
+     */
+    public function query()
     {
-        if (empty($entityClass)) {
-            $entityClass = NC::classToName($this->getEntityName(), NC::$entityMask);
-        }
-        if (!$entityClass) {
-            throw new RepositoryException("Query must be called on some entity class in repository " .  get_class($this) . "!");
-        }
+        return $this->queryOn($this->getEntityName());
+    }
+
+    /**
+     * Create custom query on specific entity
+     *
+     * @param $name Entity name
+     *
+     * @return \UniMapper\QueryBuilder
+     *
+     * @throws \UniMapper\Excpetions\RepositoryException
+     */
+    protected function queryOn($name)
+    {
+        $entityClass = NC::nameToClass($name, NC::$entityMask);
         if (!is_subclass_of($entityClass, "UniMapper\Entity")) {
             throw new RepositoryException("Can not set class '" . $entityClass . "' as default entity in repository " .  get_class($this) . "!");
         }
+
         if (count($this->mappers) === 0) {
             throw new RepositoryException("You must set one mapper at least!");
         }
