@@ -1,12 +1,13 @@
 <?php
 
 use Tester\Assert;
+use UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
 
 // Basic entity, no mappers
-$reflection = new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoMapper");
+$reflection = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoMapper");
 Assert::same(array(), $reflection->getMappers());
 Assert::false($reflection->isHybrid());
 Assert::true($reflection->hasProperty("id"));
@@ -17,9 +18,9 @@ Assert::exception(function() use ($reflection) {
 }, "Exception", "Unknown property foo!");
 Assert::isEqual(
     array(
-        "id" => new UniMapper\Reflection\Entity\Property('@property integer $id', $reflection),
-        "text" => new UniMapper\Reflection\Entity\Property('@property string  $text', $reflection),
-        "empty" => new UniMapper\Reflection\Entity\Property('@property string  $empty', $reflection)
+        "id" => new Reflection\Entity\Property('@property integer $id', $reflection),
+        "text" => new Reflection\Entity\Property('@property string  $text', $reflection),
+        "empty" => new Reflection\Entity\Property('@property string  $empty', $reflection)
     ),
     $reflection->getProperties()
 );
@@ -27,47 +28,47 @@ Assert::null($reflection->getPrimaryProperty());
 
 
 // Simple entity with mapper
-$reflection = new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple");
+$reflection = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple");
 Assert::isEqual(
-    array('FirstMapper' => new UniMapper\Reflection\Mapper('FirstMapper(first_resource)', $reflection)),
+    array('FirstMapper' => new Reflection\Mapper('FirstMapper(first_resource)', $reflection)),
     $reflection->getMappers()
 );
 Assert::false($reflection->isHybrid());
 Assert::isEqual(
     array(
-        "id" => new UniMapper\Reflection\Entity\Property('@property integer $id', $reflection),
-        "text" => new UniMapper\Reflection\Entity\Property('@property string  $text', $reflection),
-        "empty" => new UniMapper\Reflection\Entity\Property('@property string  $empty', $reflection),
-        "entity" => new UniMapper\Reflection\Entity\Property('@property UniMapper\Tests\Fixtures\Entity\NoMapper   $entity', $reflection),
-        "collection" => new UniMapper\Reflection\Entity\Property('@property UniMapper\Tests\Fixtures\Entity\NoMapper[] $collection', $reflection),
+        "id" => new Reflection\Entity\Property('@property integer $id', $reflection),
+        "text" => new Reflection\Entity\Property('@property string $text', $reflection),
+        "empty" => new Reflection\Entity\Property('@property string $empty', $reflection),
+        "entity" => new Reflection\Entity\Property('@property NoMapper $entity', $reflection),
+        "collection" => new Reflection\Entity\Property('@property NoMapper[] $collection', $reflection),
     ),
     $reflection->getProperties()
 );
 Assert::isEqual(
-    new UniMapper\Reflection\Entity\Property('@property integer  $id         m:map(FirstMapper:) m:primary', $reflection),
+    new Reflection\Entity\Property('@property integer  $id         m:map(FirstMapper:) m:primary', $reflection),
     $reflection->getPrimaryProperty()
 );
 
 
 // Hybrid entity
-$reflection = new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Hybrid");
+$reflection = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Hybrid");
 Assert::isEqual(
     array(
-        'FirstMapper' => new UniMapper\Reflection\Mapper('FirstMapper(first_resource)', $reflection),
-        'SecondMapper' => new UniMapper\Reflection\Mapper('SecondMapper(second_resource)', $reflection)
+        'FirstMapper' => new Reflection\Mapper('FirstMapper(first_resource)', $reflection),
+        'SecondMapper' => new Reflection\Mapper('SecondMapper(second_resource)', $reflection)
     ),
     $reflection->getMappers()
 );
 Assert::true($reflection->isHybrid());
 Assert::isEqual(
     array(
-        "id" => new UniMapper\Reflection\Entity\Property('@property integer $id     m:map(FirstMapper:|SecondMapper:) m:primary', $reflection),
-        "first" => new UniMapper\Reflection\Entity\Property('@property string  $first  m:map(FirstMapper:|SecondMapper:customFirst)', $reflection),
-        "second" => new UniMapper\Reflection\Entity\Property('@property integer $second m:map(SecondMapper:secondary)', $reflection)
+        "id" => new Reflection\Entity\Property('@property integer $id m:map(FirstMapper:|SecondMapper:) m:primary', $reflection),
+        "first" => new Reflection\Entity\Property('@property string $first m:map(FirstMapper:|SecondMapper:customFirst)', $reflection),
+        "second" => new Reflection\Entity\Property('@property integer $second m:map(SecondMapper:secondary)', $reflection)
     ),
     $reflection->getProperties()
 );
 Assert::isEqual(
-    new UniMapper\Reflection\Entity\Property('@property integer $id     m:map(FirstMapper:|SecondMapper:) m:primary', $reflection),
+    new Reflection\Entity\Property('@property integer $id m:map(FirstMapper:|SecondMapper:) m:primary', $reflection),
     $reflection->getPrimaryProperty()
 );

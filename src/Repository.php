@@ -3,6 +3,7 @@
 namespace UniMapper;
 
 use UniMapper\Exceptions\RepositoryException,
+    UniMapper\NamingConvention as NC,
     UniMapper\Cache\ICache,
     UniMapper\Reflection;
 
@@ -21,11 +22,9 @@ abstract class Repository
 
     private $cache;
 
-    public function detectEntityClass()
+    public function getEntityName()
     {
-        $name = explode("\\", get_called_class());
-        $name = end($name);
-        return substr($name, 0, strrpos($name, "Repository"));
+        return NC::classToName(get_called_class(), NC::$repositoryMask);
     }
 
     public function setCache(ICache $cache)
@@ -46,7 +45,7 @@ abstract class Repository
     protected function createQuery($entityClass = "")
     {
         if (empty($entityClass)) {
-            $entityClass = $this->detectEntityClass();
+            $entityClass = NC::classToName($this->getEntityName(), NC::$entityMask);
         }
         if (!$entityClass) {
             throw new RepositoryException("Query must be called on some entity class in repository " .  get_class($this) . "!");

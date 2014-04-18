@@ -4,6 +4,8 @@ namespace UniMapper\Reflection\Entity;
 
 use UniMapper\EntityCollection,
     UniMapper\Reflection,
+    UniMapper\NamingConvention as NC,
+    UniMapper\Exceptions\InvalidArgumentException,
     UniMapper\Exceptions\PropertyException,
     UniMapper\Exceptions\PropertyTypeException;
 
@@ -171,37 +173,34 @@ class Property
      *
      * @param string $definition Docblok definition
      *
-     * @return void
-     *
      * @throws \UniMapper\Exceptions\PropertyTypeException
      */
     protected function readType($definition)
     {
         $basic = implode("|", $this->basicTypes);
-        if (preg_match("#^($basic)$#", $definition)) {
-            $this->type = $definition;
-        } elseif (class_exists($definition)) {
-            $this->type = $definition;
+        if (preg_match("#^(" . $basic . ")$#", $definition)) {
+            // Basic type
+
+            return $this->type = $definition;
+        } elseif ($definition === "DateTime") {
+            // DateTime
+
+            return $this->type = $definition;
+        } elseif (class_exists(NC::nameToClass($definition, NC::$entityMask))) {
+            // Entity
+
+            return $this->type = NC::nameToClass($definition, NC::$entityMask);
         } elseif (preg_match("#(.*?)\[\]#s", $definition)) {
-            // Entity collection definition as UniMapper\Entity\Abc[] for example
-            $entityClass = rtrim($definition, "[]");
-            if (class_exists($entityClass)) {
-                $collection = new EntityCollection($entityClass);
-                $this->type = $collection;
-            } else {
-                throw new PropertyTypeException(
-                    "Class " . $entityClass . " not found!",
-                    $this->entityReflection,
-                    $this->rawDefinition
-                );
+            // Collection
+
+            try {
+                return $this->type = new EntityCollection(NC::nameToClass(rtrim($definition, "[]"), NC::$entityMask));
+            } catch (InvalidArgumentException $expection) {
+
             }
-        } else {
-            throw new PropertyTypeException(
-                "Unsupported type '" . $definition . "'!",
-                $this->entityReflection,
-                $this->rawDefinition
-            );
         }
+
+        throw new PropertyTypeException("Unsupported type '" . $definition . "'!", $this->entityReflection, $this->rawDefinition);
     }
 
     /**

@@ -21,3 +21,6 @@ Tester\Environment::setup();
 date_default_timezone_set('Europe/Prague');
 
 $mockista = new \Mockista\Registry;
+
+UniMapper\NamingConvention::$entityMask = "UniMapper\Tests\Fixtures\Entity\*";
+UniMapper\NamingConvention::$repositoryMask = "UniMapper\Tests\Fixtures\Repository\*Repository";

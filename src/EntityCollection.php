@@ -2,6 +2,8 @@
 
 namespace UniMapper;
 
+use UniMapper\Exceptions\InvalidArgumentException;
+
 /**
  * Entity collection as ArrayList
  */
@@ -24,7 +26,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     public function __construct($entityClass)
     {
         if (!is_subclass_of($entityClass, "UniMapper\Entity")) {
-            throw new \Exception("Class must be instance of entity!");
+            throw new InvalidArgumentException("Class must be instance of entity!");
         }
         $this->entityClass = $entityClass;
     }

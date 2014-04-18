@@ -5,17 +5,17 @@ namespace UniMapper\Tests\Fixtures\Entity;
 /**
  * @mapper FirstMapper(first_resource)
  *
- * @property integer                                    $id         m:map(FirstMapper:) m:primary
- * @property string                                     $text       m:map(FirstMapper:)
- * @property string                                     $empty
- * @property string                                     $url        m:validate(url)
- * @property string                                     $email      m:validate(email)
- * @property DateTime                                   $time
- * @property integer                                    $year       m:computed
- * @property string                                     $ip         m:validate(ip)
- * @property integer                                    $mark       m:validate(mark)
- * @property UniMapper\Tests\Fixtures\Entity\NoMapper   $entity
- * @property UniMapper\Tests\Fixtures\Entity\NoMapper[] $collection
+ * @property integer    $id         m:map(FirstMapper:) m:primary
+ * @property string     $text       m:map(FirstMapper:)
+ * @property string     $empty
+ * @property string     $url        m:validate(url)
+ * @property string     $email      m:validate(email)
+ * @property DateTime   $time
+ * @property integer    $year       m:computed
+ * @property string     $ip         m:validate(ip)
+ * @property integer    $mark       m:validate(mark)
+ * @property NoMapper   $entity
+ * @property NoMapper[] $collection
  */
 class Simple extends \UniMapper\Entity
 {

@@ -39,10 +39,24 @@ Assert::exception(function() use ($reflection) {
 
 // Validate collection
 $reflection = new UniMapper\Reflection\Entity\Property(
-    '@property UniMapper\Tests\Fixtures\Entity\NoMapper[] $collection',
+    '@property NoMapper[] $collection',
     new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
 );
 $reflection->validateValue(new UniMapper\EntityCollection("UniMapper\Tests\Fixtures\Entity\Simple"));
 Assert::exception(function() use ($reflection) {
     $reflection->validateValue("foo");
 }, "UniMapper\Exceptions\PropertyTypeException", "Expected UniMapper\EntityCollection but string given on property collection!");
+
+// Do not accept every object
+Assert::exception(function() {
+    new UniMapper\Reflection\Entity\Property(
+        '@property UniMapper\Tests\Fixtures\Entity\Simple $entity',
+        new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
+    );
+}, "UniMapper\Exceptions\PropertyTypeException", "Unsupported type 'UniMapper\Tests\Fixtures\Entity\Simple'!");
+Assert::exception(function() {
+    new UniMapper\Reflection\Entity\Property(
+        '@property stdClass $object',
+        new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
+    );
+}, "UniMapper\Exceptions\PropertyTypeException", "Unsupported type 'stdClass'!");
