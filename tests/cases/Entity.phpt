@@ -59,51 +59,43 @@ $serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":41:{a:2:{s:4:"text"
 Assert::same($serialized, serialize($entity));
 Assert::isEqual($entity, unserialize($serialized));
 
-// create()
-Assert::type(
-    "UniMapper\Tests\Fixtures\Entity\Simple",
-    Fixtures\Entity\Simple::create(
-        array("text" => "foo", "collection" => array())
-    )
-);
-Assert::exception(function() {
-    Fixtures\Entity\Simple::create(array("collection" => "foo"));
-}, "Exception", "Can not set value automatically!");
+// import()
+$entity->import(["id" => "2", "text" => 3.0, "collection" => [], "time" => "1999-01-12"]);
+Assert::same(2, $entity->id);
+Assert::same("3", $entity->text);
+Assert::type("UniMapper\EntityCollection", $entity->collection);
+Assert::same("1999-01-12", $entity->time->format("Y-m-d"));
+$entity->import(["time" => ["date" => "1999-02-12"]]);
+Assert::same("1999-02-12", $entity->time->format("Y-m-d"));
+Assert::exception(function() use ($entity) {
+    $entity->import(["collection" => "foo"]);
+}, "Exception", "Can not set value on property 'collection' automatically!");
+Assert::exception(function() use ($entity) {
+    $entity->import(["time" => []]);
+}, "Exception", "Can not set value on property 'time' automatically!");
 
 // m:validate email
-Assert::type(
-    "UniMapper\Tests\Fixtures\Entity\Simple",
-    Fixtures\Entity\Simple::create(["email" => "john.doe@example.com"])
-);
-Assert::exception(function() {
-    Fixtures\Entity\Simple::create(["email" => "foo"]);
+$entity->email = "john.doe@example.com";
+Assert::exception(function() use ($entity) {
+    $entity->email = "foo";
 }, "Exception", "Value foo is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateEmail on property email!");
 
 // m:validate url
-Assert::type(
-    "UniMapper\Tests\Fixtures\Entity\Simple",
-    Fixtures\Entity\Simple::create(["url" => "http://www.example.com"])
-);
-Assert::exception(function() {
-    Fixtures\Entity\Simple::create(["url" => "example.com"]);
+$entity->url = "http://www.example.com";
+Assert::exception(function() use ($entity) {
+    $entity->url = "example.com";
 }, "Exception", "Value example.com is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateUrl on property url!");
 
 // m:validate ip
-Assert::type(
-    "UniMapper\Tests\Fixtures\Entity\Simple",
-    Fixtures\Entity\Simple::create(["ip" => "192.168.0.1"])
-);
-Assert::exception(function() {
-    Fixtures\Entity\Simple::create(["ip" => "255.255.255.256"]);
+$entity->ip = "192.168.0.1";
+Assert::exception(function() use ($entity) {
+    $entity->ip = "255.255.255.256";
 }, "Exception", "Value 255.255.255.256 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateIp on property ip!");
 
 // m:validate mark
-Assert::type(
-    "UniMapper\Tests\Fixtures\Entity\Simple",
-    Fixtures\Entity\Simple::create(["mark" => 1])
-);
-Assert::exception(function() {
-    Fixtures\Entity\Simple::create(["mark" => 6]);
+$entity->mark = 1;
+Assert::exception(function() use ($entity) {
+    $entity->mark = 6;
 }, "Exception", "Value 6 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateMark on property mark!");
 
 // m:computed

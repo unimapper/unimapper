@@ -22,6 +22,9 @@ abstract class Entity implements \JsonSerializable, \Serializable
     private $data = array();
     private $mappers = array();
 
+    /** @var \UniMapper\Cache\ICache $cache */
+    private $cache;
+
     public function __construct(ICache $cache = null)
     {
         $className = get_called_class();
@@ -134,68 +137,74 @@ abstract class Entity implements \JsonSerializable, \Serializable
     }
 
     /**
-     * Create new entity instance.
+     * Import and try to convert values automatically if possible
      *
-     * @todo slower than constructor way because of cache absence
+     * @param mixed $values Traversable structure (array/object)
      */
-    public static function create($values = null)
+    public function import($values)
     {
-        $class = get_called_class();
-
-        $reflection = new Reflection\Entity($class);
-
-        $entity = new $class;
-
         if ($values !== null) {
 
             if (!Validator::isTraversable($values)) {
                 throw new \Exception("Values must be traversable data!");
             }
 
-            $properties = $reflection->getProperties();
+            $properties = $this->reflection->getProperties();
             foreach ($values as $propertyName => $value) {
 
                 if (!isset($properties[$propertyName])) {
-                    throw new \Exception("Property " . $propertyName . " does not exist in entity " . $class . "!");
+                    throw new \Exception("Property " . $propertyName . " does not exist in entity " . get_called_class() . "!");
                 }
 
                 try {
-                    $entity->{$propertyName} = $value;
+                    $this->{$propertyName} = $value;
                 } catch (PropertyTypeException $exception) {
 
                     $property = $properties[$propertyName];
                     $propertyType = $property->getType();
 
                     if ($property->isBasicType()) {
+                        // Basic
 
                         if (settype($value, $propertyType)) {
-                            $entity->{$propertyName} = $value;
+                            $this->{$propertyName} = $value;
                             continue;
                         }
                     } elseif ($propertyType === "DateTime") {
+                        // DateTime
 
-                        $entity->{$propertyName} = new \DateTime($value);
-                        continue;
-                    } elseif (is_object($propertyType)) {
-
-                        if ($propertyType instanceof EntityCollection && Validator::isTraversable($value)) {
-
-                            $entityClass = $propertyType->getEntityClass();
-                            $collection = new EntityCollection($entityClass);
-                            foreach ($value as $data) {
-                                $collection[] = $entityClass::create($data);
+                        $date = $value;
+                        if (Validator::isTraversable($value)) {
+                            if (isset($value["date"])) {
+                                $date = $value["date"];
                             }
-                            $entity->{$propertyName} = $collection;
+                        }
+                        try {
+                            $date = new \DateTime($date);
+                        } catch (\Exception $e) {
+
+                        }
+                        if ($date instanceof \DateTime) {
+                            $this->{$propertyName} = $date;
                             continue;
                         }
+                    } elseif ($propertyType instanceof EntityCollection && Validator::isTraversable($value)) {
+                        // Collection
+
+                        $entityClass = $propertyType->getEntityClass();
+                        $collection = new EntityCollection($entityClass);
+                        foreach ($value as $index => $data) {
+                            $collection[$index] = new $entityClass($this->cache);
+                            $collection[$index]->import($data);
+                        }
+                        $this->{$propertyName} = $collection;
+                        continue;
                     }
 
-                    throw new \Exception("Can not set value automatically!");
+                    throw new \Exception("Can not set value on property '" . $propertyName . "' automatically!");
                 }
             }
         }
-
-        return $entity;
     }
 
     /**
