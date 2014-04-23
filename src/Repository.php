@@ -22,6 +22,18 @@ abstract class Repository
 
     private $cache;
 
+    public function createEntity($name, $values = null)
+    {
+        $class = NC::nameToClass($name, NC::$entityMask);
+        $entity = new $class($this->cache);
+
+        if ($values !== null) {
+            $entity->import($values);
+        }
+
+        return $entity;
+    }
+
     /**
      * Get related entity name
      *

@@ -16,3 +16,7 @@ Assert::exception(function() use ($repository) {
 $repository->registerMapper(new Fixtures\Mapper\Simple("FirstMapper"));
 Assert::type("UniMapper\QueryBuilder", $repository->query());
 Assert::type("UniMapper\QueryBuilder", $repository->query());
+
+// createEntity()
+Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $repository->createEntity("Simple"));
+Assert::same("foo", $repository->createEntity("Simple", ["text" => "foo"])->text);
