@@ -10,12 +10,9 @@ $collection[] = new Fixtures\Entity\Simple;
 $collection[] = new Fixtures\Entity\Simple;
 
 $mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-$mappers = array("FirstMapper" =>  $mapperMock);
-
-
 
 $mapperMock->expects("findAll")->once()->andReturn($collection);
-$query = new \UniMapper\Query\FindAll(new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mappers);
+$query = new \UniMapper\Query\FindAll(new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
 $result = $query->execute();
 
 Assert::type("Unimapper\EntityCollection", $result);

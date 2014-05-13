@@ -16,22 +16,22 @@ class Property
 {
 
     /** @var string */
-    protected $type = null;
+    protected $type;
 
     /** @var string */
-    protected $name = null;
+    protected $name;
 
-    /** @var \UniMapper\Reflection\Entity\Property\Mapping $mapping Mapping object */
-    protected $mapping = null;
+    /** @var string */
+    protected $mapping;
 
     /** @var array $basicTypes */
-    protected $basicTypes = array("boolean", "integer", "double", "string", "array");
+    protected $basicTypes = ["boolean", "integer", "double", "string", "array"];
 
     /** @var \UniMapper\Reflection\Entity */
     protected $entityReflection;
 
     /** @var \UniMapper\Reflection\Entity\Property\Enumeration $enumeration */
-    protected $enumeration = null;
+    protected $enumeration;
 
     /** @var string $definition Raw property docblok definition */
     protected $rawDefinition;
@@ -144,9 +144,12 @@ class Property
         return $this->enumeration;
     }
 
-    public function getMapping()
+    public function getMappedName()
     {
-        return $this->mapping;
+        if ($this->mapping !== null) {
+            return $this->mapping;
+        }
+        return $this->name;
     }
 
     /**
@@ -221,13 +224,14 @@ class Property
             }
             $this->computed = true;
         } elseif (preg_match("#m:map\((.*?)\)#s", $definition, $matches)) {
-            // m:map(Mapper:)
-            // m:map(Mapper1:column|Mapper2:column)
+            // m:map(column)
 
             if ($this->computed) {
                 throw new PropertyException("Can not combine m:computed with m:map!", $this->entityReflection, $definition);
             }
-            $this->mapping = new Property\Mapping($this->name, $matches[1], $definition, $this->entityReflection);
+            if ($matches[1]) {
+                $this->mapping = $matches[1];
+            }
         } elseif (preg_match("#m:enum\(([a-zA-Z0-9]+|self|parent)::([a-zA-Z0-9_]+)\*\)#", $definition, $matches)) {
             // m:enum(self::CUSTOM_*)
             // m:enum(parent::CUSTOM_*)

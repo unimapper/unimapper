@@ -3,6 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exceptions\QueryException,
+    UniMapper\Mapper,
     UniMapper\Reflection,
     UniMapper\EntityCollection,
     UniMapper\Query\IConditionable;
@@ -15,9 +16,9 @@ class FindAll extends \UniMapper\Query implements IConditionable
     public $orderBy = array();
     public $selection = array();
 
-    public function __construct(Reflection\Entity $entityReflection, array $mappers)
+    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper)
     {
-        parent::__construct($entityReflection, $mappers);
+        parent::__construct($entityReflection, $mapper);
 
         // Set selection
         $this->selection = array_slice(func_get_args(), 2);
@@ -57,7 +58,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
         return $this;
     }
 
-    public function executeSimple(\UniMapper\Mapper $mapper)
+    public function onExecute(\UniMapper\Mapper $mapper)
     {
         $this->beforeExecute();
 
@@ -67,53 +68,6 @@ class FindAll extends \UniMapper\Query implements IConditionable
         }
 
         return $result;
-    }
-
-    public function executeHybrid()
-    {
-        $this->beforeExecute();
-
-        $previous = false;
-
-        $i = 0;
-        foreach ($this->entityReflection->getMappers() as $mapperName => $mapperReflection) {
-
-            if ($i === 0) {
-                // First call
-
-                $previous = $this->mappers[$mapperName]->findAll($this);
-                if (!$previous) {
-                    return new EntityCollection($this->entityReflection->getClassName());
-                }
-            } else {
-                // Other calls
-
-                if (count($previous) === 0) {
-                    return $previous;
-                }
-
-                // Set dynamic options
-                $this->conditions["hybrid"] = [$this->entityReflection->getPrimaryProperty()->getName(), "IN", $this->getPrimaryValuesFromCollection($previous), "AND"];
-                $originalOffset = $this->offset;
-                $this->offset = 0;
-
-                // Execute query
-                $data = $this->mappers[$mapperName]->findAll($this);
-
-                // Unset dynamic options
-                unset($this->conditions["hybrid"]);
-                $this->offset = $originalOffset;
-
-                if (!$data) {
-                    return new EntityCollection($this->entityReflection->getClassName());
-                }
-
-                $previous = EntityCollection::mergeByPrimary($previous, $data);
-            }
-            $i++;
-        }
-
-        return $previous;
     }
 
     private function beforeExecute()

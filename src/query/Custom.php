@@ -2,9 +2,6 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Reflection,
-    UniMapper\Exceptions\QueryException;
-
 class Custom extends \UniMapper\Query
 {
 
@@ -16,18 +13,8 @@ class Custom extends \UniMapper\Query
 
     public $query;
     public $method;
-    public $mapper;
     public $data;
     public $contentType;
-
-    public function __construct(Reflection\Entity $entityReflection, array $mappers, $mapperName)
-    {
-        parent::__construct($entityReflection, $mappers);
-        if (!isset($this->mappers[$mapperName])) {
-            throw new QueryException("Mapper " . $mapperName . " not set!");
-        }
-        $this->mapper = $this->mappers[$mapperName];
-    }
 
     public function raw($args)
     {
@@ -68,14 +55,9 @@ class Custom extends \UniMapper\Query
         return $this;
     }
 
-    public function executeSimple(\UniMapper\Mapper $mapper)
+    public function onExecute(\UniMapper\Mapper $mapper)
     {
-        return $this->mapper->custom($this);
-    }
-
-    public function executeHybrid()
-    {
-        return $this->executeSimple($this->mapper); // @todo
+        return $mapper->custom($this);
     }
 
 }

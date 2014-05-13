@@ -9,10 +9,8 @@ require __DIR__ . '/../bootstrap.php';
 $mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
 $mapperMock->expects("insert")->once()->andReturn(1);
 
-$mappers = array();
-$mappers["FirstMapper"] = $mapperMock;
 
-$query = new \UniMapper\Query\Insert(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mappers, ["text" => "foo"]);
+$query = new \UniMapper\Query\Insert(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock, ["text" => "foo"]);
 
 $result = $query->execute();
 

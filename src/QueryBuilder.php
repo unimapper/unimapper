@@ -2,7 +2,8 @@
 
 namespace UniMapper;
 
-use UniMapper\Reflection,
+use UniMapper\Mapper,
+    UniMapper\Reflection,
     UniMapper\Exceptions\QueryBuilderException;
 
 /**
@@ -17,7 +18,7 @@ class QueryBuilder
 {
 
     protected $entityReflection;
-    protected $mappers;
+    protected $mapper;
     protected $logger;
     protected $queries = array(
         "count" => "UniMapper\Query\Count",
@@ -29,10 +30,10 @@ class QueryBuilder
         "update" => "UniMapper\Query\Update"
     );
 
-    public function __construct(Reflection\Entity $entityReflection, array $mappers, Logger $logger = null)
+    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper, Logger $logger = null)
     {
         $this->entityReflection = $entityReflection;
-        $this->mappers = $mappers;
+        $this->mapper = $mapper;
         $this->logger = $logger;
     }
 
@@ -42,7 +43,7 @@ class QueryBuilder
             throw new QueryBuilderException("Query with name " . $name . " not registered!");
         }
 
-        array_unshift($arguments, $this->entityReflection, $this->mappers);
+        array_unshift($arguments, $this->entityReflection, $this->mapper);
 
         $class = new \ReflectionClass($this->queries[$name]);
         $query = $class->newInstanceArgs($arguments);

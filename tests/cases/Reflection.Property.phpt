@@ -7,7 +7,7 @@ require __DIR__ . '/../bootstrap.php';
 
 // Validate integer
 $reflection = new UniMapper\Reflection\Entity\Property(
-    '@property integer $id m:map(FirstMapper:) m:primary',
+    '@property integer $id m:primary',
     new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
 );
 $reflection->validateValue(1);
@@ -18,7 +18,7 @@ Assert::exception(function() use ($reflection) {
 
 // Validate string
 $reflection = new UniMapper\Reflection\Entity\Property(
-    '@property string $text m:map(FirstMapper:)',
+    '@property string $text',
     new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
 );
 $reflection->validateValue("foo");

@@ -5,6 +5,7 @@ namespace UniMapper;
 use UniMapper\Validator,
     UniMapper\EntityCollection,
     UniMapper\Query,
+    UniMapper\Mapper,
     UniMapper\Reflection,
     UniMapper\Cache\ICache,
     UniMapper\Exceptions\PropertyException,
@@ -18,27 +19,43 @@ use UniMapper\Validator,
 abstract class Entity implements \JsonSerializable, \Serializable
 {
 
+    /** @var \UniMapper\Reflection\Entity $reflection */
     private $reflection;
-    private $data = array();
-    private $mappers = array();
+
+    /** @var array $data Stored variables */
+    private $data = [];
+
+    /** @var \UniMapper\Mapper $mapper */
+    private $mapper;
 
     /** @var \UniMapper\Cache\ICache $cache */
     private $cache;
 
     public function __construct(ICache $cache = null)
     {
-        $className = get_called_class();
+        $this->cache = $cache;
+        $this->initialize();
+    }
 
-        if ($cache) {
+    /**
+     * Initialize entity with reflection
+     */
+    private function initialize()
+    {
+        if (!$this->reflection) {
 
-            $key = "entity-" . $className;
-            $this->reflection = $cache->load($key);
-            if (!$this->reflection) {
+            $className = get_called_class();
+            if ($this->cache) {
+
+                $key = "entity-" . $className;
+                $this->reflection = $this->cache->load($key);
+                if (!$this->reflection) {
+                    $this->reflection = new Reflection\Entity($className);
+                    $this->cache->save($key, $this->reflection, $this->reflection->getFileName());
+                }
+            } else {
                 $this->reflection = new Reflection\Entity($className);
-                $cache->save($key, $this->reflection, $this->reflection->getFileName());
             }
-        } else {
-            $this->reflection = new Reflection\Entity($className);
         }
     }
 
@@ -67,35 +84,43 @@ abstract class Entity implements \JsonSerializable, \Serializable
         return Validator::isIpv6($value);
     }
 
+    /**
+     * Serialize entity data and public properties
+     *
+     * @return string
+     */
     public function serialize()
     {
-        return serialize($this->data);
+        return serialize(array_merge($this->data, $this->getPublicVars()));
     }
 
     public function unserialize($data)
     {
-        $this->data = unserialize($data);
+        $this->initialize();
+        foreach (unserialize($data) as $name => $value) {
+            $this->{$name} = $value;
+        }
     }
 
     public function isActive()
     {
-        return count($this->mappers) > 0;
+        return $this->mapper instanceof Mapper;
     }
 
-    public function setActive(array $mappers)
+    public function setActive(Mapper $mapper)
     {
         if ($this->isActive()) {
             throw new \Exception("Entity is already active!");
         }
-        $this->mappers = $mappers;
+        $this->mapper = $mapper;
     }
 
-    public function getMappers()
+    public function getMapper()
     {
         if (!$this->isActive()) {
             throw new \Exception("Entity is not active!");
         }
-        return $this->mappers;
+        return $this->mapper;
     }
 
     public function save()
@@ -110,11 +135,11 @@ abstract class Entity implements \JsonSerializable, \Serializable
         $data = $this->data;
         if ($primaryValue === null) {
             // Insert
-            $query = new Query\Insert($this->reflection, $this->mappers, $data);
+            $query = new Query\Insert($this->reflection, $this->mapper, $data);
         } else {
             // Update
             unset($data[$primaryName]); // Changing primary value forbidden
-            $query = new Query\Update($this->reflection, $this->mappers, $data);
+            $query = new Query\Update($this->reflection, $this->mapper, $data);
         }
 
         $query->execute();
@@ -132,7 +157,7 @@ abstract class Entity implements \JsonSerializable, \Serializable
             throw new \Exception("Primary value not set!");
         }
 
-        $query = new Query\Delete($this->reflection, $this->mappers);
+        $query = new Query\Delete($this->reflection, $this->mapper);
         $query->where($primaryName, "=", $primaryValue)->execute();
     }
 
@@ -143,66 +168,59 @@ abstract class Entity implements \JsonSerializable, \Serializable
      */
     public function import($values)
     {
-        if ($values !== null) {
+        if (!Validator::isTraversable($values)) {
+            throw new \Exception("Values must be traversable data!");
+        }
 
-            if (!Validator::isTraversable($values)) {
-                throw new \Exception("Values must be traversable data!");
-            }
+        $properties = $this->reflection->getProperties();
+        foreach ($values as $propertyName => $value) {
 
-            $properties = $this->reflection->getProperties();
-            foreach ($values as $propertyName => $value) {
+            try {
+                $this->{$propertyName} = $value;
+            } catch (PropertyTypeException $exception) {
 
-                if (!isset($properties[$propertyName])) {
-                    throw new \Exception("Property " . $propertyName . " does not exist in entity " . get_called_class() . "!");
-                }
+                $property = $properties[$propertyName];
+                $propertyType = $property->getType();
 
-                try {
-                    $this->{$propertyName} = $value;
-                } catch (PropertyTypeException $exception) {
+                if ($property->isBasicType()) {
+                    // Basic
 
-                    $property = $properties[$propertyName];
-                    $propertyType = $property->getType();
-
-                    if ($property->isBasicType()) {
-                        // Basic
-
-                        if (settype($value, $propertyType)) {
-                            $this->{$propertyName} = $value;
-                            continue;
-                        }
-                    } elseif ($propertyType === "DateTime") {
-                        // DateTime
-
-                        $date = $value;
-                        if (Validator::isTraversable($value)) {
-                            if (isset($value["date"])) {
-                                $date = $value["date"];
-                            }
-                        }
-                        try {
-                            $date = new \DateTime($date);
-                        } catch (\Exception $e) {
-
-                        }
-                        if ($date instanceof \DateTime) {
-                            $this->{$propertyName} = $date;
-                            continue;
-                        }
-                    } elseif ($propertyType instanceof EntityCollection && Validator::isTraversable($value)) {
-                        // Collection
-
-                        $entityClass = $propertyType->getEntityClass();
-                        $collection = new EntityCollection($entityClass);
-                        foreach ($value as $index => $data) {
-                            $collection[$index] = new $entityClass($this->cache);
-                            $collection[$index]->import($data);
-                        }
-                        $this->{$propertyName} = $collection;
+                    if (settype($value, $propertyType)) {
+                        $this->{$propertyName} = $value;
                         continue;
                     }
+                } elseif ($propertyType === "DateTime") {
+                    // DateTime
 
-                    throw new \Exception("Can not set value on property '" . $propertyName . "' automatically!");
+                    $date = $value;
+                    if (Validator::isTraversable($value)) {
+                        if (isset($value["date"])) {
+                            $date = $value["date"];
+                        }
+                    }
+                    try {
+                        $date = new \DateTime($date);
+                    } catch (\Exception $e) {
+
+                    }
+                    if ($date instanceof \DateTime) {
+                        $this->{$propertyName} = $date;
+                        continue;
+                    }
+                } elseif ($propertyType instanceof EntityCollection && Validator::isTraversable($value)) {
+                    // Collection
+
+                    $entityClass = $propertyType->getEntityClass();
+                    $collection = new EntityCollection($entityClass);
+                    foreach ($value as $index => $data) {
+                        $collection[$index] = new $entityClass($this->cache);
+                        $collection[$index]->import($data);
+                    }
+                    $this->{$propertyName} = $collection;
+                    continue;
                 }
+
+                throw new \Exception("Can not set value on property '" . $propertyName . "' automatically!");
             }
         }
     }
@@ -321,7 +339,18 @@ abstract class Entity implements \JsonSerializable, \Serializable
                 $output[$propertyName] = $this->{$propertyName};
             }
         }
-        return $output;
+
+        return array_merge($output, $this->getPublicVars());
+    }
+
+    private function getPublicVars()
+    {
+        $vars = [];
+        $reflection = (new \ReflectionObject($this));
+        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            $vars[$property->getName()] = $property->getValue($this);
+        }
+        return $vars;
     }
 
     /**

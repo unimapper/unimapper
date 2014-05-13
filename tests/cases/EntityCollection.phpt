@@ -23,20 +23,20 @@ foreach ($collection as $entity) {
 
 
 // mergeByPrimary()
-$firstColEntity1 = new Fixtures\Entity\Hybrid;
+$firstColEntity1 = new Fixtures\Entity\Simple;
 $firstColEntity1->id = 1;
-$firstColEntity2 = new Fixtures\Entity\Hybrid;
+$firstColEntity2 = new Fixtures\Entity\Simple;
 $firstColEntity2->id = 2;
-$firstColEntity3 = new Fixtures\Entity\Hybrid;
+$firstColEntity3 = new Fixtures\Entity\Simple;
 $firstColEntity3->id = 3;
-$firstCol = new UniMapper\EntityCollection("UniMapper\Tests\Fixtures\Entity\Hybrid");
+$firstCol = new UniMapper\EntityCollection("UniMapper\Tests\Fixtures\Entity\Simple");
 $firstCol[] = $firstColEntity1;
 $firstCol[] = $firstColEntity2;
 $firstCol[] = $firstColEntity3;
 
-$secColEntity1 = new Fixtures\Entity\Hybrid;
+$secColEntity1 = new Fixtures\Entity\Simple;
 $secColEntity1->id = 2;
-$secCol = new UniMapper\EntityCollection("UniMapper\Tests\Fixtures\Entity\Hybrid");
+$secCol = new UniMapper\EntityCollection("UniMapper\Tests\Fixtures\Entity\Simple");
 $secCol[] = $secColEntity1;
 
 Assert::isEqual(

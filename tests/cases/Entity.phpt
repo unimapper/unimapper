@@ -10,10 +10,12 @@ $entity = new Fixtures\Entity\Simple;
 $entity->text = "test";
 $entity->id = 1;
 
-Assert::type("UniMapper\Entity", $entity);
+// local properties
+Assert::same("defaultValue", $entity->localProperty);
 
 // isset()
 Assert::true(isset($entity->id));
+Assert::true(isset($entity->localProperty));
 Assert::false(isset($entity->missing));
 
 // empty()
@@ -28,10 +30,13 @@ Assert::null($entity->id);
 $entity->id = 1;
 Assert::equal(1, $entity->id);
 
+// Local property
+$entity->localProperty = "newValue";
+
 // toArray()
 $entityArray = $entity->toArray();
 Assert::same(
-    ['id' => 1, 'text' => 'test', 'empty' => NULL, 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"]],
+    ['id' => 1, 'text' => 'test', 'empty' => NULL, 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"], 'localProperty' => 'newValue'],
     $entityArray
 );
 
@@ -42,7 +47,7 @@ Assert::same(
 );
 
 // JsonSerializable
-Assert::same('{"id":1,"text":"test","empty":null,"url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[]}', json_encode($entity));
+Assert::same('{"id":1,"text":"test","empty":null,"url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"localProperty":"newValue"}', json_encode($entity));
 
 // Invalid property type
 Assert::exception(function() use ($entity) {
@@ -55,16 +60,19 @@ Assert::exception(function() use ($entity) {
 }, "UniMapper\Exceptions\PropertyUndefinedException", "Undefined property with name 'undefined'!");
 
 // Serializable
-$serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":41:{a:2:{s:4:"text";s:4:"test";s:2:"id";i:1;}}';
+$serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":77:{a:3:{s:4:"text";s:4:"test";s:2:"id";i:1;s:13:"localProperty";s:8:"newValue";}}';
 Assert::same($serialized, serialize($entity));
-Assert::isEqual($entity, unserialize($serialized));
+$unserialized = unserialize($serialized);
+Assert::isEqual($entity, $unserialized);
+Assert::type("UniMapper\Reflection\Entity", $unserialized->getReflection());
 
 // import()
-$entity->import(["id" => "2", "text" => 3.0, "collection" => [], "time" => "1999-01-12"]);
+$entity->import(["id" => "2", "text" => 3.0, "collection" => [], "time" => "1999-01-12", "localProperty" => "foo"]);
 Assert::same(2, $entity->id);
 Assert::same("3", $entity->text);
 Assert::type("UniMapper\EntityCollection", $entity->collection);
 Assert::same("1999-01-12", $entity->time->format("Y-m-d"));
+Assert::same("foo", $entity->localProperty);
 $entity->import(["time" => ["date" => "1999-02-12"]]);
 Assert::same("1999-02-12", $entity->time->format("Y-m-d"));
 Assert::exception(function() use ($entity) {
@@ -73,6 +81,9 @@ Assert::exception(function() use ($entity) {
 Assert::exception(function() use ($entity) {
     $entity->import(["time" => []]);
 }, "Exception", "Can not set value on property 'time' automatically!");
+Assert::exception(function() use ($entity) {
+    $entity->import(["undefined" => "foo"]);
+}, "UniMapper\Exceptions\PropertyUndefinedException", "Undefined property with name 'undefined'!");
 
 // m:validate email
 $entity->email = "john.doe@example.com";

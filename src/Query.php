@@ -2,7 +2,8 @@
 
 namespace UniMapper;
 
-use UniMapper\Reflection,
+use UniMapper\Mapper,
+    UniMapper\Reflection,
     UniMapper\Query\IQuery,
     UniMapper\EntityCollection,
     UniMapper\Exceptions\QueryException;
@@ -10,25 +11,20 @@ use UniMapper\Reflection,
 abstract class Query implements IQuery
 {
 
-    public $conditions = array();
     protected $conditionOperators = array("=", "<", ">", "<>", ">=", "<=", "IS", "IS NOT", "!=", "LIKE", "COMPARE", "IN");
-    public $mappers = array();
+    public $conditions = [];
     public $elapsed;
-    public $result = null;
+    public $result;
+
+    /** @var \UniMapper\Mapper */
+    public $mapper;
 
     /** @var \UniMapper\Reflection\Entity */
     public $entityReflection;
 
-    public function __construct(Reflection\Entity $entityReflection, array $mappers)
+    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper)
     {
-        if (count($mappers) === 0) {
-            throw new QueryException("Query can not be used without mappers!");
-        }
-        $this->mappers = $mappers;
-
-        if (count($entityReflection->getMappers()) === 0) {
-            throw new QueryException("Missing mapper definition in entity " . $entityReflection->getClassName() . "!");
-        }
+        $this->mapper = $mapper;
         $this->entityReflection = $entityReflection;
     }
 
@@ -57,17 +53,12 @@ abstract class Query implements IQuery
 
     protected function addNestedConditions(\Closure $callback, $joiner = 'AND')
     {
-        $query = new $this($this->entityReflection, $this->mappers);
+        $query = new $this($this->entityReflection, $this->mapper);
 
         call_user_func($callback, $query);
 
         if (count($query->conditions) === 0) {
             throw new QueryException("Nested query must contain one condition at least!");
-        }
-
-        // @todo conditions from one mapper in hybrid entities allowed
-        if ($query->hasHybridCondition()) {
-            throw new QueryException("Can not combine hybrid properties from different sources in nested conditions!");
         }
 
         $this->conditions[] = array($query->conditions, $joiner);
@@ -101,49 +92,19 @@ abstract class Query implements IQuery
     {
         $start = microtime(true);
 
-        if ($this->entityReflection->isHybrid()) {
-            $this->result = $this->executeHybrid();
-        } else {
-            foreach ($this->entityReflection->getMappers() as $name => $mapperReflection) {
-                $this->result = $this->executeSimple($this->mappers[$name]);
-                break;
-            }
-        }
+        $this->result = $this->onExecute($this->mapper);
 
         // Set entities active
         if ($this->result instanceof Entity) {
-            $this->result->setActive($this->mappers);
+            $this->result->setActive($this->mapper);
         } elseif ($this->result instanceof EntityCollection) {
             foreach ($this->result as $entity) {
-                $entity->setActive($this->mappers);
+                $entity->setActive($this->mapper);
             }
         }
 
         $this->elapsed = microtime(true) - $start;
         return $this->result;
-    }
-
-    protected function hasHybridCondition()
-    {
-        if ($this->entityReflection->isHybrid()) {
-
-            foreach ($this->conditions as $condition) {
-
-                if (is_array($condition[0])) {
-                    // Nested conditions
-                    continue; // @todo
-                } else {
-                    // Simple condition
-                    list($propertyName) = $condition;
-
-                    $property = $this->entityReflection->getProperty($propertyName);
-                    if ($property->getMapping()->isHybrid()) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     protected function getPrimaryValuesFromCollection(EntityCollection $collection)

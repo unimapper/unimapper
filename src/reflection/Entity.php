@@ -10,8 +10,8 @@ use UniMapper\Exceptions\PropertyException;
 class Entity
 {
 
-    /** @var array */
-    private $mappers;
+    /** @var \UniMapper\Reflection\Entity\Mapper */
+    private $mapper;
 
     /** @var array */
     private $properties;
@@ -40,7 +40,7 @@ class Entity
         $this->parentClassName = $reflection->getParentClass()->name; // @todo undefined method, needs some refactoring
         $this->constants = $reflection->getConstants();
 
-        $this->mappers = $this->parseMappers();
+        $this->mapper = $this->parseMapper();
         $this->properties = $this->parseProperties();
     }
 
@@ -95,45 +95,34 @@ class Entity
     }
 
     /**
-     * Get defined class mappers from annotations
+     * Get mapper definition from annotations
      *
-     * @return array Collection of \UniMapper\Reflection\Entity\Mapper
+     * @return \UniMapper\Reflection\Entity\Mapper
      *
      * @throws \UniMapper\Exceptions\PropertyException
      */
-    private function parseMappers()
+    private function parseMapper()
     {
         preg_match_all(
             '#@mapper (.*?)\n#s',
             $this->docComment,
             $annotations
         );
-        $mappers = array();
-        foreach ($annotations[0] as $annotation) {
-            $mapperReflection = new Mapper(
-                substr($annotation, 8),
-                $this
-            );
-            if (isset($mappers[$mapperReflection->getName()])) {
-                throw new PropertyException(
-                    "Duplicate mapper definition!",
-                    $this,
-                    $annotation
-                );
-            }
-            $mappers[$mapperReflection->getName()] = $mapperReflection;
+
+        if (empty($annotations[0])) {
+            throw new PropertyException("No mapper defined!", $this);
         }
-        return $mappers;
+
+        if (count($annotations[0]) > 1) {
+            throw new PropertyException("Only one mapper definition allowed!", $this, $annotations[0][1]);
+        }
+
+        return new Mapper(substr($annotations[0][0], 8), $this);
     }
 
-    public function isHybrid()
+    public function getMapperReflection()
     {
-        return count($this->mappers) > 1;
-    }
-
-    public function getMappers()
-    {
-        return $this->mappers;
+        return $this->mapper;
     }
 
     public function hasProperty($name)
@@ -149,21 +138,9 @@ class Entity
         return $this->properties[$name];
     }
 
-    public function getProperties($mapperName = null)
+    public function getProperties()
     {
-        // Get all if mapping not defined
-        if ($mapperName === null) {
-            return $this->properties;
-        }
-
-        $properties = array();
-        foreach ($this->properties as $property) {
-
-            if ($property->getMapping() && $property->getMapping()->getName($mapperName) !== false) {
-                $properties[$property->getName()] = $property;
-            }
-        }
-        return $properties;
+        return $this->properties;
     }
 
     public function getPrimaryProperty()

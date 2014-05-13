@@ -3,13 +3,13 @@
 namespace UniMapper\Tests\Fixtures\Entity;
 
 /**
- * @mapper FirstMapper(first_resource)
+ * @mapper FooMapper(resource)
  *
- * @property integer    $id         m:map(FirstMapper:) m:primary
- * @property string     $text       m:map(FirstMapper:)
+ * @property integer    $id         m:primary
+ * @property string     $text
  * @property string     $empty
- * @property string     $url        m:validate(url)
- * @property string     $email      m:validate(email)
+ * @property string     $url        m:validate(url)   m:map(link)
+ * @property string     $email      m:validate(email) m:map(email_address)
  * @property DateTime   $time
  * @property integer    $year       m:computed
  * @property string     $ip         m:validate(ip)
@@ -19,6 +19,9 @@ namespace UniMapper\Tests\Fixtures\Entity;
  */
 class Simple extends \UniMapper\Entity
 {
+
+    /** @var string */
+    public $localProperty = "defaultValue";
 
     public static function validateMark($value)
     {

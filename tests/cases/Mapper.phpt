@@ -5,17 +5,36 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-$mapper = new Fixtures\Mapper\Simple("FirstMapper");
+$mapper = new Fixtures\Mapper\Simple("FooMapper");
+$entity = new Fixtures\Entity\Simple;
 
 // Get name
-Assert::same("FirstMapper", $mapper->getName());
+Assert::same("FooMapper", $mapper->getName());
 
-// Mapper not defined in entity
-Assert::exception(function() use ($mapper) {
-    $entity = new Fixtures\Entity\NoMapper;
+// getResource() Mapper not defined in entity
+Assert::exception(function() use ($entity) {
+
+    $mapper = new Fixtures\Mapper\Simple("UndefinedMapper");
     $mapper->getResource($entity->getReflection());
-}, "UniMapper\Exceptions\MapperException", "Entity does not define mapper with name FirstMapper!");
+}, "UniMapper\Exceptions\MapperException", "Entity does not define mapper with name UndefinedMapper!");
+Assert::same("resource", $mapper->getResource($entity->getReflection()));
 
-// Get resource
-$entity = new Fixtures\Entity\Simple;
-Assert::same("first_resource", $mapper->getResource($entity->getReflection()));
+$email = "john.doe@example.com";
+$url = "http://example.com";
+$entity->localProperty = "foo";
+$entity->email = $email;
+$entity->url = $url;
+
+// mapEntity()
+Assert::isEqual($entity, $mapper->mapEntity("UniMapper\Tests\Fixtures\Entity\Simple", ["email_address" => $email, "localProperty" => "foo", "undefined" => 1, "link" => $url]));
+
+// unmapEntity()
+Assert::same(["email_address" => $email, "link" => $url], $mapper->unmapEntity($entity));
+
+// mapCollection()
+$collection = $mapper->mapCollection("UniMapper\Tests\Fixtures\Entity\Simple", [["email_address" => $email, "localProperty" => "foo", "undefined" => 1, "link" => $url]]);
+Assert::type("UniMapper\EntityCollection", $collection);
+Assert::isEqual($entity, $collection[0]);
+
+// unmapCollection()
+Assert::same([['email_address' => $email, 'link' => $url]], $mapper->unmapCollection($collection));

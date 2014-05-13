@@ -9,12 +9,10 @@ require __DIR__ . '/../bootstrap.php';
 $mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
 $mapperMock->expects("insert")->once()->andReturn(1);
 
-$mappers = array();
-$mappers["FirstMapper"] = $mapperMock;
 
 $entity = new Fixtures\Entity\Simple;
 
-$query = new Fixtures\Query\Conditionable($entity->getReflection(), $mappers);
+$query = new Fixtures\Query\Conditionable($entity->getReflection(), $mapperMock);
 
 $expectedConditions = array();
 

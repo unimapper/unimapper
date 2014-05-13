@@ -11,7 +11,6 @@ if (!$loader) {
 
 require __DIR__ . "/fixtures/entity/NoMapper.php";
 require __DIR__ . "/fixtures/entity/Simple.php";
-require __DIR__ . "/fixtures/entity/Hybrid.php";
 require __DIR__ . "/fixtures/entity/DuplicateProperty.php";
 require __DIR__ . "/fixtures/mapper/Simple.php";
 require __DIR__ . "/fixtures/query/Conditionable.php";

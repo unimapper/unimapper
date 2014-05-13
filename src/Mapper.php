@@ -39,43 +39,34 @@ abstract class Mapper implements Mapper\IMapper
 
     final public function getResource(Reflection\Entity $entityReflection)
     {
-        $mappers = $entityReflection->getMappers();
-        if (!isset($mappers[$this->name])) {
+        $mapperReflection = $entityReflection->getMapperReflection();
+        if ($mapperReflection->getName() !== $this->name) {
             throw new MapperException("Entity does not define mapper with name " . $this->name . "!");
         }
-        return $mappers[$this->name]->getResource();
+        return $mapperReflection->getResource();
     }
 
-    protected function mapProperties(array $properties)
+    protected function mapProperties(array $propertyReflections)
     {
         $output = array();
-        foreach ($properties as $property) {
-
-            if ($property->getMapping()) {
-
-                $mapDefinition = $property->getMapping()->getName($this->name);
-                if ($mapDefinition) {
-                    $output[] = $mapDefinition;
-                    continue;
-                }
-            }
-            $output[] = $property->getName();
+        foreach ($propertyReflections as $reflection) {
+            $output[] = $reflection->getMappedName();
         }
         return $output;
     }
 
     protected function getSelection(Reflection\Entity $entityReflection, array $selection = array())
     {
-        $properties = $entityReflection->getProperties($this->name);
+        $propertyReflections = $entityReflection->getProperties();
         if (count($selection) === 0) {
-            return $this->mapProperties($properties);
+            return $this->mapProperties($propertyReflections);
         }
 
         $result = array();
         foreach ($selection as $propertyName) {
 
-            if (isset($properties[$propertyName])) {
-                $result[$propertyName] = $properties[$propertyName];
+            if (isset($propertyReflections[$propertyName])) {
+                $result[$propertyName] = $propertyReflections[$propertyName];
             }
         }
         return $this->mapProperties($result);
@@ -86,7 +77,7 @@ abstract class Mapper implements Mapper\IMapper
      */
     protected function translateConditions(Reflection\Entity $entityReflection, array $conditions)
     {
-        $properties = $entityReflection->getProperties($this->name);
+        $propertyReflections = $entityReflection->getProperties();
 
         $result = array();
         foreach ($conditions as $condition) {
@@ -103,22 +94,7 @@ abstract class Mapper implements Mapper\IMapper
                 }
             } else {
                 // Simple condition
-
-                $propertyName = $condition[0];
-
-                // Skip conditions unrelated to this mapper
-                if (!isset($properties[$propertyName])) {
-                    continue;
-                }
-
-                // Apply defined mapping from entity
-                $mapping = $properties[$propertyName]->getMapping();
-                if ($mapping) {
-                    $mappedPropertyName = $mapping->getName($this->name);
-                    if ($mappedPropertyName) {
-                        $condition[0] = $mappedPropertyName;
-                    }
-                }
+                $condition[0] = $propertyReflections[$condition[0]]->getMappedName();
             }
 
             $result[] = $condition;
@@ -217,25 +193,26 @@ abstract class Mapper implements Mapper\IMapper
 
         $entity = new $entityClass($this->cache);
 
-        $properties = $entity->getReflection()->getProperties($this->name);
-        foreach ($data as $propertyName => $value) {
+        $propertiesReflection = $entity->getReflection()->getProperties();
+        foreach ($data as $index => $value) {
+
+            $propertyName = $index;
 
             // Mapping
-            foreach ($properties as $property) {
+            foreach ($propertiesReflection as $propertyReflection) {
 
-                $mapping = $property->getMapping();
-                if ($mapping && $mapping->getName($this->name) === $propertyName) {
+                if ($propertyReflection->getMappedName() === $index) {
 
-                    $propertyName = $property->getName();
+                    $propertyName = $propertyReflection->getName();
                     break;
                 }
             }
 
-            if (!isset($properties[$propertyName])) {
+            if (!isset($propertiesReflection[$propertyName])) {
                 continue;
             }
 
-            $entity->{$propertyName} = $this->mapValue($properties[$propertyName], $value);
+            $entity->{$propertyName} = $this->mapValue($propertiesReflection[$propertyName], $value);
         }
 
         return $entity;
@@ -250,23 +227,13 @@ abstract class Mapper implements Mapper\IMapper
      */
     public function unmapEntity(\UniMapper\Entity $entity)
     {
-        $properties = $entity->getReflection()->getProperties($this->name);
+        $properties = $entity->getReflection()->getProperties();
 
-        $output = array();
+        $output = [];
         foreach ($entity->getData() as $propertyName => $value) {
 
-            // Skip properties unrelated to this mapper
-            if (!isset($properties[$propertyName])) {
-                continue;
-            }
-
-            // Property mapping definition required
-            $mapping = $properties[$propertyName]->getMapping();
-            if ($mapping === false) {
-                continue;
-            }
-
-            $output[$mapping->getName($this->name)] = $this->unmapValue($value);
+            $mappedName = $properties[$propertyName]->getMappedName();
+            $output[$mappedName] = $this->unmapValue($value);
         }
         return $output;
     }
