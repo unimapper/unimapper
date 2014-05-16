@@ -283,13 +283,9 @@ abstract class Entity implements \JsonSerializable, \Serializable
             throw new PropertyException("Can not set computed property with name '" . $name . "'!", $this->reflection);
         }
 
-        // @todo elaborate null values
-        if ($value === null) {
-            return;
+        if ($value !== null) {
+            $properties[$name]->validateValue($value);
         }
-
-        // Validate value
-        $properties[$name]->validateValue($value);
 
         // Set value
         $this->data[$name] = $value;

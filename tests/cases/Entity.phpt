@@ -9,6 +9,7 @@ require __DIR__ . '/../bootstrap.php';
 $entity = new Fixtures\Entity\Simple;
 $entity->text = "test";
 $entity->id = 1;
+$entity->empty = "";
 
 // local properties
 Assert::same("defaultValue", $entity->localProperty);
@@ -19,6 +20,7 @@ Assert::true(isset($entity->localProperty));
 Assert::false(isset($entity->missing));
 
 // empty()
+Assert::true(empty($entity->empty));
 Assert::true(empty($entity->missing));
 Assert::false(empty($entity->id));
 
@@ -36,13 +38,14 @@ $entity->localProperty = "newValue";
 // toArray()
 $entityArray = $entity->toArray();
 Assert::same(
-    ['id' => 1, 'text' => 'test', 'empty' => NULL, 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"], 'localProperty' => 'newValue'],
+    ['id' => 1, 'text' => 'test', 'empty' => '', 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"], 'localProperty' => 'newValue'],
     $entityArray
 );
 
 // getData()
+$entity->empty = null;
 Assert::same(
-    array('text' => 'test', 'id' => 1),
+    ['text' => 'test', 'empty' => null, 'id' => 1],
     $entity->getData()
 );
 
@@ -60,19 +63,30 @@ Assert::exception(function() use ($entity) {
 }, "UniMapper\Exceptions\PropertyUndefinedException", "Undefined property with name 'undefined'!");
 
 // Serializable
-$serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":77:{a:3:{s:4:"text";s:4:"test";s:2:"id";i:1;s:13:"localProperty";s:8:"newValue";}}';
+$serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":91:{a:4:{s:4:"text";s:4:"test";s:5:"empty";N;s:2:"id";i:1;s:13:"localProperty";s:8:"newValue";}}';
 Assert::same($serialized, serialize($entity));
 $unserialized = unserialize($serialized);
 Assert::isEqual($entity, $unserialized);
 Assert::type("UniMapper\Reflection\Entity", $unserialized->getReflection());
+Assert::same(['text' => 'test', 'empty' => null, 'id' => 1], $unserialized->getData());
 
 // import()
-$entity->import(["id" => "2", "text" => 3.0, "collection" => [], "time" => "1999-01-12", "localProperty" => "foo"]);
+$entity->import(
+    [
+        "id" => "2",
+        "text" => 3.0,
+        "collection" => [],
+        "time" => "1999-01-12",
+        "localProperty" => "foo",
+        "empty" => null
+    ]
+);
 Assert::same(2, $entity->id);
 Assert::same("3", $entity->text);
 Assert::type("UniMapper\EntityCollection", $entity->collection);
 Assert::same("1999-01-12", $entity->time->format("Y-m-d"));
 Assert::same("foo", $entity->localProperty);
+Assert::same(null, $entity->empty);
 $entity->import(["time" => ["date" => "1999-02-12"]]);
 Assert::same("1999-02-12", $entity->time->format("Y-m-d"));
 Assert::exception(function() use ($entity) {
