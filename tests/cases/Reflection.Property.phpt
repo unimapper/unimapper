@@ -60,3 +60,11 @@ Assert::exception(function() {
         new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
     );
 }, "UniMapper\Exceptions\PropertyTypeException", "Unsupported type 'stdClass'!");
+
+// Validation method not defined
+Assert::exception(function() {
+    new UniMapper\Reflection\Entity\Property(
+        '@property string $test m:validate(undefined)',
+        new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
+    );
+}, "UniMapper\Exceptions\PropertyException", "Validation method validateUndefined not defined in UniMapper\Tests\Fixtures\Entity\Simple!");

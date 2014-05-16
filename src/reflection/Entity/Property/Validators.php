@@ -31,7 +31,17 @@ class Validators
                     $rawDefinition
                 );
             }
-            $this->callbacks[$name] = [$entityReflection->getClassName(), "validate" . ucfirst($name)];
+
+            $class = $entityReflection->getClassName();
+            $methodName = "validate" . ucfirst($name);
+            if (!method_exists($class, $methodName)) {
+                throw new PropertyException(
+                    "Validation method " . $methodName . " not defined in " . $class . "!",
+                    $entityReflection,
+                    $rawDefinition
+                );
+            }
+            $this->callbacks[$name] = [$class, $methodName];
         }
     }
 
