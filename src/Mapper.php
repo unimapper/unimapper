@@ -174,7 +174,7 @@ abstract class Mapper implements Mapper\IMapper
 
     public function mapCollection($entityClass, $data)
     {
-        if (!Validator::isTraversable($data)) {
+        if (!Validator::validateTraversable($data)) {
             throw new \Exception("Input data must be traversable!");
         }
 
@@ -187,7 +187,7 @@ abstract class Mapper implements Mapper\IMapper
 
     public function mapEntity($entityClass, $data)
     {
-        if (!Validator::isTraversable($data)) {
+        if (!Validator::validateTraversable($data)) {
             throw new MapperException("Input data must be traversable!");
         }
 

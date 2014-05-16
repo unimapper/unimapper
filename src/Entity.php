@@ -19,6 +19,9 @@ use UniMapper\Validator,
 abstract class Entity implements \JsonSerializable, \Serializable
 {
 
+    /** Validator trait */
+    use Validator;
+
     /** @var \UniMapper\Reflection\Entity $reflection */
     private $reflection;
 
@@ -57,31 +60,6 @@ abstract class Entity implements \JsonSerializable, \Serializable
                 $this->reflection = new Reflection\Entity($className);
             }
         }
-    }
-
-    public static function validateUrl($value)
-    {
-        return Validator::isUrl($value);
-    }
-
-    public static function validateEmail($value)
-    {
-        return Validator::isEmail($value);
-    }
-
-    public static function validateIp($value)
-    {
-        return Validator::isIp($value);
-    }
-
-    public static function validateIpv4($value)
-    {
-        return Validator::isIpv4($value);
-    }
-
-    public static function validateIpv6($value)
-    {
-        return Validator::isIpv6($value);
     }
 
     /**
@@ -168,7 +146,7 @@ abstract class Entity implements \JsonSerializable, \Serializable
      */
     public function import($values)
     {
-        if (!Validator::isTraversable($values)) {
+        if (!Validator::validateTraversable($values)) {
             throw new \Exception("Values must be traversable data!");
         }
 
@@ -193,7 +171,7 @@ abstract class Entity implements \JsonSerializable, \Serializable
                     // DateTime
 
                     $date = $value;
-                    if (Validator::isTraversable($value)) {
+                    if (Validator::validateTraversable($value)) {
                         if (isset($value["date"])) {
                             $date = $value["date"];
                         }
@@ -207,7 +185,7 @@ abstract class Entity implements \JsonSerializable, \Serializable
                         $this->{$propertyName} = $date;
                         continue;
                     }
-                } elseif ($propertyType instanceof EntityCollection && Validator::isTraversable($value)) {
+                } elseif ($propertyType instanceof EntityCollection && Validator::validateTraversable($value)) {
                     // Collection
 
                     $entityClass = $propertyType->getEntityClass();
