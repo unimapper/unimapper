@@ -14,7 +14,7 @@ abstract class Query implements IQuery
     protected $conditionOperators = array("=", "<", ">", "<>", ">=", "<=", "IS", "IS NOT", "!=", "LIKE", "COMPARE", "IN");
     public $conditions = [];
     public $elapsed;
-    public $result;
+    private $result;
 
     /** @var \UniMapper\Mapper */
     public $mapper;
@@ -26,6 +26,11 @@ abstract class Query implements IQuery
     {
         $this->mapper = $mapper;
         $this->entityReflection = $entityReflection;
+    }
+
+    public function getResult()
+    {
+        return $this->result;
     }
 
     public static function getName()
