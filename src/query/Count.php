@@ -7,7 +7,7 @@ class Count extends \UniMapper\Query implements IConditionable
 
     public function onExecute(\UniMapper\Mapper $mapper)
     {
-        return $mapper->count($this);
+        return (integer) $mapper->count($this);
     }
 
 }
