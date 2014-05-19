@@ -104,7 +104,7 @@ abstract class Entity implements \JsonSerializable, \Serializable
     public function save()
     {
         if (!$this->isActive()) {
-            \Exception("Entity is not active!");
+            throw new \Exception("Entity is not active!");
         }
 
         $primaryName = $this->reflection->getPrimaryProperty()->getName();
@@ -113,11 +113,14 @@ abstract class Entity implements \JsonSerializable, \Serializable
         $data = $this->data;
         if ($primaryValue === null) {
             // Insert
+
             $query = new Query\Insert($this->reflection, $this->mapper, $data);
         } else {
             // Update
+
             unset($data[$primaryName]); // Changing primary value forbidden
             $query = new Query\Update($this->reflection, $this->mapper, $data);
+            $query->where($primaryName, "=", $primaryValue);
         }
 
         $query->execute();

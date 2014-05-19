@@ -99,6 +99,29 @@ Assert::exception(function() use ($entity) {
     $entity->import(["undefined" => "foo"]);
 }, "UniMapper\Exceptions\PropertyUndefinedException", "Undefined property with name 'undefined'!");
 
+// isActive()
+Assert::false($entity->isActive());
+
+// setActive()
+$mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+$entity->setActive($mapperMock);
+Assert::true($entity->isActive());
+
+// save()
+Assert::exception(function() {
+    $inactiveEntity = new Fixtures\Entity\Simple;
+    $inactiveEntity->save();
+}, "Exception", "Entity is not active!");
+
+// save() - update
+$mapperMock->expects("update")->once();
+$entity->save();
+
+// save() - insert
+$mapperMock->expects("insert")->once();
+$entity->id = null;
+$entity->save();
+
 // m:validate email
 $entity->email = "john.doe@example.com";
 Assert::exception(function() use ($entity) {
