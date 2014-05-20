@@ -101,6 +101,11 @@ abstract class Entity implements \JsonSerializable, \Serializable
         return $this->mapper;
     }
 
+    /**
+     * Save entity, update if primary value set and insert if not
+     *
+     * @throws \Exception
+     */
     public function save()
     {
         if (!$this->isActive()) {
@@ -129,13 +134,13 @@ abstract class Entity implements \JsonSerializable, \Serializable
     public function delete()
     {
         if (!$this->isActive()) {
-            \Exception("Entity is not active!");
+            throw new \Exception("Entity is not active!");
         }
 
         $primaryName = $this->reflection->getPrimaryProperty()->getName();
         $primaryValue = $this->{$primaryName};
         if ($primaryValue === null) {
-            throw new \Exception("Primary value not set!");
+            throw new \Exception("Primary value must be set!");
         }
 
         $query = new Query\Delete($this->reflection, $this->mapper);

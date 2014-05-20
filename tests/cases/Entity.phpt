@@ -122,6 +122,18 @@ $mapperMock->expects("insert")->once();
 $entity->id = null;
 $entity->save();
 
+// delete()
+Assert::exception(function() {
+    $inactiveEntity = new Fixtures\Entity\Simple;
+    $inactiveEntity->save();
+}, "Exception", "Entity is not active!");
+Assert::exception(function() use ($entity) {
+    $entity->delete();
+}, "Exception", "Primary value must be set!");
+$mapperMock->expects("delete")->once();
+$entity->id = 1;
+$entity->delete();
+
 // m:validate email
 $entity->email = "john.doe@example.com";
 Assert::exception(function() use ($entity) {
