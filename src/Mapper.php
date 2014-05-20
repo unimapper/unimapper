@@ -227,12 +227,10 @@ abstract class Mapper implements Mapper\IMapper
      */
     public function unmapEntity(\UniMapper\Entity $entity)
     {
-        $properties = $entity->getReflection()->getProperties();
-
         $output = [];
         foreach ($entity->getData() as $propertyName => $value) {
 
-            $mappedName = $properties[$propertyName]->getMappedName();
+            $mappedName = $entity->getReflection()->getProperties()[$propertyName]->getMappedName();
             $output[$mappedName] = $this->unmapValue($value);
         }
         return $output;
