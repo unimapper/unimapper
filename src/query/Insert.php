@@ -3,6 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\Mapper,
+    UniMapper\Exceptions\QueryException,
     UniMapper\Reflection;
 
 class Insert extends \UniMapper\Query
@@ -10,9 +11,6 @@ class Insert extends \UniMapper\Query
 
     /** @var \UniMapper\Entity */
     public $entity;
-
-    /** @var boolean */
-    public $returnPrimaryValue = true;
 
     public function __construct(Reflection\Entity $entityReflection, Mapper $mapper, array $data)
     {
@@ -24,13 +22,12 @@ class Insert extends \UniMapper\Query
 
     public function onExecute(\UniMapper\Mapper $mapper)
     {
-        $result = $mapper->insert($this);
-
-        $primaryProperty = $this->entityReflection->getPrimaryProperty();
-        if ($primaryProperty !== null) {
-            $this->entity->{$primaryProperty->getName()} = $result;
+        $primaryValue = $mapper->insert($this);
+        if ($primaryValue === null) {
+            throw new QueryException("Insert should return primary value but null given!");
         }
-
+        $primaryProperty = $this->entityReflection->getPrimaryProperty();
+        $this->entity->{$primaryProperty->getName()} = $primaryValue;
         return $this->entity;
     }
 

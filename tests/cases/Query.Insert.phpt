@@ -1,7 +1,6 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Tests\Fixtures;
+use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 

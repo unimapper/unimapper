@@ -118,15 +118,18 @@ $mapperMock->expects("update")->once();
 $entity->save();
 
 // save() - insert
-$mapperMock->expects("insert")->once();
+$mapperMock->expects("insert")->once()->andReturn(1);
 $entity->id = null;
 $entity->save();
+Assert::same(1, $entity->id);
+Assert::true($entity->isActive());
 
 // delete()
 Assert::exception(function() {
     $inactiveEntity = new Fixtures\Entity\Simple;
     $inactiveEntity->save();
 }, "Exception", "Entity is not active!");
+$entity->id = null;
 Assert::exception(function() use ($entity) {
     $entity->delete();
 }, "Exception", "Primary value must be set!");

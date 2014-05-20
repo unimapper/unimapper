@@ -85,6 +85,13 @@ abstract class Entity implements \JsonSerializable, \Serializable
         return $this->mapper instanceof Mapper;
     }
 
+    /**
+     * Set entity as active, so you can save and delete entity after that.
+     *
+     * @param \UniMapper\Mapper $mapper
+     *
+     * @throws \Exception
+     */
     public function setActive(Mapper $mapper)
     {
         if ($this->isActive()) {
@@ -120,15 +127,15 @@ abstract class Entity implements \JsonSerializable, \Serializable
             // Insert
 
             $query = new Query\Insert($this->reflection, $this->mapper, $data);
+            $savedEntity = $query->execute();
+            $this->data[$primaryName] = $savedEntity->{$primaryName};
         } else {
             // Update
 
             unset($data[$primaryName]); // Changing primary value forbidden
             $query = new Query\Update($this->reflection, $this->mapper, $data);
-            $query->where($primaryName, "=", $primaryValue);
+            $query->where($primaryName, "=", $primaryValue)->execute();
         }
-
-        $query->execute();
     }
 
     public function delete()
