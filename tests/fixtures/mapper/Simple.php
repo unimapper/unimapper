@@ -9,7 +9,7 @@ class Simple extends \UniMapper\Mapper
         throw new \Exception("You should  mock here!");
     }
 
-    public function delete(\UniMapper\Query\Delete $query)
+    public function delete($resource, array $conditions)
     {
         throw new \Exception("You should  mock here!");
     }

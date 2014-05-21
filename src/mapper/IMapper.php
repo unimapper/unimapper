@@ -17,11 +17,11 @@ interface IMapper
     public function count(\UniMapper\Query\Count $query);
 
     /**
-     * Delete
+     * Delete record by some conditions
      *
-     * @param \UniMapper\Query\Delete $query Query
+     * @param \UniMapper\Query\Delete $query
      */
-    public function delete(\UniMapper\Query\Delete $query);
+    public function delete($resource, array $conditions);
 
     /**
      * Find single record
