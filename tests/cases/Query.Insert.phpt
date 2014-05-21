@@ -16,3 +16,4 @@ $mapperMock->expects("mapValue")->once()->andReturn(1);
 
 $query = new \UniMapper\Query\Insert(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock, $entity);
 Assert::same(1, $query->execute());
+Assert::same(['text' => 'foo'], $query->getValues());
