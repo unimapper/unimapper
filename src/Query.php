@@ -100,7 +100,7 @@ abstract class Query implements IQuery
         $this->result = $this->onExecute($this->mapper);
 
         // Set entities active
-        if ($this->result instanceof Entity) {
+        if ($this->result instanceof Entity && !$this->result->isActive()) {
             $this->result->setActive($this->mapper);
         } elseif ($this->result instanceof EntityCollection) {
             foreach ($this->result as $entity) {

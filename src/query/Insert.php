@@ -3,32 +3,32 @@
 namespace UniMapper\Query;
 
 use UniMapper\Mapper,
+    UniMapper\Entity,
     UniMapper\Exceptions\QueryException,
     UniMapper\Reflection;
 
 class Insert extends \UniMapper\Query
 {
 
-    /** @var \UniMapper\Entity */
-    public $entity;
+    /** @var array */
+    private $values = [];
 
-    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper, array $data)
+    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper, Entity $entity)
     {
         parent::__construct($entityReflection, $mapper);
-        $class = $this->entityReflection->getClassName();
-        $this->entity = new $class; // @todo missing cache
-        $this->entity->import($data); // @todo better validation?
+        $this->values = $mapper->unmapEntity($entity);
+        if (empty($this->values)) {
+            throw new QueryException("Nothing to insert");
+        }
     }
 
     public function onExecute(\UniMapper\Mapper $mapper)
     {
-        $primaryValue = $mapper->insert($this);
+        $primaryValue = $mapper->insert($mapper->getResource($this->entityReflection), $this->values);
         if ($primaryValue === null) {
             throw new QueryException("Insert should return primary value but null given!");
         }
-        $primaryProperty = $this->entityReflection->getPrimaryProperty();
-        $this->entity->{$primaryProperty->getName()} = $primaryValue;
-        return $this->entity;
+        return $mapper->mapValue($this->entityReflection->getPrimaryProperty(), $primaryValue);
     }
 
 }

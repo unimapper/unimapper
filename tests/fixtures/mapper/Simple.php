@@ -24,12 +24,12 @@ class Simple extends \UniMapper\Mapper
         throw new \Exception("You should  mock here!");
     }
 
-    public function insert(\UniMapper\Query\Insert $query)
+    public function insert($resource, array $values)
     {
         throw new \Exception("You should  mock here!");
     }
 
-    public function update(\UniMapper\Query\Update $query)
+    public function update($resource, array $values, array $conditions)
     {
         throw new \Exception("You should  mock here!");
     }

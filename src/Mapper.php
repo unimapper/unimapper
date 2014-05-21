@@ -37,7 +37,15 @@ abstract class Mapper implements Mapper\IMapper
         return $this->name;
     }
 
-    final public function getResource(Reflection\Entity $entityReflection)
+    /**
+     * Get entity resource name
+     *
+     * @param \UniMapper\Reflection\Entity $entityReflection
+     * @return string
+     * @throws MapperException
+     * @todo Can be removed after removing query dependency
+     */
+    public function getResource(Reflection\Entity $entityReflection)
     {
         $mapperReflection = $entityReflection->getMapperReflection();
         if ($mapperReflection->getName() !== $this->name) {
@@ -75,7 +83,7 @@ abstract class Mapper implements Mapper\IMapper
     /**
      * Translate conditions
      */
-    protected function translateConditions(Reflection\Entity $entityReflection, array $conditions)
+    public function unmapConditions(Reflection\Entity $entityReflection, array $conditions)
     {
         $propertyReflections = $entityReflection->getProperties();
 
@@ -86,7 +94,7 @@ abstract class Mapper implements Mapper\IMapper
                 // Nested conditions
 
                 list($nestedConditions, $joiner) = $condition;
-                $condition[0] = $this->translateConditions($entityReflection, $nestedConditions);
+                $condition[0] = $this->unmapConditions($entityReflection, $nestedConditions);
 
                 // Skip empty conditions
                 if (empty($condition[0])) {
@@ -113,7 +121,7 @@ abstract class Mapper implements Mapper\IMapper
      *
      * @throws \UniMapper\Exceptions\MapperException
      */
-    protected function mapValue(Reflection\Entity\Property $property, $data)
+    public function mapValue(Reflection\Entity\Property $property, $data)
     {
         $type = $property->getType();
 

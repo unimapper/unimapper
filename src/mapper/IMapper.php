@@ -38,18 +38,21 @@ interface IMapper
     public function findAll(\UniMapper\Query\FindAll $query);
 
     /**
-     * Insert
+     * Insert should return primary value
      *
-     * @param \UniMapper\Query\Insert $query Query
+     * @param string $resource
+     * @param array  $values
      */
-    public function insert(\UniMapper\Query\Insert $query);
+    public function insert($resource, array $values);
 
     /**
-     * Update
+     * Update data by set of conditions
      *
-     * @param \UniMapper\Query\Update $query Query
+     * @param string $resource
+     * @param array  $values
+     * @param array  $conditions
      */
-    public function update(\UniMapper\Query\Update $query);
+    public function update($resource, array $values, array $conditions);
 
     /**
      * Custom query

@@ -120,21 +120,22 @@ abstract class Entity implements \JsonSerializable, \Serializable
         }
 
         $primaryName = $this->reflection->getPrimaryProperty()->getName();
-        $primaryValue = $this->{$primaryName};
+        $primaryValue = null;
+        if (isset($this->data[$primaryName])) {
+            $primaryValue = $this->data[$primaryName];
+        }
 
-        $data = $this->data;
         if ($primaryValue === null) {
             // Insert
 
-            $query = new Query\Insert($this->reflection, $this->mapper, $data);
-            $savedEntity = $query->execute();
-            $this->data[$primaryName] = $savedEntity->{$primaryName};
+            $query = new Query\Insert($this->reflection, $this->mapper, $this);
+            $this->data[$primaryName] = $query->execute();
         } else {
             // Update
 
-            unset($data[$primaryName]); // Changing primary value forbidden
-            $query = new Query\Update($this->reflection, $this->mapper, $data);
-            $query->where($primaryName, "=", $primaryValue)->execute();
+            $query = new Query\Update($this->reflection, $this->mapper, $this);
+            $query->where($primaryName, "=", $primaryValue);
+            $query->execute();
         }
     }
 

@@ -6,6 +6,8 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
+$mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+
 $entity = new Fixtures\Entity\Simple;
 $entity->text = "test";
 $entity->id = 1;
@@ -101,9 +103,6 @@ Assert::exception(function() use ($entity) {
 
 // isActive()
 Assert::false($entity->isActive());
-
-// setActive()
-$mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
 $entity->setActive($mapperMock);
 Assert::true($entity->isActive());
 
@@ -114,11 +113,18 @@ Assert::exception(function() {
 }, "Exception", "Entity is not active!");
 
 // save() - update
-$mapperMock->expects("update")->once();
+$updatedEntity = new Fixtures\Entity\Simple;
+$updatedEntity->id = 1;
+$mapperMock->expects("unmapEntity")->with($entity)->once()->andReturn(["id" => 1]);
+$mapperMock->expects("update")->once()->andReturn(["id" => 1]);
+$mapperMock->expects("getResource")->once()->andReturn("resource");
+$mapperMock->expects("mapEntity")->once()->andReturn($updatedEntity);
+$mapperMock->expects("unmapConditions")->once()->andReturn(["id", "=", 1]);
 $entity->save();
 
 // save() - insert
-$mapperMock->expects("insert")->once()->andReturn(1);
+$mapperMock->expects("insert")->once()->andReturn("1");
+$mapperMock->expects("mapValue")->once()->andReturn(1);
 $entity->id = null;
 $entity->save();
 Assert::same(1, $entity->id);

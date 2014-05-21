@@ -5,44 +5,41 @@ namespace UniMapper\Query;
 use UniMapper\Exceptions\QueryException,
     UniMapper\Query\IConditionable,
     UniMapper\Mapper,
+    UniMapper\Entity,
     UniMapper\Reflection;
 
 class Update extends \UniMapper\Query implements IConditionable
 {
 
-    /** @var \UniMapper\Entity */
-    public $entity;
+    /** @var array */
+    private $values = [];
 
-    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper, array $data)
+    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper, Entity $entity)
     {
         parent::__construct($entityReflection, $mapper);
-        $class = $entityReflection->getClassName();
-        $this->entity = new $class; // @todo missing cache
-        $this->entity->import($data); // @todo better validation, prevent from primary property change?
+        $this->values = $mapper->unmapEntity($entity);
+        if (empty($this->values)) {
+            throw new QueryException("Nothing to insert");
+        }
     }
 
     public function onExecute(\UniMapper\Mapper $mapper)
-    {
-        $this->beforeExecute();
-        return $mapper->update($this);
-    }
-
-    private function beforeExecute()
     {
         if (count($this->conditions) === 0) {
             throw new QueryException("At least one condition must be set!");
         }
 
-        // @todo will be removed when primary property must be required
-        $primaryProperty = $this->entityReflection->getPrimaryProperty();
-        if ($primaryProperty === null) {
-            throw new QueryException("Entity does not have primary property!");
+        // Ignore primary value
+        $primaryName = $this->entityReflection->getPrimaryProperty()->getMappedName();
+        if (isset($this->values[$primaryName])) {
+            unset($this->values[$primaryName]);
         }
 
-        // Ignore primary property value
-        if (isset($this->entity->{$primaryProperty->getName()})) {
-            unset($this->entity->{$primaryProperty->getName()});
-        }
+        $mapper->update(
+            $mapper->getResource($this->entityReflection),
+            $this->values,
+            $mapper->unmapConditions($this->entityReflection, $this->conditions)
+        );
     }
 
 }
