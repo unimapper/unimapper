@@ -23,6 +23,11 @@ class Update extends \UniMapper\Query implements IConditionable
         }
     }
 
+    public function getValues()
+    {
+        return $this->values;
+    }
+
     public function onExecute(\UniMapper\Mapper $mapper)
     {
         if (count($this->conditions) === 0) {

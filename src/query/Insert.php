@@ -22,6 +22,11 @@ class Insert extends \UniMapper\Query
         }
     }
 
+    public function getValues()
+    {
+        return $this->values;
+    }
+
     public function onExecute(\UniMapper\Mapper $mapper)
     {
         $primaryValue = $mapper->insert($mapper->getResource($this->entityReflection), $this->values);
