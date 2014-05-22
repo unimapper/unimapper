@@ -54,34 +54,38 @@ class FindAll extends \UniMapper\Query implements IConditionable
         if ($direction !== "asc" && $direction !== "desc") {
             throw new QueryException("Order direction must be 'asc' or 'desc'!");
         }
-        $this->orderBy[] = array($propertyName, $direction);
+        $this->orderBy[$propertyName] = $direction;
         return $this;
     }
 
     public function onExecute(\UniMapper\Mapper $mapper)
     {
-        $this->beforeExecute();
+        // Add properties from conditions to the selection automatically
+        $selection = $this->selection;
+        if (count($this->conditions) > 0 && count($selection) > 0) {
 
-        $result = $mapper->findAll($this);
-        if ($result === false) {
-            return new EntityCollection($this->entityReflection->getClassName());
-        }
-
-        return $result;
-    }
-
-    private function beforeExecute()
-    {
-        // Add properties from conditions to the selection if not set
-        if (count($this->conditions) > 0 && count($this->selection) > 0) {
             foreach ($this->conditions as $condition) {
 
                 list($propertyName) = $condition;
                 if (!in_array($propertyName, $this->selection)) {
-                    $this->selection[] = $propertyName;
+                    $selection[] = $propertyName;
                 }
             }
         }
+
+        $result = $mapper->findAll(
+            $mapper->getResource($this->entityReflection),
+            $mapper->unmapSelection($this->entityReflection, $selection),
+            $mapper->unmapConditions($this->entityReflection, $this->conditions),
+            $mapper->unmapOrderBy($this->entityReflection, $this->orderBy),
+            $this->limit,
+            $this->offset
+        );
+        if ($result === false) {
+            return new EntityCollection($this->entityReflection->getClassName());
+        }
+
+        return $mapper->mapCollection($this->entityReflection->getClassName(), $result);
     }
 
 }

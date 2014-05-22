@@ -29,7 +29,17 @@ class FindOne extends \UniMapper\Query implements IConditionable
 
     public function onExecute(\UniMapper\Mapper $mapper)
     {
-        return $mapper->findOne($this);
+        $result = $mapper->findOne(
+            $mapper->getResource($this->entityReflection),
+            $this->entityReflection->getPrimaryProperty()->getMappedName(),
+            $this->primaryValue
+        );
+
+        if (!$result) {
+            return false;
+        }
+
+        return $mapper->mapEntity($this->entityReflection->getClassName(), $result);
     }
 
 }

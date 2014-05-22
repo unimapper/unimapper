@@ -63,7 +63,15 @@ abstract class Mapper implements Mapper\IMapper
         return $output;
     }
 
-    protected function getSelection(Reflection\Entity $entityReflection, array $selection = array())
+    /**
+     * Translate selection items
+     *
+     * @param \UniMapper\Reflection\Entity $entityReflection
+     * @param array                        $selection
+     *
+     * @return array
+     */
+    public function unmapSelection(Reflection\Entity $entityReflection, array $selection)
     {
         $propertyReflections = $entityReflection->getProperties();
         if (count($selection) === 0) {
@@ -78,6 +86,24 @@ abstract class Mapper implements Mapper\IMapper
             }
         }
         return $this->mapProperties($result);
+    }
+
+    /**
+     * Translate order by definition
+     *
+     * @param \UniMapper\Reflection\Entity $entityReflection
+     * @param array                        $items
+     *
+     * @return array
+     */
+    public function unmapOrderBy(Reflection\Entity $entityReflection, array $items)
+    {
+        $unmapped = [];
+        foreach ($items as $name => $direction) {
+            $mappedName = $entityReflection->getProperties()[$name]->getMappedName();
+            $unmapped[$mappedName] = $direction;
+        }
+        return $unmapped;
     }
 
     /**

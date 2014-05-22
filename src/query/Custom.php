@@ -57,7 +57,7 @@ class Custom extends \UniMapper\Query
 
     public function onExecute(\UniMapper\Mapper $mapper)
     {
-        return $mapper->custom($this);
+        return $mapper->custom($mapper->getResource($this->entityReflection), $this->query, $this->method, $this->contentType, $mapper);
     }
 
 }

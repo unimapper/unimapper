@@ -4,7 +4,8 @@ namespace UniMapper\Tests\Fixtures\Mapper;
 
 class Simple extends \UniMapper\Mapper
 {
-    public function count(\UniMapper\Query\Count $query)
+
+    public function count($resource, array $conditions)
     {
         throw new \Exception("You should  mock here!");
     }
@@ -14,12 +15,12 @@ class Simple extends \UniMapper\Mapper
         throw new \Exception("You should  mock here!");
     }
 
-    public function findOne(\UniMapper\Query\FindOne $query)
+    public function findOne($resource, $primaryName, $primaryValue)
     {
         throw new \Exception("You should  mock here!");
     }
 
-    public function findAll(\UniMapper\Query\FindAll $query)
+    public function findAll($resource, array $selection, array $conditions, array $orderBy, $limit = 0, $offset = 0)
     {
         throw new \Exception("You should  mock here!");
     }
@@ -34,8 +35,9 @@ class Simple extends \UniMapper\Mapper
         throw new \Exception("You should  mock here!");
     }
 
-    public function custom(\UniMapper\Query\Custom $query)
+    public function custom($resource, $query, $method, $contentType, $data)
     {
         throw new \Exception("You should  mock here!");
     }
+
 }

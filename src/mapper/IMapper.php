@@ -10,11 +10,12 @@ interface IMapper
 {
 
     /**
-     * Count
+     * Count records by conditions
      *
-     * @param \UniMapper\Query\Count $query
+     * @param string $resource
+     * @param array  $conditions
      */
-    public function count(\UniMapper\Query\Count $query);
+    public function count($resource, array $conditions);
 
     /**
      * Delete record by some conditions
@@ -24,18 +25,25 @@ interface IMapper
     public function delete($resource, array $conditions);
 
     /**
-     * Find single record
+     * Find single record identified by primary value
      *
-     * @param \UniMapper\Query\FindOne $query Query
+     * @param string $resource
+     * @param mixed  $primaryName
+     * @param mixed  $primaryValue
      */
-    public function findOne(\UniMapper\Query\FindOne $query);
+    public function findOne($resource, $primaryName, $primaryValue);
 
     /**
-     * FindAll
+     * Find records
      *
-     * @param \UniMapper\Query\FindAll $query FindAll Query
+     * @param string  $resource
+     * @param array   $selection
+     * @param array   $conditions
+     * @param array   $orderBy
+     * @param integer $limit
+     * @param integer $offset
      */
-    public function findAll(\UniMapper\Query\FindAll $query);
+    public function findAll($resource, array $selection, array $conditions, array $orderBy, $limit = 0, $offset = 0);
 
     /**
      * Insert should return primary value
@@ -57,7 +65,12 @@ interface IMapper
     /**
      * Custom query
      *
-     * @param \UniMapper\Query\Custom $query Query
+     * @param string $resource
+     * @param string $query
+     * @param string $method
+     * @param string $contentType
+     * @param mixed  $data
      */
-    public function custom(\UniMapper\Query\Custom $query);
+    public function custom($resource, $query, $method, $contentType, $data);
+
 }
