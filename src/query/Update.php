@@ -5,7 +5,6 @@ namespace UniMapper\Query;
 use UniMapper\Exceptions\QueryException,
     UniMapper\Query\IConditionable,
     UniMapper\Mapper,
-    UniMapper\Entity,
     UniMapper\Reflection;
 
 class Update extends \UniMapper\Query implements IConditionable
@@ -14,9 +13,14 @@ class Update extends \UniMapper\Query implements IConditionable
     /** @var array */
     private $values = [];
 
-    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper, Entity $entity)
+    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper, array $data)
     {
         parent::__construct($entityReflection, $mapper);
+
+        $class = $entityReflection->getClassName();
+        $entity = new $class;
+        $entity->import($data); // @todo easier validation
+
         $this->values = $mapper->unmapEntity($entity);
         if (empty($this->values)) {
             throw new QueryException("Nothing to insert");

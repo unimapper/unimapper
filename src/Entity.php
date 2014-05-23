@@ -128,12 +128,12 @@ abstract class Entity implements \JsonSerializable, \Serializable
         if ($primaryValue === null) {
             // Insert
 
-            $query = new Query\Insert($this->reflection, $this->mapper, $this);
+            $query = new Query\Insert($this->reflection, $this->mapper, $this->data);
             $this->data[$primaryName] = $query->execute();
         } else {
             // Update
 
-            $query = new Query\Update($this->reflection, $this->mapper, $this);
+            $query = new Query\Update($this->reflection, $this->mapper, $this->data);
             $query->where($primaryName, "=", $primaryValue);
             $query->execute();
         }
