@@ -341,6 +341,51 @@ class EntityTest extends Tester\TestCase
         $this->entity->year = 1999;
     }
 
+    public function testIterate()
+    {
+        $expected = [
+            'names' => [
+                'id',
+                'text',
+                'empty',
+                'url',
+                'email',
+                'time',
+                'year',
+                'ip',
+                'mark',
+                'entity',
+                'collection',
+                'readonly',
+                'localProperty'
+            ],
+            'values' => [
+                1,
+                'test',
+                '',
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                $this->entity->collection,
+                null,
+                'defaultValue'
+            ],
+        ];
+
+        $given = ['names' => [], 'values' => []];
+        foreach ($this->entity as $name => $value) {
+           $given['names'][] = $name;
+           $given['values'][] = $value;
+        }
+        Assert::same($expected, $given);
+        Assert::same('localProperty', key($this->entity));
+        Assert::same('defaultValue', current($this->entity));
+    }
+
 }
 
 $testCase = new EntityTest;
