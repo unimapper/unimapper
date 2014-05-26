@@ -31,7 +31,7 @@ class Update extends \UniMapper\Query implements IConditionable
 
         // Values can not be empty
         if (empty($this->values)) {
-            throw new QueryException("Nothing to insert");
+            throw new QueryException("Nothing to update!");
         }
     }
 
