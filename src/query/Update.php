@@ -17,11 +17,19 @@ class Update extends \UniMapper\Query implements IConditionable
     {
         parent::__construct($entityReflection, $mapper);
 
+        // Primary value update is not allowed
+        $primaryName = $entityReflection->getPrimaryProperty()->getMappedName();
+        if (isset($data[$primaryName])) {
+            throw new QueryException("Update is not allowed on primary property '" .  $primaryName . "'!");
+        }
+
         $class = $entityReflection->getClassName();
         $entity = new $class;
         $entity->import($data); // @todo easier validation
 
         $this->values = $mapper->unmapEntity($entity);
+
+        // Values can not be empty
         if (empty($this->values)) {
             throw new QueryException("Nothing to insert");
         }
@@ -36,12 +44,6 @@ class Update extends \UniMapper\Query implements IConditionable
     {
         if (count($this->conditions) === 0) {
             throw new QueryException("At least one condition must be set!");
-        }
-
-        // Ignore primary value
-        $primaryName = $this->entityReflection->getPrimaryProperty()->getMappedName();
-        if (isset($this->values[$primaryName])) {
-            unset($this->values[$primaryName]);
         }
 
         $mapper->update(

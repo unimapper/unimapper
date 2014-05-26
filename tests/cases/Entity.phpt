@@ -115,7 +115,8 @@ Assert::exception(function() {
 // save() - update
 $updatedEntity = new Fixtures\Entity\Simple;
 $updatedEntity->id = 1;
-$mapperMock->expects("unmapEntity")->once()->andReturn(["id" => 1]);
+$updatedEntity->text = "foo";
+$mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo"]);
 $mapperMock->expects("update")->once()->andReturn(["id" => 1]);
 $mapperMock->expects("getResource")->once()->andReturn("resource");
 $mapperMock->expects("mapEntity")->once()->andReturn($updatedEntity);
