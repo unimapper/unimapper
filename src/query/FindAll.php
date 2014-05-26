@@ -11,10 +11,10 @@ use UniMapper\Exceptions\QueryException,
 class FindAll extends \UniMapper\Query implements IConditionable
 {
 
-    public $limit = 0;
-    public $offset = 0;
-    public $orderBy = array();
-    public $selection = array();
+    public $limit = null;
+    public $offset = null;
+    public $orderBy = [];
+    public $selection = [];
 
     public function __construct(Reflection\Entity $entityReflection, Mapper $mapper)
     {
@@ -34,13 +34,13 @@ class FindAll extends \UniMapper\Query implements IConditionable
 
     public function limit($limit)
     {
-        $this->limit = $limit;
+        $this->limit = (int) $limit;
         return $this;
     }
 
     public function offset($offset)
     {
-        $this->offset = $offset;
+        $this->offset = (int) $offset;
         return $this;
     }
 
