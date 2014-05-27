@@ -1,19 +1,45 @@
 <?php
 
-use Tester\Assert;
+use Tester\Assert,
+    UniMapper\Query,
+    UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
-$mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+class QueryFindAllTest extends Tester\TestCase
+{
 
-Assert::exception(function() use ($mapperMock) {
-    $query = new \UniMapper\Query\Delete(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
-    $query->execute();
-}, "UniMapper\Exceptions\QueryException", "At least one condition must be set!");
+    /** @var \Mockista\Mock */
+    private $mapperMock;
 
-$mapperMock->expects("delete")->with("resource", ["id", "=", 1])->once();
-$mapperMock->expects("getResource")->once()->andReturn("resource");
-$mapperMock->expects("unmapConditions")->once()->andReturn(["id", "=", 1]);
-$query = new \UniMapper\Query\Delete(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
-$query->where("id", "=", 1);
-$query->execute();
+    public function setUp()
+    {
+        $mockista = new \Mockista\Registry;
+        $this->mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+        $this->mapperMock->expects("getName")->once()->andReturn("FooMapper");
+    }
+
+    public function testSuccess()
+    {
+        $this->mapperMock->expects("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
+        $this->mapperMock->freeze();
+
+        $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock);
+        $query->where("id", "=", 1);
+        Assert::null($query->execute());
+    }
+
+    /**
+     * @throws UniMapper\Exceptions\QueryException At least one condition must be set!
+     */
+    public function testNoConditionGiven()
+    {
+        $this->mapperMock->freeze();
+        $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock);
+        $query->execute();
+    }
+
+}
+
+$testCase = new QueryFindAllTest;
+$testCase->run();

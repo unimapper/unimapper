@@ -7,8 +7,9 @@ require __DIR__ . '/../bootstrap.php';
 
 // Simple entity
 $mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+$mapperMock->expects("getName")->once()->andReturn("FooMapper");
 $mapperMock->expects("insert")->once()->andReturn(1);
-
+$mapperMock->freeze();
 
 $entity = new Fixtures\Entity\Simple;
 
@@ -19,12 +20,12 @@ $expectedConditions = array();
 // where()
 $query->where("id", ">", 1);
 $expectedConditions[] = array("id", ">", 1, "AND");
-Assert::same($expectedConditions, $query->conditions);
+Assert::same($expectedConditions, $query->getConditions());
 
 // orWhere()
 $query->orWhere("text", "=", "foo");
 $expectedConditions[] = array("text", "=", "foo", "OR");
-Assert::same($expectedConditions, $query->conditions);
+Assert::same($expectedConditions, $query->getConditions());
 
 // whereAre()
 $query->whereAre(function($query) {
@@ -38,7 +39,7 @@ $expectedConditions[] = array(
     ),
     'AND'
 );
-Assert::same($expectedConditions, $query->conditions);
+Assert::same($expectedConditions, $query->getConditions());
 
 // orWhereAre()
 $query->orWhereAre(function($query) {
@@ -52,7 +53,7 @@ $expectedConditions[] = array(
     ),
     'OR'
 );
-Assert::same($expectedConditions, $query->conditions);
+Assert::same($expectedConditions, $query->getConditions());
 
 
 // Deep nesting
@@ -87,4 +88,4 @@ $expectedConditions[] = array(
     ),
     'AND'
 );
-Assert::same($expectedConditions, $query->conditions);
+Assert::same($expectedConditions, $query->getConditions());

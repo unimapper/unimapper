@@ -5,34 +5,35 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 $mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-$mapperMock->expects("getResource")->once()->andReturn("resource");
+$mapperMock->expects("getName")->once()->andReturn("FooMapper");
+$mapperMock->expects("custom")->with("resource", "query", \UniMapper\Query\Custom::METHOD_GET, null, null)->once()->andReturn([]);
+$mapperMock->expects("custom")->with("resource", "query", \UniMapper\Query\Custom::METHOD_PUT, "application/json", [])->once()->andReturn([]);
+$mapperMock->expects("custom")->with("resource", "query", \UniMapper\Query\Custom::METHOD_POST, null, [])->once()->andReturn([]);
+$mapperMock->expects("custom")->with("resource", "query", \UniMapper\Query\Custom::METHOD_DELETE, null, null)->once();
+$mapperMock->expects("custom")->with("resource", ["arg1", "arg2"], \UniMapper\Query\Custom::METHOD_RAW, null, null)->once();
+$mapperMock->freeze();
 
 // Get
-$mapperMock->expects("custom")->with("resource", "query", \UniMapper\Query\Custom::METHOD_GET, null, null)->once()->andReturn([]);
-$query = new \UniMapper\Query\Custom(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
-$query->get("query");
-Assert::same([], $query->execute());
+$get = new \UniMapper\Query\Custom(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
+$get->get("query");
+Assert::same([], $get->execute());
 
 // Put
-$mapperMock->expects("custom")->with("resource", "query", \UniMapper\Query\Custom::METHOD_PUT, "application/json", [])->once()->andReturn([]);
-$query = new \UniMapper\Query\Custom(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
-$query->put("query", [], "application/json");
-Assert::same([], $query->execute());
+$put = new \UniMapper\Query\Custom(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
+$put->put("query", [], "application/json");
+Assert::same([], $put->execute());
 
 // Post
-$mapperMock->expects("custom")->with("resource", "query", \UniMapper\Query\Custom::METHOD_POST, null, [])->once()->andReturn([]);
-$query = new \UniMapper\Query\Custom(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
-$query->post("query", []);
-Assert::same([], $query->execute());
+$post = new \UniMapper\Query\Custom(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
+$post->post("query", []);
+Assert::same([], $post->execute());
 
 // Delete
-$mapperMock->expects("custom")->with("resource", "query", \UniMapper\Query\Custom::METHOD_DELETE, null, null)->once();
-$query = new \UniMapper\Query\Custom(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
-$query->delete("query");
-Assert::same(null, $query->execute());
+$delete = new \UniMapper\Query\Custom(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
+$delete->delete("query");
+Assert::same(null, $delete->execute());
 
 // Raw
-$mapperMock->expects("custom")->with("resource", ["arg1", "arg2"], \UniMapper\Query\Custom::METHOD_RAW, null, null)->once();
-$query = new \UniMapper\Query\Custom(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
-$query->raw("arg1", "arg2");
-Assert::same(null, $query->execute());
+$raw = new \UniMapper\Query\Custom(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock);
+$raw->raw("arg1", "arg2");
+Assert::same(null, $raw->execute());

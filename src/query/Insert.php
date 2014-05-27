@@ -39,7 +39,10 @@ class Insert extends \UniMapper\Query
             unset($this->values[$primaryName]);
         }
 
-        $primaryValue = $mapper->insert($mapper->getResource($this->entityReflection), $this->values);
+        $primaryValue = $mapper->insert(
+            $this->entityReflection->getMapperReflection()->getResource(),
+            $this->values
+        );
         if ($primaryValue === null) {
             throw new QueryException("Insert should return primary value but null given!");
         }

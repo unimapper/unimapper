@@ -1,37 +1,58 @@
 <?php
 
 use Tester\Assert,
+    UniMapper\Query,
+    UniMapper\Reflection,
     UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
 
-$entity1 = new Fixtures\Entity\Simple;
-$entity1->id = 2;
-$entity2 = new Fixtures\Entity\Simple;
-$entity2->id = 3;
+class QueryFindAllTest extends Tester\TestCase
+{
 
-$collection = new UniMapper\EntityCollection("UniMapper\Tests\Fixtures\Entity\Simple");
-$collection[] = $entity1;
-$collection[] = $entity2;
+    /** @var \Mockista\Mock */
+    private $mapperMock;
 
-$mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-$mapperMock->expects("getResource")->once()->andReturn("resource");
-$mapperMock->expects("unmapSelection")->once()->andReturn(["link", "text"]);
-$mapperMock->expects("unmapConditions")->once()->andReturn(["id", ">", 1]);
-$mapperMock->expects("unmapOrderBy")->once()->andReturn(["id" => "DESC"]);
-$mapperMock->expects("findAll")
-    ->with("resource", ["link", "text"], ["id", ">", 1], ["id" => "DESC"], null, null)
-    ->once()
-    ->andReturn([["id" => 2], ["id" => 3]]);
-$mapperMock->expects("mapCollection")->with(get_class($entity1), [["id" => 2], ["id" => 3]])->once()->andReturn($collection);
+    public function setUp()
+    {
+        $mockista = new \Mockista\Registry;
+        $this->mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+        $this->mapperMock->expects("getName")->once()->andReturn("FooMapper");
+    }
 
-$query = new \UniMapper\Query\FindAll(new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock, "url", "text");
-$query->where("id", ">", 1)->orderBy("id", "DESC");
-$result = $query->execute();
+    public function testSuccess()
+    {
+        $entity1 = new Fixtures\Entity\Simple;
+        $entity1->id = 2;
+        $entity2 = new Fixtures\Entity\Simple;
+        $entity2->id = 3;
 
-Assert::type("Unimapper\EntityCollection", $result);
-Assert::same(2, count($result));
-foreach ($result as $entity) {
-    Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity);
-    Assert::true($entity->isActive());
+        $collection = new UniMapper\EntityCollection("UniMapper\Tests\Fixtures\Entity\Simple");
+        $collection[] = $entity1;
+        $collection[] = $entity2;
+
+        $this->mapperMock->expects("unmapSelection")->once()->andReturn(["link", "text"]);
+        $this->mapperMock->expects("unmapOrderBy")->once()->andReturn(["id" => "DESC"]);
+        $this->mapperMock->expects("findAll")
+            ->with("resource", ["link", "text"], [["id", ">", 1, "AND"]], ["id" => "DESC"], null, null)
+            ->once()
+            ->andReturn([["id" => 2], ["id" => 3]]);
+        $this->mapperMock->expects("mapCollection")->with(get_class($entity1), [["id" => 2], ["id" => 3]])->once()->andReturn($collection);
+        $this->mapperMock->freeze();
+
+        $query = new Query\FindAll(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock, "url", "text");
+        $query->where("id", ">", 1)->orderBy("id", "DESC");
+        $result = $query->execute();
+
+        Assert::type("Unimapper\EntityCollection", $result);
+        Assert::same(2, count($result));
+        foreach ($result as $entity) {
+            Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity);
+            Assert::true($entity->isActive());
+        }
+    }
+
 }
+
+$testCase = new QueryFindAllTest;
+$testCase->run();

@@ -130,6 +130,15 @@ class Entity
         return isset($this->properties[$name]);
     }
 
+    /**
+     * Get property reflection object
+     *
+     * @param string $name
+     *
+     * @return \Unimapper\Reflection\Entity\Property
+     *
+     * @throws \Exception
+     */
     public function getProperty($name)
     {
         if (!$this->hasProperty($name)) {

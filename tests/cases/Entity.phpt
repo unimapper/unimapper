@@ -6,8 +6,6 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-$mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-
 $entity = new Fixtures\Entity\Simple;
 $entity->text = "test";
 $entity->id = 1;
@@ -101,6 +99,19 @@ Assert::exception(function() use ($entity) {
     $entity->import(["undefined" => "foo"]);
 }, "UniMapper\Exceptions\PropertyUndefinedException", "Undefined property with name 'undefined'!");
 
+$mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+$mapperMock->expects("getName")->once()->andReturn("FooMapper");
+$mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo"]);
+$mapperMock->expects("update")->once()->andReturn(["id" => 1]);
+$updatedEntity = new Fixtures\Entity\Simple;
+$updatedEntity->id = 1;
+$updatedEntity->text = "foo";
+$mapperMock->expects("mapEntity")->once()->andReturn($updatedEntity);
+$mapperMock->expects("delete")->once();
+$mapperMock->expects("insert")->once()->andReturn("1");
+$mapperMock->expects("mapValue")->once()->andReturn(1);
+$mapperMock->freeze();
+
 // isActive()
 Assert::false($entity->isActive());
 $entity->setActive($mapperMock);
@@ -113,19 +124,9 @@ Assert::exception(function() {
 }, "Exception", "Entity is not active!");
 
 // save() - update
-$updatedEntity = new Fixtures\Entity\Simple;
-$updatedEntity->id = 1;
-$updatedEntity->text = "foo";
-$mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo"]);
-$mapperMock->expects("update")->once()->andReturn(["id" => 1]);
-$mapperMock->expects("getResource")->once()->andReturn("resource");
-$mapperMock->expects("mapEntity")->once()->andReturn($updatedEntity);
-$mapperMock->expects("unmapConditions")->once()->andReturn(["id", "=", 1]);
 $entity->save();
 
 // save() - insert
-$mapperMock->expects("insert")->once()->andReturn("1");
-$mapperMock->expects("mapValue")->once()->andReturn(1);
 $entity->id = null;
 $entity->save();
 Assert::same(1, $entity->id);
@@ -140,7 +141,6 @@ $entity->id = null;
 Assert::exception(function() use ($entity) {
     $entity->delete();
 }, "Exception", "Primary value must be set!");
-$mapperMock->expects("delete")->once();
 $entity->id = 1;
 $entity->delete();
 

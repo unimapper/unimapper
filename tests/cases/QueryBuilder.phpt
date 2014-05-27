@@ -8,7 +8,9 @@ $builder = new \UniMapper\QueryBuilder(
     new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
     $mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple")
 );
+$mapperMock->expects("getName")->once()->andReturn("FooMapper");
 $mapperMock->expects("unmapEntity")->twice()->andReturn(["text" => "foo"]);
+$mapperMock->freeze();
 
 // Built-in queries
 Assert::type("UniMapper\Query\Count", $builder->count());

@@ -47,9 +47,9 @@ class Update extends \UniMapper\Query implements IConditionable
         }
 
         $mapper->update(
-            $mapper->getResource($this->entityReflection),
+            $this->entityReflection->getMapperReflection()->getResource(),
             $this->values,
-            $mapper->unmapConditions($this->entityReflection, $this->conditions)
+            $this->conditions
         );
     }
 

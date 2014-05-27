@@ -11,19 +11,35 @@ use UniMapper\Mapper,
 abstract class Query implements IQuery
 {
 
-    protected $conditionOperators = array("=", "<", ">", "<>", ">=", "<=", "IS", "IS NOT", "!=", "LIKE", "COMPARE", "IN");
-    public $conditions = [];
-    public $elapsed;
+    /** @var integer */
+    private $elapsed;
+
+    /** @var mixed */
     private $result;
 
+    /** @var array */
+    protected $conditionOperators = ["=", "<", ">", "<>", ">=", "<=", "IS", "IS NOT", "!=", "LIKE", "COMPARE", "IN"];
+
+    /** @var array */
+    protected $conditions = [];
+
     /** @var \UniMapper\Mapper */
-    public $mapper;
+    protected $mapper;
 
     /** @var \UniMapper\Reflection\Entity */
-    public $entityReflection;
+    protected $entityReflection;
 
     public function __construct(Reflection\Entity $entityReflection, Mapper $mapper)
     {
+        // Check if correct mapper given
+        if ($entityReflection->getMapperReflection()->getName() !== $mapper->getName()) {
+            throw new QueryException(
+                "Mapper name '" . $entityReflection->getMapperReflection()->getName()
+                . "' in query does not match with mapper name '" . $mapper->getName()
+                . "' from entity " . $entityReflection->getClassName() . "!"
+            );
+        }
+
         $this->mapper = $mapper;
         $this->entityReflection = $entityReflection;
     }
@@ -31,6 +47,26 @@ abstract class Query implements IQuery
     public function getResult()
     {
         return $this->result;
+    }
+
+    public function getConditions()
+    {
+        return $this->conditions;
+    }
+
+    public function getElapsed()
+    {
+        return $this->elapsed;
+    }
+
+    public function getMapper()
+    {
+        return $this->mapper;
+    }
+
+    public function getEntityReflection()
+    {
+        return $this->entityReflection;
     }
 
     public static function getName()
@@ -53,7 +89,12 @@ abstract class Query implements IQuery
             throw new QueryException("Condition operator " . $operator . " not allowed! You can use one of the following " . implode(" ", $this->conditionOperators) . ".");
         }
 
-        $this->conditions[] = array($propertyName, $operator, $value, $joiner);
+        $this->conditions[] = [
+            $this->entityReflection->getProperty($propertyName)->getMappedName(),
+            $operator,
+            $value,
+            $joiner
+        ];
     }
 
     protected function addNestedConditions(\Closure $callback, $joiner = 'AND')

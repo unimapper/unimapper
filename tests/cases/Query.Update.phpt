@@ -1,25 +1,56 @@
 <?php
 
-use Tester\Assert;
+use Tester\Assert,
+    UniMapper\Query\Update,
+    UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
-$mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+class QueryUpdateTest extends Tester\TestCase
+{
 
-Assert::exception(function() use ($mapperMock) {
-    new \UniMapper\Query\Update(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock, ["id" => 1]);
-}, "UniMapper\Exceptions\QueryException", "Update is not allowed on primary property 'id'!");
+    /** @var \Mockista\Mock */
+    private $mapperMock;
 
-Assert::exception(function() use ($mapperMock) {
-    $mapperMock->expects("unmapEntity")->once()->andReturn([]);
-    new \UniMapper\Query\Update(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock, []);
-}, "UniMapper\Exceptions\QueryException", "Nothing to update!");
+    public function setUp()
+    {
+        $mockista = new \Mockista\Registry;
+        $this->mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+        $this->mapperMock->expects("getName")->once()->andReturn("FooMapper");
+    }
 
-$mapperMock->expects("update")->once()->andReturn("1");
-$mapperMock->expects("getResource")->once()->andReturn("resource");
-$mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo"]);
-$mapperMock->expects("unmapConditions")->once()->andReturn(["id", "=", 1]);
+    /**
+     * @throws UniMapper\Exceptions\QueryException Update is not allowed on primary property 'id'!
+     */
+    public function testDoNotUpdatePrimary()
+    {
+        $this->mapperMock->freeze();
+        new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock, ["id" => 1]);
+    }
 
-$query = new \UniMapper\Query\Update(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $mapperMock, ["text" => "foo"]);
-$query->where("id", "=", 1);
-Assert::same(null, $query->execute());
+    /**
+     * @throws UniMapper\Exceptions\QueryException Nothing to update!
+     */
+    public function testNothingToUpdate()
+    {
+        $this->mapperMock->expects("unmapEntity")->once()->andReturn([]);
+        $this->mapperMock->freeze();
+
+        new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock, []);
+    }
+
+    public function testSuccess()
+    {
+        $this->mapperMock->expects("update")->once()->andReturn("1");
+        $this->mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo"]);
+        $this->mapperMock->freeze();
+
+        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock, ["text" => "foo"]);
+        $query->where("id", "=", 1);
+        Assert::same(null, $query->execute());
+    }
+
+}
+
+$testCase = new QueryUpdateTest;
+$testCase->run();

@@ -6,21 +6,13 @@ use Tester\Assert,
 require __DIR__ . '/../bootstrap.php';
 
 $mapper = new Fixtures\Mapper\Simple("FooMapper");
-$entity = new Fixtures\Entity\Simple;
 
 // Get name
 Assert::same("FooMapper", $mapper->getName());
 
-// getResource() Mapper not defined in entity
-Assert::exception(function() use ($entity) {
-
-    $mapper = new Fixtures\Mapper\Simple("UndefinedMapper");
-    $mapper->getResource($entity->getReflection());
-}, "UniMapper\Exceptions\MapperException", "Entity does not define mapper with name UndefinedMapper!");
-Assert::same("resource", $mapper->getResource($entity->getReflection()));
-
 $email = "john.doe@example.com";
 $url = "http://example.com";
+$entity = new Fixtures\Entity\Simple;
 $entity->localProperty = "foo";
 $entity->email = $email;
 $entity->url = $url;

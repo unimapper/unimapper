@@ -15,8 +15,8 @@ class Delete extends \UniMapper\Query implements IConditionable
         }
 
         $mapper->delete(
-            $mapper->getResource($this->entityReflection),
-            $mapper->unmapConditions($this->entityReflection, $this->conditions)
+            $this->entityReflection->getMapperReflection()->getResource(),
+            $this->conditions
         );
     }
 

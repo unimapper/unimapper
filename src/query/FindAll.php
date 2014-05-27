@@ -74,9 +74,9 @@ class FindAll extends \UniMapper\Query implements IConditionable
         }
 
         $result = $mapper->findAll(
-            $mapper->getResource($this->entityReflection),
+            $this->entityReflection->getMapperReflection()->getResource(),
             $mapper->unmapSelection($this->entityReflection, $selection),
-            $mapper->unmapConditions($this->entityReflection, $this->conditions),
+            $this->conditions,
             $mapper->unmapOrderBy($this->entityReflection, $this->orderBy),
             $this->limit,
             $this->offset
