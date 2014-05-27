@@ -11,8 +11,8 @@ use UniMapper\Exceptions\QueryException,
 class FindAll extends \UniMapper\Query implements IConditionable
 {
 
-    public $limit = null;
-    public $offset = null;
+    public $limit = 0;
+    public $offset = 0;
     public $orderBy = [];
     public $selection = [];
 

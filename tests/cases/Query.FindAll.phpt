@@ -20,7 +20,7 @@ $mapperMock->expects("unmapSelection")->once()->andReturn(["link", "text"]);
 $mapperMock->expects("unmapConditions")->once()->andReturn(["id", ">", 1]);
 $mapperMock->expects("unmapOrderBy")->once()->andReturn(["id" => "DESC"]);
 $mapperMock->expects("findAll")
-    ->with("resource", ["link", "text"], ["id", ">", 1], ["id" => "DESC"], null, null)
+    ->with("resource", ["link", "text"], ["id", ">", 1], ["id" => "DESC"], 0, 0)
     ->once()
     ->andReturn([["id" => 2], ["id" => 3]]);
 $mapperMock->expects("mapCollection")->with(get_class($entity1), [["id" => 2], ["id" => 3]])->once()->andReturn($collection);
