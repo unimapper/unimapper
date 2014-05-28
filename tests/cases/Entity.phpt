@@ -3,176 +3,283 @@
 use Tester\Assert,
     UniMapper\Tests\Fixtures;
 
-
 require __DIR__ . '/../bootstrap.php';
 
-$entity = new Fixtures\Entity\Simple;
-$entity->text = "test";
-$entity->id = 1;
-$entity->empty = "";
+class EntityTest extends Tester\TestCase
+{
 
-// local properties
-Assert::same("defaultValue", $entity->localProperty);
+    /** @var \Mockista\Mock */
+    private $mapperMock;
 
-// isset()
-Assert::true(isset($entity->id));
-Assert::true(isset($entity->localProperty));
-Assert::false(isset($entity->missing));
+    /** @var \Mockista\Mock */
+    private $entity;
 
-// empty()
-Assert::true(empty($entity->empty));
-Assert::true(empty($entity->missing));
-Assert::false(empty($entity->id));
+    public function setUp()
+    {
+        $mockista = new \Mockista\Registry;
+        $this->mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+        $this->mapperMock->expects("getName")->once()->andReturn("FooMapper");
 
-// unset()
-unset($entity->id);
-Assert::null($entity->id);
+        $this->entity = new Fixtures\Entity\Simple;
+        $this->entity->text = "test";
+        $this->entity->id = 1;
+        $this->entity->empty = "";
+    }
 
-// Valid property
-$entity->id = 1;
-Assert::equal(1, $entity->id);
+    public function testLocalProperties()
+    {
+        Assert::same("defaultValue", $this->entity->localProperty);
 
-// Local property
-$entity->localProperty = "newValue";
+        $this->entity->localProperty = "newValue";
+        Assert::same("newValue", $this->entity->localProperty);
+    }
 
-// toArray()
-$entityArray = $entity->toArray();
-Assert::same(
-    ['id' => 1, 'text' => 'test', 'empty' => '', 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"], 'localProperty' => 'newValue'],
-    $entityArray
-);
+    public function testIsset()
+    {
+        Assert::true(isset($this->entity->id));
+        Assert::true(isset($this->entity->localProperty));
+        Assert::false(isset($this->entity->missing));
+    }
 
-// getData()
-$entity->empty = null;
-Assert::same(
-    ['text' => 'test', 'empty' => null, 'id' => 1],
-    $entity->getData()
-);
+    public function testEmpty()
+    {
+        Assert::true(empty($this->entity->empty));
+        Assert::true(empty($this->entity->missing));
+        Assert::false(empty($this->entity->id));
+    }
 
-// JsonSerializable
-Assert::same('{"id":1,"text":"test","empty":null,"url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"localProperty":"newValue"}', json_encode($entity));
+    public function testUnset()
+    {
+        unset($this->entity->id);
+        Assert::null($this->entity->id);
+    }
 
-// Invalid property type
-Assert::exception(function() use ($entity) {
-    $entity->id = "invalidType";
-}, "UniMapper\Exceptions\PropertyTypeException", "Expected integer but string given on property id!");
+    public function testValidProperty()
+    {
+        $this->entity->id = 1;
+        Assert::equal(1, $this->entity->id);
+    }
 
-// Property not exists
-Assert::exception(function() use ($entity) {
-    $entity->undefined;
-}, "UniMapper\Exceptions\PropertyUndefinedException", "Undefined property with name 'undefined'!");
+    public function testToArray()
+    {
+        $entityArray = $this->entity->toArray();
+        Assert::same(
+            ['id' => 1, 'text' => 'test', 'empty' => '', 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"], 'localProperty' => 'defaultValue'],
+            $entityArray
+        );
+    }
 
-// Serializable
-$serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":91:{a:4:{s:4:"text";s:4:"test";s:5:"empty";N;s:2:"id";i:1;s:13:"localProperty";s:8:"newValue";}}';
-Assert::same($serialized, serialize($entity));
-$unserialized = unserialize($serialized);
-Assert::isEqual($entity, $unserialized);
-Assert::type("UniMapper\Reflection\Entity", $unserialized->getReflection());
-Assert::same(['text' => 'test', 'empty' => null, 'id' => 1], $unserialized->getData());
+    public function testGetData()
+    {
+        $this->entity->empty = null;
+        Assert::same(
+            ['text' => 'test', 'id' => 1, 'empty' => NULL],
+            $this->entity->getData()
+        );
+    }
 
-// import()
-$entity->import(
-    [
-        "id" => "2",
-        "text" => 3.0,
-        "collection" => [],
-        "time" => "1999-01-12",
-        "localProperty" => "foo",
-        "empty" => null
-    ]
-);
-Assert::same(2, $entity->id);
-Assert::same("3", $entity->text);
-Assert::type("UniMapper\EntityCollection", $entity->collection);
-Assert::same("1999-01-12", $entity->time->format("Y-m-d"));
-Assert::same("foo", $entity->localProperty);
-Assert::same(null, $entity->empty);
-$entity->import(["time" => ["date" => "1999-02-12"]]);
-Assert::same("1999-02-12", $entity->time->format("Y-m-d"));
-Assert::exception(function() use ($entity) {
-    $entity->import(["collection" => "foo"]);
-}, "Exception", "Can not set value on property 'collection' automatically!");
-Assert::exception(function() use ($entity) {
-    $entity->import(["time" => []]);
-}, "Exception", "Can not set value on property 'time' automatically!");
-Assert::exception(function() use ($entity) {
-    $entity->import(["undefined" => "foo"]);
-}, "UniMapper\Exceptions\PropertyUndefinedException", "Undefined property with name 'undefined'!");
+    public function testJsonSerializable()
+    {
+        Assert::same(
+            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"localProperty":"defaultValue"}',
+            json_encode($this->entity)
+        );
+    }
 
-$mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-$mapperMock->expects("getName")->once()->andReturn("FooMapper");
-$mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo"]);
-$mapperMock->expects("update")->once()->andReturn(["id" => 1]);
-$updatedEntity = new Fixtures\Entity\Simple;
-$updatedEntity->id = 1;
-$updatedEntity->text = "foo";
-$mapperMock->expects("mapEntity")->once()->andReturn($updatedEntity);
-$mapperMock->expects("delete")->once();
-$mapperMock->expects("insert")->once()->andReturn("1");
-$mapperMock->expects("mapValue")->once()->andReturn(1);
-$mapperMock->freeze();
+    /**
+     * @throws UniMapper\Exceptions\PropertyTypeException Expected integer but string given on property id!
+     */
+    public function testInvalidPropertyType()
+    {
+        $this->entity->id = "invalidType";
+    }
 
-// isActive()
-Assert::false($entity->isActive());
-$entity->setActive($mapperMock);
-Assert::true($entity->isActive());
+    /**
+     * @throws UniMapper\Exceptions\PropertyUndefinedException Undefined property with name 'undefined'!
+     */
+    public function testUndefinedProperty()
+    {
 
-// save()
-Assert::exception(function() {
-    $inactiveEntity = new Fixtures\Entity\Simple;
-    $inactiveEntity->save();
-}, "Exception", "Entity is not active!");
+        $this->entity->undefined;
+    }
 
-// save() - update
-$entity->save();
 
-// save() - insert
-$entity->id = null;
-$entity->save();
-Assert::same(1, $entity->id);
-Assert::true($entity->isActive());
+    public function testSerializable()
+    {
+        $serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":101:{a:4:{s:4:"text";s:4:"test";s:2:"id";i:1;s:5:"empty";s:0:"";s:13:"localProperty";s:12:"defaultValue";}}';
+        Assert::same($serialized, serialize($this->entity));
 
-// delete()
-Assert::exception(function() {
-    $inactiveEntity = new Fixtures\Entity\Simple;
-    $inactiveEntity->save();
-}, "Exception", "Entity is not active!");
-$entity->id = null;
-Assert::exception(function() use ($entity) {
-    $entity->delete();
-}, "Exception", "Primary value must be set!");
-$entity->id = 1;
-$entity->delete();
+        $unserialized = unserialize($serialized);
+        Assert::isEqual($this->entity, $unserialized);
+        Assert::type("UniMapper\Reflection\Entity", $unserialized->getReflection());
+        Assert::same(['text' => 'test', 'id' => 1, 'empty' => ''], $unserialized->getData());
+    }
 
-// m:validate email
-$entity->email = "john.doe@example.com";
-Assert::exception(function() use ($entity) {
-    $entity->email = "foo";
-}, "Exception", "Value foo is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateEmail on property email!");
+    public function testImport()
+    {
+        $this->entity->import(
+            [
+                "id" => "2",
+                "text" => 3.0,
+                "collection" => [],
+                "time" => "1999-01-12",
+                "localProperty" => "foo",
+                "empty" => null
+            ]
+        );
+        Assert::same(2, $this->entity->id);
+        Assert::same("3", $this->entity->text);
+        Assert::type("UniMapper\EntityCollection", $this->entity->collection);
+        Assert::same("1999-01-12", $this->entity->time->format("Y-m-d"));
+        Assert::same("foo", $this->entity->localProperty);
+        Assert::same(null, $this->entity->empty);
 
-// m:validate url
-$entity->url = "http://www.example.com";
-Assert::exception(function() use ($entity) {
-    $entity->url = "example.com";
-}, "Exception", "Value example.com is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateUrl on property url!");
+        $this->entity->import(["time" => ["date" => "1999-02-12"]]);
+        Assert::same("1999-02-12", $this->entity->time->format("Y-m-d"));
+    }
 
-// m:validate ip
-$entity->ip = "192.168.0.1";
-Assert::exception(function() use ($entity) {
-    $entity->ip = "255.255.255.256";
-}, "Exception", "Value 255.255.255.256 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateIp on property ip!");
+    /**
+     * @throws Exception Can not set value on property 'collection' automatically!
+     */
+    public function testImportInvalidCollection()
+    {
+        $this->entity->import(["collection" => "foo"]);
+    }
 
-// m:validate mark
-$entity->mark = 1;
-Assert::exception(function() use ($entity) {
-    $entity->mark = 6;
-}, "Exception", "Value 6 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateMark on property mark!");
+    /**
+     * @throws Exception Can not set value on property 'time' automatically!
+     */
+    public function testImportInvalidDateTime()
+    {
+        $this->entity->import(["time" => []]);
+    }
 
-// m:computed
-$computedEntity = new Fixtures\Entity\Simple;
-Assert::same(null, $computedEntity->year);
-$computedEntity->time = new DateTime;
-Assert::same((int) date("Y"), $computedEntity->year);
-Assert::exception(function() use ($computedEntity) {
-   $computedEntity->year = 1999;
-}, "UniMapper\Exceptions\PropertyException", "Can not set computed property with name 'year'!");
+    /**
+     * @throws UniMapper\Exceptions\PropertyUndefinedException Undefined property with name 'undefined'!
+     */
+    public function testImportUndefined()
+    {
+        $this->entity->import(["undefined" => "foo"]);
+    }
+
+    public function testIsActive()
+    {
+        Assert::false($this->entity->isActive());
+
+        $this->entity->setActive($this->mapperMock);
+        Assert::true($this->entity->isActive());
+    }
+
+    /**
+     * @throws Exception Entity is not active!
+     */
+    public function testSaveNotActive()
+    {
+        $this->entity->save();
+    }
+
+    public function testSaveUpdate()
+    {
+        $this->mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo", "id" => 1]);
+        $this->mapperMock->expects("update")->once()->with("resource", ["text" => "foo", "id" => 1], [["id", "=", 1, "AND"]]);
+        $this->mapperMock->freeze();
+
+        $this->entity->setActive($this->mapperMock);
+        $this->entity->save();
+    }
+
+    public function testSaveInsert()
+    {
+        $this->mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo", "id" => 1]);
+        $this->mapperMock->expects("insert")->once()->with("resource", ["text" => "foo", "id" => 1])->andReturn(["id" => 1]);
+        $this->mapperMock->expects("mapValue")->once()->andReturn(1);
+        $this->mapperMock->freeze();
+
+        $this->entity->id = null;
+        $this->entity->setActive($this->mapperMock);
+        $this->entity->save();
+        Assert::same(1, $this->entity->id);
+    }
+
+    /**
+     * @throws Exception Entity is not active!
+     */
+    public function testDeletNotActive()
+    {
+        $this->entity->delete();
+    }
+
+    /**
+     * @throws Exception Primary value must be set!
+     */
+    public function testDeletNoPrimaryValue()
+    {
+        unset($this->entity->id);
+        $this->entity->setActive($this->mapperMock);
+        $this->entity->delete();
+    }
+
+    public function testDelete()
+    {
+        $this->mapperMock->expects("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
+        $this->mapperMock->freeze();
+
+        $this->entity->setActive($this->mapperMock);
+        Assert::null($this->entity->delete());
+    }
+
+    /**
+     * @throws Exception Value foo is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateEmail on property email!
+     */
+    public function testValidateEmail()
+    {
+        $this->entity->email = "john.doe@example.com";
+        $this->entity->email = "foo";
+    }
+
+    /**
+     * @throws Exception Value example.com is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateUrl on property url!
+     */
+    public function testValidateUrl()
+    {
+        $this->entity->url = "http://www.example.com";
+        $this->entity->url = "example.com";
+    }
+
+    /**
+     * @throws Exception Value 255.255.255.256 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateIp on property ip!
+     */
+    public function testValidateIp()
+    {
+        $this->entity->ip = "192.168.0.1";
+        $this->entity->ip = "255.255.255.256";
+    }
+
+    /**
+     * @throws Exception Value 6 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateMark on property mark!
+     */
+    public function testValidate()
+    {
+        $this->entity->mark = 1;
+        $this->entity->mark = 6;
+    }
+
+    public function testComputed()
+    {
+        Assert::null($this->entity->year);
+        $this->entity->time = new DateTime;
+        Assert::same((int) date("Y"), $this->entity->year);
+    }
+
+    /**
+     * @throws UniMapper\Exceptions\PropertyException Can not set computed property with name 'year'!
+     */
+    public function testComputedSet()
+    {
+        $this->entity->year = 1999;
+    }
+
+}
+
+$testCase = new EntityTest;
+$testCase->run();
