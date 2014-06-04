@@ -28,7 +28,11 @@ class Entity
     /** @var string */
     private $docComment;
 
+    /** @var array */
     private $constants;
+
+    /** @var string */
+    private $primaryPropertyName;
 
     public function __construct($class)
     {
@@ -41,7 +45,7 @@ class Entity
         $this->constants = $reflection->getConstants();
 
         $this->mapper = $this->parseMapper();
-        $this->properties = $this->parseProperties();
+        $this->parseProperties();
     }
 
     public function getConstants()
@@ -84,15 +88,24 @@ class Entity
                     $definition
                 );
             }
-            $properties[$property->getName()] = $property;
+
+            // Primary property
+            if ($property->isPrimary() && $this->primaryPropertyName !== null) {
+                throw new PropertyException("Primary property already defined!", $this, $annotation);
+            } elseif ($property->isPrimary()) {
+                $this->primaryPropertyName = $property->getName();
+            }
+            if ($property->isAssociation() && $this->primaryPropertyName === null) {
+                throw new PropertyException("You must define primary property before the association!", $this, $annotation);
+            }
+
+            $this->properties[$property->getName()] = $property;
         }
 
         // Include inherited doc comments too
         if (stripos($this->docComment, "{@inheritDoc}") !== false) {
-            $properties = array_merge($properties, $this->getEntityProperties($this->parentClassName)); // @todo
+            $this->properties = array_merge($this->properties, $this->getEntityProperties($this->parentClassName)); // @todo
         }
-
-        return $properties;
     }
 
     /**
@@ -153,14 +166,19 @@ class Entity
         return $this->properties;
     }
 
+    public function hasPrimaryProperty()
+    {
+        return $this->primaryPropertyName !== null;
+    }
+
+    /**
+     * Get primary property reflection
+     *
+     * @return \UniMapper\Reflection\Entity\Property
+     */
     public function getPrimaryProperty()
     {
-        foreach ($this->properties as $property) {
-            if ($property->isPrimary()) {
-                return $property;
-            }
-        }
-        return null;
+        return $this->properties[$this->primaryPropertyName];
     }
 
 }

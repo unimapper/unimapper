@@ -157,30 +157,6 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     }
 
     /**
-     * Merge two entity collections together by primary values
-     *
-     * @param \UniMapper\EntityCollection $originalCollection
-     * @param \UniMapper\EntityCollection $newCollection
-     *
-     * @return \UniMapper\EntityCollection
-     */
-    public static function mergeByPrimary(EntityCollection $originalCollection, EntityCollection $newCollection)
-    {
-        $result = new EntityCollection($originalCollection->getEntityClass());
-        foreach ($newCollection as $newEntity) {
-
-            $primaryPropertyName = $newEntity->getReflection()->getPrimaryProperty()->getName();
-            $newPrimaryValue = $newEntity->{$primaryPropertyName};
-
-            $originalEntity = $originalCollection->getByPrimary($newPrimaryValue);
-            if ($originalEntity && $originalEntity->{$primaryPropertyName} === $newPrimaryValue) {
-                $result[] = $originalEntity->merge($newEntity);
-            }
-        }
-        return $result;
-    }
-
-    /**
      * Get entity by primary value
      *
      * @param mixed $value

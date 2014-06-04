@@ -32,9 +32,3 @@ Assert::isEqual(
     new Reflection\Entity\Property('integer $id m:primary', $reflection),
     $reflection->getPrimaryProperty()
 );
-
-
-// Duplicate properties
-Assert::exception(function() {
-    new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\DuplicateProperty");
-}, "UniMapper\Exceptions\PropertyException", "Duplicate property with name 'id'!");

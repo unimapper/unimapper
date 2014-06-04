@@ -2,8 +2,7 @@
 
 namespace UniMapper;
 
-use UniMapper\Mapper,
-    UniMapper\Reflection,
+use UniMapper\Reflection,
     UniMapper\Query\IQuery,
     UniMapper\EntityCollection,
     UniMapper\Exceptions\QueryException;
@@ -23,24 +22,15 @@ abstract class Query implements IQuery
     /** @var array */
     protected $conditions = [];
 
-    /** @var \UniMapper\Mapper */
-    protected $mapper;
+    /** @var array */
+    protected $mappers;
 
     /** @var \UniMapper\Reflection\Entity */
     protected $entityReflection;
 
-    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper)
+    public function __construct(Reflection\Entity $entityReflection, array $mappers)
     {
-        // Check if correct mapper given
-        if ($entityReflection->getMapperReflection()->getName() !== $mapper->getName()) {
-            throw new QueryException(
-                "Mapper name '" . $entityReflection->getMapperReflection()->getName()
-                . "' in query does not match with mapper name '" . $mapper->getName()
-                . "' from entity " . $entityReflection->getClassName() . "!"
-            );
-        }
-
-        $this->mapper = $mapper;
+        $this->mappers = $mappers;
         $this->entityReflection = $entityReflection;
     }
 
@@ -59,11 +49,6 @@ abstract class Query implements IQuery
         return $this->elapsed;
     }
 
-    public function getMapper()
-    {
-        return $this->mapper;
-    }
-
     public function getEntityReflection()
     {
         return $this->entityReflection;
@@ -78,7 +63,7 @@ abstract class Query implements IQuery
     protected function addCondition($propertyName, $operator, $value, $joiner = 'AND')
     {
         if (!$this instanceof Query\IConditionable) {
-            throw new QueryException("Conditions should be called only on conditionable queries!");
+            throw new QueryException("Conditions can be added only on conditionable queries!");
         }
 
         if (!$this->entityReflection->hasProperty($propertyName)) {
@@ -89,8 +74,13 @@ abstract class Query implements IQuery
             throw new QueryException("Condition operator " . $operator . " not allowed! You can use one of the following " . implode(" ", $this->conditionOperators) . ".");
         }
 
+        $propertyReflection = $this->entityReflection->getProperty($propertyName);
+        if ($propertyReflection->isAssociation() || $propertyReflection->isComputed()) {
+            throw new QueryException("Condition can not be called on associations and computed properties!");
+        }
+
         $this->conditions[] = [
-            $this->entityReflection->getProperty($propertyName)->getMappedName(),
+            $propertyReflection->getMappedName(),
             $operator,
             $value,
             $joiner
@@ -99,7 +89,7 @@ abstract class Query implements IQuery
 
     protected function addNestedConditions(\Closure $callback, $joiner = 'AND')
     {
-        $query = new $this($this->entityReflection, $this->mapper);
+        $query = new $this($this->entityReflection, $this->mappers);
 
         call_user_func($callback, $query);
 
@@ -140,37 +130,23 @@ abstract class Query implements IQuery
     {
         $start = microtime(true);
 
-        $this->result = $this->onExecute($this->mapper);
+        $currentMapperName = $this->entityReflection->getMapperReflection()->getName();
+        if (!isset($this->mappers[$currentMapperName])) {
+            throw new QueryException("Mapper with name '" . $currentMapperName . "' not given!");
+        }
+        $this->result = $this->onExecute($this->mappers[$currentMapperName]);
 
         // Set entities active
         if ($this->result instanceof Entity && !$this->result->isActive()) {
-            $this->result->setActive($this->mapper);
+            $this->result->setActive($this->mappers);
         } elseif ($this->result instanceof EntityCollection) {
             foreach ($this->result as $entity) {
-                $entity->setActive($this->mapper);
+                $entity->setActive($this->mappers);
             }
         }
 
         $this->elapsed = microtime(true) - $start;
         return $this->result;
-    }
-
-    protected function getPrimaryValuesFromCollection(EntityCollection $collection)
-    {
-        $keys = array();
-
-        $primaryProperty = $this->entityReflection->getPrimaryProperty();
-        if ($primaryProperty === null) {
-            throw new \Exception("Primary property not set in entity " . $this->entityReflection->getClassName() . "!"); // @todo remove when primary property is required
-        }
-
-        foreach ($collection as $entity) {
-
-            if (isset($entity->{$primaryProperty->getName()})) {
-                $keys[] = $entity->{$primaryProperty->getName()};
-            }
-        }
-        return $keys;
     }
 
 }

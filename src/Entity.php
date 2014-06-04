@@ -5,7 +5,6 @@ namespace UniMapper;
 use UniMapper\Validator,
     UniMapper\EntityCollection,
     UniMapper\Query,
-    UniMapper\Mapper,
     UniMapper\Reflection,
     UniMapper\Cache\ICache,
     UniMapper\Exceptions\PropertyException,
@@ -29,8 +28,8 @@ abstract class Entity implements \JsonSerializable, \Serializable
     /** @var array $data Stored variables */
     private $data = [];
 
-    /** @var \UniMapper\Mapper $mapper */
-    private $mapper;
+    /** @var array $mappers */
+    private $mappers;
 
     /** @var \UniMapper\Cache\ICache $cache */
     private $cache;
@@ -89,30 +88,22 @@ abstract class Entity implements \JsonSerializable, \Serializable
 
     public function isActive()
     {
-        return $this->mapper instanceof Mapper;
+        return count($this->mappers) > 0;
     }
 
     /**
      * Set entity as active, so you can save and delete entity after that.
      *
-     * @param \UniMapper\Mapper $mapper
+     * @param array $mappers
      *
      * @throws \Exception
      */
-    public function setActive(Mapper $mapper)
+    public function setActive(array $mappers)
     {
         if ($this->isActive()) {
             throw new \Exception("Entity is already active!");
         }
-        $this->mapper = $mapper;
-    }
-
-    public function getMapper()
-    {
-        if (!$this->isActive()) {
-            throw new \Exception("Entity is not active!");
-        }
-        return $this->mapper;
+        $this->mappers = $mappers;
     }
 
     /**
@@ -126,6 +117,10 @@ abstract class Entity implements \JsonSerializable, \Serializable
             throw new \Exception("Entity is not active!");
         }
 
+        if (!$this->reflection->hasPrimaryProperty()) {
+            throw new \Exception("Can not save entity without primary property!");
+        }
+
         $primaryName = $this->reflection->getPrimaryProperty()->getName();
         $primaryValue = null;
         if (isset($this->data[$primaryName])) {
@@ -135,12 +130,12 @@ abstract class Entity implements \JsonSerializable, \Serializable
         if ($primaryValue === null) {
             // Insert
 
-            $query = new Query\Insert($this->reflection, $this->mapper, $this->data);
+            $query = new Query\Insert($this->reflection, $this->mappers, $this->data);
             $primaryValue = $query->execute();
         } else {
             // Update
 
-            $query = new Query\UpdateOne($this->reflection, $this->mapper, $primaryValue, $this->data);
+            $query = new Query\UpdateOne($this->reflection, $this->mappers, $primaryValue, $this->data);
             $query->execute();
         }
 
@@ -154,13 +149,17 @@ abstract class Entity implements \JsonSerializable, \Serializable
             throw new \Exception("Entity is not active!");
         }
 
+        if (!$this->reflection->hasPrimaryProperty()) {
+            throw new \Exception("Can not delete entity without primary property!");
+        }
+
         $primaryName = $this->reflection->getPrimaryProperty()->getName();
         $primaryValue = $this->{$primaryName};
         if ($primaryValue === null) {
             throw new \Exception("Primary value must be set!");
         }
 
-        $query = new Query\Delete($this->reflection, $this->mapper);
+        $query = new Query\Delete($this->reflection, $this->mappers);
         $query->where($primaryName, "=", $primaryValue)->execute();
     }
 

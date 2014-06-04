@@ -30,8 +30,9 @@ interface IMapper
      * @param string $resource
      * @param mixed  $primaryName
      * @param mixed  $primaryValue
+     * @param array  $associations
      */
-    public function findOne($resource, $primaryName, $primaryValue);
+    public function findOne($resource, $primaryName, $primaryValue, array $associations = []);
 
     /**
      * Find records
@@ -42,8 +43,9 @@ interface IMapper
      * @param array   $orderBy
      * @param integer $limit
      * @param integer $offset
+     * @param array   $associations
      */
-    public function findAll($resource, array $selection, array $conditions, array $orderBy, $limit = 0, $offset = 0);
+    public function findAll($resource, array $selection = [], array $conditions = [], array $orderBy = [], $limit = 0, $offset = 0, array $associations = []);
 
     /**
      * Insert should return primary value

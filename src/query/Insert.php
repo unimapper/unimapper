@@ -2,51 +2,59 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Mapper,
-    UniMapper\Exceptions\QueryException,
+use UniMapper\Exceptions\QueryException,
     UniMapper\Reflection;
 
 class Insert extends \UniMapper\Query
 {
 
-    /** @var array */
-    private $values = [];
+    /** @var \UniMapper\Entity */
+    private $entity;
 
-    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper, array $data)
+    public function __construct(Reflection\Entity $entityReflection, array $mappers, array $data)
     {
-        parent::__construct($entityReflection, $mapper);
+        parent::__construct($entityReflection, $mappers);
 
         $class = $entityReflection->getClassName();
-        $entity = new $class;
-        $entity->import($data); // @todo easier validation
-
-        $this->values = $mapper->unmapEntity($entity);
-        if (empty($this->values)) {
-            throw new QueryException("Nothing to insert");
-        }
+        $this->entity = new $class;
+        $this->entity->import($data); // @todo easier validation
     }
 
     public function getValues()
     {
-        return $this->values;
+        return $this->entity->getData();
     }
 
     public function onExecute(\UniMapper\Mapper $mapper)
     {
-        // Primary value can not be empty
-        $primaryName = $this->entityReflection->getPrimaryProperty()->getMappedName();
-        if (empty($this->values[$primaryName])) {
-            unset($this->values[$primaryName]);
+        $values = $mapper->unmapEntity($this->entity);
+
+        // Values can not be empty
+        if (empty($values)) {
+            throw new QueryException("Nothing to update!");
+        }
+
+        // Prevent to set empty primary property
+        if ($this->entityReflection->hasPrimaryProperty()) {
+
+            $primaryName = $this->entityReflection->getPrimaryProperty()->getMappedName();
+            if (empty($values[$primaryName])) {
+                unset($values[$primaryName]);
+            }
         }
 
         $primaryValue = $mapper->insert(
             $this->entityReflection->getMapperReflection()->getResource(),
-            $this->values
+            $values
         );
-        if ($primaryValue === null) {
-            throw new QueryException("Insert should return primary value but null given!");
+
+        if ($this->entityReflection->hasPrimaryProperty()) {
+
+            if ($primaryValue === null) {
+                throw new QueryException("Insert should return primary value but null given!");
+            }
+            return $mapper->mapValue($this->entityReflection->getPrimaryProperty(), $primaryValue);
         }
-        return $mapper->mapValue($this->entityReflection->getPrimaryProperty(), $primaryValue);
     }
 
 }

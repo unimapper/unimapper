@@ -9,22 +9,22 @@ require __DIR__ . '/../bootstrap.php';
 class QueryFindAllTest extends Tester\TestCase
 {
 
-    /** @var \Mockista\Mock */
-    private $mapperMock;
+    /** @var array */
+    private $mappers = [];
 
     public function setUp()
     {
         $mockista = new \Mockista\Registry;
-        $this->mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-        $this->mapperMock->expects("getName")->once()->andReturn("FooMapper");
+        $this->mappers["FooMapper"] = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+        $this->mappers["FooMapper"]->expects("getName")->once()->andReturn("FooMapper");
     }
 
     public function testSuccess()
     {
-        $this->mapperMock->expects("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
-        $this->mapperMock->freeze();
+        $this->mappers["FooMapper"]->expects("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
+        $this->mappers["FooMapper"]->freeze();
 
-        $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock);
+        $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers);
         $query->where("id", "=", 1);
         Assert::null($query->execute());
     }
@@ -34,8 +34,8 @@ class QueryFindAllTest extends Tester\TestCase
      */
     public function testNoConditionGiven()
     {
-        $this->mapperMock->freeze();
-        $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock);
+        $this->mappers["FooMapper"]->freeze();
+        $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers);
         $query->execute();
     }
 
