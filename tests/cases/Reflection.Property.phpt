@@ -38,6 +38,10 @@ class ReflectionPropertyTest extends Tester\TestCase
         // string -> datetime
         Assert::same("02. 01. 2012", $this->createPropertyReflection('DateTime $time')->convertValue("2012-02-01")->format("m. d. Y"));
 
+        // string -> boolean
+        Assert::same(true, $this->createPropertyReflection('boolean $true')->convertValue("true"));
+        Assert::same(false, $this->createPropertyReflection('boolean $false')->convertValue("false"));
+
         // array -> collection
         $data = [
             ["url" => "http://example.com"],

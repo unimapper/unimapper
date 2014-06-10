@@ -354,6 +354,10 @@ class Property
         if ($this->isBasicType()) {
             // Basic
 
+            if ($this->type === "boolean" && strtolower($value) === "false") {
+                return false;
+            }
+
             if (settype($value, $this->type)) {
                 return $value;
             }
