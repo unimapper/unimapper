@@ -31,10 +31,8 @@ class QueryFindAllTest extends Tester\TestCase
         $collection[] = $entity1;
         $collection[] = $entity2;
 
-        $this->mapperMock->expects("unmapSelection")->once()->andReturn(["link", "text"]);
-        $this->mapperMock->expects("unmapOrderBy")->once()->andReturn(["id" => "DESC"]);
         $this->mapperMock->expects("findAll")
-            ->with("resource", ["link", "text"], [["id", ">", 1, "AND"]], ["id" => "DESC"], null, null)
+            ->with("resource", ["link", "text", "id"], [["id", ">", 1, "AND"]], ["id" => "desc"], null, null)
             ->once()
             ->andReturn([["id" => 2], ["id" => 3]]);
         $this->mapperMock->expects("mapCollection")->with(get_class($entity1), [["id" => 2], ["id" => 3]])->once()->andReturn($collection);

@@ -19,17 +19,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
     public function __construct(Reflection\Entity $entityReflection, Mapper $mapper)
     {
         parent::__construct($entityReflection, $mapper);
-
-        // Set selection
         $this->selection = array_slice(func_get_args(), 2);
-
-        // Add primary property automatically if not set in selection
-        if (count($this->selection) > 0) {
-            $primaryPropertyName = $entityReflection->getPrimaryProperty()->getName();
-            if (!in_array($primaryPropertyName, $this->selection)) {
-                $this->selection[] = $primaryPropertyName;
-            }
-        }
     }
 
     public function limit($limit)
@@ -60,24 +50,11 @@ class FindAll extends \UniMapper\Query implements IConditionable
 
     public function onExecute(\UniMapper\Mapper $mapper)
     {
-        // Add properties from conditions to the selection automatically
-        $selection = $this->selection;
-        if (count($this->conditions) > 0 && count($selection) > 0) {
-
-            foreach ($this->conditions as $condition) {
-
-                list($propertyName) = $condition;
-                if (!in_array($propertyName, $this->selection)) {
-                    $selection[] = $propertyName;
-                }
-            }
-        }
-
         $result = $mapper->findAll(
             $this->entityReflection->getMapperReflection()->getResource(),
-            $mapper->unmapSelection($this->entityReflection, $selection),
+            $this->getSelection($this->selection),
             $this->conditions,
-            $mapper->unmapOrderBy($this->entityReflection, $this->orderBy),
+            $this->getOrderBy($this->orderBy),
             $this->limit,
             $this->offset
         );
@@ -86,6 +63,58 @@ class FindAll extends \UniMapper\Query implements IConditionable
         }
 
         return $mapper->mapCollection($this->entityReflection->getClassName(), $result);
+    }
+
+    protected function addCondition($propertyName, $operator, $value, $joiner = 'AND')
+    {
+        parent::addCondition($propertyName, $operator, $value, $joiner);
+
+        // Add properties from conditions
+        if (count($this->selection) > 0 && !in_array($propertyName, $this->selection)) {
+            $this->selection[] = $propertyName;
+        }
+    }
+
+    protected function addNestedConditions(\Closure $callback, $joiner = 'AND')
+    {
+        $query = parent::addNestedConditions($callback, $joiner);
+        // Add properties from conditions
+        $this->selection = array_unique(array_merge($this->conditions, $query->getSelection()));
+    }
+
+    private function getSelection(array $selection)
+    {
+        if (count($selection) === 0) {
+            // Select all if not set
+
+            $selection = array_keys($this->entityReflection->getProperties());
+        } else {
+            // Add primary property automatically if not set in selection
+
+            $primaryPropertyName = $this->entityReflection->getPrimaryProperty()->getName();
+            if (!in_array($primaryPropertyName, $selection)) {
+                $selection[] = $primaryPropertyName;
+            }
+        }
+
+        $result = [];
+        foreach ($selection as $name) {
+
+            if ($this->entityReflection->hasProperty($name)) {
+                $result[] = $this->entityReflection->getProperty($name)->getMappedName();
+            }
+        }
+        return $result;
+    }
+
+    private function getOrderBy(array $items)
+    {
+        $unmapped = [];
+        foreach ($items as $name => $direction) {
+            $mappedName = $this->entityReflection->getProperties()[$name]->getMappedName();
+            $unmapped[$mappedName] = $direction;
+        }
+        return $unmapped;
     }
 
 }

@@ -108,6 +108,8 @@ abstract class Query implements IQuery
         }
 
         $this->conditions[] = array($query->conditions, $joiner);
+
+        return $query;
     }
 
     public function where($propertyName, $operator, $value)

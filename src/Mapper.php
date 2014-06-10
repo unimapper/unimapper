@@ -36,58 +36,6 @@ abstract class Mapper implements Mapper\IMapper
         return $this->name;
     }
 
-    protected function mapProperties(array $propertyReflections)
-    {
-        $output = array();
-        foreach ($propertyReflections as $reflection) {
-            $output[] = $reflection->getMappedName();
-        }
-        return $output;
-    }
-
-    /**
-     * Translate selection items
-     *
-     * @param \UniMapper\Reflection\Entity $entityReflection
-     * @param array                        $selection
-     *
-     * @return array
-     */
-    public function unmapSelection(Reflection\Entity $entityReflection, array $selection)
-    {
-        $propertyReflections = $entityReflection->getProperties();
-        if (count($selection) === 0) {
-            return $this->mapProperties($propertyReflections);
-        }
-
-        $result = array();
-        foreach ($selection as $propertyName) {
-
-            if (isset($propertyReflections[$propertyName])) {
-                $result[$propertyName] = $propertyReflections[$propertyName];
-            }
-        }
-        return $this->mapProperties($result);
-    }
-
-    /**
-     * Translate order by definition
-     *
-     * @param \UniMapper\Reflection\Entity $entityReflection
-     * @param array                        $items
-     *
-     * @return array
-     */
-    public function unmapOrderBy(Reflection\Entity $entityReflection, array $items)
-    {
-        $unmapped = [];
-        foreach ($items as $name => $direction) {
-            $mappedName = $entityReflection->getProperties()[$name]->getMappedName();
-            $unmapped[$mappedName] = $direction;
-        }
-        return $unmapped;
-    }
-
     /**
      * Convert value to defined property format
      *
