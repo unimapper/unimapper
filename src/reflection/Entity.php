@@ -62,25 +62,26 @@ class Entity
     /**
      * Parse properties from annotations
      *
-     * @return array Collection of \UniMapper\Reflection\Entity\Property
+     * @return array Collection of \UniMapper\Reflection\Entity\Property with proeprty name as index
      *
      * @throws \UniMapper\Exceptions\PropertyException
      */
     private function parseProperties()
     {
         preg_match_all(
-            '#@property (.*?)\n#s',
+            '/\s*\*\s*@property([ -](read)*\s*.*)/',
             $this->docComment,
             $annotations
         );
-        $properties = array();
-        foreach ($annotations[0] as $annotation) {
-            $property = new Entity\Property($annotation, $this);
+        $properties = [];
+        foreach ($annotations[1] as $index => $definition) {
+
+            $property = new Entity\Property($definition, $this);
             if (isset($properties[$property->getName()])) {
                 throw new PropertyException(
-                    "Duplicate property name $" . $property->getName(),
+                    "Duplicate property with name '" . $property->getName() . "'!",
                     $this,
-                    $annotation
+                    $definition
                 );
             }
             $properties[$property->getName()] = $property;

@@ -41,7 +41,7 @@ class PropertyException extends \Exception
     public function getEntityLine()
     {
         if ($this->definition) {
-            foreach (file($this->getEntityPath()) as $lineNumber => $line) {
+            foreach (file($this->getEntityPath(), FILE_IGNORE_NEW_LINES) as $lineNumber => $line) {
                 if (strpos($line, $this->definition) !== false) {
                    return $lineNumber + 1;
                 }

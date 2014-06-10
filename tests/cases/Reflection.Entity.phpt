@@ -20,16 +20,16 @@ Assert::isEqual(
 );
 Assert::isEqual(
     array(
-        "id" => new Reflection\Entity\Property('@property integer $id', $reflection),
-        "text" => new Reflection\Entity\Property('@property string $text', $reflection),
-        "empty" => new Reflection\Entity\Property('@property string $empty', $reflection),
-        "entity" => new Reflection\Entity\Property('@property NoMapper $entity', $reflection),
-        "collection" => new Reflection\Entity\Property('@property NoMapper[] $collection', $reflection),
+        "id" => new Reflection\Entity\Property('integer $id', $reflection),
+        "text" => new Reflection\Entity\Property('string $text', $reflection),
+        "empty" => new Reflection\Entity\Property('string $empty', $reflection),
+        "entity" => new Reflection\Entity\Property('NoMapper $entity', $reflection),
+        "collection" => new Reflection\Entity\Property('NoMapper[] $collection', $reflection),
     ),
     $reflection->getProperties()
 );
 Assert::isEqual(
-    new Reflection\Entity\Property('@property integer $id m:primary', $reflection),
+    new Reflection\Entity\Property('integer $id m:primary', $reflection),
     $reflection->getPrimaryProperty()
 );
 
@@ -37,4 +37,4 @@ Assert::isEqual(
 // Duplicate properties
 Assert::exception(function() {
     new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\DuplicateProperty");
-}, "UniMapper\Exceptions\PropertyException", 'Duplicate property name $id');
+}, "UniMapper\Exceptions\PropertyException", "Duplicate property with name 'id'!");

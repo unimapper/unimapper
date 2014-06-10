@@ -3,6 +3,7 @@
 namespace UniMapper\Reflection\Entity;
 
 use UniMapper\EntityCollection,
+    UniMapper\Validator,
     UniMapper\Reflection,
     UniMapper\NamingConvention as NC,
     UniMapper\Exceptions\InvalidArgumentException,
@@ -45,20 +46,36 @@ class Property
     /** @var boolean $computed Is property computed? */
     protected $computed = false;
 
+    /** @var boolean */
+    protected $writable = true;
+
     public function __construct($definition, Reflection\Entity $entityReflection)
     {
         $this->rawDefinition = $definition;
         $this->entityReflection = $entityReflection;
-        $arguments = preg_split('/\s+/', ltrim($definition, "@property "), null, PREG_SPLIT_NO_EMPTY);
-        foreach ($arguments as $key => $argument) {
-            if ($key === 0) {
-                $this->readType($argument);
-            } elseif ($key === 1) {
-                $this->readName($argument);
-            } else {
-                $this->readFilters($argument);
-            }
+
+        $arguments = preg_split('/\s+/', $definition, null, PREG_SPLIT_NO_EMPTY);
+
+        // read only property
+        if ($arguments[0] === "-read") {
+            $this->writable = false;
+            array_shift($arguments);
         }
+
+        $this->readType($arguments[0]);
+        next($arguments);
+
+        $this->readName($arguments[1]);
+        next($arguments);
+
+        foreach ($arguments as $argument) {
+            $this->readFilters($argument);
+        }
+    }
+
+    public function isWritable()
+    {
+        return $this->writable;
     }
 
     /**
@@ -323,6 +340,53 @@ class Property
             $givenType = get_class($value);
         }
         throw new \Exception("Expected " . $expectedType . " but " . $givenType . " given on property " . $this->name . ". It could be an internal ORM error!");
+    }
+
+    /**
+     * Try to convert value on required type automatically
+     *
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function convertValue($value)
+    {
+        if ($this->isBasicType()) {
+            // Basic
+
+            if (settype($value, $this->type)) {
+                return $value;
+            }
+        } elseif ($this->type === "DateTime") {
+            // DateTime
+
+            $date = $value;
+            if (Validator::validateTraversable($value)) {
+                if (isset($value["date"])) {
+                    $date = $value["date"];
+                }
+            }
+            try {
+                $date = new \DateTime($date);
+            } catch (\Exception $e) {
+
+            }
+            if ($date instanceof \DateTime) {
+                return $date;
+            }
+        } elseif ($this->type instanceof EntityCollection && Validator::validateTraversable($value)) {
+            // Collection
+
+            $entityClass = $this->type->getEntityClass();
+            $collection = new EntityCollection($entityClass);
+            foreach ($value as $index => $data) {
+                $collection[$index] = new $entityClass(null, $this->entityReflection);
+                $collection[$index]->import($data);
+            }
+            return $collection;
+        }
+
+        throw new \Exception("Can not convert value on property '" . $this->name . "' automatically!");
     }
 
     public function isBasicType()

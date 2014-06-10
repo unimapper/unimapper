@@ -11,7 +11,7 @@ class EntityTest extends Tester\TestCase
     /** @var \Mockista\Mock */
     private $mapperMock;
 
-    /** @var \Mockista\Mock */
+    /** @var \UniMapper\Tests\Fixtures\Entity\Simple */
     private $entity;
 
     public function setUp()
@@ -32,6 +32,14 @@ class EntityTest extends Tester\TestCase
 
         $this->entity->localProperty = "newValue";
         Assert::same("newValue", $this->entity->localProperty);
+    }
+
+    /**
+     * @throws Exception Property 'readonly' is not writable!
+     */
+    public function testReadnonly()
+    {
+        $this->entity->readonly = "trytowrite";
     }
 
     public function testIsset()
@@ -64,7 +72,7 @@ class EntityTest extends Tester\TestCase
     {
         $entityArray = $this->entity->toArray();
         Assert::same(
-            ['id' => 1, 'text' => 'test', 'empty' => '', 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"], 'localProperty' => 'defaultValue'],
+            ['id' => 1, 'text' => 'test', 'empty' => '', 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"], 'readonly' => NULL, 'localProperty' => 'defaultValue'],
             $entityArray
         );
     }
@@ -81,7 +89,7 @@ class EntityTest extends Tester\TestCase
     public function testJsonSerializable()
     {
         Assert::same(
-            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"localProperty":"defaultValue"}',
+            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"readonly":null,"localProperty":"defaultValue"}',
             json_encode($this->entity)
         );
     }
@@ -139,7 +147,7 @@ class EntityTest extends Tester\TestCase
     }
 
     /**
-     * @throws Exception Can not set value on property 'collection' automatically!
+     * @throws Exception Can not convert value on property 'collection' automatically!
      */
     public function testImportInvalidCollection()
     {
@@ -147,7 +155,7 @@ class EntityTest extends Tester\TestCase
     }
 
     /**
-     * @throws Exception Can not set value on property 'time' automatically!
+     * @throws Exception Can not convert value on property 'time' automatically!
      */
     public function testImportInvalidDateTime()
     {
@@ -155,11 +163,16 @@ class EntityTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\PropertyUndefinedException Undefined property with name 'undefined'!
+     * @throws Exception Undefined property with name 'undefined'!
      */
     public function testImportUndefined()
     {
         $this->entity->import(["undefined" => "foo"]);
+    }
+
+    public function testImportReadonly()
+    {
+        $this->entity->import(["readonly" => "foo"]);
     }
 
     public function testIsActive()

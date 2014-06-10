@@ -10,6 +10,7 @@ use UniMapper\Validator,
     UniMapper\Cache\ICache,
     UniMapper\Exceptions\PropertyException,
     UniMapper\Exceptions\PropertyTypeException,
+    UniMapper\Exceptions\PropertyReadonlyException,
     UniMapper\Exceptions\PropertyUndefinedException;
 
 /**
@@ -34,9 +35,15 @@ abstract class Entity implements \JsonSerializable, \Serializable
     /** @var \UniMapper\Cache\ICache $cache */
     private $cache;
 
-    public function __construct(ICache $cache = null)
+    public function __construct(ICache $cache = null, Reflection\Entity $reflection = null)
     {
         $this->cache = $cache;
+        if ($reflection) {
+            if ($reflection->getClassName() !== get_called_class()) {
+                throw new \Exception("Expected reflection of class '" . get_called_class() . "' but reflection of '" . $reflection->getClassName() . "' given!");
+            }
+            $this->reflection = $reflection;
+        }
         $this->initialize();
     }
 
@@ -162,7 +169,7 @@ abstract class Entity implements \JsonSerializable, \Serializable
     }
 
     /**
-     * Import and try to convert values automatically if possible
+     * Import and try to convert values automatically if possible, skip readonly
      *
      * @param mixed $values Traversable structure (array/object)
      */
@@ -172,55 +179,19 @@ abstract class Entity implements \JsonSerializable, \Serializable
             throw new \Exception("Values must be traversable data!");
         }
 
-        $properties = $this->reflection->getProperties();
-        foreach ($values as $propertyName => $value) {
+        foreach ($values as $name => $value) {
 
             try {
-                $this->{$propertyName} = $value;
-            } catch (PropertyTypeException $exception) {
+                $this->{$name} = $value;
+            } catch (\Exception $e) {
 
-                $property = $properties[$propertyName];
-                $propertyType = $property->getType();
-
-                if ($property->isBasicType()) {
-                    // Basic
-
-                    if (settype($value, $propertyType)) {
-                        $this->{$propertyName} = $value;
-                        continue;
-                    }
-                } elseif ($propertyType === "DateTime") {
-                    // DateTime
-
-                    $date = $value;
-                    if (Validator::validateTraversable($value)) {
-                        if (isset($value["date"])) {
-                            $date = $value["date"];
-                        }
-                    }
-                    try {
-                        $date = new \DateTime($date);
-                    } catch (\Exception $e) {
-
-                    }
-                    if ($date instanceof \DateTime) {
-                        $this->{$propertyName} = $date;
-                        continue;
-                    }
-                } elseif ($propertyType instanceof EntityCollection && Validator::validateTraversable($value)) {
-                    // Collection
-
-                    $entityClass = $propertyType->getEntityClass();
-                    $collection = new EntityCollection($entityClass);
-                    foreach ($value as $index => $data) {
-                        $collection[$index] = new $entityClass($this->cache);
-                        $collection[$index]->import($data);
-                    }
-                    $this->{$propertyName} = $collection;
+                if ($e instanceof PropertyTypeException) {
+                    $this->data[$name] = $this->reflection->getProperties()[$name]->convertValue($value);
+                } elseif ($e instanceof PropertyReadonlyException) {
                     continue;
+                } else {
+                    throw new \Exception($e->getMessage());
                 }
-
-                throw new \Exception("Can not set value on property '" . $propertyName . "' automatically!");
             }
         }
     }
@@ -267,16 +238,18 @@ abstract class Entity implements \JsonSerializable, \Serializable
     /**
      * Set property value
      *
-     * @param string $name  Property name
-     * @param mixed  $value Property value
-     *
-     * @throws \UniMapper\Exceptions\PropertyUndefinedException
+     * @param string $name
+     * @param mixed  $value
      */
     public function __set($name, $value)
     {
         $properties = $this->reflection->getProperties();
         if (!isset($properties[$name])) {
             throw new PropertyUndefinedException("Undefined property with name '" . $name . "'!", $this->reflection);
+        }
+
+        if (!$properties[$name]->isWritable()) {
+            throw new PropertyReadonlyException("Property '" . $name . "' is not writable!");
         }
 
         if ($properties[$name]->isComputed()) {
