@@ -20,7 +20,7 @@ class QueryFindAllTest extends Tester\TestCase
         $this->mapperMock->expects("getName")->once()->andReturn("FooMapper");
     }
 
-    public function testSuccess()
+    public function testSimple()
     {
         $entity1 = new Fixtures\Entity\Simple;
         $entity1->id = 2;
@@ -32,14 +32,32 @@ class QueryFindAllTest extends Tester\TestCase
         $collection[] = $entity2;
 
         $this->mapperMock->expects("findAll")
-            ->with("resource", ["link", "text", "id"], [["id", ">", 1, "AND"]], ["id" => "desc"], null, null)
+            ->with(
+                "resource",
+                ["link", "text", "id"],
+                [
+                    ["id", ">", 1, "AND"],
+                    [
+                        [
+                            ["text", "LIKE", "%foo", "AND"]
+                        ],
+                        'OR'
+                    ]
+                ],
+                ["id" => "desc"],
+                null,
+                null
+            )
             ->once()
             ->andReturn([["id" => 2], ["id" => 3]]);
         $this->mapperMock->expects("mapCollection")->with(get_class($entity1), [["id" => 2], ["id" => 3]])->once()->andReturn($collection);
         $this->mapperMock->freeze();
 
         $query = new Query\FindAll(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock, "url", "text");
-        $query->where("id", ">", 1)->orderBy("id", "DESC");
+        $query->where("id", ">", 1)
+                ->orWhereAre(function($query) {
+                    $query->where("text", "LIKE", "%foo");
+        })->orderBy("id", "DESC");
         $result = $query->execute();
 
         Assert::type("Unimapper\EntityCollection", $result);
