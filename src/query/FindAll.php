@@ -79,7 +79,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
     {
         $query = parent::addNestedConditions($callback, $joiner);
         // Add properties from conditions
-        $this->selection = array_unique(array_merge($this->conditions, $query->getSelection()));
+        $this->selection = array_unique(array_merge($this->selection, $query->selection));
     }
 
     private function getSelection(array $selection)
