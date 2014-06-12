@@ -35,6 +35,11 @@ class Simple extends \UniMapper\Mapper
         throw new \Exception("You should  mock here!");
     }
 
+    public function updateOne($resource, $primaryName, $primaryValue, array $values)
+    {
+        throw new \Exception("You should  mock here!");
+    }
+
     public function custom($resource, $query, $method, $contentType, $data)
     {
         throw new \Exception("You should  mock here!");
