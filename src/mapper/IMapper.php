@@ -63,6 +63,16 @@ interface IMapper
     public function update($resource, array $values, array $conditions);
 
     /**
+     * Update single record
+     *
+     * @param string $resource
+     * @param string $primaryName
+     * @param mixed  $primaryValue
+     * @param array  $values
+     */
+    public function updateOne($resource, $primaryName, $primaryValue, array $values);
+
+    /**
      * Custom query
      *
      * @param string $resource

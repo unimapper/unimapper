@@ -140,11 +140,7 @@ abstract class Entity implements \JsonSerializable, \Serializable
         } else {
             // Update
 
-            // Primary value can not be changed
-            unset($this->data[$primaryName]);
-
-            $query = new Query\Update($this->reflection, $this->mapper, $this->data);
-            $query->where($primaryName, "=", $primaryValue);
+            $query = new Query\UpdateOne($this->reflection, $this->mapper, $primaryName, $primaryValue, $this->data);
             $query->execute();
         }
 

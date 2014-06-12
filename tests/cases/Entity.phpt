@@ -194,7 +194,7 @@ class EntityTest extends Tester\TestCase
     public function testSaveUpdate()
     {
         $this->mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo", "id" => 1]);
-        $this->mapperMock->expects("update")->once()->with("resource", ["text" => "foo", "id" => 1], [["id", "=", 1, "AND"]]);
+        $this->mapperMock->expects("updateOne")->once()->with("resource", "id", 1,["text" => "foo", "id" => 1]);
         $this->mapperMock->freeze();
 
         $this->entity->setActive($this->mapperMock);
