@@ -70,10 +70,39 @@ class EntityTest extends Tester\TestCase
 
     public function testToArray()
     {
-        $entityArray = $this->entity->toArray();
+        $nestedEntity = new Fixtures\Entity\Nested;
+        $nestedEntity->text = "foo";
+        $this->entity->collection[] = $nestedEntity;
+
         Assert::same(
-            ['id' => 1, 'text' => 'test', 'empty' => '', 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $entityArray["collection"], 'readonly' => NULL, 'localProperty' => 'defaultValue'],
-            $entityArray
+            ['id' => 1, 'text' => 'test', 'empty' => '', 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $this->entity->collection, 'readonly' => NULL, 'localProperty' => 'defaultValue'],
+            $this->entity->toArray()
+        );
+
+        Assert::same(
+            array(
+                'id' => 1,
+                'text' => 'test',
+                'empty' => '',
+                'url' => NULL,
+                'email' => NULL,
+                'time' => NULL,
+                'year' => NULL,
+                'ip' => NULL,
+                'mark' => NULL,
+                'entity' => NULL,
+                'collection' => array(
+                    array(
+                        'id' => NULL,
+                        'text' => 'foo',
+                        'collection' => array(),
+                        'entity' => NULL,
+                    ),
+                ),
+                'readonly' => NULL,
+                'localProperty' => 'defaultValue',
+            ),
+            $this->entity->toArray(true)
         );
     }
 

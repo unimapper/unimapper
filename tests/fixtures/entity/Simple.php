@@ -14,8 +14,8 @@ namespace UniMapper\Tests\Fixtures\Entity;
  * @property       integer    $year       m:computed
  * @property       string     $ip         m:validate(ip)
  * @property       integer    $mark       m:validate(mark)
- * @property       NoMapper   $entity
- * @property       NoMapper[] $collection
+ * @property       Nested     $entity
+ * @property       Nested[]   $collection
  * @property-read  string     $readonly
  */
 class Simple extends \UniMapper\Entity
