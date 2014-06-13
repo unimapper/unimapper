@@ -297,11 +297,11 @@ abstract class Entity implements \JsonSerializable, \Serializable
         $output = array();
         foreach ($this->reflection->getProperties() as $propertyName => $property) {
 
-            $type = $property->getType();
-            if (($type instanceof EntityCollection || $type instanceof Entity) && $nesting) {
-                $output[$propertyName] = $this->{$propertyName}->toArray($nesting);
+            $value = $this->{$propertyName};
+            if (($value instanceof EntityCollection || $value instanceof Entity) && $nesting) {
+                $output[$propertyName] = $value->toArray($nesting);
             } else {
-                $output[$propertyName] = $this->{$propertyName};
+                $output[$propertyName] = $value;
             }
         }
 

@@ -73,9 +73,24 @@ class EntityTest extends Tester\TestCase
         $nestedEntity = new Fixtures\Entity\Nested;
         $nestedEntity->text = "foo";
         $this->entity->collection[] = $nestedEntity;
+        $this->entity->entity = new Fixtures\Entity\Nested;
 
         Assert::same(
-            ['id' => 1, 'text' => 'test', 'empty' => '', 'url' => NULL, 'email' => NULL, 'time' => NULL, 'year' => NULL, 'ip' => NULL, 'mark' => NULL, 'entity' => NULL, 'collection' => $this->entity->collection, 'readonly' => NULL, 'localProperty' => 'defaultValue'],
+            array(
+                'id' => 1,
+                'text' => 'test',
+                'empty' => '',
+                'url' => NULL,
+                'email' => NULL,
+                'time' => NULL,
+                'year' => NULL,
+                'ip' => NULL,
+                'mark' => NULL,
+                'entity' => $this->entity->entity,
+                'collection' => $this->entity->collection,
+                'readonly' => NULL,
+                'localProperty' => 'defaultValue',
+            ),
             $this->entity->toArray()
         );
 
@@ -90,7 +105,12 @@ class EntityTest extends Tester\TestCase
                 'year' => NULL,
                 'ip' => NULL,
                 'mark' => NULL,
-                'entity' => NULL,
+                'entity' => array(
+                    'id' => NULL,
+                    'text' => NULL,
+                    'collection' => array(),
+                    'entity' => NULL,
+                ),
                 'collection' => array(
                     array(
                         'id' => NULL,
