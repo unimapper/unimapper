@@ -384,7 +384,7 @@ class Property
             $entityClass = $this->type->getEntityClass();
             $collection = new EntityCollection($entityClass);
             foreach ($value as $index => $data) {
-                $collection[$index] = new $entityClass(null, $this->entityReflection);
+                $collection[$index] = new $entityClass; // @todo better reflection giving
                 $collection[$index]->import($data);
             }
             return $collection;
