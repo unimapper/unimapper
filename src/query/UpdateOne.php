@@ -13,11 +13,9 @@ class UpdateOne extends \UniMapper\Query implements IConditionable
     /** @var array */
     private $values = [];
 
-    private $primaryName;
-
     private $primaryValue;
 
-    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper, $primaryName, $primaryValue, array $data)
+    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper, $primaryValue, array $data)
     {
         parent::__construct($entityReflection, $mapper);
 
@@ -25,7 +23,6 @@ class UpdateOne extends \UniMapper\Query implements IConditionable
         $primaryName = $entityReflection->getPrimaryProperty()->getMappedName();
         unset($data[$primaryName]);
 
-        $this->primaryName = $primaryName;
         $this->primaryValue = $primaryValue;
 
         $class = $entityReflection->getClassName();
@@ -54,7 +51,7 @@ class UpdateOne extends \UniMapper\Query implements IConditionable
     {
         $mapper->updateOne(
             $this->entityReflection->getMapperReflection()->getResource(),
-            $this->primaryName,
+            $this->entityReflection->getPrimaryProperty()->getMappedName(),
             $this->primaryValue,
             $this->values
         );
