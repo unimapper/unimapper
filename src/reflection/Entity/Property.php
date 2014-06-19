@@ -49,6 +49,9 @@ class Property
     /** @var \UniMapper\Reflection\Entity\Property\Association $association */
     protected $association;
 
+    /** @var  array */
+    public $customMappers;
+
     /** @var array */
     private $supportedAssociations = [
         Property\Association\HasOne::TYPE => "HasOne",
@@ -250,7 +253,25 @@ class Property
             if ($matches[1]) {
                 $this->mapping = $matches[1];
             }
-        } elseif (preg_match("#m:enum\(([a-zA-Z0-9]+|self|parent)::([a-zA-Z0-9_]+)\*\)#", $definition, $matches)) {
+        } elseif (preg_match("#m:map-(.*?)\((.*?)\)#s", $definition, $matches)) {
+            // m:map-TYPE(customMapperName)
+
+            if ($this->computed) {
+                throw new PropertyException("Can not combine m:map- with m:computed!", $this->entityReflection, $definition);
+            }
+
+            if ($matches[1]) {
+                if ($matches[1] === 'name') {
+                    if ($matches[2]){
+                        $this->mapping = $matches[2];
+                    }
+                } else {
+                    $this->customMappers[$matches[1]] = isset($matches[2]) ? explode(',', $matches[2]) : [];
+                }
+            }
+
+        }
+        elseif (preg_match("#m:enum\(([a-zA-Z0-9]+|self|parent)::([a-zA-Z0-9_]+)\*\)#", $definition, $matches)) {
             // m:enum(self::CUSTOM_*)
             // m:enum(parent::CUSTOM_*)
             // m:enum(MY_CLASS::CUSTOM_*)
@@ -448,6 +469,34 @@ class Property
     public function getComputedMethodName()
     {
        return "compute" . ucfirst($this->name);
+    }
+
+    /**
+     * @return array
+     */
+    public function hasCustomMappers()
+    {
+        return $this->customMappers !== null && $this->customMappers;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool true if exists
+     */
+    public function hasCustomMapper($name)
+    {
+        return isset($this->customMappers[$name]);
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return array
+     */
+    public function getCustomMapper($name)
+    {
+        return $this->customMappers[$name];
     }
 
 }

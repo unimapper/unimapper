@@ -21,6 +21,9 @@ abstract class Mapper implements Mapper\IMapper
     /** @var \UniMapper\Cache\ICache */
     protected $cache;
 
+    /** @var array  */
+    private $customMappers;
+
     public function __construct($name)
     {
         $this->name = $name;
@@ -145,7 +148,14 @@ abstract class Mapper implements Mapper\IMapper
                 continue;
             }
 
-            $entity->{$propertyName} = $this->mapValue($propertiesReflection[$propertyName], $value);
+            $property = $propertiesReflection[$propertyName];
+
+            if ($property->hasCustomMapper('decode')){
+                $entity->{$propertyName} = $this->decodeValue( $entity, $property, $value);
+            } else {
+                $entity->{$propertyName} = $this->mapValue($property, $value);
+            }
+
         }
 
         return $entity;
@@ -162,14 +172,13 @@ abstract class Mapper implements Mapper\IMapper
     {
         $output = [];
         foreach ($entity->getData() as $propertyName => $value) {
-
-            $mappedName = $entity->getReflection()->getProperties()[$propertyName]->getMappedName();
-            $output[$mappedName] = $this->unmapValue($value);
+            $property = $entity->getReflection()->getProperties()[$propertyName];
+            $output[$property->getMappedName()] = $this->unmapValue( $entity, $property, $value );
         }
         return $output;
     }
 
-    protected function unmapValue($value)
+    protected function unmapValue($entity, $property, $value)
     {
         if ($value instanceof EntityCollection) {
             return $this->unmapCollection($value);
@@ -177,7 +186,7 @@ abstract class Mapper implements Mapper\IMapper
             return $this->unmapEntity($value);
         }
 
-        return $value;
+        return $this->encodeValue($entity, $property, $value);
     }
 
     /*
@@ -194,6 +203,81 @@ abstract class Mapper implements Mapper\IMapper
             $data[$index] = $this->unmapEntity($entity);
         }
         return $data;
+    }
+
+    /**
+     * @param string $name
+     * @param mixed $mapper
+     * @return $this
+     */
+    public function registerCustomMapper($name, $mapper)
+    {
+        $this->customMappers[$name] = $mapper;
+        return $this;
+    }
+
+    /**
+     * @param \UniMapper\Entity                            $entity
+     * @param string|\UniMapper\Reflection\Entity\Property $property
+     * @param mixed                                        $value
+     *
+     * @return mixed
+     * @throws Exceptions\MapperException
+     */
+    protected function encodeValue($entity, $property, $value)
+    {
+        $property = is_scalar($property) ? $entity->getReflection()->getProperties()[$property] : $property;
+        if ($property->hasCustomMapper('encode')) {
+            $definition = $property->getCustomMapper('encode');
+            $target = array_shift($definition);
+            $methodName = isset($definition[0]) ? array_shift($definition) : 'encode' . ucfirst($property->getMappedName());
+
+            if (strtolower($target) === 'self') {
+                $target = $entity;
+            }
+            else if (isset($this->customMappers[$target])) {
+                $target = $this->customMappers[$target];
+            }
+
+            if ((is_object($target) || class_exists($target)) && method_exists($target, $methodName)) {
+                return call_user_func_array(array($target, $methodName), array($value));
+            }
+
+            throw new MapperException("Unable to encode value! Target '$target'' or its method '$methodName' is not callable.");
+        }
+        return $value;
+    }
+
+    /**
+     * @param \UniMapper\Entity                            $entity
+     * @param string|\UniMapper\Reflection\Entity\Property $property
+     * @param mixed                                        $value
+     *
+     * @throws Exceptions\MapperException
+     * @return mixed
+     */
+    protected function decodeValue($entity, $property, $value)
+    {
+        $property = is_scalar($property) ? $entity->getReflection()->getProperties()[$property] : $property;
+        if ($property->hasCustomMapper('decode')) {
+            $definition = $property->getCustomMapper('decode');
+            $target = array_shift($definition);
+            $methodName = isset($definition[0]) ? array_shift($definition) : 'decode' . ucfirst($property->getMappedName());
+
+            if (strtolower($target) === 'self') {
+                $target = $entity;
+            }
+            else if (isset($this->customMappers[$target])) {
+                $target = $this->customMappers[$target];
+            }
+
+            if ((is_object($target) || class_exists($target)) && method_exists($target, $methodName)) {
+                return call_user_func_array(array($target, $methodName), array($value));
+            }
+
+            throw new MapperException("Unable to decode value! Target '$target'' or its method '$methodName' is not callable.");
+        }
+        return $value;
     }
 
 }
