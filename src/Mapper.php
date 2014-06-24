@@ -173,12 +173,12 @@ abstract class Mapper implements Mapper\IMapper
         $output = [];
         foreach ($entity->getData() as $propertyName => $value) {
             $property = $entity->getReflection()->getProperties()[$propertyName];
-            $output[$property->getMappedName()] = $this->unmapValue( $entity, $property, $value );
+            $output[$property->getMappedName()] = $this->unmapValue( $value, $entity, $property );
         }
         return $output;
     }
 
-    protected function unmapValue($entity, $property, $value)
+    protected function unmapValue($value, $entity = null, $property = null )
     {
         if ($value instanceof EntityCollection) {
             return $this->unmapCollection($value);
