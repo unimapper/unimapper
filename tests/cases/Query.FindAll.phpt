@@ -10,14 +10,14 @@ require __DIR__ . '/../bootstrap.php';
 class QueryFindAllTest extends Tester\TestCase
 {
 
-    /** @var \Mockista\Mock */
-    private $mapperMock;
+    /** @var array */
+    private $mappers = [];
 
     public function setUp()
     {
         $mockista = new \Mockista\Registry;
-        $this->mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-        $this->mapperMock->expects("getName")->once()->andReturn("FooMapper");
+        $this->mappers["FooMapper"] = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+        $this->mappers["FooMapper"]->expects("getName")->once()->andReturn("FooMapper");
     }
 
     public function testSimple()
@@ -31,7 +31,7 @@ class QueryFindAllTest extends Tester\TestCase
         $collection[] = $entity1;
         $collection[] = $entity2;
 
-        $this->mapperMock->expects("findAll")
+        $this->mappers["FooMapper"]->expects("findAll")
             ->with(
                 "resource",
                 ["link", "text", "id"],
@@ -46,14 +46,15 @@ class QueryFindAllTest extends Tester\TestCase
                 ],
                 ["id" => "desc"],
                 null,
-                null
+                null,
+                []
             )
             ->once()
             ->andReturn([["id" => 2], ["id" => 3]]);
-        $this->mapperMock->expects("mapCollection")->with(get_class($entity1), [["id" => 2], ["id" => 3]])->once()->andReturn($collection);
-        $this->mapperMock->freeze();
+        $this->mappers["FooMapper"]->expects("mapCollection")->with(get_class($entity1), [["id" => 2], ["id" => 3]])->once()->andReturn($collection);
+        $this->mappers["FooMapper"]->freeze();
 
-        $query = new Query\FindAll(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock, "url", "text");
+        $query = new Query\FindAll(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers, "url", "text");
         $query->where("id", ">", 1)
                 ->orWhereAre(function($query) {
                     $query->where("text", "LIKE", "%foo");

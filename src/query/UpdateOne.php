@@ -10,31 +10,28 @@ use UniMapper\Exceptions\QueryException,
 class UpdateOne extends \UniMapper\Query implements IConditionable
 {
 
-    /** @var array */
-    private $values = [];
+    /** @var \UniMapper\Entity */
+    private $entity;
 
     private $primaryValue;
 
-    public function __construct(Reflection\Entity $entityReflection, Mapper $mapper, $primaryValue, array $data)
+    public function __construct(Reflection\Entity $entityReflection, array $mappers, $primaryValue, array $data)
     {
-        parent::__construct($entityReflection, $mapper);
-
-        // Primary value update is not allowed
-        $primaryName = $entityReflection->getPrimaryProperty()->getMappedName();
-        unset($data[$primaryName]);
+        parent::__construct($entityReflection, $mappers);
 
         $this->primaryValue = $primaryValue;
 
-        $class = $entityReflection->getClassName();
-        $entity = new $class;
-        $entity->import($data); // @todo easier validation
-
-        $this->values = $mapper->unmapEntity($entity);
-
-        // Values can not be empty
-        if (empty($this->values)) {
-            throw new QueryException("Nothing to update!");
+        // Primary value update is not allowed
+        if (!$entityReflection->hasPrimaryProperty()) {
+            throw new QueryException("Entity '" . $entityReflection->getClassName() . "' has no primary property!");
         }
+
+        // Do not change primary value
+        unset($data[$entityReflection->getPrimaryProperty()->getName()]);
+
+        $class = $entityReflection->getClassName();
+        $this->entity = new $class;
+        $this->entity->import($data); // @todo easier validation
     }
 
     public function getValues()
@@ -47,13 +44,20 @@ class UpdateOne extends \UniMapper\Query implements IConditionable
         return $this->primaryValue;
     }
 
-    public function onExecute(\UniMapper\Mapper $mapper)
+    public function onExecute(Mapper $mapper)
     {
+        $values = $mapper->unmapEntity($this->entity);
+
+        // Values can not be empty
+        if (empty($values)) {
+            throw new QueryException("Nothing to update!");
+        }
+
         $mapper->updateOne(
             $this->entityReflection->getMapperReflection()->getResource(),
             $this->entityReflection->getPrimaryProperty()->getMappedName(),
             $this->primaryValue,
-            $this->values
+            $values
         );
     }
 

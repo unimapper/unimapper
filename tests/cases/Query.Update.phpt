@@ -9,14 +9,14 @@ require __DIR__ . '/../bootstrap.php';
 class QueryUpdateTest extends Tester\TestCase
 {
 
-    /** @var \Mockista\Mock */
-    private $mapperMock;
+    /** @var array */
+    private $mappers = [];
 
     public function setUp()
     {
         $mockista = new \Mockista\Registry;
-        $this->mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-        $this->mapperMock->expects("getName")->once()->andReturn("FooMapper");
+        $this->mappers["FooMapper"] = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+        $this->mappers["FooMapper"]->expects("getName")->once()->andReturn("FooMapper");
     }
 
     /**
@@ -24,8 +24,8 @@ class QueryUpdateTest extends Tester\TestCase
      */
     public function testDoNotUpdatePrimary()
     {
-        $this->mapperMock->freeze();
-        new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock, ["id" => 1]);
+        $this->mappers["FooMapper"]->freeze();
+        new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers, ["id" => 1]);
     }
 
     /**
@@ -33,22 +33,23 @@ class QueryUpdateTest extends Tester\TestCase
      */
     public function testNothingToUpdate()
     {
-        $this->mapperMock->expects("unmapEntity")->once()->andReturn([]);
-        $this->mapperMock->freeze();
+        $this->mappers["FooMapper"]->expects("unmapEntity")->once()->andReturn([]);
+        $this->mappers["FooMapper"]->freeze();
 
-        new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock, ["readonly" => "foo"]);
+        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers, ["readonly" => "foo"]);
+        $query->execute();
     }
 
     public function testSuccess()
     {
-        $this->mapperMock->expects("update")->once()->andReturn("1");
-        $this->mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo", "readonly" => "readonlytest"]);
-        $this->mapperMock->freeze();
+        $this->mappers["FooMapper"]->expects("update")->once()->andReturn("1");
+        $this->mappers["FooMapper"]->expects("unmapEntity")->once()->andReturn(["text" => "foo", "readonly" => "readonlytest"]);
+        $this->mappers["FooMapper"]->freeze();
 
-        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mapperMock, ["text" => "foo"]);
+        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers, ["text" => "foo", 'readonly' => 'readonlytest']);
         $query->where("id", "=", 1);
         Assert::same(null, $query->execute());
-        Assert::same(['text' => 'foo', 'readonly' => 'readonlytest'], $query->getValues());
+        Assert::same(['text' => 'foo'], $query->getValues());
     }
 
 }

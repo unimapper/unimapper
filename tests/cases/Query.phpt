@@ -13,7 +13,7 @@ $mapperMock->freeze();
 
 $entity = new Fixtures\Entity\Simple;
 
-$query = new Fixtures\Query\Conditionable($entity->getReflection(), $mapperMock);
+$query = new Fixtures\Query\Conditionable($entity->getReflection(), ["FooMapper" => $mapperMock]);
 
 $expectedConditions = array();
 

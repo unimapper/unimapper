@@ -58,7 +58,7 @@ class Enumeration
     }
 
     /**
-     * Tells wheter given value is from enumeration
+     * Tells whether given value is from enumeration
      *
      * @param mixed $value Value
      *

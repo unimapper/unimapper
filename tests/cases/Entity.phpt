@@ -8,8 +8,8 @@ require __DIR__ . '/../bootstrap.php';
 class EntityTest extends Tester\TestCase
 {
 
-    /** @var \Mockista\Mock */
-    private $mapperMock;
+    /** @var array */
+    private $mappers = [];
 
     /** @var \UniMapper\Tests\Fixtures\Entity\Simple */
     private $entity;
@@ -17,8 +17,8 @@ class EntityTest extends Tester\TestCase
     public function setUp()
     {
         $mockista = new \Mockista\Registry;
-        $this->mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-        $this->mapperMock->expects("getName")->once()->andReturn("FooMapper");
+        $this->mappers["FooMapper"] = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+        $this->mappers["FooMapper"]->expects("getName")->once()->andReturn("FooMapper");
 
         $this->entity = new Fixtures\Entity\Simple;
         $this->entity->text = "test";
@@ -228,7 +228,7 @@ class EntityTest extends Tester\TestCase
     {
         Assert::false($this->entity->isActive());
 
-        $this->entity->setActive($this->mapperMock);
+        $this->entity->setActive($this->mappers);
         Assert::true($this->entity->isActive());
     }
 
@@ -242,23 +242,23 @@ class EntityTest extends Tester\TestCase
 
     public function testSaveUpdate()
     {
-        $this->mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo", "id" => 1]);
-        $this->mapperMock->expects("updateOne")->once()->with("resource", "id", 1,["text" => "foo", "id" => 1]);
-        $this->mapperMock->freeze();
+        $this->mappers["FooMapper"]->expects("unmapEntity")->once()->andReturn(["text" => "foo", "id" => 1]);
+        $this->mappers["FooMapper"]->expects("updateOne")->once()->with("resource", "id", 1,["text" => "foo", "id" => 1]);
+        $this->mappers["FooMapper"]->freeze();
 
-        $this->entity->setActive($this->mapperMock);
+        $this->entity->setActive($this->mappers);
         $this->entity->save();
     }
 
     public function testSaveInsert()
     {
-        $this->mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo", "id" => 1]);
-        $this->mapperMock->expects("insert")->once()->with("resource", ["text" => "foo", "id" => 1])->andReturn(["id" => 1]);
-        $this->mapperMock->expects("mapValue")->once()->andReturn(1);
-        $this->mapperMock->freeze();
+        $this->mappers["FooMapper"]->expects("unmapEntity")->once()->andReturn(["text" => "foo", "id" => 1]);
+        $this->mappers["FooMapper"]->expects("insert")->once()->with("resource", ["text" => "foo", "id" => 1])->andReturn(["id" => 1]);
+        $this->mappers["FooMapper"]->expects("mapValue")->once()->andReturn(1);
+        $this->mappers["FooMapper"]->freeze();
 
         $this->entity->id = null;
-        $this->entity->setActive($this->mapperMock);
+        $this->entity->setActive($this->mappers);
         $this->entity->save();
         Assert::same(1, $this->entity->id);
     }
@@ -277,16 +277,16 @@ class EntityTest extends Tester\TestCase
     public function testDeletNoPrimaryValue()
     {
         unset($this->entity->id);
-        $this->entity->setActive($this->mapperMock);
+        $this->entity->setActive($this->mappers);
         $this->entity->delete();
     }
 
     public function testDelete()
     {
-        $this->mapperMock->expects("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
-        $this->mapperMock->freeze();
+        $this->mappers["FooMapper"]->expects("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
+        $this->mappers["FooMapper"]->freeze();
 
-        $this->entity->setActive($this->mapperMock);
+        $this->entity->setActive($this->mappers);
         Assert::null($this->entity->delete());
     }
 

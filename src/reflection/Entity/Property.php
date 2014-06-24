@@ -46,6 +46,20 @@ class Property
     /** @var boolean $computed Is property computed? */
     protected $computed = false;
 
+    /** @var \UniMapper\Reflection\Entity\Property\Association $association */
+    protected $association;
+
+    /** @var  array */
+    public $customMappers;
+
+    /** @var array */
+    private $supportedAssociations = [
+        Property\Association\HasOne::TYPE => "HasOne",
+        Property\Association\HasMany::TYPE => "HasMany",
+        Property\Association\BelongsToOne::TYPE => "BelongsToOne",
+        Property\Association\BelongsToMany::TYPE => "BelongsToMany"
+    ];
+
     /** @var boolean */
     protected $writable = true;
 
@@ -105,16 +119,6 @@ class Property
             );
         }
         return $this->name;
-    }
-
-    /**
-     * Get raw property definition
-     *
-     * @return string
-     */
-    public function getRawDefinition()
-    {
-        return $this->rawDefinition;
     }
 
     /**
@@ -249,7 +253,25 @@ class Property
             if ($matches[1]) {
                 $this->mapping = $matches[1];
             }
-        } elseif (preg_match("#m:enum\(([a-zA-Z0-9]+|self|parent)::([a-zA-Z0-9_]+)\*\)#", $definition, $matches)) {
+        } elseif (preg_match("#m:map-(.*?)\((.*?)\)#s", $definition, $matches)) {
+            // m:map-TYPE(customMapperName)
+
+            if ($this->computed) {
+                throw new PropertyException("Can not combine m:map- with m:computed!", $this->entityReflection, $definition);
+            }
+
+            if ($matches[1]) {
+                if ($matches[1] === 'name') {
+                    if ($matches[2]){
+                        $this->mapping = $matches[2];
+                    }
+                } else {
+                    $this->customMappers[$matches[1]] = isset($matches[2]) ? explode(',', $matches[2]) : [];
+                }
+            }
+
+        }
+        elseif (preg_match("#m:enum\(([a-zA-Z0-9]+|self|parent)::([a-zA-Z0-9_]+)\*\)#", $definition, $matches)) {
             // m:enum(self::CUSTOM_*)
             // m:enum(parent::CUSTOM_*)
             // m:enum(MY_CLASS::CUSTOM_*)
@@ -266,13 +288,39 @@ class Property
             }
             $this->primary = true;
         } elseif (preg_match("#m:validate\((.*?)\)#s", $definition, $matches)) {
-            // m:validate:(url)
-            // m:validate:(ipv4|ipv6)
+            // m:validate(url)
+            // m:validate(ipv4|ipv6)
 
             if ($this->computed) {
                 throw new PropertyException("Can not combine m:computed with m:validate!", $this->entityReflection, $definition);
             }
             $this->validators = new Property\Validators($matches[1], $definition, $this->entityReflection);
+        } elseif (preg_match("#m:assoc\((.*?)\)#s", $definition, $matches)) {
+            // m:assoc(1:1=key|targetKey)
+
+            if ($this->computed || $this->mapping || $this->enumeration) {
+                throw new PropertyException("Association can not be combined with mapping, computed or enumeration!", $this->entityReflection, $definition);
+            }
+
+            // Get target entity class
+            if ($this->type instanceof EntityCollection) {
+                $targetEntityClass = $this->type->getEntityClass();
+            } elseif (is_subclass_of($this->type, "UniMapper\Entity")) {
+                $targetEntityClass = $this->type;
+            } else {
+                throw new PropertyException("Property type must be collection or entity if association defined!", $this->entityReflection, $definition);
+            }
+
+            if (!strpos($matches[1], "=")) {
+                throw new PropertyException("Bad association definition!", $this->entityReflection, $definition);
+            }
+            list($assocType, $parameters) = explode("=", $matches[1]);
+            if (!isset($this->supportedAssociations[$assocType])) {
+                throw new PropertyException("Association type '" . $assocType . "' not supported!", $this->entityReflection, $definition);
+            }
+            $assocClass = "UniMapper\Reflection\Entity\Property\Association\\" . $this->supportedAssociations[$assocType];
+
+            $this->association = new $assocClass($this->entityReflection, new Reflection\Entity($targetEntityClass), $parameters);
         }
     }
 
@@ -408,9 +456,47 @@ class Property
         return $this->primary;
     }
 
+    public function isAssociation()
+    {
+        return $this->association !== null;
+    }
+
+    public function getAssociation()
+    {
+        return $this->association;
+    }
+
     public function getComputedMethodName()
     {
        return "compute" . ucfirst($this->name);
+    }
+
+    /**
+     * @return array
+     */
+    public function hasCustomMappers()
+    {
+        return $this->customMappers !== null && $this->customMappers;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool true if exists
+     */
+    public function hasCustomMapper($name)
+    {
+        return isset($this->customMappers[$name]);
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return array
+     */
+    public function getCustomMapper($name)
+    {
+        return $this->customMappers[$name];
     }
 
 }

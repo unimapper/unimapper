@@ -15,12 +15,12 @@ class Simple extends \UniMapper\Mapper
         throw new \Exception("You should  mock here!");
     }
 
-    public function findOne($resource, $primaryName, $primaryValue)
+    public function findOne($resource, $primaryName, $primaryValue, array $associations = [])
     {
         throw new \Exception("You should  mock here!");
     }
 
-    public function findAll($resource, array $selection, array $conditions, array $orderBy, $limit = 0, $offset = 0)
+    public function findAll($resource, array $selection = [], array $conditions = [], array $orderBy = [], $limit = 0, $offset = 0, array $associations = [])
     {
         throw new \Exception("You should  mock here!");
     }

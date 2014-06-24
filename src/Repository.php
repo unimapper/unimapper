@@ -106,12 +106,11 @@ abstract class Repository
             $reflection = new Reflection\Entity($entityClass);
         }
 
-        $mapperName = $reflection->getMapperReflection()->getName();
-        if (!$this->mappers[$mapperName]) {
-            throw new RepositoryException("Mapper with name '" . $mapperName . "' not found!");
+        if (!$this->mappers[$reflection->getMapperReflection()->getName()]) {
+            throw new RepositoryException("Mapper with name '" . $reflection->getMapperReflection()->getName() . "' not found!");
         }
 
-        return new QueryBuilder($reflection, $this->mappers[$mapperName], $this->logger);
+        return new QueryBuilder($reflection, $this->mappers, $this->logger);
     }
 
     public function getLogger()
