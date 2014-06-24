@@ -230,7 +230,7 @@ abstract class Mapper implements Mapper\IMapper
         if ($property->hasCustomMapper('encode')) {
             $definition = $property->getCustomMapper('encode');
             $target = array_shift($definition);
-            $methodName = isset($definition[0]) ? array_shift($definition) : 'encode' . ucfirst($property->getMappedName());
+            $methodName = isset($definition[0]) ? array_shift($definition) : 'encode' . ucfirst($property->getName());
 
             if (strtolower($target) === 'self') {
                 $target = $entity;
@@ -262,7 +262,7 @@ abstract class Mapper implements Mapper\IMapper
         if ($property->hasCustomMapper('decode')) {
             $definition = $property->getCustomMapper('decode');
             $target = array_shift($definition);
-            $methodName = isset($definition[0]) ? array_shift($definition) : 'decode' . ucfirst($property->getMappedName());
+            $methodName = isset($definition[0]) ? array_shift($definition) : 'decode' . ucfirst($property->getName());
 
             if (strtolower($target) === 'self') {
                 $target = $entity;
