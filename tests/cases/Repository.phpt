@@ -19,6 +19,6 @@ Assert::type("UniMapper\QueryBuilder", $repository->query());
 
 // createEntity()
 Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $repository->createEntity("Simple"));
-$entity = $repository->createEntity("Simple", ["text" => "foo", "localProperty" => "foo"]);
+$entity = $repository->createEntity("Simple", ["text" => "foo", "publicProperty" => "foo"]);
 Assert::same("foo", $entity->text);
-Assert::same("foo", $entity->localProperty);
+Assert::same("foo", $entity->publicProperty);

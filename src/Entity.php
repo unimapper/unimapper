@@ -72,7 +72,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 
         $this->iteration = array_merge(
             array_keys($this->reflection->getProperties()),
-            array_keys($this->getPublicVars())
+            $this->reflection->getPublicProperties()
         );
         $this->rewind();
     }
@@ -84,7 +84,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     public function serialize()
     {
-        return serialize(array_merge($this->data, $this->getPublicVars()));
+        return serialize(array_merge($this->data, $this->getPublicPropertyValues()));
     }
 
     public function unserialize($data)
@@ -313,17 +313,16 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             }
         }
 
-        return array_merge($output, $this->getPublicVars());
+        return array_merge($output, $this->getPublicPropertyValues());
     }
 
-    private function getPublicVars()
+    private function getPublicPropertyValues()
     {
-        $vars = [];
-        $reflection = (new \ReflectionObject($this));
-        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
-            $vars[$property->getName()] = $property->getValue($this);
+        $result = [];
+        foreach ($this->reflection->getPublicProperties() as $name) {
+            $result[$name] = $this->{$name};
         }
-        return $vars;
+        return $result;
     }
 
     /**

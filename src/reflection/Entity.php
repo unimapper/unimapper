@@ -16,6 +16,9 @@ class Entity
     /** @var array */
     private $properties = [];
 
+    /** @var array $publicProperties List of public property names */
+    private $publicProperties = [];
+
     /** @var string */
     private $className;
 
@@ -43,6 +46,10 @@ class Entity
         $this->docComment = $reflection->getDocComment();
         $this->parentClassName = $reflection->getParentClass()->name; // @todo undefined method, needs some refactoring
         $this->constants = $reflection->getConstants();
+
+        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            $this->publicProperties[] =  $property->getName();
+        }
 
         $this->mapper = $this->parseMapper();
         $this->parseProperties();
@@ -81,9 +88,18 @@ class Entity
         foreach ($annotations[1] as $index => $definition) {
 
             $property = new Entity\Property($definition, $this);
+
+            // Prevent duplications
             if (isset($properties[$property->getName()])) {
                 throw new PropertyException(
                     "Duplicate property with name '" . $property->getName() . "'!",
+                    $this,
+                    $definition
+                );
+            }
+            if (in_array($property->getName(), $this->publicProperties)) {
+                throw new PropertyException(
+                    "Property '" . $property->getName() ."' already defined as public property!",
                     $this,
                     $definition
                 );
@@ -164,6 +180,11 @@ class Entity
     public function getProperties()
     {
         return $this->properties;
+    }
+
+    public function getPublicProperties()
+    {
+        return $this->publicProperties;
     }
 
     public function hasPrimaryProperty()

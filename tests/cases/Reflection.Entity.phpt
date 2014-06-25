@@ -1,8 +1,7 @@
 <?php
 
 use Tester\Assert,
-    UniMapper\Reflection,
-    UniMapper\Tests\Fixtures;
+    UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -15,6 +14,14 @@ class ReflectionEntityTest extends Tester\TestCase
     public function testNoMapperDefined()
     {
         new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoMapper");
+    }
+
+    /**
+     * @throws UniMapper\Exceptions\PropertyException Property 'id' already defined as public property!
+     */
+    public function testDuplicatePublicProperty()
+    {
+        new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\DuplicatePublicProperty");
     }
 
     public function testNoPropertyDefined()

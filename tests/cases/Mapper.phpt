@@ -13,19 +13,19 @@ Assert::same("FooMapper", $mapper->getName());
 $email = "john.doe@example.com";
 $url = "http://example.com";
 $entity = new Fixtures\Entity\Simple;
-$entity->localProperty = "foo";
+$entity->publicProperty = "foo";
 $entity->email = $email;
 $entity->url = $url;
 $entity->empty = null;
 
 // mapEntity()
-Assert::isEqual($entity, $mapper->mapEntity("UniMapper\Tests\Fixtures\Entity\Simple", ["email_address" => $email, "localProperty" => "foo", "undefined" => 1, "link" => $url]));
+Assert::isEqual($entity, $mapper->mapEntity("UniMapper\Tests\Fixtures\Entity\Simple", ["email_address" => $email, "publicProperty" => "foo", "undefined" => 1, "link" => $url]));
 
 // unmapEntity()
 Assert::same(["email_address" => $email, "link" => $url, 'empty' => null], $mapper->unmapEntity($entity));
 
 // mapCollection()
-$collection = $mapper->mapCollection("UniMapper\Tests\Fixtures\Entity\Simple", [["email_address" => $email, "localProperty" => "foo", "undefined" => 1, "link" => $url]]);
+$collection = $mapper->mapCollection("UniMapper\Tests\Fixtures\Entity\Simple", [["email_address" => $email, "publicProperty" => "foo", "undefined" => 1, "link" => $url]]);
 Assert::type("UniMapper\EntityCollection", $collection);
 Assert::isEqual($entity, $collection[0]);
 

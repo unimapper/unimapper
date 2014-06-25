@@ -26,12 +26,12 @@ class EntityTest extends Tester\TestCase
         $this->entity->empty = "";
     }
 
-    public function testLocalProperties()
+    public function testPublicProperties()
     {
-        Assert::same("defaultValue", $this->entity->localProperty);
+        Assert::same("defaultValue", $this->entity->publicProperty);
 
-        $this->entity->localProperty = "newValue";
-        Assert::same("newValue", $this->entity->localProperty);
+        $this->entity->publicProperty = "newValue";
+        Assert::same("newValue", $this->entity->publicProperty);
     }
 
     /**
@@ -45,7 +45,7 @@ class EntityTest extends Tester\TestCase
     public function testIsset()
     {
         Assert::true(isset($this->entity->id));
-        Assert::true(isset($this->entity->localProperty));
+        Assert::true(isset($this->entity->publicProperty));
         Assert::false(isset($this->entity->missing));
     }
 
@@ -89,7 +89,7 @@ class EntityTest extends Tester\TestCase
                 'entity' => $this->entity->entity,
                 'collection' => $this->entity->collection,
                 'readonly' => NULL,
-                'localProperty' => 'defaultValue',
+                'publicProperty' => 'defaultValue',
             ),
             $this->entity->toArray()
         );
@@ -120,7 +120,7 @@ class EntityTest extends Tester\TestCase
                     ),
                 ),
                 'readonly' => NULL,
-                'localProperty' => 'defaultValue',
+                'publicProperty' => 'defaultValue',
             ),
             $this->entity->toArray(true)
         );
@@ -138,7 +138,7 @@ class EntityTest extends Tester\TestCase
     public function testJsonSerializable()
     {
         Assert::same(
-            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"readonly":null,"localProperty":"defaultValue"}',
+            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"readonly":null,"publicProperty":"defaultValue"}',
             json_encode($this->entity)
         );
     }
@@ -163,7 +163,7 @@ class EntityTest extends Tester\TestCase
 
     public function testSerializable()
     {
-        $serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":101:{a:4:{s:4:"text";s:4:"test";s:2:"id";i:1;s:5:"empty";s:0:"";s:13:"localProperty";s:12:"defaultValue";}}';
+        $serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":102:{a:4:{s:4:"text";s:4:"test";s:2:"id";i:1;s:5:"empty";s:0:"";s:14:"publicProperty";s:12:"defaultValue";}}';
         Assert::same($serialized, serialize($this->entity));
 
         $unserialized = unserialize($serialized);
@@ -180,7 +180,7 @@ class EntityTest extends Tester\TestCase
                 "text" => 3.0,
                 "collection" => [],
                 "time" => "1999-01-12",
-                "localProperty" => "foo",
+                "publicProperty" => "foo",
                 "empty" => null
             ]
         );
@@ -188,7 +188,7 @@ class EntityTest extends Tester\TestCase
         Assert::same("3", $this->entity->text);
         Assert::type("UniMapper\EntityCollection", $this->entity->collection);
         Assert::same("1999-01-12", $this->entity->time->format("Y-m-d"));
-        Assert::same("foo", $this->entity->localProperty);
+        Assert::same("foo", $this->entity->publicProperty);
         Assert::same(null, $this->entity->empty);
 
         $this->entity->import(["time" => ["date" => "1999-02-12"]]);
@@ -357,7 +357,7 @@ class EntityTest extends Tester\TestCase
                 'entity',
                 'collection',
                 'readonly',
-                'localProperty'
+                'publicProperty'
             ],
             'values' => [
                 1,
@@ -382,7 +382,7 @@ class EntityTest extends Tester\TestCase
            $given['values'][] = $value;
         }
         Assert::same($expected, $given);
-        Assert::same('localProperty', key($this->entity));
+        Assert::same('publicProperty', key($this->entity));
         Assert::same('defaultValue', current($this->entity));
     }
 

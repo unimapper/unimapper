@@ -22,7 +22,7 @@ class Simple extends \UniMapper\Entity
 {
 
     /** @var string */
-    public $localProperty = "defaultValue";
+    public $publicProperty = "defaultValue";
 
     public static function validateMark($value)
     {
