@@ -14,7 +14,7 @@ class Entity
     private $mapper;
 
     /** @var array */
-    private $properties;
+    private $properties = [];
 
     /** @var string */
     private $className;

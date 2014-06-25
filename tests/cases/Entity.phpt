@@ -386,6 +386,12 @@ class EntityTest extends Tester\TestCase
         Assert::same('defaultValue', current($this->entity));
     }
 
+    public function testEntityWithoutProperties()
+    {
+        $entity = new Fixtures\Entity\NoProperty;
+        Assert::count(0, $entity->getReflection()->getProperties());
+    }
+
 }
 
 $testCase = new EntityTest;
