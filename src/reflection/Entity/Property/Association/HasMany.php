@@ -9,10 +9,11 @@ class HasMany extends \UniMapper\Reflection\Entity\Property\Association
 
     const TYPE = "M:N";
 
-    public function __construct(Reflection\Entity $currentEntityReflection, Reflection\Entity $targetEntityReflection, $parameters)
-    {
-        parent::__construct($currentEntityReflection, $targetEntityReflection, $parameters);
-        if (!$targetEntityReflection->hasPrimaryProperty()) {
+    public function __construct(Reflection\Entity $currentReflection,
+        Reflection\Entity $targetReflection, $parameters
+    ) {
+        parent::__construct($currentReflection, $targetReflection, $parameters);
+        if (!$targetReflection->hasPrimaryProperty()) {
             throw new \Exception("Target entity must define primary property!");
         }
         if (!isset($this->parameters[0])) {

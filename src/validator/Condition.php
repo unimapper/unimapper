@@ -30,7 +30,11 @@ class Condition
     public function validate()
     {
         $definition = $this->validation;
-        return (bool) $definition($this->validator->getEntity()->{$this->validator->getProperty()->getName()});
+        return (bool) $definition(
+            $this->validator
+                ->getEntity()
+                ->{$this->validator->getProperty()->getName()}
+        );
     }
 
 }

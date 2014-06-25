@@ -20,4 +20,6 @@ install:
 before_script:
   - composer update --no-interaction --dev
 
-script: php ./vendor/nette/tester/Tester/tester.php tests/
+script:
+    - ./vendor/nette/tester/Tester/tester tests/
+    - ./vendor/squizlabs/php_codesniffer/scripts/phpcs ./src --standard=codestyle.xml -n

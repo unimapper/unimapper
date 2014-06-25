@@ -16,7 +16,10 @@ abstract class Query implements IQuery
     private $result;
 
     /** @var array */
-    protected $conditionOperators = ["=", "<", ">", "<>", ">=", "<=", "IS", "IS NOT", "!=", "LIKE", "COMPARE", "IN"];
+    protected $conditionOperators = [
+        "=", "<", ">", "<>", ">=", "<=", "IS", "IS NOT", "!=", "LIKE",
+        "COMPARE", "IN"
+    ];
 
     /** @var array */
     protected $conditions = [];
@@ -27,22 +30,24 @@ abstract class Query implements IQuery
     /** @var \UniMapper\Reflection\Entity */
     protected $entityReflection;
 
-    public function __construct(Reflection\Entity $entityReflection, array $adapters)
+    public function __construct(Reflection\Entity $reflection, array $adapters)
     {
-        if (!$entityReflection->hasAdapter()) {
+        if (!$reflection->hasAdapter()) {
             throw new QueryException(
-                "Entity '" . $entityReflection->getClassName() . "' has no adapter defined!"
+                "Entity '" . $reflection->getClassName()
+                . "' has no adapter defined!"
             );
         }
 
-        if (!isset($adapters[$entityReflection->getAdapterReflection()->getName()])) {
+        if (!isset($adapters[$reflection->getAdapterReflection()->getName()])) {
             throw new QueryException(
-                "Adapter '" . $entityReflection->getAdapterReflection()->getName() . "' not given!"
+                "Adapter '" . $reflection->getAdapterReflection()->getName()
+                . "' not given!"
             );
         }
 
         $this->adapters = $adapters;
-        $this->entityReflection = $entityReflection;
+        $this->entityReflection = $reflection;
     }
 
     public function getResult()
@@ -71,26 +76,37 @@ abstract class Query implements IQuery
         return lcfirst($reflection->getShortName());
     }
 
-    protected function addCondition($propertyName, $operator, $value, $joiner = 'AND')
+    protected function addCondition($name, $operator, $value, $joiner = 'AND')
     {
         if (!$this instanceof Query\IConditionable) {
-            throw new QueryException("Conditions can be added only on conditionable queries!");
+            throw new QueryException(
+                "Conditions can be added only on conditionable queries!"
+            );
         }
 
-        if (!$this->entityReflection->hasProperty($propertyName)) {
-            throw new QueryException("Invalid property name '" . $propertyName . "'!");
+        if (!$this->entityReflection->hasProperty($name)) {
+            throw new QueryException("Invalid property name '" . $name . "'!");
         }
 
         if ($operator !== null && !in_array($operator, $this->conditionOperators)) {
-            throw new QueryException("Condition operator " . $operator . " not allowed! You can use one of the following " . implode(" ", $this->conditionOperators) . ".");
+            throw new QueryException(
+                "Condition operator " . $operator . " not allowed! "
+                . "You can use one of the following "
+                . implode(" ", $this->conditionOperators) . "."
+            );
         }
 
-        $propertyReflection = $this->entityReflection->getProperty($propertyName);
-        if ($propertyReflection->isAssociation() || $propertyReflection->isComputed()) {
-            throw new QueryException("Condition can not be called on associations and computed properties!");
+        $propertyReflection = $this->entityReflection->getProperty($name);
+        if ($propertyReflection->isAssociation()
+            || $propertyReflection->isComputed()
+        ) {
+            throw new QueryException(
+                "Condition can not be called on associations and computed "
+                . "properties!"
+            );
         }
 
-        $this->conditions[] = [$propertyName, $operator, $value, $joiner];
+        $this->conditions[] = [$name, $operator, $value, $joiner];
     }
 
     protected function addNestedConditions(\Closure $callback, $joiner = 'AND')
@@ -100,7 +116,9 @@ abstract class Query implements IQuery
         call_user_func($callback, $query);
 
         if (count($query->conditions) === 0) {
-            throw new QueryException("Nested query must contain one condition at least!");
+            throw new QueryException(
+                "Nested query must contain one condition at least!"
+            );
         }
 
         $this->conditions[] = array($query->conditions, $joiner);
@@ -138,7 +156,9 @@ abstract class Query implements IQuery
 
         $adapterName = $this->entityReflection->getAdapterReflection()->getName();
         if (!isset($this->adapters[$adapterName])) {
-            throw new QueryException("Adapter with name '" . $adapterName . "' not given!");
+            throw new QueryException(
+                "Adapter with name '" . $adapterName . "' not given!"
+            );
         }
         $this->result = $this->onExecute($this->adapters[$adapterName]);
         $this->elapsed = microtime(true) - $start;

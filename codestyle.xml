@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<ruleset name="UniMapper standard">
+
+    <description>A custom coding standard</description>
+
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+
+    <rule ref="PEAR">
+        <exclude name="PEAR.Commenting" />
+        <exclude name="PEAR.NamingConventions.ValidVariableName" />
+    </rule>
+
+    <rule ref="Generic.PHP.LowerCaseConstant" />
+
+    <!-- No more whitespace -->
+    <rule ref="Generic.WhiteSpace.DisallowTabIndent"/>
+
+    <!-- Use Unix newlines -->
+    <rule ref="Generic.Files.LineEndings">
+        <properties>
+            <property name="eolChar" value="\n"/>
+        </properties>
+    </rule>
+
+</ruleset>

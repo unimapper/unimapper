@@ -47,7 +47,8 @@ class NamingConvention
             return false;
         }
         $mask = self::trimNamespace($mask);
-        return $mask === "*" || self::startsWith($mask, "*") || self::endsWith($mask, "*");
+        return $mask === "*" || self::startsWith($mask, "*")
+            || self::endsWith($mask, "*");
     }
 
     public static function trimNamespace($class)
