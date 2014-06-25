@@ -16,7 +16,7 @@ use UniMapper\Validator,
  * Entity is ancestor for all entities and provides global methods, which
  * can be used in every new entity object.
  */
-abstract class Entity implements \JsonSerializable, \Serializable
+abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 {
 
     /** Validator trait */
@@ -33,6 +33,9 @@ abstract class Entity implements \JsonSerializable, \Serializable
 
     /** @var \UniMapper\Cache\ICache $cache */
     private $cache;
+
+    /** @var string $iteration List of property names */
+    private $iteration;
 
     public function __construct(ICache $cache = null, Reflection\Entity $reflection = null)
     {
@@ -66,6 +69,12 @@ abstract class Entity implements \JsonSerializable, \Serializable
                 $this->reflection = new Reflection\Entity($className);
             }
         }
+
+        $this->iteration = array_merge(
+            array_keys($this->reflection->getProperties()),
+            array_keys($this->getPublicVars())
+        );
+        $this->rewind();
     }
 
     /**
@@ -347,6 +356,31 @@ abstract class Entity implements \JsonSerializable, \Serializable
             }
         }
         return $this;
+    }
+
+    public function rewind()
+    {
+        reset($this->iteration);
+    }
+
+    public function current()
+    {
+        return $this->{$this->key()};
+    }
+
+    public function key()
+    {
+        return current($this->iteration);
+    }
+
+    public function next()
+    {
+        next($this->iteration);
+    }
+
+    public function valid()
+    {
+        return key($this->iteration) !== null;
     }
 
 }
