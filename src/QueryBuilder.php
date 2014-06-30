@@ -29,7 +29,8 @@ class QueryBuilder
         "findAll" => "UniMapper\Query\FindAll",
         "findOne" => "UniMapper\Query\FindOne",
         "insert" => "UniMapper\Query\Insert",
-        "update" => "UniMapper\Query\Update"
+        "update" => "UniMapper\Query\Update",
+        "updateOne" => "UniMapper\Query\UpdateOne"
     );
 
     public function __construct(Reflection\Entity $entityReflection, array $mappers, Logger $logger = null)

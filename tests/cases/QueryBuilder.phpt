@@ -18,6 +18,7 @@ $builder = new \UniMapper\QueryBuilder(
 Assert::type("UniMapper\Query\Count", $builder->count());
 Assert::type("UniMapper\Query\FindAll", $builder->findAll());
 Assert::type("UniMapper\Query\FindOne", $builder->findOne(1));
+Assert::type("UniMapper\Query\UpdateOne", $builder->updateOne(1, ["text" => "foo"]));
 Assert::type("UniMapper\Query\Update", $builder->update(["text" => "foo"]));
 Assert::type("UniMapper\Query\Insert", $builder->insert(["text" => "foo"]));
 Assert::type("UniMapper\Query\Custom", $builder->custom());
