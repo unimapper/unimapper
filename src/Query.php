@@ -30,6 +30,12 @@ abstract class Query implements IQuery
 
     public function __construct(Reflection\Entity $entityReflection, array $mappers)
     {
+        if (!isset($mappers[$entityReflection->getMapperReflection()->getName()])) {
+            throw new QueryException(
+                "Mapper '" . $entityReflection->getMapperReflection()->getName() . "' not given!"
+            );
+        }
+
         $this->mappers = $mappers;
         $this->entityReflection = $entityReflection;
     }
@@ -135,17 +141,8 @@ abstract class Query implements IQuery
             throw new QueryException("Mapper with name '" . $currentMapperName . "' not given!");
         }
         $this->result = $this->onExecute($this->mappers[$currentMapperName]);
-
-        // Set entities active
-        if ($this->result instanceof Entity && !$this->result->isActive()) {
-            $this->result->setActive($this->mappers);
-        } elseif ($this->result instanceof EntityCollection) {
-            foreach ($this->result as $entity) {
-                $entity->setActive($this->mappers);
-            }
-        }
-
         $this->elapsed = microtime(true) - $start;
+
         return $this->result;
     }
 

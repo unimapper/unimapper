@@ -36,7 +36,6 @@ class QueryFindOneTest extends Tester\TestCase
         $result = $query->execute();
 
         Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $result);
-        Assert::true($result->isActive());
     }
 
 }

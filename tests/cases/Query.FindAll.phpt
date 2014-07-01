@@ -63,10 +63,8 @@ class QueryFindAllTest extends Tester\TestCase
 
         Assert::type("Unimapper\EntityCollection", $result);
         Assert::same(2, count($result));
-        foreach ($result as $entity) {
-            Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity);
-            Assert::true($entity->isActive());
-        }
+        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $result[0]);
+        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $result[1]);
     }
 
 }

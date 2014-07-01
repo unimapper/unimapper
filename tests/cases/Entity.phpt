@@ -8,18 +8,11 @@ require __DIR__ . '/../bootstrap.php';
 class EntityTest extends Tester\TestCase
 {
 
-    /** @var array */
-    private $mappers = [];
-
     /** @var \UniMapper\Tests\Fixtures\Entity\Simple */
     private $entity;
 
     public function setUp()
     {
-        $mockista = new \Mockista\Registry;
-        $this->mappers["FooMapper"] = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-        $this->mappers["FooMapper"]->expects("getName")->once()->andReturn("FooMapper");
-
         $this->entity = new Fixtures\Entity\Simple;
         $this->entity->text = "test";
         $this->entity->id = 1;
@@ -222,72 +215,6 @@ class EntityTest extends Tester\TestCase
     public function testImportReadonly()
     {
         $this->entity->import(["readonly" => "foo"]);
-    }
-
-    public function testIsActive()
-    {
-        Assert::false($this->entity->isActive());
-
-        $this->entity->setActive($this->mappers);
-        Assert::true($this->entity->isActive());
-    }
-
-    /**
-     * @throws Exception Entity is not active!
-     */
-    public function testSaveNotActive()
-    {
-        $this->entity->save();
-    }
-
-    public function testSaveUpdate()
-    {
-        $this->mappers["FooMapper"]->expects("unmapEntity")->once()->andReturn(["text" => "foo", "id" => 1]);
-        $this->mappers["FooMapper"]->expects("updateOne")->once()->with("resource", "id", 1,["text" => "foo", "id" => 1]);
-        $this->mappers["FooMapper"]->freeze();
-
-        $this->entity->setActive($this->mappers);
-        $this->entity->save();
-    }
-
-    public function testSaveInsert()
-    {
-        $this->mappers["FooMapper"]->expects("unmapEntity")->once()->andReturn(["text" => "foo", "id" => 1]);
-        $this->mappers["FooMapper"]->expects("insert")->once()->with("resource", ["text" => "foo", "id" => 1])->andReturn(["id" => 1]);
-        $this->mappers["FooMapper"]->expects("mapValue")->once()->andReturn(1);
-        $this->mappers["FooMapper"]->freeze();
-
-        $this->entity->id = null;
-        $this->entity->setActive($this->mappers);
-        $this->entity->save();
-        Assert::same(1, $this->entity->id);
-    }
-
-    /**
-     * @throws Exception Entity is not active!
-     */
-    public function testDeletNotActive()
-    {
-        $this->entity->delete();
-    }
-
-    /**
-     * @throws Exception Primary value must be set!
-     */
-    public function testDeletNoPrimaryValue()
-    {
-        unset($this->entity->id);
-        $this->entity->setActive($this->mappers);
-        $this->entity->delete();
-    }
-
-    public function testDelete()
-    {
-        $this->mappers["FooMapper"]->expects("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
-        $this->mappers["FooMapper"]->freeze();
-
-        $this->entity->setActive($this->mappers);
-        Assert::null($this->entity->delete());
     }
 
     /**

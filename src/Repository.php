@@ -16,13 +16,82 @@ abstract class Repository
 {
 
     /** @var array $mappers Registered mappers */
-    protected $mappers = array();
+    protected $mappers = [];
 
+    /** @var \UniMapper\Logger $logger */
     private $logger;
 
+    /** @var \UniMapper\Cache\ICache $cache */
     private $cache;
 
-    public function createEntity($name = null, $values = null)
+    /**
+     * Insert/update entity
+     *
+     * @param \UniMapper\Entity $entity
+     *
+     * @throws RepositoryException
+     */
+    public function save(Entity $entity)
+    {
+        $requiredClass = NC::nameToClass($this->getEntityName(), NC::$entityMask);
+        if (!$entity instanceof $requiredClass) {
+            throw new RepositoryException("Entity must be instance of ". $requiredClass . "!");
+        }
+
+        $reflection = $entity->getReflection();
+        if (!$reflection->hasPrimaryProperty()) {
+            throw new RepositoryException("Can not save entity without primary property!");
+        }
+
+        $primaryName = $reflection->getPrimaryProperty()->getName();
+        $primaryValue = $entity->{$primaryName};
+
+        if ($primaryValue === null) {
+            // Insert
+            $entity->{$primaryName} = $this->query()->insert($entity->getData())->execute();
+        } else {
+            // Update
+            $this->query()->updateOne($primaryValue, $entity->getData())->execute();
+        }
+    }
+
+    /**
+     * Delete single entity
+     *
+     * @param \UniMapper\Entity $entity
+     *
+     * @throws RepositoryException
+     */
+    public function delete(Entity $entity)
+    {
+        $requiredClass = NC::nameToClass($this->getEntityName(), NC::$entityMask);
+        if (!$entity instanceof $requiredClass) {
+            throw new RepositoryException("Entity must be instance of ". $requiredClass . "!");
+        }
+
+        $reflection = $entity->getReflection();
+        if (!$reflection->hasPrimaryProperty()) {
+            throw new RepositoryException("Can not delete entity without primary property!");
+        }
+
+        $primaryName = $reflection->getPrimaryProperty()->getName();
+        $primaryValue = $entity->{$primaryName};
+        if ($primaryValue === null) {
+            throw new RepositoryException("Primary value in entity '" . $this->getEntityName() . "' must be set!");
+        }
+
+        $this->query()->delete()->where($primaryName, "=", $primaryValue)->execute();
+    }
+
+    /**
+     * Create new entity
+     *
+     * @param mixed  $values Iterable value like array or stdClass object
+     * @param string $name   Entity name, default is entity related to current repository
+     *
+     * @return \UniMapper\Entity
+     */
+    public function createEntity($values = null, $name = null)
     {
         if ($name === null) {
             $name = $this->getName();
@@ -94,10 +163,6 @@ abstract class Repository
             throw new RepositoryException("Entity with name '" . $name . "' and class '" . $entityClass . "' not found!");
         }
 
-        if (count($this->mappers) === 0) {
-            throw new RepositoryException("You must set one mapper at least!");
-        }
-
         if ($this->cache) {
 
             $key = "entity-" . $entityClass;
@@ -108,10 +173,6 @@ abstract class Repository
             }
         } else {
             $reflection = new Reflection\Entity($entityClass);
-        }
-
-        if (!$this->mappers[$reflection->getMapperReflection()->getName()]) {
-            throw new RepositoryException("Mapper with name '" . $reflection->getMapperReflection()->getName() . "' not found!");
         }
 
         return new QueryBuilder($reflection, $this->mappers, $this->logger);

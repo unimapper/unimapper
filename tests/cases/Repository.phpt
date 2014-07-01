@@ -11,9 +11,16 @@ class RepositoryTest extends Tester\TestCase
     /** @var \UniMapper\Repository $repository */
     private $repository;
 
+    /** @var \Mockista\Mock $mapperMock */
+    private $mapperMock;
+
     public function setUp()
     {
         $this->repository = new Fixtures\Repository\SimpleRepository;
+
+        $mockista = new \Mockista\Registry;
+        $this->mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
+        $this->mapperMock->expects("getName")->once()->andReturn("FooMapper");
     }
 
     public function testGetName()
@@ -38,7 +45,6 @@ class RepositoryTest extends Tester\TestCase
     {
         // Autodetect entity
         $entity = $this->repository->createEntity(
-            null,
             ["text" => "foo", "publicProperty" => "foo"]
         );
         Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity);
@@ -47,19 +53,60 @@ class RepositoryTest extends Tester\TestCase
 
         // Force entity
         $nestedEntity = $this->repository->createEntity(
-            "Nested",
-            ["text" => "foo"]
+            ["text" => "foo"],
+            "Nested"
         );
         Assert::type("UniMapper\Tests\Fixtures\Entity\Nested", $nestedEntity);
         Assert::same("foo", $nestedEntity->text);
     }
 
-    /**
-     * @throws UniMapper\Exceptions\RepositoryException You must set one mapper at least!
-     */
-    public function testMapperRequired()
+    public function testSaveUpdate()
     {
-        $this->repository->query();
+        $this->mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo", "id" => 1]);
+        $this->mapperMock->expects("updateOne")->once()->with("resource", "id", 1,["text" => "foo", "id" => 1]);
+        $this->mapperMock->freeze();
+        $this->repository->registerMapper($this->mapperMock);
+
+        $entity = new Fixtures\Entity\Simple;
+        $entity->id = 1;
+        $entity->text = "foo";
+        $this->repository->save($entity);
+    }
+
+    public function testSaveInsert()
+    {
+        $this->mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo", "id" => 1]);
+        $this->mapperMock->expects("insert")->once()->with("resource", ["text" => "foo", "id" => 1])->andReturn(["id" => 1]);
+        $this->mapperMock->expects("mapValue")->once()->andReturn(1);
+        $this->mapperMock->freeze();
+        $this->repository->registerMapper($this->mapperMock);
+
+        $entity = new Fixtures\Entity\Simple;
+        $entity->text = "foo";
+        $this->repository->save($entity);
+    }
+
+    /**
+     * @throws UniMapper\Exceptions\RepositoryException Primary value in entity 'Simple' must be set!
+     */
+    public function testDeletNoPrimaryValue()
+    {
+        $this->mapperMock->freeze();
+        $this->repository->registerMapper($this->mapperMock);
+
+        $entity = new Fixtures\Entity\Simple;
+        $this->repository->delete($entity);
+    }
+
+    public function testDelete()
+    {
+        $this->mapperMock->expects("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
+        $this->mapperMock->freeze();
+        $this->repository->registerMapper($this->mapperMock);
+
+        $entity = new Fixtures\Entity\Simple;
+        $entity->id = 1;
+        $this->repository->delete($entity);
     }
 
 }
