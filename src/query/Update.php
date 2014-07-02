@@ -25,8 +25,7 @@ class Update extends \UniMapper\Query implements IConditionable
             }
         }
 
-        $class = $entityReflection->getClassName();
-        $this->entity = new $class;
+        $this->entity = $entityReflection->createEntity();
         $this->entity->import($data); // @todo easier validation
     }
 

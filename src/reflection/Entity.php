@@ -55,6 +55,17 @@ class Entity
         $this->parseProperties();
     }
 
+    public function createEntity($values = null)
+    {
+        $entityClass = $this->className;
+        $entity = new $entityClass($this);
+
+        if ($values !== null) {
+            $entity->import($values);
+        }
+        return $entity;
+    }
+
     public function getConstants()
     {
         return $this->constants;

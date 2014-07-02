@@ -120,21 +120,21 @@ abstract class Mapper implements Mapper\IMapper
         return $collection;
     }
 
-    public function mapEntity($entityClass, $data)
+    public function mapEntity($class, $data)
     {
         if (!Validator::validateTraversable($data)) {
             throw new MapperException("Input data must be traversable!");
         }
 
         if ($this->cache) {
-            $entity = new $entityClass(
-                $this->cache->loadEntityReflection($entityClass)
-            );
+            $reflection = $this->cache->loadEntityReflection($class);
         } else {
-            $entity = new $entityClass;
+            $reflection = new Reflection\Entity($class);
         }
 
-        $propertiesReflection = $entity->getReflection()->getProperties();
+        $entity = $reflection->createEntity();
+
+        $propertiesReflection = $reflection->getProperties();
         foreach ($data as $index => $value) {
 
             $propertyName = $index;
@@ -154,9 +154,8 @@ abstract class Mapper implements Mapper\IMapper
             }
 
             $property = $propertiesReflection[$propertyName];
-
             if ($property->hasCustomMapper('decode')){
-                $entity->{$propertyName} = $this->decodeValue( $entity, $property, $value);
+                $entity->{$propertyName} = $this->decodeValue($entity, $property, $value);
             } else {
                 $entity->{$propertyName} = $this->mapValue($property, $value);
             }

@@ -8,6 +8,20 @@ require __DIR__ . '/../bootstrap.php';
 class ReflectionEntityTest extends Tester\TestCase
 {
 
+    public function testCreateEntity()
+    {
+        $reflection = new Reflection\Entity(
+            "UniMapper\Tests\Fixtures\Entity\Simple"
+        );
+
+        $entity = $reflection->createEntity(
+            ["text" => "foo", "publicProperty" => "foo"]
+        );
+        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity);
+        Assert::same("foo", $entity->text);
+        Assert::same("foo", $entity->publicProperty);
+    }
+
     /**
      * @throws UniMapper\Exceptions\PropertyException No mapper defined!
      */

@@ -29,8 +29,7 @@ class UpdateOne extends \UniMapper\Query implements IConditionable
         // Do not change primary value
         unset($data[$entityReflection->getPrimaryProperty()->getName()]);
 
-        $class = $entityReflection->getClassName();
-        $this->entity = new $class;
+        $this->entity = $entityReflection->createEntity();
         $this->entity->import($data); // @todo easier validation
     }
 

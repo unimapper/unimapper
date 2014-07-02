@@ -98,16 +98,11 @@ abstract class Repository
 
         $class = NC::nameToClass($name, NC::$entityMask);
         if ($this->cache) {
-            $entity = new $class($this->cache->loadEntityReflection($class));
+            $reflection = $this->cache->loadEntityReflection($class);
         } else {
-            $entity = new $class;
+            $reflection = new Reflection\Entity($class);
         }
-
-        if ($values !== null) {
-            $entity->import($values);
-        }
-
-        return $entity;
+        return $reflection->createEntity($values);
     }
 
     /**

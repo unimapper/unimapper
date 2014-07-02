@@ -15,8 +15,7 @@ class Insert extends \UniMapper\Query
     {
         parent::__construct($entityReflection, $mappers);
 
-        $class = $entityReflection->getClassName();
-        $this->entity = new $class;
+        $this->entity = $entityReflection->createEntity();
         $this->entity->import($data); // @todo easier validation
     }
 
