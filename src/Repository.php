@@ -4,7 +4,6 @@ namespace UniMapper;
 
 use UniMapper\Exceptions\RepositoryException,
     UniMapper\NamingConvention as NC,
-    UniMapper\Cache\ICache,
     UniMapper\Reflection;
 
 /**
@@ -21,7 +20,7 @@ abstract class Repository
     /** @var \UniMapper\Logger $logger */
     private $logger;
 
-    /** @var \UniMapper\Cache\ICache $cache */
+    /** @var \UniMapper\Cache $cache */
     private $cache;
 
     /**
@@ -98,7 +97,11 @@ abstract class Repository
         }
 
         $class = NC::nameToClass($name, NC::$entityMask);
-        $entity = new $class($this->cache);
+        if ($this->cache) {
+            $entity = new $class($this->cache->loadEntityReflection($class));
+        } else {
+            $entity = new $class;
+        }
 
         if ($values !== null) {
             $entity->import($values);
@@ -122,7 +125,7 @@ abstract class Repository
         return NC::classToName(get_called_class(), NC::$repositoryMask);
     }
 
-    public function setCache(ICache $cache)
+    public function setCache(Cache $cache)
     {
         $this->cache = $cache;
     }
@@ -164,18 +167,18 @@ abstract class Repository
         }
 
         if ($this->cache) {
-
-            $key = "entity-" . $entityClass;
-            $reflection = $this->cache->load($key);
-            if (!$reflection) {
-                $reflection = new Reflection\Entity($entityClass);
-                $this->cache->save($key, $reflection, $reflection->getFileName());
-            }
-        } else {
-            $reflection = new Reflection\Entity($entityClass);
+            return new QueryBuilder(
+                $this->cache->loadEntityReflection($entityClass),
+                $this->mappers,
+                $this->logger
+            );
         }
 
-        return new QueryBuilder($reflection, $this->mappers, $this->logger);
+        return new QueryBuilder(
+            new Reflection\Entity($entityClass),
+            $this->mappers,
+            $this->logger
+        );
     }
 
     public function getLogger()

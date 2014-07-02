@@ -4,9 +4,7 @@ namespace UniMapper;
 
 use UniMapper\Validator,
     UniMapper\EntityCollection,
-    UniMapper\Query,
     UniMapper\Reflection,
-    UniMapper\Cache\ICache,
     UniMapper\Exceptions\PropertyException,
     UniMapper\Exceptions\PropertyTypeException,
     UniMapper\Exceptions\PropertyReadonlyException,
@@ -28,18 +26,11 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     /** @var array $data Stored variables */
     private $data = [];
 
-    /** @var array $mappers */
-    private $mappers;
-
-    /** @var \UniMapper\Cache\ICache $cache */
-    private $cache;
-
     /** @var string $iteration List of property names */
     private $iteration;
 
-    public function __construct(ICache $cache = null, Reflection\Entity $reflection = null)
+    public function __construct(Reflection\Entity $reflection = null)
     {
-        $this->cache = $cache;
         if ($reflection) {
             if ($reflection->getClassName() !== get_called_class()) {
                 throw new \Exception("Expected reflection of class '" . get_called_class() . "' but reflection of '" . $reflection->getClassName() . "' given!");
@@ -50,24 +41,12 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     }
 
     /**
-     * Initialize entity with reflection
+     * Initialize entity state
      */
     private function initialize()
     {
         if (!$this->reflection) {
-
-            $className = get_called_class();
-            if ($this->cache) {
-
-                $key = "entity-" . $className;
-                $this->reflection = $this->cache->load($key);
-                if (!$this->reflection) {
-                    $this->reflection = new Reflection\Entity($className);
-                    $this->cache->save($key, $this->reflection, $this->reflection->getFileName());
-                }
-            } else {
-                $this->reflection = new Reflection\Entity($className);
-            }
+            $this->reflection = new Reflection\Entity(get_called_class());
         }
 
         $this->iteration = array_merge(
