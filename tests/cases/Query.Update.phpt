@@ -20,7 +20,7 @@ class QueryUpdateTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\QueryException Update is not allowed on primary property 'id'!
+     * @throws UniMapper\Exception\QueryException Update is not allowed on primary property 'id'!
      */
     public function testDoNotUpdatePrimary()
     {
@@ -29,24 +29,24 @@ class QueryUpdateTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\QueryException Nothing to update!
+     * @throws UniMapper\Exception\QueryException Nothing to update!
      */
     public function testNothingToUpdate()
     {
         $this->mappers["FooMapper"]->expects("unmapEntity")->once()->andReturn([]);
         $this->mappers["FooMapper"]->freeze();
 
-        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers, ["readonly" => "foo"]);
+        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers, []);
         $query->execute();
     }
 
     public function testSuccess()
     {
         $this->mappers["FooMapper"]->expects("update")->once()->andReturn("1");
-        $this->mappers["FooMapper"]->expects("unmapEntity")->once()->andReturn(["text" => "foo", "readonly" => "readonlytest"]);
+        $this->mappers["FooMapper"]->expects("unmapEntity")->once()->andReturn(["text" => "foo"]);
         $this->mappers["FooMapper"]->freeze();
 
-        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers, ["text" => "foo", 'readonly' => 'readonlytest']);
+        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers, ["text" => "foo"]);
         $query->where("id", "=", 1);
         Assert::same(null, $query->execute());
         Assert::same(['text' => 'foo'], $query->getValues());

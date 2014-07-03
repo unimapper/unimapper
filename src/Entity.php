@@ -4,11 +4,7 @@ namespace UniMapper;
 
 use UniMapper\Validator,
     UniMapper\EntityCollection,
-    UniMapper\Reflection,
-    UniMapper\Exceptions\PropertyException,
-    UniMapper\Exceptions\PropertyTypeException,
-    UniMapper\Exceptions\PropertyReadonlyException,
-    UniMapper\Exceptions\PropertyUndefinedException;
+    UniMapper\Reflection;
 
 /**
  * Entity is ancestor for all entities and provides global methods, which
@@ -33,7 +29,9 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     {
         if ($reflection) {
             if ($reflection->getClassName() !== get_called_class()) {
-                throw new \Exception("Expected reflection of class '" . get_called_class() . "' but reflection of '" . $reflection->getClassName() . "' given!");
+                throw new Exception\InvalidArgumentException(
+                    "Expected reflection of class '" . get_called_class() . "' but reflection of '" . $reflection->getClassName() . "' given!"
+                );
             }
             $this->reflection = $reflection;
         }
@@ -75,30 +73,36 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     }
 
     /**
-     * Import and try to convert values automatically if possible, skip readonly
+     * Import and try to convert values automatically if possible, skip readonly and undefined
      *
      * @param mixed $values Traversable structure (array/object)
+     *
+     * @throws Exception\PropertyValidationException
+     * @throws Exception\InvalidArgumentException
      */
     public function import($values)
     {
         if (!Validator::validateTraversable($values)) {
-            throw new \Exception("Values must be traversable data!");
+            throw new Exception\InvalidArgumentException(
+                "Values must be traversable data!"
+            );
         }
 
         foreach ($values as $name => $value) {
 
             try {
                 $this->{$name} = $value;
-            } catch (\Exception $e) {
+            } catch (Exception\PropertyException $e) {
 
-                if ($e instanceof PropertyTypeException) {
-                    $this->data[$name] = $this->reflection->getProperties()[$name]->convertValue($value);
-                } elseif ($e instanceof PropertyReadonlyException) {
-                    continue;
-                } else {
-                    throw new \Exception($e->getMessage());
+                if ($e instanceof Exception\PropertyValidationException) {
+
+                    if ($e->getCode() === Exception\PropertyValidationException::TYPE) {
+                        // Try to convert automatically
+                        $this->{$name} = $this->reflection->getProperties()[$name]->convertValue($value);
+                    }
                 }
             }
+
         }
     }
 
@@ -108,6 +112,8 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      * @param string $name Property name
      *
      * @return mixed
+     *
+     * @throws Exception\PropertyAccessException
      */
     public function __get($name)
     {
@@ -116,29 +122,33 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         }
 
         $properties = $this->reflection->getProperties();
-        if (isset($properties[$name])) {
-
-            // computed property
-            if ($properties[$name]->isComputed()) {
-
-                $computedValue = $this->{$properties[$name]->getComputedMethodName()}();
-                if ($computedValue === null) {
-                    return null;
-                }
-                $properties[$name]->validateValue($computedValue);
-                return $computedValue;
-            }
-
-            // empty collection
-            $type = $properties[$name]->getType();
-            if ($type instanceof EntityCollection) {
-                return $type;
-            }
-
-            return null;
+        if (!isset($properties[$name])) {
+            throw new Exception\PropertyAccessException(
+                "Undefined property '" . $name . "'!",
+                $this->reflection,
+                null,
+                Exception\PropertyAccessException::UNDEFINED
+            );
         }
 
-        throw new PropertyUndefinedException("Undefined property with name '" . $name . "'!", $this->reflection);
+        // computed property
+        if ($properties[$name]->isComputed()) {
+
+            $computedValue = $this->{$properties[$name]->getComputedMethodName()}();
+            if ($computedValue === null) {
+                return null;
+            }
+            $properties[$name]->validateValue($computedValue);
+            return $computedValue;
+        }
+
+        // empty collection
+        $type = $properties[$name]->getType();
+        if ($type instanceof EntityCollection) {
+            return $type;
+        }
+
+        return null;
     }
 
     /**
@@ -146,20 +156,37 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      *
      * @param string $name
      * @param mixed  $value
+     *
+     * @throws Exception\PropertyAccessException
      */
     public function __set($name, $value)
     {
         $properties = $this->reflection->getProperties();
         if (!isset($properties[$name])) {
-            throw new PropertyUndefinedException("Undefined property with name '" . $name . "'!", $this->reflection);
+            throw new Exception\PropertyAccessException(
+                "Undefined property '" . $name . "'!",
+                $this->reflection,
+                null,
+                Exception\PropertyAccessException::UNDEFINED
+            );
         }
 
         if (!$properties[$name]->isWritable()) {
-            throw new PropertyReadonlyException("Property '" . $name . "' is not writable!");
+            throw new Exception\PropertyAccessException(
+                "Property '" . $name . "' is not writable!",
+                $this->reflection,
+                $properties[$name]->getRawDefinition(),
+                Exception\PropertyAccessException::READONLY
+            );
         }
 
         if ($properties[$name]->isComputed()) {
-            throw new PropertyException("Can not set computed property with name '" . $name . "'!", $this->reflection);
+            throw new Exception\PropertyAccessException(
+                "Can not set computed property '" . $name . "'!",
+                $this->reflection,
+                $properties[$name]->getRawDefinition(),
+                Exception\PropertyAccessException::READONLY
+            );
         }
 
         if ($value !== null) {
@@ -235,28 +262,6 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     public function jsonSerialize()
     {
         return $this->toArray(true);
-    }
-
-    /**
-     * Merge entity
-     *
-     * @param \UniMapper\Entity $entity
-     *
-     * @return \UniMapper\Entity
-     */
-    public function merge(\UniMapper\Entity $entity)
-    {
-        $entityClass = get_called_class();
-        if (!$entity instanceof $entityClass) {
-            throw \Exception("Merged entity must be instance of " . $entityClass . "!");
-        }
-
-        foreach ($entity as $name => $value) {
-            if (!isset($this->data[$name])) {
-                $this->data[$name] = $value;
-            }
-        }
-        return $this;
     }
 
     public function rewind()

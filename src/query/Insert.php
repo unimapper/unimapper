@@ -2,7 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exceptions\QueryException,
+use UniMapper\Exception\QueryException,
     UniMapper\Reflection;
 
 class Insert extends \UniMapper\Query
@@ -14,9 +14,7 @@ class Insert extends \UniMapper\Query
     public function __construct(Reflection\Entity $entityReflection, array $mappers, array $data)
     {
         parent::__construct($entityReflection, $mappers);
-
-        $this->entity = $entityReflection->createEntity();
-        $this->entity->import($data); // @todo easier validation
+        $this->entity = $entityReflection->createEntity($data);
     }
 
     public function getValues()

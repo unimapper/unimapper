@@ -3,7 +3,7 @@
 namespace UniMapper;
 
 use UniMapper\Reflection,
-    UniMapper\Exceptions\QueryBuilderException;
+    UniMapper\Exception\QueryBuilderException;
 
 /**
  * @method \UniMapper\Query\FindAll   findAll()

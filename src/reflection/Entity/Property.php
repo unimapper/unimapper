@@ -6,9 +6,9 @@ use UniMapper\EntityCollection,
     UniMapper\Validator,
     UniMapper\Reflection,
     UniMapper\NamingConvention as NC,
-    UniMapper\Exceptions\InvalidArgumentException,
-    UniMapper\Exceptions\PropertyException,
-    UniMapper\Exceptions\PropertyTypeException;
+    UniMapper\Exception\PropertyValidationException,
+    UniMapper\Exception\InvalidArgumentException,
+    UniMapper\Exception\PropertyException;
 
 /**
  * Entity property reflection
@@ -87,6 +87,11 @@ class Property
         }
     }
 
+    public function getRawDefinition()
+    {
+        return $this->rawDefinition;
+    }
+
     public function isWritable()
     {
         return $this->writable;
@@ -107,7 +112,7 @@ class Property
      *
      * @return string
      *
-     * @throws \UniMapper\Exceptions\PropertyException
+     * @throws \UniMapper\Exception\PropertyException
      */
     public function getName()
     {
@@ -138,7 +143,7 @@ class Property
      *
      * @return void
      *
-     * @throws \UniMapper\Exceptions\PropertyException
+     * @throws \UniMapper\Exception\PropertyException
      */
     protected function readName($definition)
     {
@@ -158,7 +163,7 @@ class Property
      *
      * @return string
      *
-     * @throws \UniMapper\Exceptions\PropertyException
+     * @throws \UniMapper\Exception\PropertyException
      */
     public function getEnumeration()
     {
@@ -177,18 +182,9 @@ class Property
      * Get property type
      *
      * @return string
-     *
-     * @throws \UniMapper\Exceptions\PropertyTypeException
      */
     public function getType()
     {
-        if ($this->type === null) {
-            throw new PropertyTypeException(
-                "Property type is not set!",
-                $this->entityReflection,
-                $this->rawDefinition
-            );
-        }
         return $this->type;
     }
 
@@ -197,7 +193,7 @@ class Property
      *
      * @param string $definition Docblok definition
      *
-     * @throws \UniMapper\Exceptions\PropertyTypeException
+     * @throws \UniMapper\Exception\PropertyException
      */
     protected function readType($definition)
     {
@@ -224,7 +220,7 @@ class Property
             }
         }
 
-        throw new PropertyTypeException("Unsupported type '" . $definition . "'!", $this->entityReflection, $this->rawDefinition);
+        throw new PropertyException("Unsupported type '" . $definition . "'!", $this->entityReflection, $this->rawDefinition);
     }
 
     /**
@@ -329,31 +325,36 @@ class Property
      *
      * @param mixed $value Given value
      *
-     * @throws \UniMapper\Exceptions\PropertyException
-     * @throws \UniMapper\Exceptions\PropertyTypeException
+     * @throws \UniMapper\Exception\PropertyValidationException
      * @throws \Exception
      */
     public function validateValue($value)
     {
         $expectedType = $this->type;
 
-        if ($expectedType === null) { // @todo check entity validity first => move out
-            throw new PropertyException("Property type not defined on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
-        }
-
         // Validators
         if ($this->validators) {
 
             foreach ($this->validators->getCallbacks() as $callback) {
                 if (!call_user_func_array($callback, [$value])) {
-                    throw new PropertyTypeException("Value " . $value . " is not valid for " . $callback[0] . "::" . $callback[1] . " on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
+                    throw new PropertyValidationException(
+                        "Value " . $value . " is not valid for " . $callback[0] . "::" . $callback[1] . " on property " . $this->name . "!",
+                        $this->entityReflection,
+                        $this->rawDefinition,
+                        PropertyValidationException::VALIDATOR
+                    );
                 }
             }
         }
 
         // Enumeration
         if ($this->enumeration !== null && !$this->enumeration->isValueFromEnum($value)) {
-            throw new PropertyTypeException("Value " . $value . " is not from defined entity enumeration range on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
+            throw new PropertyValidationException(
+                "Value " . $value . " is not from defined entity enumeration range on property " . $this->name . "!",
+                $this->entityReflection,
+                $this->rawDefinition,
+                PropertyValidationException::ENUMERATION
+            );
         }
 
         // Basic type
@@ -362,7 +363,12 @@ class Property
             if (gettype($value) === $expectedType) {
                 return;
             }
-            throw new PropertyTypeException("Expected " . $expectedType . " but " . gettype($value) . " given on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
+            throw new PropertyValidationException(
+                "Expected " . $expectedType . " but " . gettype($value) . " given on property " . $this->name . "!",
+                $this->entityReflection,
+                $this->rawDefinition,
+                PropertyValidationException::TYPE
+            );
         }
 
         // Object
@@ -380,7 +386,12 @@ class Property
             if ($givenType === "object") {
                 $givenType = get_class($value);
             }
-            throw new PropertyTypeException("Expected " . $expectedType . " but " . $givenType . " given on property " . $this->name . "!", $this->entityReflection, $this->rawDefinition);
+            throw new PropertyValidationException(
+                "Expected " . $expectedType . " but " . $givenType . " given on property " . $this->name . "!",
+                $this->entityReflection,
+                $this->rawDefinition,
+                PropertyValidationException::TYPE
+            );
         }
 
         $givenType = gettype($value);
@@ -396,6 +407,8 @@ class Property
      * @param mixed $value
      *
      * @return mixed
+     *
+     * @throws InvalidArgumentException
      */
     public function convertValue($value)
     {
@@ -438,7 +451,7 @@ class Property
             return $collection;
         }
 
-        throw new \Exception("Can not convert value on property '" . $this->name . "' automatically!");
+        throw new InvalidArgumentException("Can not convert value on property '" . $this->name . "' automatically!");
     }
 
     public function isBasicType()

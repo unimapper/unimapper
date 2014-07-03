@@ -2,7 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exceptions\QueryException,
+use UniMapper\Exception\QueryException,
     UniMapper\Query\IConditionable,
     UniMapper\Reflection;
 
@@ -25,8 +25,7 @@ class Update extends \UniMapper\Query implements IConditionable
             }
         }
 
-        $this->entity = $entityReflection->createEntity();
-        $this->entity->import($data); // @todo easier validation
+        $this->entity = $entityReflection->createEntity($data);
     }
 
     public function getValues()

@@ -137,7 +137,7 @@ class EntityTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\PropertyTypeException Expected integer but string given on property id!
+     * @throws UniMapper\Exception\PropertyValidationException Expected integer but string given on property id!
      */
     public function testInvalidPropertyType()
     {
@@ -145,7 +145,7 @@ class EntityTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\PropertyUndefinedException Undefined property with name 'undefined'!
+     * @throws UniMapper\Exception\PropertyAccessException Undefined property 'undefined'!
      */
     public function testUndefinedProperty()
     {
@@ -189,6 +189,14 @@ class EntityTest extends Tester\TestCase
     }
 
     /**
+     * @throws UniMapper\Exception\InvalidArgumentException Values must be traversable data!
+     */
+    public function testImportInvalidArgument()
+    {
+        $this->entity->import(null);
+    }
+
+    /**
      * @throws Exception Can not convert value on property 'collection' automatically!
      */
     public function testImportInvalidCollection()
@@ -204,17 +212,17 @@ class EntityTest extends Tester\TestCase
         $this->entity->import(["time" => []]);
     }
 
-    /**
-     * @throws Exception Undefined property with name 'undefined'!
-     */
-    public function testImportUndefined()
+    public function testImportSkippedAutomatically()
     {
-        $this->entity->import(["undefined" => "foo"]);
-    }
-
-    public function testImportReadonly()
-    {
-        $this->entity->import(["readonly" => "foo"]);
+        $this->entity->import(
+            [
+                "readonly" => "foo",
+                "undefined" => "foo",
+                "year" => 1999
+            ]
+        );
+        Assert::null($this->entity->readonly);
+        Assert::null($this->entity->year);
     }
 
     /**
@@ -261,7 +269,7 @@ class EntityTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\PropertyException Can not set computed property with name 'year'!
+     * @throws UniMapper\Exception\PropertyException Can not set computed property 'year'!
      */
     public function testComputedSet()
     {

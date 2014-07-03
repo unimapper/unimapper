@@ -2,8 +2,6 @@
 
 namespace UniMapper;
 
-use UniMapper\Exceptions\InvalidArgumentException;
-
 /**
  * Entity collection as ArrayList
  */
@@ -26,7 +24,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     public function __construct($entityClass)
     {
         if (!is_subclass_of($entityClass, "UniMapper\Entity")) {
-            throw new InvalidArgumentException("Class must be instance of entity!");
+            throw new Exception\InvalidArgumentException("Class must be instance of entity!");
         }
         $this->entityClass = $entityClass;
     }
@@ -79,12 +77,14 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
      *
      * @return void
      *
-     * @throws \Exception
+     * @throws Exception\InvalidArgumentException
      */
     public function offsetSet($offset, $value)
     {
         if (!$value instanceof $this->entityClass) {
-            throw new \Exception("Expected entity " . $this->entityClass . " but " . gettype($value) . " given!");
+            throw new Exception\InvalidArgumentException(
+                "Expected entity " . $this->entityClass . " but " . gettype($value) . " given!"
+            );
         }
         if (is_null($offset)) {
             $this->data[] = $value;

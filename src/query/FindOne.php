@@ -3,8 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\Query\IConditionable,
-    UniMapper\Exceptions\PropertyTypeException,
-    UniMapper\Exceptions\QueryException,
+    UniMapper\Exception\QueryException,
     UniMapper\Reflection;
 
 class FindOne extends \UniMapper\Query implements IConditionable
@@ -27,11 +26,7 @@ class FindOne extends \UniMapper\Query implements IConditionable
             throw new QueryException("Can not use findOne() on entity without primary property!");
         }
 
-        try {
-            $entityReflection->getPrimaryProperty()->validateValue($primaryValue);
-        } catch (PropertyTypeException $exception) {
-            throw new QueryException($exception->getMessage());
-        }
+        $entityReflection->getPrimaryProperty()->validateValue($primaryValue);
 
         $this->primaryValue = $primaryValue;
     }

@@ -2,7 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exceptions\QueryException,
+use UniMapper\Exception\QueryException,
     UniMapper\Query\IConditionable;
 
 class Delete extends \UniMapper\Query implements IConditionable

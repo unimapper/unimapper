@@ -2,7 +2,7 @@
 
 namespace UniMapper\Reflection;
 
-use UniMapper\Exceptions\PropertyException;
+use UniMapper\Exception\PropertyException;
 
 /**
  * Entity reflection
@@ -86,7 +86,7 @@ class Entity
      *
      * @return array Collection of \UniMapper\Reflection\Entity\Property with proeprty name as index
      *
-     * @throws \UniMapper\Exceptions\PropertyException
+     * @throws \UniMapper\Exception\PropertyException
      */
     private function parseProperties()
     {
@@ -140,7 +140,7 @@ class Entity
      *
      * @return \UniMapper\Reflection\Entity\Mapper
      *
-     * @throws \UniMapper\Exceptions\PropertyException
+     * @throws \UniMapper\Exception\PropertyException
      */
     private function parseMapper()
     {

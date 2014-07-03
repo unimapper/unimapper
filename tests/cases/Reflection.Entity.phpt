@@ -23,7 +23,7 @@ class ReflectionEntityTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\PropertyException No mapper defined!
+     * @throws UniMapper\Exception\PropertyException No mapper defined!
      */
     public function testNoMapperDefined()
     {
@@ -31,7 +31,7 @@ class ReflectionEntityTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\PropertyException Property 'id' already defined as public property!
+     * @throws UniMapper\Exception\PropertyException Property 'id' already defined as public property!
      */
     public function testDuplicatePublicProperty()
     {

@@ -27,7 +27,7 @@ class QueryInsertTest extends Tester\TestCase
         $query = new \UniMapper\Query\Insert(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["FooMapper" => $this->mapperMock],
-            ["text" => "foo", "readonly" => "readonlytest"]
+            ["text" => "foo"]
         );
         Assert::same(1, $query->execute());
         Assert::same(['text' => 'foo'], $query->getValues());

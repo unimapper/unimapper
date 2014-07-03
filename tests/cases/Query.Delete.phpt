@@ -30,7 +30,7 @@ class QueryFindAllTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\QueryException At least one condition must be set!
+     * @throws UniMapper\Exception\QueryException At least one condition must be set!
      */
     public function testNoConditionGiven()
     {

@@ -87,7 +87,7 @@ class RepositoryTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\RepositoryException Primary value in entity 'Simple' must be set!
+     * @throws UniMapper\Exception\RepositoryException Primary value in entity 'Simple' must be set!
      */
     public function testDeletNoPrimaryValue()
     {

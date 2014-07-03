@@ -2,7 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exceptions\QueryException,
+use UniMapper\Exception\QueryException,
     UniMapper\Reflection,
     UniMapper\Reflection\Entity\Property\Association\BelongsToMany,
     UniMapper\Reflection\Entity\Property\Association\HasMany,

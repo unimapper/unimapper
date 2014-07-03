@@ -2,7 +2,7 @@
 
 namespace UniMapper;
 
-use UniMapper\Exceptions\InvalidArgumentException;
+use UniMapper\Exception\InvalidArgumentException;
 
 class NamingConvention
 {

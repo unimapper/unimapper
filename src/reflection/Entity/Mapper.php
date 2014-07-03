@@ -2,7 +2,7 @@
 
 namespace UniMapper\Reflection;
 
-use UniMapper\Exceptions\PropertyException;
+use UniMapper\Exception\PropertyException;
 
 /**
  * Entity mapper definition
@@ -50,7 +50,7 @@ class Mapper
      *
      * @return string
      *
-     * @throws \UniMapper\Exceptions\PropertyException
+     * @throws \UniMapper\Exception\PropertyException
      */
     public function getName()
     {

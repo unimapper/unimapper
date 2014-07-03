@@ -114,7 +114,7 @@ class QueryTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\QueryException Mapper 'FooMapper' not given!
+     * @throws UniMapper\Exception\QueryException Mapper 'FooMapper' not given!
      */
     public function testMapperRequired()
     {

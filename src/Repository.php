@@ -2,7 +2,7 @@
 
 namespace UniMapper;
 
-use UniMapper\Exceptions\RepositoryException,
+use UniMapper\Exception\RepositoryException,
     UniMapper\NamingConvention as NC,
     UniMapper\Reflection;
 

@@ -25,14 +25,14 @@ Assert::same("UniMapper\Tests\Fixtures\Entity\Simple", NC::nameToClass("Simple",
 Assert::same("UniMapper\Tests\Fixtures\Repository\SimpleRepository", NC::nameToClass("Simple", NC::$repositoryMask));
 Assert::exception(function() {
     NC::nameToClass("Simple", "foo");
-}, "UniMapper\Exceptions\InvalidArgumentException", "Invalid mask 'foo'!");
+}, "UniMapper\Exception\InvalidArgumentException", "Invalid mask 'foo'!");
 
 // classToName()
 Assert::same("Simple", NC::classToName("UniMapper\Tests\Fixtures\Entity\Simple", NC::$entityMask));
 Assert::same("Simple", NC::classToName("UniMapper\Tests\Fixtures\Repository\SimpleRepository", NC::$repositoryMask));
 Assert::exception(function() {
     NC::classToName("UniMapper\Tests\Fixtures\Entity\Simple", "foo");
-}, "UniMapper\Exceptions\InvalidArgumentException", "Invalid mask 'foo'!");
+}, "UniMapper\Exception\InvalidArgumentException", "Invalid mask 'foo'!");
 Assert::exception(function() {
     NC::classToName("foo", NC::$entityMask);
-}, "UniMapper\Exceptions\InvalidArgumentException", "Class 'foo' not found!");
+}, "UniMapper\Exception\InvalidArgumentException", "Class 'foo' not found!");

@@ -4,8 +4,7 @@ namespace UniMapper;
 
 use UniMapper\Reflection,
     UniMapper\Query\IQuery,
-    UniMapper\EntityCollection,
-    UniMapper\Exceptions\QueryException;
+    UniMapper\Exception\QueryException;
 
 abstract class Query implements IQuery
 {

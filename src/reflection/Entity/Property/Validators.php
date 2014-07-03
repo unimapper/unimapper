@@ -2,7 +2,7 @@
 
 namespace UniMapper\Reflection\Entity\Property;
 
-use UniMapper\Exceptions\PropertyException,
+use UniMapper\Exception\PropertyException,
     UniMapper\Reflection;
 
 class Validators

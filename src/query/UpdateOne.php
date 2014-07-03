@@ -2,7 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exceptions\QueryException,
+use UniMapper\Exception\QueryException,
     UniMapper\Query\IConditionable,
     UniMapper\Mapper,
     UniMapper\Reflection;
@@ -29,8 +29,7 @@ class UpdateOne extends \UniMapper\Query implements IConditionable
         // Do not change primary value
         unset($data[$entityReflection->getPrimaryProperty()->getName()]);
 
-        $this->entity = $entityReflection->createEntity();
-        $this->entity->import($data); // @todo easier validation
+        $this->entity = $entityReflection->createEntity($data);
     }
 
     public function getValues()

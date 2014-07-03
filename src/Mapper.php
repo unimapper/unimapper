@@ -2,8 +2,7 @@
 
 namespace UniMapper;
 
-use UniMapper\Exceptions\MapperException,
-    UniMapper\Entity,
+use UniMapper\Entity,
     UniMapper\EntityCollection,
     UniMapper\Validator,
     UniMapper\Reflection;
@@ -46,7 +45,7 @@ abstract class Mapper implements Mapper\IMapper
      *
      * @return mixed
      *
-     * @throws \UniMapper\Exceptions\MapperException
+     * @throws Exception\MapperException
      */
     public function mapValue(Reflection\Entity\Property $property, $value)
     {
@@ -71,7 +70,7 @@ abstract class Mapper implements Mapper\IMapper
                 return $value;
             }
 
-            throw new MapperException(
+            throw new Exception\MapperException(
                 "Can not convert value to entity @property"
                 . " $" . $property->getName() . ". Expected " . $type . " but "
                 . "conversion of " . gettype($value) . " failed!"
@@ -110,7 +109,9 @@ abstract class Mapper implements Mapper\IMapper
     public function mapCollection($entityClass, $data)
     {
         if (!Validator::validateTraversable($data)) {
-            throw new \Exception("Input data must be traversable!");
+            throw new Exception\InvalidArgumentException(
+                "Input data must be traversable!"
+            );
         }
 
         $collection = new EntityCollection($entityClass);
@@ -226,7 +227,7 @@ abstract class Mapper implements Mapper\IMapper
      * @param mixed                                        $value
      *
      * @return mixed
-     * @throws Exceptions\MapperException
+     * @throws Exception\MapperException
      */
     protected function encodeValue($entity, $property, $value)
     {
@@ -257,7 +258,7 @@ abstract class Mapper implements Mapper\IMapper
      * @param string|\UniMapper\Reflection\Entity\Property $property
      * @param mixed                                        $value
      *
-     * @throws Exceptions\MapperException
+     * @throws Exception\MapperException
      * @return mixed
      */
     protected function decodeValue($entity, $property, $value)

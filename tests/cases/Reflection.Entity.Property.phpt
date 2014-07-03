@@ -4,7 +4,7 @@ use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
-class ReflectionPropertyTest extends Tester\TestCase
+class ReflectionEntityPropertyTest extends Tester\TestCase
 {
 
     private function createPropertyReflection($definition, $entityClass = "UniMapper\Tests\Fixtures\Entity\Simple")
@@ -68,7 +68,7 @@ class ReflectionPropertyTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\PropertyTypeException Expected DateTime but string given on property time!
+     * @throws UniMapper\Exception\PropertyValidationException Expected DateTime but string given on property time!
      */
     public function testInvalidInteger()
     {
@@ -76,7 +76,7 @@ class ReflectionPropertyTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\PropertyTypeException Expected string but integer given on property test!
+     * @throws UniMapper\Exception\PropertyValidationException Expected string but integer given on property test!
      */
     public function testInvalidString()
     {
@@ -84,7 +84,7 @@ class ReflectionPropertyTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\PropertyTypeException Expected DateTime but string given on property time!
+     * @throws UniMapper\Exception\PropertyValidationException Expected DateTime but string given on property time!
      */
     public function testInvalidDateTime()
     {
@@ -92,7 +92,7 @@ class ReflectionPropertyTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\PropertyTypeException Expected integer but string given on property id!
+     * @throws UniMapper\Exception\PropertyValidationException Expected integer but string given on property id!
      */
     public function testInvalidcollection()
     {
@@ -100,7 +100,7 @@ class ReflectionPropertyTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\PropertyException Validation method validateUndefined not defined in UniMapper\Tests\Fixtures\Entity\Simple!
+     * @throws UniMapper\Exception\PropertyException Validation method validateUndefined not defined in UniMapper\Tests\Fixtures\Entity\Simple!
      */
     public function testUndefinedValidationMethod()
     {
@@ -108,7 +108,7 @@ class ReflectionPropertyTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exceptions\PropertyTypeException Unsupported type 'UniMapper\Tests\Fixtures\Entity\Simple'!
+     * @throws UniMapper\Exception\PropertyException Unsupported type 'UniMapper\Tests\Fixtures\Entity\Simple'!
      */
     public function testUnsupportedClasses()
     {
@@ -117,5 +117,5 @@ class ReflectionPropertyTest extends Tester\TestCase
 
 }
 
-$testCase = new ReflectionPropertyTest;
+$testCase = new ReflectionEntityPropertyTest;
 $testCase->run();

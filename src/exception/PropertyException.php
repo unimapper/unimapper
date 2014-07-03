@@ -1,13 +1,13 @@
 <?php
 
-namespace UniMapper\Exceptions;
+namespace UniMapper\Exception;
 
 use UniMapper\Reflection;
 
 /**
  * Throws when wrong property definition detected.
  */
-class PropertyException extends \Exception
+class PropertyException extends \UniMapper\Exception
 {
 
     /** @var \UniMapper\Reflection\Entity $entityReflection */
@@ -16,11 +16,11 @@ class PropertyException extends \Exception
     /** @var string $definition Property definition */
     protected $definition;
 
-    public function __construct($message, Reflection\Entity $entityReflection, $definition = null)
+    public function __construct($message, Reflection\Entity $entityReflection, $definition = null, $code = 0)
     {
-        parent::__construct($message, 0);
+        parent::__construct($message, $code);
         $this->entityReflection = $entityReflection;
-        $this->definition = (string) $definition;
+        $this->definition = $definition;
     }
 
     /**
