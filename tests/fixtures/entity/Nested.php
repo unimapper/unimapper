@@ -11,4 +11,8 @@ namespace UniMapper\Tests\Fixtures\Entity;
  * @property Simple   $entity
  */
 class Nested extends \UniMapper\Entity
-{}
+{
+
+    public $publicProperty = "defaultValue";
+
+}

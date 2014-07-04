@@ -103,6 +103,7 @@ class EntityTest extends Tester\TestCase
                     'text' => NULL,
                     'collection' => array(),
                     'entity' => NULL,
+                    'publicProperty' => 'defaultValue'
                 ),
                 'collection' => array(
                     array(
@@ -110,6 +111,7 @@ class EntityTest extends Tester\TestCase
                         'text' => 'foo',
                         'collection' => array(),
                         'entity' => NULL,
+                        'publicProperty' => 'defaultValue'
                     ),
                 ),
                 'readonly' => NULL,
@@ -167,6 +169,10 @@ class EntityTest extends Tester\TestCase
 
     public function testImport()
     {
+        $entityObject = new stdClass;
+        $entityObject->text = "foo";
+        $entityObject->publicProperty = "foo";
+
         $this->entity->import(
             [
                 "id" => "2",
@@ -174,7 +180,9 @@ class EntityTest extends Tester\TestCase
                 "collection" => [],
                 "time" => "1999-01-12",
                 "publicProperty" => "foo",
-                "empty" => null
+                "empty" => null,
+                "entity" => $entityObject,
+                "collection" => [$entityObject]
             ]
         );
         Assert::same(2, $this->entity->id);
@@ -183,6 +191,11 @@ class EntityTest extends Tester\TestCase
         Assert::same("1999-01-12", $this->entity->time->format("Y-m-d"));
         Assert::same("foo", $this->entity->publicProperty);
         Assert::same(null, $this->entity->empty);
+        Assert::same("foo", $this->entity->entity->text);
+        Assert::same("foo", $this->entity->entity->publicProperty);
+        Assert::same("foo", $this->entity->collection[0]->publicProperty);
+        Assert::same("foo", $this->entity->collection[0]->text);
+        Assert::same(1, count($this->entity->collection));
 
         $this->entity->import(["time" => ["date" => "1999-02-12"]]);
         Assert::same("1999-02-12", $this->entity->time->format("Y-m-d"));

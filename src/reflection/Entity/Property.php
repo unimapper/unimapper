@@ -442,13 +442,17 @@ class Property
         } elseif ($this->type instanceof EntityCollection && Validator::validateTraversable($value)) {
             // Collection
 
-            $entityClass = $this->type->getEntityClass();
-            $collection = new EntityCollection($entityClass);
+            $reflection = new Reflection\Entity($this->type->getEntityClass()); // @todo better reflection giving
+            $collection = new EntityCollection($reflection->getClassName());
             foreach ($value as $index => $data) {
-                $collection[$index] = new $entityClass; // @todo better reflection giving
-                $collection[$index]->import($data);
+                $collection[$index] = $reflection->createEntity($data);
             }
             return $collection;
+        } elseif (is_subclass_of($this->type, "UniMapper\Entity") && Validator::validateTraversable($value)) {
+            // Entity
+
+            $reflection = new Reflection\Entity($this->type); // @todo better reflection giving
+            return $reflection->createEntity($value);
         }
 
         throw new InvalidArgumentException("Can not convert value on property '" . $this->name . "' automatically!");
