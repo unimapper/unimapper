@@ -86,6 +86,31 @@ class RepositoryTest extends Tester\TestCase
         $this->repository->save($entity);
     }
 
+    public function testSaveInvalid()
+    {
+        $entity = new Fixtures\Entity\Simple;
+        $entity->text = "foo";
+        $entity->email = "invalidemail";
+        $entity->getValidator()->on("email")->addRule(\UniMapper\Validator::EMAIL, "Invalid e-mail format!");
+
+        try {
+            $this->repository->save($entity);
+        } catch (UniMapper\Exception\ValidatorException $e) {
+            $validator = $e->getValidator();
+        }
+
+        Assert::isEqual(
+            [
+                'properties' => [
+                    'email' => [
+                        new \UniMapper\Validator\Message('Invalid e-mail format!', 1)
+                    ]
+                ]
+            ],
+            (array) $validator->getMessages()
+        );
+    }
+
     /**
      * @throws UniMapper\Exception\RepositoryException Primary value in entity 'Simple' must be set!
      */

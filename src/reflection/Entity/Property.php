@@ -40,9 +40,6 @@ class Property
     /** @var boolean $primary Is property defined as primary? */
     protected $primary = false;
 
-    /** @var \UniMapper\Reflection\Entity\Property\Validators */
-    protected $validators;
-
     /** @var boolean $computed Is property computed? */
     protected $computed = false;
 
@@ -283,14 +280,6 @@ class Property
                 throw new PropertyException("Can not combine m:computed with m:primary!", $this->entityReflection, $definition);
             }
             $this->primary = true;
-        } elseif (preg_match("#m:validate\((.*?)\)#s", $definition, $matches)) {
-            // m:validate(url)
-            // m:validate(ipv4|ipv6)
-
-            if ($this->computed) {
-                throw new PropertyException("Can not combine m:computed with m:validate!", $this->entityReflection, $definition);
-            }
-            $this->validators = new Property\Validators($matches[1], $definition, $this->entityReflection);
         } elseif (preg_match("#m:assoc\((.*?)\)#s", $definition, $matches)) {
             // m:assoc(1:1=key|targetKey)
 
@@ -332,21 +321,6 @@ class Property
     {
         $expectedType = $this->type;
 
-        // Validators
-        if ($this->validators) {
-
-            foreach ($this->validators->getCallbacks() as $callback) {
-                if (!call_user_func_array($callback, [$value])) {
-                    throw new PropertyValidationException(
-                        "Value " . $value . " is not valid for " . $callback[0] . "::" . $callback[1] . " on property " . $this->name . "!",
-                        $this->entityReflection,
-                        $this->rawDefinition,
-                        PropertyValidationException::VALIDATOR
-                    );
-                }
-            }
-        }
-
         // Enumeration
         if ($this->enumeration !== null && !$this->enumeration->isValueFromEnum($value)) {
             throw new PropertyValidationException(
@@ -358,7 +332,7 @@ class Property
         }
 
         // Basic type
-        if ($this->isBasicType()) {
+        if ($this->isTypeBasic()) {
 
             if (gettype($value) === $expectedType) {
                 return;
@@ -412,7 +386,7 @@ class Property
      */
     public function convertValue($value)
     {
-        if ($this->isBasicType()) {
+        if ($this->isTypeBasic()) {
             // Basic
 
             if ($this->type === "boolean" && strtolower($value) === "false") {
@@ -426,7 +400,7 @@ class Property
             // DateTime
 
             $date = $value;
-            if (Validator::validateTraversable($value)) {
+            if (Validator::isTraversable($value)) {
                 if (isset($value["date"])) {
                     $date = $value["date"];
                 }
@@ -439,7 +413,7 @@ class Property
             if ($date instanceof \DateTime) {
                 return $date;
             }
-        } elseif ($this->type instanceof EntityCollection && Validator::validateTraversable($value)) {
+        } elseif ($this->type instanceof EntityCollection && Validator::isTraversable($value)) {
             // Collection
 
             $reflection = new Reflection\Entity($this->type->getEntityClass()); // @todo better reflection giving
@@ -448,7 +422,7 @@ class Property
                 $collection[$index] = $reflection->createEntity($data);
             }
             return $collection;
-        } elseif (is_subclass_of($this->type, "UniMapper\Entity") && Validator::validateTraversable($value)) {
+        } elseif (is_subclass_of($this->type, "UniMapper\Entity") && Validator::isTraversable($value)) {
             // Entity
 
             $reflection = new Reflection\Entity($this->type); // @todo better reflection giving
@@ -458,9 +432,19 @@ class Property
         throw new InvalidArgumentException("Can not convert value on property '" . $this->name . "' automatically!");
     }
 
-    public function isBasicType()
+    public function isTypeBasic()
     {
         return in_array($this->type, $this->getBasicTypes());
+    }
+
+    public function isTypeEntity()
+    {
+        return is_subclass_of($this->type, "UniMapper\Entity");
+    }
+
+    public function isTypeCollection()
+    {
+        return $this->type instanceof EntityCollection;
     }
 
     public function isComputed()

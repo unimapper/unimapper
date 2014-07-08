@@ -6,7 +6,6 @@ class PropertyValidationException extends PropertyException
 {
 
     const TYPE = 1,
-          VALIDATOR = 2,
-          ENUMERATION = 3;
+          ENUMERATION = 2;
 
 }

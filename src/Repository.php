@@ -47,11 +47,45 @@ abstract class Repository
 
         if ($primaryValue === null) {
             // Insert
-            $entity->{$primaryName} = $this->query()->insert($entity->getData())->execute();
+            $entity->{$primaryName} = $this->insert($entity);
         } else {
             // Update
-            $this->query()->updateOne($primaryValue, $entity->getData())->execute();
+            $this->update($entity, $primaryValue);
         }
+    }
+
+    /**
+     * Create a new record
+     *
+     * @param \UniMapper\Entity $entity
+     *
+     * @return mixed
+     *
+     * @throws Exception\ValidatorException
+     */
+    public function insert(Entity $entity)
+    {
+        if (!$entity->getValidator()->validate()) {
+            throw new Exception\ValidatorException($entity->getValidator());
+        }
+
+        return $this->query()->insert($entity->getData())->execute();
+    }
+
+    /**
+     * Update record
+     *
+     * @param \UniMapper\Entity $entity
+     * @param mixed             $primaryValue
+     *
+     * @throws Exception\ValidatorException
+     */
+    public function update(Entity $entity, $primaryValue)
+    {
+        if (!$entity->getValidator()->validate()) {
+            throw new Exception\ValidatorException($entity->getValidator());
+        }
+        $this->query()->updateOne($primaryValue, $entity->getData())->execute();
     }
 
     /**

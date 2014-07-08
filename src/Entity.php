@@ -2,8 +2,7 @@
 
 namespace UniMapper;
 
-use UniMapper\Validator,
-    UniMapper\EntityCollection,
+use UniMapper\EntityCollection,
     UniMapper\Reflection;
 
 /**
@@ -13,9 +12,6 @@ use UniMapper\Validator,
 abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 {
 
-    /** Validator trait */
-    use Validator;
-
     /** @var \UniMapper\Reflection\Entity $reflection */
     private $reflection;
 
@@ -24,6 +20,9 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 
     /** @var string $iteration List of property names */
     private $iteration;
+
+    /** @var \UniMapper\Validator $validator */
+    protected $validator;
 
     public function __construct(Reflection\Entity $reflection = null)
     {
@@ -36,6 +35,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             $this->reflection = $reflection;
         }
         $this->initialize();
+        $this->validator = new Validator($this);
     }
 
     /**
@@ -82,7 +82,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     public function import($values)
     {
-        if (!Validator::validateTraversable($values)) {
+        if (!Validator::isTraversable($values)) {
             throw new Exception\InvalidArgumentException(
                 "Values must be traversable data!"
             );
@@ -220,6 +220,16 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     public function getData()
     {
         return $this->data;
+    }
+
+    /**
+     * Get entity validator
+     *
+     * @return \UniMapper\Validator
+     */
+    public function getValidator()
+    {
+        return $this->validator->onEntity();
     }
 
     /**
