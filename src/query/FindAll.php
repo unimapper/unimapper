@@ -153,7 +153,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
         $this->selection = array_unique(array_merge($this->selection, $query->selection));
     }
 
-    private function getSelection(array $selection)
+    protected function getSelection(array $selection)
     {
         if (count($selection) === 0) {
             // Select all if not set
@@ -186,7 +186,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
         return $result;
     }
 
-    private function getOrderBy(array $items)
+    protected function getOrderBy(array $items)
     {
         $unmapped = [];
         foreach ($items as $name => $direction) {
