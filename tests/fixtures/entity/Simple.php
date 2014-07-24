@@ -2,8 +2,6 @@
 
 namespace UniMapper\Tests\Fixtures\Entity;
 
-use UniMapper\Validator;
-
 /**
  * @mapper FooMapper(resource)
  *

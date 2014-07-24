@@ -210,6 +210,9 @@ class Entity
      */
     public function getPrimaryProperty()
     {
+        if (!$this->hasPrimaryProperty()) {
+            throw new \Exception("Primary property not defined in " . $this->className . "!");
+        }
         return $this->properties[$this->primaryPropertyName];
     }
 

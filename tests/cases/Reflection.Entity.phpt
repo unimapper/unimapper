@@ -67,6 +67,37 @@ class ReflectionEntityTest extends Tester\TestCase
         );
     }
 
+    public function testHasPrimaryProperty()
+    {
+        $noPrimary = new Reflection\Entity(
+            "UniMapper\Tests\Fixtures\Entity\NoPrimary"
+        );
+        Assert::false($noPrimary->hasPrimaryProperty());
+        $simple = new Reflection\Entity(
+            "UniMapper\Tests\Fixtures\Entity\Simple"
+        );
+        Assert::true($simple->hasPrimaryProperty());
+    }
+
+    public function testGetPrimaryProperty()
+    {
+        $reflection = new Reflection\Entity(
+            "UniMapper\Tests\Fixtures\Entity\Simple"
+        );
+        Assert::same("id", $reflection->getPrimaryProperty()->getName());
+    }
+
+    /**
+     * @throws Exception Primary property not defined in UniMapper\Tests\Fixtures\Entity\NoPrimary!
+     */
+    public function testGetPrimaryPropertyWithNoPrimary()
+    {
+        $reflection = new Reflection\Entity(
+            "UniMapper\Tests\Fixtures\Entity\NoPrimary"
+        );
+        $reflection->getPrimaryProperty();
+    }
+
 }
 
 $testCase = new ReflectionEntityTest;
