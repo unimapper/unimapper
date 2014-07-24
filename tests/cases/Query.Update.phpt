@@ -31,7 +31,7 @@ class QueryUpdateTest extends Tester\TestCase
     /**
      * @throws UniMapper\Exception\QueryException Nothing to update!
      */
-    public function testNothingToUpdate()
+    public function testNoValues()
     {
         $this->mappers["FooMapper"]->expects("unmapEntity")->once()->andReturn([]);
         $this->mappers["FooMapper"]->freeze();

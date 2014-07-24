@@ -33,6 +33,22 @@ class QueryInsertTest extends Tester\TestCase
         Assert::same(['text' => 'foo'], $query->getValues());
     }
 
+    /**
+     * @throws Exception Nothing to insert!
+     */
+    public function testNoValues()
+    {
+        $this->mapperMock->expects("unmapEntity")->once()->andReturn([]);
+        $this->mapperMock->freeze();
+
+        $query = new \UniMapper\Query\Insert(
+            new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
+            ["FooMapper" => $this->mapperMock],
+            []
+        );
+        $query->execute();
+    }
+
 }
 
 $testCase = new QueryInsertTest;

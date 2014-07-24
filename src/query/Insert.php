@@ -28,7 +28,7 @@ class Insert extends \UniMapper\Query
 
         // Values can not be empty
         if (empty($values)) {
-            throw new QueryException("Nothing to update!");
+            throw new QueryException("Nothing to insert!");
         }
 
         // Prevent to set empty primary property
