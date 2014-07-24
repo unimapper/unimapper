@@ -100,14 +100,6 @@ class ReflectionEntityPropertyTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyException Validation method validateUndefined not defined in UniMapper\Tests\Fixtures\Entity\Simple!
-     */
-    public function testUndefinedValidationMethod()
-    {
-        $this->createPropertyReflection('string $test m:validate(undefined)')->validateValue("foo");
-    }
-
-    /**
      * @throws UniMapper\Exception\PropertyException Unsupported type 'UniMapper\Tests\Fixtures\Entity\Simple'!
      */
     public function testUnsupportedClasses()

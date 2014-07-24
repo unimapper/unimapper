@@ -238,42 +238,6 @@ class EntityTest extends Tester\TestCase
         Assert::null($this->entity->year);
     }
 
-    /**
-     * @throws Exception Value foo is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateEmail on property email!
-     */
-    public function testValidateEmail()
-    {
-        $this->entity->email = "john.doe@example.com";
-        $this->entity->email = "foo";
-    }
-
-    /**
-     * @throws Exception Value example.com is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateUrl on property url!
-     */
-    public function testValidateUrl()
-    {
-        $this->entity->url = "http://www.example.com";
-        $this->entity->url = "example.com";
-    }
-
-    /**
-     * @throws Exception Value 255.255.255.256 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateIp on property ip!
-     */
-    public function testValidateIp()
-    {
-        $this->entity->ip = "192.168.0.1";
-        $this->entity->ip = "255.255.255.256";
-    }
-
-    /**
-     * @throws Exception Value 6 is not valid for UniMapper\Tests\Fixtures\Entity\Simple::validateMark on property mark!
-     */
-    public function testValidate()
-    {
-        $this->entity->mark = 1;
-        $this->entity->mark = 6;
-    }
-
     public function testComputed()
     {
         Assert::null($this->entity->year);

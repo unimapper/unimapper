@@ -55,7 +55,7 @@ abstract class Mapper implements Mapper\IMapper
             return null;
         }
 
-        if ($property->isBasicType()) {
+        if ($property->isTypeBasic()) {
             // Basic type
 
             if ($type === "boolean" && $value === "false") {
@@ -108,7 +108,7 @@ abstract class Mapper implements Mapper\IMapper
 
     public function mapCollection($entityClass, $data)
     {
-        if (!Validator::validateTraversable($data)) {
+        if (!Validator::isTraversable($data)) {
             throw new Exception\InvalidArgumentException(
                 "Input data must be traversable!"
             );
@@ -123,7 +123,7 @@ abstract class Mapper implements Mapper\IMapper
 
     public function mapEntity($class, $data)
     {
-        if (!Validator::validateTraversable($data)) {
+        if (!Validator::isTraversable($data)) {
             throw new MapperException("Input data must be traversable!");
         }
 
