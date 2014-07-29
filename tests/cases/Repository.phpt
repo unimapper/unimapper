@@ -134,6 +134,36 @@ class RepositoryTest extends Tester\TestCase
         $this->repository->delete($entity);
     }
 
+    public function testFind()
+    {
+        //$resource, array $selection = [], array $conditions = [], array $orderBy = [], $limit = 0, $offset = 0, array $associations = []
+
+        $this->mapperMock->expects("findAll")
+            ->with(
+                "resource",
+                ["id", "text", "empty", "link", "email_address", "time", "ip", "mark", "entity", "collection", "readonly"],
+                [["text", "LIKE", "foo", "AND"]],
+                ["time" => "desc"],
+                10,
+                20,
+                []
+            )
+            ->once()
+            ->andReturn([]);
+
+        $this->mapperMock->freeze();
+        $this->repository->registerMapper($this->mapperMock);
+        $result = $this->repository->find(
+            [["text", "LIKE", "foo"]],
+            [["time", "DESC"]],
+            10,
+            20
+        );
+
+        Assert::type("UniMapper\EntityCollection", $result);
+        Assert::count(0, $result);
+    }
+
 }
 
 $testCase = new RepositoryTest;

@@ -139,6 +139,21 @@ abstract class Repository
         return $reflection->createEntity($values);
     }
 
+    public function find(array $filter = [], array $orderBy = [], $limit = 0, $offset = 0)
+    {
+        $query = $this->query()->findAll();
+
+        foreach ($filter as $rule) {
+            $query->where($rule[0], $rule[1], $rule[2]);
+        }
+
+        foreach ($orderBy as $orderByRule) {
+            $query->orderBy($orderByRule[0], $orderByRule[1]);
+        }
+
+        return $query->limit($limit)->offset($offset)->execute();
+    }
+
     /**
      * Get related entity name
      *
