@@ -116,6 +116,17 @@ abstract class Repository
         $this->query()->delete()->where($primaryName, "=", $primaryValue)->execute();
     }
 
+    public function count($filter = [])
+    {
+        $query = $this->query()->count();
+
+        foreach ($filter as $rule) {
+            $query->where($rule[0], $rule[1], $rule[2]);
+        }
+
+        return $query->execute();
+    }
+
     /**
      * Create new entity
      *

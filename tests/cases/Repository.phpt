@@ -188,6 +188,19 @@ class RepositoryTest extends Tester\TestCase
         Assert::same($entity, $result);
     }
 
+    public function testCount()
+    {
+        $this->mapperMock->expects("count")
+            ->with("resource", [["text", "LIKE", "foo", "AND"]])
+            ->once()
+            ->andReturn(2);
+
+        $this->mapperMock->freeze();
+        $this->repository->registerMapper($this->mapperMock);
+        $result = $this->repository->count([["text", "LIKE", "foo"]]);
+        Assert::same(2, $result);
+    }
+
 }
 
 $testCase = new RepositoryTest;
