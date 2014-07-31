@@ -154,6 +154,11 @@ abstract class Repository
         return $query->limit($limit)->offset($offset)->execute();
     }
 
+    public function findOne($primaryValue)
+    {
+        return $this->query()->findOne($primaryValue)->execute();
+    }
+
     /**
      * Get related entity name
      *

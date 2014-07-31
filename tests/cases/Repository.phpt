@@ -136,8 +136,6 @@ class RepositoryTest extends Tester\TestCase
 
     public function testFind()
     {
-        //$resource, array $selection = [], array $conditions = [], array $orderBy = [], $limit = 0, $offset = 0, array $associations = []
-
         $this->mapperMock->expects("findAll")
             ->with(
                 "resource",
@@ -162,6 +160,32 @@ class RepositoryTest extends Tester\TestCase
 
         Assert::type("UniMapper\EntityCollection", $result);
         Assert::count(0, $result);
+    }
+
+    public function testFindOne()
+    {
+        $entity = new Fixtures\Entity\Simple;
+        $entity->id = 1;
+        $entity->text = "foo";
+
+        $this->mapperMock->expects("findOne")
+            ->with("resource", "id", $entity->id, [])
+            ->once()
+            ->andReturn(["id" => $entity->id, "text" => $entity->text]);
+
+        $this->mapperMock->expects("mapEntity")
+            ->with(
+                "UniMapper\Tests\Fixtures\Entity\Simple",
+                ["id" => $entity->id, "text" => $entity->text]
+            )
+            ->once()
+            ->andReturn($entity);
+
+        $this->mapperMock->freeze();
+        $this->repository->registerMapper($this->mapperMock);
+        $result = $this->repository->findOne($entity->id);
+
+        Assert::same($entity, $result);
     }
 
 }
