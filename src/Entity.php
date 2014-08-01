@@ -24,7 +24,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     /** @var \UniMapper\Validator $validator */
     protected $validator;
 
-    public function __construct(Reflection\Entity $reflection = null)
+    public function __construct(Reflection\Entity $reflection = null, $values = [])
     {
         if ($reflection) {
             if ($reflection->getClassName() !== get_called_class()) {
@@ -36,6 +36,38 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         }
         $this->initialize();
         $this->validator = new Validator($this);
+
+        if ($values) {
+            $this->setValues($values, true);
+        }
+    }
+
+    private function setValues($values, $readonlyToo = false)
+    {
+        if (!Validator::isTraversable($values)) {
+            throw new Exception\InvalidArgumentException(
+                "Values must be traversable data!"
+            );
+        }
+
+        foreach ($values as $name => $value) {
+
+            try {
+                $this->{$name} = $value;
+            } catch (Exception\PropertyException $e) {
+
+                if ($e instanceof Exception\PropertyValidationException && $e->getCode() === Exception\PropertyValidationException::TYPE) {
+                    // Try to convert automatically
+
+                    $this->{$name} = $this->reflection->getProperties()[$name]->convertValue($value);
+                } elseif ($e instanceof Exception\PropertyAccessException && $e->getCode() === Exception\PropertyAccessException::READONLY && $readonlyToo) {
+                    // Set and convert readonly property automatically
+
+                    $this->data[$name] = $this->reflection->getProperties()[$name]->convertValue($value);
+                }
+            }
+
+        }
     }
 
     /**
@@ -76,34 +108,10 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      * Import and try to convert values automatically if possible, skip readonly and undefined
      *
      * @param mixed $values Traversable structure (array/object)
-     *
-     * @throws Exception\PropertyValidationException
-     * @throws Exception\InvalidArgumentException
      */
     public function import($values)
     {
-        if (!Validator::isTraversable($values)) {
-            throw new Exception\InvalidArgumentException(
-                "Values must be traversable data!"
-            );
-        }
-
-        foreach ($values as $name => $value) {
-
-            try {
-                $this->{$name} = $value;
-            } catch (Exception\PropertyException $e) {
-
-                if ($e instanceof Exception\PropertyValidationException) {
-
-                    if ($e->getCode() === Exception\PropertyValidationException::TYPE) {
-                        // Try to convert automatically
-                        $this->{$name} = $this->reflection->getProperties()[$name]->convertValue($value);
-                    }
-                }
-            }
-
-        }
+        $this->setValues($values);
     }
 
     /**

@@ -19,9 +19,6 @@ abstract class Mapper implements Mapper\IMapper
     /** @var \UniMapper\Cache */
     protected $cache;
 
-    /** @var array  */
-    private $customMappers;
-
     public function __construct($name)
     {
         $this->name = $name;
@@ -41,7 +38,7 @@ abstract class Mapper implements Mapper\IMapper
      * Convert value to defined property format
      *
      * @param \UniMapper\Reflection\Entity\Property $property
-     * @param string                                $value
+     * @param mixed                                 $value
      *
      * @return mixed
      *
@@ -49,6 +46,11 @@ abstract class Mapper implements Mapper\IMapper
      */
     public function mapValue(Reflection\Entity\Property $property, $value)
     {
+        // Apply map filter first
+        if ($property->getMapping() && $property->getMapping()->getFilterIn()) {
+            $value = call_user_func($property->getMapping()->getFilterIn(), $value);
+        }
+
         $type = $property->getType();
 
         if ($value === null || $value === "") {
@@ -69,12 +71,6 @@ abstract class Mapper implements Mapper\IMapper
             if (settype($value, $type)) {
                 return $value;
             }
-
-            throw new Exception\MapperException(
-                "Can not convert value to entity @property"
-                . " $" . $property->getName() . ". Expected " . $type . " but "
-                . "conversion of " . gettype($value) . " failed!"
-            );
 
         } elseif ($type instanceof EntityCollection) {
 
@@ -133,15 +129,13 @@ abstract class Mapper implements Mapper\IMapper
             $reflection = new Reflection\Entity($class);
         }
 
-        $entity = $reflection->createEntity();
-
-        $propertiesReflection = $reflection->getProperties();
+        $values = [];
         foreach ($data as $index => $value) {
 
             $propertyName = $index;
 
-            // Mapping
-            foreach ($propertiesReflection as $propertyReflection) {
+            // Map property name if needed
+            foreach ($reflection->getProperties() as $propertyReflection) {
 
                 if ($propertyReflection->getMappedName() === $index) {
 
@@ -150,20 +144,16 @@ abstract class Mapper implements Mapper\IMapper
                 }
             }
 
-            if (!isset($propertiesReflection[$propertyName])) {
+            // Skip undefined properties
+            if (!$reflection->hasProperty($propertyName)) {
                 continue;
             }
 
-            $property = $propertiesReflection[$propertyName];
-            if ($property->hasCustomMapper('decode')){
-                $entity->{$propertyName} = $this->decodeValue($entity, $property, $value);
-            } else {
-                $entity->{$propertyName} = $this->mapValue($property, $value);
-            }
-
+            // Map value
+            $values[$propertyName] = $this->mapValue($reflection->getProperty($propertyName), $value);
         }
 
-        return $entity;
+        return $reflection->createEntity($values);
     }
 
     /**
@@ -178,20 +168,25 @@ abstract class Mapper implements Mapper\IMapper
         $output = [];
         foreach ($entity->getData() as $propertyName => $value) {
             $property = $entity->getReflection()->getProperties()[$propertyName];
-            $output[$property->getMappedName()] = $this->unmapValue( $value, $entity, $property );
+            $output[$property->getMappedName()] = $this->unmapValue($property, $value);
         }
         return $output;
     }
 
-    protected function unmapValue($value, $entity = null, $property = null )
+    protected function unmapValue(Reflection\Entity\Property $property, $value)
     {
+        // Apply map filter first
+        if ($property->getMapping() && $property->getMapping()->getFilterOut()) {
+            $value = call_user_func($property->getMapping()->getFilterOut(), $value);
+        }
+
         if ($value instanceof EntityCollection) {
             return $this->unmapCollection($value);
         } elseif ($value instanceof Entity) {
             return $this->unmapEntity($value);
         }
 
-        return $this->encodeValue($entity, $property, $value);
+        return $value;
     }
 
     /*
@@ -201,88 +196,13 @@ abstract class Mapper implements Mapper\IMapper
      *
      *  @return array
      */
-    public function unmapCollection(\UniMapper\EntityCollection $collection)
+    public function unmapCollection(EntityCollection $collection)
     {
         $data = array();
         foreach ($collection as $index => $entity) {
             $data[$index] = $this->unmapEntity($entity);
         }
         return $data;
-    }
-
-    /**
-     * @param string $name
-     * @param mixed $mapper
-     * @return $this
-     */
-    public function registerCustomMapper($name, $mapper)
-    {
-        $this->customMappers[$name] = $mapper;
-        return $this;
-    }
-
-    /**
-     * @param \UniMapper\Entity                            $entity
-     * @param string|\UniMapper\Reflection\Entity\Property $property
-     * @param mixed                                        $value
-     *
-     * @return mixed
-     * @throws Exception\MapperException
-     */
-    protected function encodeValue($entity, $property, $value)
-    {
-        $property = is_scalar($property) ? $entity->getReflection()->getProperties()[$property] : $property;
-        if ($property->hasCustomMapper('encode')) {
-            $definition = $property->getCustomMapper('encode');
-            $target = array_shift($definition);
-            $methodName = isset($definition[0]) ? array_shift($definition) : 'encode' . ucfirst($property->getName());
-
-            if (strtolower($target) === 'self') {
-                $target = $entity;
-            }
-            else if (isset($this->customMappers[$target])) {
-                $target = $this->customMappers[$target];
-            }
-
-            if ((is_object($target) || class_exists($target)) && method_exists($target, $methodName)) {
-                return call_user_func_array(array($target, $methodName), array($value));
-            }
-
-            throw new MapperException("Unable to encode value! Target '$target'' or its method '$methodName' is not callable.");
-        }
-        return $value;
-    }
-
-    /**
-     * @param \UniMapper\Entity                            $entity
-     * @param string|\UniMapper\Reflection\Entity\Property $property
-     * @param mixed                                        $value
-     *
-     * @throws Exception\MapperException
-     * @return mixed
-     */
-    protected function decodeValue($entity, $property, $value)
-    {
-        $property = is_scalar($property) ? $entity->getReflection()->getProperties()[$property] : $property;
-        if ($property->hasCustomMapper('decode')) {
-            $definition = $property->getCustomMapper('decode');
-            $target = array_shift($definition);
-            $methodName = isset($definition[0]) ? array_shift($definition) : 'decode' . ucfirst($property->getName());
-
-            if (strtolower($target) === 'self') {
-                $target = $entity;
-            }
-            else if (isset($this->customMappers[$target])) {
-                $target = $this->customMappers[$target];
-            }
-
-            if ((is_object($target) || class_exists($target)) && method_exists($target, $methodName)) {
-                return call_user_func_array(array($target, $methodName), array($value));
-            }
-
-            throw new MapperException("Unable to decode value! Target '$target'' or its method '$methodName' is not callable.");
-        }
-        return $value;
     }
 
 }

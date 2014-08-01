@@ -55,15 +55,10 @@ class Entity
         $this->parseProperties();
     }
 
-    public function createEntity($values = null)
+    public function createEntity($values = [])
     {
         $entityClass = $this->className;
-        $entity = new $entityClass($this);
-
-        if ($values !== null) {
-            $entity->import($values);
-        }
-        return $entity;
+        return new $entityClass($this, $values);
     }
 
     public function getConstants()
