@@ -82,6 +82,7 @@ class EntityTest extends Tester\TestCase
                 'entity' => $this->entity->entity,
                 'collection' => $this->entity->collection,
                 'readonly' => NULL,
+                'storedData' => NULL,
                 'publicProperty' => 'defaultValue',
             ),
             $this->entity->toArray()
@@ -115,6 +116,7 @@ class EntityTest extends Tester\TestCase
                     ),
                 ),
                 'readonly' => NULL,
+                'storedData' => NULL,
                 'publicProperty' => 'defaultValue',
             ),
             $this->entity->toArray(true)
@@ -133,7 +135,7 @@ class EntityTest extends Tester\TestCase
     public function testJsonSerializable()
     {
         Assert::same(
-            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"readonly":null,"publicProperty":"defaultValue"}',
+            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"readonly":null,"storedData":null,"publicProperty":"defaultValue"}',
             json_encode($this->entity)
         );
     }
@@ -269,6 +271,7 @@ class EntityTest extends Tester\TestCase
                 'entity',
                 'collection',
                 'readonly',
+                'storedData',
                 'publicProperty'
             ],
             'values' => [
@@ -283,6 +286,7 @@ class EntityTest extends Tester\TestCase
                 null,
                 null,
                 $this->entity->collection,
+                null,
                 null,
                 'defaultValue'
             ],

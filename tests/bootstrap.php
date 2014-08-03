@@ -20,8 +20,6 @@ require __DIR__ . "/fixtures/mapper/Simple.php";
 require __DIR__ . "/fixtures/query/Conditionable.php";
 require __DIR__ . "/fixtures/query/Simple.php";
 require __DIR__ . "/fixtures/repository/SimpleRepository.php";
-require __DIR__ . "/fixtures/entity/CustomProperty.php";
-require __DIR__ . "/fixtures/mapper/SampleEncoder.php";
 
 Tester\Environment::setup();
 

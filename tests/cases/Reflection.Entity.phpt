@@ -15,11 +15,12 @@ class ReflectionEntityTest extends Tester\TestCase
         );
 
         $entity = $reflection->createEntity(
-            ["text" => "foo", "publicProperty" => "foo"]
+            ["text" => "foo", "publicProperty" => "foo", "readonly" => "foo"]
         );
         Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity);
         Assert::same("foo", $entity->text);
         Assert::same("foo", $entity->publicProperty);
+        Assert::same("foo", $entity->readonly);
     }
 
     /**

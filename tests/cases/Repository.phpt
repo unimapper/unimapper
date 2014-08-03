@@ -139,7 +139,7 @@ class RepositoryTest extends Tester\TestCase
         $this->mapperMock->expects("findAll")
             ->with(
                 "resource",
-                ["id", "text", "empty", "link", "email_address", "time", "ip", "mark", "entity", "collection", "readonly"],
+                ["id", "text", "empty", "link", "email_address", "time", "ip", "mark", "entity", "collection", "readonly", "storedData"],
                 [["text", "LIKE", "foo", "AND"]],
                 ["time" => "desc"],
                 10,

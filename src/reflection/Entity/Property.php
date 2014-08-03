@@ -46,9 +46,6 @@ class Property
     /** @var \UniMapper\Reflection\Entity\Property\Association $association */
     protected $association;
 
-    /** @var  array */
-    public $customMappers;
-
     /** @var array */
     private $supportedAssociations = [
         Property\Association\HasOne::TYPE => "HasOne",
@@ -169,10 +166,20 @@ class Property
 
     public function getMappedName()
     {
-        if ($this->mapping !== null) {
-            return $this->mapping;
+        if ($this->mapping && $this->mapping->getName()) {
+            return $this->mapping->getName();
         }
         return $this->name;
+    }
+
+    /**
+     * Get property mapping
+     *
+     * @return \UniMapper\Reflection\Entity\Property\Mapping
+     */
+    public function getMapping()
+    {
+        return $this->mapping;
     }
 
     /**
@@ -232,37 +239,27 @@ class Property
         if (preg_match("#m:computed#s", $definition, $matches)) {
             // m:computed
 
+            if ($this->mapping) {
+                throw new PropertyException("Can not combine m:computed with m:mapping!", $this->entityReflection, $definition);
+            }
+
             $computedMethodName = $this->getComputedMethodName();
             if (!method_exists($this->entityReflection->getClassName(), $computedMethodName)) {
                 throw new PropertyException("Can not find computed method with name " . $computedMethodName . "!", $this->entityReflection, $definition);
             }
             $this->computed = true;
         } elseif (preg_match("#m:map\((.*?)\)#s", $definition, $matches)) {
-            // m:map(column)
+            // m:map(name='column' filter=in_fnc|out_fnc)
+
+            if ($this->mapping) {
+                throw new PropertyException("Mapping already defined!", $this->entityReflection, $definition);
+            }
 
             if ($this->computed) {
-                throw new PropertyException("Can not combine m:computed with m:map!", $this->entityReflection, $definition);
-            }
-            if ($matches[1]) {
-                $this->mapping = $matches[1];
-            }
-        } elseif (preg_match("#m:map-(.*?)\((.*?)\)#s", $definition, $matches)) {
-            // m:map-TYPE(customMapperName)
-
-            if ($this->computed) {
-                throw new PropertyException("Can not combine m:map- with m:computed!", $this->entityReflection, $definition);
+                throw new PropertyException("Can not combine m:mapping with m:computed!", $this->entityReflection, $definition);
             }
 
-            if ($matches[1]) {
-                if ($matches[1] === 'name') {
-                    if ($matches[2]){
-                        $this->mapping = $matches[2];
-                    }
-                } else {
-                    $this->customMappers[$matches[1]] = isset($matches[2]) ? explode(',', $matches[2]) : [];
-                }
-            }
-
+            $this->mapping = new Property\Mapping($matches[1], $definition, $this->entityReflection);
         }
         elseif (preg_match("#m:enum\(([a-zA-Z0-9]+|self|parent)::([a-zA-Z0-9_]+)\*\)#", $definition, $matches)) {
             // m:enum(self::CUSTOM_*)
@@ -284,7 +281,7 @@ class Property
             // m:assoc(1:1=key|targetKey)
 
             if ($this->computed || $this->mapping || $this->enumeration) {
-                throw new PropertyException("Association can not be combined with mapping, computed or enumeration!", $this->entityReflection, $definition);
+                throw new PropertyException("Association can not be combined with m:map, m:computed or m:enum!", $this->entityReflection, $definition);
             }
 
             // Get target entity class
@@ -470,34 +467,6 @@ class Property
     public function getComputedMethodName()
     {
        return "compute" . ucfirst($this->name);
-    }
-
-    /**
-     * @return array
-     */
-    public function hasCustomMappers()
-    {
-        return $this->customMappers !== null && $this->customMappers;
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return bool true if exists
-     */
-    public function hasCustomMapper($name)
-    {
-        return isset($this->customMappers[$name]);
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return array
-     */
-    public function getCustomMapper($name)
-    {
-        return $this->customMappers[$name];
     }
 
 }
