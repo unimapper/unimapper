@@ -11,9 +11,9 @@ class Insert extends \UniMapper\Query
     /** @var \UniMapper\Entity */
     private $entity;
 
-    public function __construct(Reflection\Entity $entityReflection, array $mappers, array $data)
+    public function __construct(Reflection\Entity $entityReflection, array $adapters, array $data)
     {
-        parent::__construct($entityReflection, $mappers);
+        parent::__construct($entityReflection, $adapters);
         $this->entity = $entityReflection->createEntity($data);
     }
 
@@ -22,9 +22,9 @@ class Insert extends \UniMapper\Query
         return $this->entity->getData();
     }
 
-    public function onExecute(\UniMapper\Mapper $mapper)
+    public function onExecute(\UniMapper\Adapter $adapter)
     {
-        $values = $mapper->unmapEntity($this->entity);
+        $values = $adapter->getMapping()->unmapEntity($this->entity);
 
         // Values can not be empty
         if (empty($values)) {
@@ -40,8 +40,8 @@ class Insert extends \UniMapper\Query
             }
         }
 
-        $primaryValue = $mapper->insert(
-            $this->entityReflection->getMapperReflection()->getResource(),
+        $primaryValue = $adapter->insert(
+            $this->entityReflection->getAdapterReflection()->getResource(),
             $values
         );
 
@@ -50,7 +50,7 @@ class Insert extends \UniMapper\Query
             if ($primaryValue === null) {
                 throw new QueryException("Insert should return primary value but null given!");
             }
-            return $mapper->mapValue($this->entityReflection->getPrimaryProperty(), $primaryValue);
+            return $adapter->getMapping()->mapValue($this->entityReflection->getPrimaryProperty(), $primaryValue);
         }
     }
 

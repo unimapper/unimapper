@@ -7,26 +7,22 @@ require __DIR__ . '/../bootstrap.php';
 class QueryInsertTest extends Tester\TestCase
 {
 
-    /** @var \Mockista\Mock */
-    private $mapperMock;
+    /** @var \Mockery\Mock */
+    private $adapterMock;
 
     public function setUp()
     {
-        $mockista = new \Mockista\Registry;
-        $this->mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-        $this->mapperMock->expects("getName")->once()->andReturn("FooMapper");
+        $this->adapterMock = Mockery::mock("UniMapper\Tests\Fixtures\Adapter\Simple");
+        $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
     }
 
     public function testSuccess()
     {
-        $this->mapperMock->expects("insert")->once()->andReturn("1");
-        $this->mapperMock->expects("unmapEntity")->once()->andReturn(["text" => "foo"]);
-        $this->mapperMock->expects("mapValue")->once()->andReturn(1);
-        $this->mapperMock->freeze();
-
+        $this->adapterMock->shouldReceive("insert")->once()->andReturn("1");
+        
         $query = new \UniMapper\Query\Insert(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            ["FooMapper" => $this->mapperMock],
+            ["FooAdapter" => $this->adapterMock],
             ["text" => "foo"]
         );
         Assert::same(1, $query->execute());
@@ -38,12 +34,9 @@ class QueryInsertTest extends Tester\TestCase
      */
     public function testNoValues()
     {
-        $this->mapperMock->expects("unmapEntity")->once()->andReturn([]);
-        $this->mapperMock->freeze();
-
         $query = new \UniMapper\Query\Insert(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            ["FooMapper" => $this->mapperMock],
+            ["FooAdapter" => $this->adapterMock],
             []
         );
         $query->execute();

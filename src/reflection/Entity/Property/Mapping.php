@@ -31,7 +31,7 @@ class Mapping
         $this->rawDefinition = $rawDefinition;
         $this->entityReflection = $entityReflection;
 
-        foreach (explode(" ", $definition) as $parameter) {
+        foreach (explode(";", $definition) as $parameter) {
 
             list($name, $value) = array_pad(explode('=', $parameter, 2), 2, null);
             switch (strtolower($name)) {

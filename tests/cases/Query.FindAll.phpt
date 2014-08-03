@@ -10,14 +10,12 @@ require __DIR__ . '/../bootstrap.php';
 class QueryFindAllTest extends Tester\TestCase
 {
 
-    /** @var array */
-    private $mappers = [];
+    /** @var array $adapters */
+    private $adapters = [];
 
     public function setUp()
     {
-        $mockista = new \Mockista\Registry;
-        $this->mappers["FooMapper"] = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-        $this->mappers["FooMapper"]->expects("getName")->once()->andReturn("FooMapper");
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Tests\Fixtures\Adapter\Simple");
     }
 
     public function testSimple()
@@ -31,7 +29,7 @@ class QueryFindAllTest extends Tester\TestCase
         $collection[] = $entity1;
         $collection[] = $entity2;
 
-        $this->mappers["FooMapper"]->expects("findAll")
+        $this->adapters["FooAdapter"]->shouldReceive("findAll")
             ->with(
                 "resource",
                 ["link", "text", "id"],
@@ -51,10 +49,10 @@ class QueryFindAllTest extends Tester\TestCase
             )
             ->once()
             ->andReturn([["id" => 2], ["id" => 3]]);
-        $this->mappers["FooMapper"]->expects("mapCollection")->with(get_class($entity1), [["id" => 2], ["id" => 3]])->once()->andReturn($collection);
-        $this->mappers["FooMapper"]->freeze();
+        $this->adapters["FooAdapter"]->shouldReceive("mapCollection")->with(get_class($entity1), [["id" => 2], ["id" => 3]])->once()->andReturn($collection);
+        $this->adapters["FooAdapter"]->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
 
-        $query = new Query\FindAll(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers, "url", "text");
+        $query = new Query\FindAll(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, "url", "text");
         $query->where("id", ">", 1)
                 ->orWhereAre(function($query) {
                     $query->where("text", "LIKE", "%foo");

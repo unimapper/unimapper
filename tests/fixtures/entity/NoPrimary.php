@@ -3,7 +3,7 @@
 namespace UniMapper\Tests\Fixtures\Entity;
 
 /**
- * @mapper FooMapper(resource)
+ * @adapter FooAdapter(resource)
  *
  * @property string  $text
  * @property string  $empty

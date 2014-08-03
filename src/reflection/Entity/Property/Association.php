@@ -35,17 +35,17 @@ abstract class Association
 
     public function getTargetResource()
     {
-        return $this->targetEntityReflection->getMapperReflection()->getResource();
+        return $this->targetEntityReflection->getAdapterReflection()->getResource();
     }
 
-    public function getTargetMapperName()
+    public function getTargetAdapterName()
     {
-        return $this->targetEntityReflection->getMapperReflection()->getName();
+        return $this->targetEntityReflection->getAdapterReflection()->getName();
     }
 
     public function isRemote()
     {
-        return $this->currentEntityReflection->getMapperReflection()->getName() !== $this->targetEntityReflection->getMapperReflection()->getName();
+        return $this->currentEntityReflection->getAdapterReflection()->getName() !== $this->targetEntityReflection->getAdapterReflection()->getName();
     }
 
 }

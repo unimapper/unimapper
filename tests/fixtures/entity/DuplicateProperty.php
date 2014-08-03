@@ -3,10 +3,10 @@
 namespace UniMapper\Tests\Fixtures\Entity;
 
 /**
- * @mapper FooMapper(resource)
+ * @adapter FooAdapter(resource)
  *
- * @property integer    $id m:map(FooMapper:) m:primary
- * @property string     $id m:map(FooMapper:)
+ * @property integer    $id m:map(FooAdapter:) m:primary
+ * @property string     $id m:map(FooAdapter:)
  */
 class DuplicateProperty extends \UniMapper\Entity
 {}

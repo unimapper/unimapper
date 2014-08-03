@@ -7,5 +7,5 @@ namespace UniMapper\Tests\Fixtures\Entity;
  * @property string  $text
  * @property string  $empty
  */
-class NoMapper extends \UniMapper\Entity
+class NoAdapter extends \UniMapper\Entity
 {}

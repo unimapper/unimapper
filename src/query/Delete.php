@@ -8,14 +8,14 @@ use UniMapper\Exception\QueryException,
 class Delete extends \UniMapper\Query implements IConditionable
 {
 
-    public function onExecute(\UniMapper\Mapper $mapper)
+    public function onExecute(\UniMapper\Adapter $adapter)
     {
         if (count($this->conditions) === 0) {
             throw new QueryException("At least one condition must be set!");
         }
 
-        $mapper->delete(
-            $this->entityReflection->getMapperReflection()->getResource(),
+        $adapter->delete(
+            $this->entityReflection->getAdapterReflection()->getResource(),
             $this->conditions
         );
     }

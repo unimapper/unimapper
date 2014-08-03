@@ -10,8 +10,8 @@ use UniMapper\Exception\PropertyException;
 class Entity
 {
 
-    /** @var \UniMapper\Reflection\Entity\Mapper */
-    private $mapper;
+    /** @var \UniMapper\Reflection\Entity\Adapter */
+    private $adapter;
 
     /** @var array */
     private $properties = [];
@@ -51,7 +51,7 @@ class Entity
             $this->publicProperties[] =  $property->getName();
         }
 
-        $this->mapper = $this->parseMapper();
+        $this->adapter = $this->parseAdapter();
         $this->parseProperties();
     }
 
@@ -79,7 +79,7 @@ class Entity
     /**
      * Parse properties from annotations
      *
-     * @return array Collection of \UniMapper\Reflection\Entity\Property with proeprty name as index
+     * @return array Collection of \UniMapper\Reflection\Entity\Property with property name as index
      *
      * @throws \UniMapper\Exception\PropertyException
      */
@@ -131,34 +131,34 @@ class Entity
     }
 
     /**
-     * Get mapper definition from annotations
+     * Get adapter definition from annotations
      *
      * @return \UniMapper\Reflection\Entity\Mapper
      *
      * @throws \UniMapper\Exception\PropertyException
      */
-    private function parseMapper()
+    private function parseAdapter()
     {
         preg_match_all(
-            '#@mapper (.*?)\n#s',
+            '#@adapter (.*?)\n#s',
             $this->docComment,
             $annotations
         );
 
         if (empty($annotations[0])) {
-            throw new PropertyException("No mapper defined!", $this);
+            throw new PropertyException("No adapter defined!", $this);
         }
 
         if (count($annotations[0]) > 1) {
-            throw new PropertyException("Only one mapper definition allowed!", $this, $annotations[0][1]);
+            throw new PropertyException("Only one adapter definition allowed!", $this, $annotations[0][1]);
         }
 
-        return new Mapper(substr($annotations[0][0], 8), $this);
+        return new Adapter(substr($annotations[0][0], 8), $this);
     }
 
-    public function getMapperReflection()
+    public function getAdapterReflection()
     {
-        return $this->mapper;
+        return $this->adapter;
     }
 
     public function hasProperty($name)
@@ -171,7 +171,7 @@ class Entity
      *
      * @param string $name
      *
-     * @return \Unimapper\Reflection\Entity\Property
+     * @return \UniMapper\Reflection\Entity\Property
      *
      * @throws \Exception
      */

@@ -9,13 +9,13 @@ use UniMapper\Exception\RepositoryException,
 /**
  * Repository is ancestor for every new repository. It contains common
  * parameters or methods used in its descendants. Repository is intended as a
- * mediator between your application and current mappers.
+ * mediator between your application and current adapters.
  */
 abstract class Repository
 {
 
-    /** @var array $mappers Registered mappers */
-    protected $mappers = [];
+    /** @var array $adapters Registered adapters */
+    protected $adapters = [];
 
     /** @var \UniMapper\Logger $logger */
     private $logger;
@@ -195,9 +195,9 @@ abstract class Repository
         $this->logger = $logger;
     }
 
-    public function registerMapper(\UniMapper\Mapper $mapper)
+    public function registerAdapter(\UniMapper\Adapter $adapter)
     {
-        $this->mappers[$mapper->getName()] = $mapper;
+        $this->adapters[$adapter->getName()] = $adapter;
     }
 
     /**
@@ -229,14 +229,14 @@ abstract class Repository
         if ($this->cache) {
             return new QueryBuilder(
                 $this->cache->loadEntityReflection($entityClass),
-                $this->mappers,
+                $this->adapters,
                 $this->logger
             );
         }
 
         return new QueryBuilder(
             new Reflection\Entity($entityClass),
-            $this->mappers,
+            $this->adapters,
             $this->logger
         );
     }

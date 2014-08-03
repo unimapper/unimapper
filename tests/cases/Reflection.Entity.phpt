@@ -24,11 +24,11 @@ class ReflectionEntityTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyException No mapper defined!
+     * @throws UniMapper\Exception\PropertyException No adapter defined!
      */
-    public function testNoMapperDefined()
+    public function testNoAdapterDefined()
     {
-        new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoMapper");
+        new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoAdapter");
     }
 
     /**
@@ -49,16 +49,16 @@ class ReflectionEntityTest extends Tester\TestCase
     {
         $reflection = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple");
         Assert::isEqual(
-            array('FooMapper' => new Reflection\Mapper('FooMapper(resource)', $reflection)),
-            $reflection->getMapperReflection()
+            array('FooAdapter' => new Reflection\Adapter('FooAdapter(resource)', $reflection)),
+            $reflection->getAdapterReflection()
         );
         Assert::isEqual(
             array(
                 "id" => new Reflection\Entity\Property('integer $id', $reflection),
                 "text" => new Reflection\Entity\Property('string $text', $reflection),
                 "empty" => new Reflection\Entity\Property('string $empty', $reflection),
-                "entity" => new Reflection\Entity\Property('NoMapper $entity', $reflection),
-                "collection" => new Reflection\Entity\Property('NoMapper[] $collection', $reflection),
+                "entity" => new Reflection\Entity\Property('NoAdapter $entity', $reflection),
+                "collection" => new Reflection\Entity\Property('NoAdapter[] $collection', $reflection),
             ),
             $reflection->getProperties()
         );

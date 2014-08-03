@@ -7,7 +7,7 @@ use UniMapper\Exception\QueryException,
     UniMapper\Reflection\Entity\Property\Association\BelongsToMany,
     UniMapper\Reflection\Entity\Property\Association\HasMany,
     UniMapper\EntityCollection,
-    UniMapper\Mapper,
+    UniMapper\Adapter,
     UniMapper\Query\IConditionable;
 
 class FindAll extends \UniMapper\Query implements IConditionable
@@ -24,9 +24,9 @@ class FindAll extends \UniMapper\Query implements IConditionable
         "remote" => []
     ];
 
-    public function __construct(Reflection\Entity $entityReflection, array $mappers)
+    public function __construct(Reflection\Entity $entityReflection, array $adapters)
     {
-        parent::__construct($entityReflection, $mappers);
+        parent::__construct($entityReflection, $adapters);
         $this->selection = array_slice(func_get_args(), 2);
     }
 
@@ -80,10 +80,10 @@ class FindAll extends \UniMapper\Query implements IConditionable
         return $this;
     }
 
-    public function onExecute(Mapper $mapper)
+    public function onExecute(Adapter $adapter)
     {
-        $result = $mapper->findAll(
-            $this->entityReflection->getMapperReflection()->getResource(),
+        $result = $adapter->findAll(
+            $this->entityReflection->getAdapterReflection()->getResource(),
             $this->getSelection($this->selection),
             $this->conditions,
             $this->getOrderBy($this->orderBy),
@@ -112,9 +112,9 @@ class FindAll extends \UniMapper\Query implements IConditionable
             foreach ($this->associations["remote"] as $propertyName => $association) {
 
                 if ($association instanceof HasMany) {
-                    $associated[$propertyName] = $this->hasMany($mapper, $this->mappers[$association->getTargetMapperName()], $association, $primaryValues);
+                    $associated[$propertyName] = $this->hasMany($adapter, $this->adapters[$association->getTargetAdapterName()], $association, $primaryValues);
                 } elseif ($association instanceof HasOne) {
-                    $associated[$propertyName] = $this->belongsToMany($this->mappers[$association->getTargetMapperName()], $association, $primaryValues);
+                    $associated[$propertyName] = $this->belongsToMany($this->adapters[$association->getTargetAdapterName()], $association, $primaryValues);
                 } else {
                     throw new QueryException("Unsupported remote association " . get_class($association) . "!");
                 }
@@ -133,7 +133,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
             }
         }
 
-        return $mapper->mapCollection($this->entityReflection->getClassName(), $result);
+        return $adapter->getMapping()->mapCollection($this->entityReflection->getClassName(), $result);
     }
 
     protected function addCondition($propertyName, $operator, $value, $joiner = 'AND')
@@ -196,9 +196,9 @@ class FindAll extends \UniMapper\Query implements IConditionable
         return $unmapped;
     }
 
-    private function hasMany(Mapper $currentMapper, Mapper $targetMapper, HasMany $association, array $primaryValues)
+    private function hasMany(Adapter $currentAdapter, Adapter $targetAdapter, HasMany $association, array $primaryValues)
     {
-        $joinResult = $currentMapper->findAll(
+        $joinResult = $currentAdapter->findAll(
             $association->getJoinResource(),
             [$association->getJoinKey(), $association->getReferenceKey()],
             [[$association->getJoinKey(), "IN", $primaryValues, "AND"]]
@@ -206,7 +206,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
 
         $joinResult = $this->groupResult($joinResult, [$association->getReferenceKey(), $association->getJoinKey()]);
 
-        $targetResult = $targetMapper->findAll(
+        $targetResult = $targetAdapter->findAll(
              $association->getTargetResource(),
              [], // @todo
              [[$association->getForeignKey(), "IN", array_keys($joinResult), "AND"]]
@@ -228,9 +228,9 @@ class FindAll extends \UniMapper\Query implements IConditionable
         return $result;
     }
 
-    private function belongsToMany(Mapper $targetMapper, BelongsToMany $association, array $primaryValues)
+    private function belongsToMany(Adapter $targetAdapter, BelongsToMany $association, array $primaryValues)
     {
-        $result = $targetMapper->findAll(
+        $result = $targetAdapter->findAll(
              $association->getTargetResource(),
              [], // @todo
              [[$association->getForeignKey(), "IN", array_keys($primaryValues), "AND"]]
