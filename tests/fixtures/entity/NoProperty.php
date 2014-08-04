@@ -3,7 +3,7 @@
 namespace UniMapper\Tests\Fixtures\Entity;
 
 /**
- * @mapper FooMapper(resource)
+ * @adapter FooAdapter(resource)
  */
 class NoProperty extends \UniMapper\Entity
 {}

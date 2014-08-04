@@ -24,7 +24,7 @@ class ReflectionEntityPropertyTest extends Tester\TestCase
         $this->createPropertyReflection('DateTime $time')->validateValue(new DateTime);
 
         // Collection
-        $this->createPropertyReflection('NoMapper[] $collection')->validateValue(new UniMapper\EntityCollection("UniMapper\Tests\Fixtures\Entity\Simple"));
+        $this->createPropertyReflection('NoAdapter[] $collection')->validateValue(new UniMapper\EntityCollection("UniMapper\Tests\Fixtures\Entity\Simple"));
     }
 
     public function testConvertValue()

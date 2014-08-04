@@ -3,7 +3,7 @@
 namespace UniMapper\Tests\Fixtures\Entity;
 
 /**
- * @mapper FooMapper(resource)
+ * @adapter FooAdapter(resource)
  *
  * @property       integer    $id         m:primary
  * @property       string     $text
@@ -17,7 +17,7 @@ namespace UniMapper\Tests\Fixtures\Entity;
  * @property       Nested     $entity
  * @property       Nested[]   $collection
  * @property-read  string     $readonly
- * @property       array      $storedData m:map(name='stored_data' filter=stringtoArray|arrayToString)
+ * @property       array      $storedData m:map(name='stored_data';filter=stringToArray|arrayToString)
  */
 class Simple extends \UniMapper\Entity
 {
@@ -39,7 +39,7 @@ class Simple extends \UniMapper\Entity
 
     public static function arrayToString($value)
     {
-        return implode(',',$value);
+        return implode(',', $value);
     }
 
 }

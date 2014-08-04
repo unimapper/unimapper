@@ -1,12 +1,8 @@
 <?php
 
-namespace UniMapper\Mapper;
+namespace UniMapper\Adapter;
 
-/**
- * Mapper interface defines minimum required methods or parameters in every
- * new mapper.
- */
-interface IMapper
+interface IAdapter
 {
 
     /**

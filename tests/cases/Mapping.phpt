@@ -5,32 +5,28 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class MapperTest extends Tester\TestCase
+class MappingTest extends Tester\TestCase
 {
 
-    /** @var \UniMapper\Tests\Fixtures\Mapper\Simple */
-    private $mapper;
+    /** @var \UniMapper\Mapping */
+    private $mapping;
 
     public function setUp()
     {
-        $this->mapper = new Fixtures\Mapper\Simple("FooMapper");
-    }
-
-    public function testGetName()
-    {
-        Assert::same("FooMapper", $this->mapper->getName());
+        $this->mapping = new UniMapper\Mapping;
     }
 
     public function testMapEntity()
     {
-        $entity = $this->mapper->mapEntity(
+        $entity = $this->mapping->mapEntity(
             "UniMapper\Tests\Fixtures\Entity\Simple",
             [
                 "email_address" => "john.doe@example.com",
                 "publicProperty" => "foo",
                 "undefined" => 1,
                 "link" => "http://example.com",
-                "readonly" => "foo"
+                "readonly" => "foo",
+                "stored_data" => "one,two,three"
             ]
         );
 
@@ -39,6 +35,7 @@ class MapperTest extends Tester\TestCase
         Assert::same("defaultValue", $entity->publicProperty);
         Assert::same("http://example.com", $entity->url);
         Assert::same("foo", $entity->readonly);
+        Assert::same(["one", "two", "three"], $entity->storedData);
     }
 
     public function testUnmapEntity()
@@ -47,20 +44,22 @@ class MapperTest extends Tester\TestCase
         $entity->email = "john.doe@example.com";
         $entity->url = "http://example.com";
         $entity->empty = null;
+        $entity->storedData = ["one", "two", "three"];
 
         Assert::same(
             [
                 "email_address" => $entity->email,
                 "link" => $entity->url,
-                "empty" => null
+                "empty" => null,
+                "stored_data" => "one,two,three"
             ],
-            $this->mapper->unmapEntity($entity)
+            $this->mapping->unmapEntity($entity)
         );
     }
 
     public function testMapCollection()
     {
-        $collection = $this->mapper->mapCollection(
+        $collection = $this->mapping->mapCollection(
             "UniMapper\Tests\Fixtures\Entity\Simple",
             [
                 [
@@ -93,11 +92,11 @@ class MapperTest extends Tester\TestCase
 
         Assert::same(
             [['email_address' => $entity->email, 'link' => $entity->url]],
-            $this->mapper->unmapCollection($collection)
+            $this->mapping->unmapCollection($collection)
         );
     }
 
 }
 
-$testCase = new MapperTest;
+$testCase = new MappingTest;
 $testCase->run();

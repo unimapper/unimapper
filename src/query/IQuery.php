@@ -5,6 +5,6 @@ namespace UniMapper\Query;
 interface IQuery
 {
 
-    public function onExecute(\UniMapper\Mapper $mapper);
+    public function onExecute(\UniMapper\Adapter $adapter);
 
 }

@@ -18,9 +18,9 @@ class FindOne extends \UniMapper\Query implements IConditionable
         "remote" => []
     ];
 
-    public function __construct(Reflection\Entity $entityReflection, array $mappers, $primaryValue)
+    public function __construct(Reflection\Entity $entityReflection, array $adapters, $primaryValue)
     {
-        parent::__construct($entityReflection, $mappers);
+        parent::__construct($entityReflection, $adapters);
 
         if (!$entityReflection->hasPrimaryProperty()) {
             throw new QueryException("Can not use findOne() on entity without primary property!");
@@ -55,10 +55,10 @@ class FindOne extends \UniMapper\Query implements IConditionable
         return $this;
     }
 
-    public function onExecute(\UniMapper\Mapper $mapper)
+    public function onExecute(\UniMapper\Adapter $adapter)
     {
-        $result = $mapper->findOne(
-            $this->entityReflection->getMapperReflection()->getResource(),
+        $result = $adapter->findOne(
+            $this->entityReflection->getAdapterReflection()->getResource(),
             $this->entityReflection->getPrimaryProperty()->getMappedName(),
             $this->primaryValue,
             $this->associations["local"]
@@ -68,7 +68,7 @@ class FindOne extends \UniMapper\Query implements IConditionable
             return false;
         }
 
-        return $mapper->mapEntity($this->entityReflection->getClassName(), $result);
+        return $adapter->getMapping()->mapEntity($this->entityReflection->getClassName(), $result);
     }
 
 }

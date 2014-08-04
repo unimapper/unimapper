@@ -1,8 +1,8 @@
 <?php
 
-namespace UniMapper\Tests\Fixtures\Mapper;
+namespace UniMapper\Tests\Fixtures\Adapter;
 
-class Simple extends \UniMapper\Mapper
+class Simple extends \UniMapper\Adapter
 {
 
     public function count($resource, array $conditions)

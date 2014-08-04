@@ -5,9 +5,9 @@ namespace UniMapper\Reflection;
 use UniMapper\Exception\PropertyException;
 
 /**
- * Entity mapper definition
+ * Entity adapter definition
  */
-class Mapper
+class Adapter
 {
 
     /** @var string */
@@ -26,19 +26,20 @@ class Mapper
 
         if ($definition === "") {
             throw new PropertyException(
-                "Mapper name is not set!",
+                "Adapter name is not set!",
                 $this->entityReflection,
                 $this->rawDefinition
             );
         }
 
         if (preg_match("#(.*?)\((.*?)\)#s", $definition, $matches)) {
-            // eg. MyMapperName(resource_name)
-            $this->name = $matches[1];
+            // eg. MyAdapterName(resource_name)
+
+            $this->name = trim($matches[1]);
             $this->resource = $matches[2];
         } else {
             throw new PropertyException(
-                "Invalid mapper definition!",
+                "Invalid adapter definition!",
                 $this->entityReflection,
                 $this->rawDefinition
             );
@@ -46,7 +47,7 @@ class Mapper
     }
 
     /**
-     * Get mapper name
+     * Get adapter name
      *
      * @return string
      *
@@ -56,7 +57,7 @@ class Mapper
     {
         if ($this->name === null) {
             throw new PropertyException(
-                "Mapper name is not set!",
+                "Adapter name is not set!",
                 $this->entityReflection,
                 $this->rawDefinition
             );

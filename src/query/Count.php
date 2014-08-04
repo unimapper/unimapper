@@ -5,10 +5,10 @@ namespace UniMapper\Query;
 class Count extends \UniMapper\Query implements IConditionable
 {
 
-    public function onExecute(\UniMapper\Mapper $mapper)
+    public function onExecute(\UniMapper\Adapter $adapter)
     {
-        return (int) $mapper->count(
-            $this->entityReflection->getMapperReflection()->getResource(),
+        return (int) $adapter->count(
+            $this->entityReflection->getAdapterReflection()->getResource(),
             $this->conditions
         );
     }

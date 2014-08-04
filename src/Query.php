@@ -22,20 +22,20 @@ abstract class Query implements IQuery
     protected $conditions = [];
 
     /** @var array */
-    protected $mappers;
+    protected $adapters;
 
     /** @var \UniMapper\Reflection\Entity */
     protected $entityReflection;
 
-    public function __construct(Reflection\Entity $entityReflection, array $mappers)
+    public function __construct(Reflection\Entity $entityReflection, array $adapters)
     {
-        if (!isset($mappers[$entityReflection->getMapperReflection()->getName()])) {
+        if (!isset($adapters[$entityReflection->getAdapterReflection()->getName()])) {
             throw new QueryException(
-                "Mapper '" . $entityReflection->getMapperReflection()->getName() . "' not given!"
+                "Adapter '" . $entityReflection->getAdapterReflection()->getName() . "' not given!"
             );
         }
 
-        $this->mappers = $mappers;
+        $this->adapters = $adapters;
         $this->entityReflection = $entityReflection;
     }
 
@@ -94,7 +94,7 @@ abstract class Query implements IQuery
 
     protected function addNestedConditions(\Closure $callback, $joiner = 'AND')
     {
-        $query = new $this($this->entityReflection, $this->mappers);
+        $query = new $this($this->entityReflection, $this->adapters);
 
         call_user_func($callback, $query);
 
@@ -135,11 +135,11 @@ abstract class Query implements IQuery
     {
         $start = microtime(true);
 
-        $currentMapperName = $this->entityReflection->getMapperReflection()->getName();
-        if (!isset($this->mappers[$currentMapperName])) {
-            throw new QueryException("Mapper with name '" . $currentMapperName . "' not given!");
+        $adapterName = $this->entityReflection->getAdapterReflection()->getName();
+        if (!isset($this->adapters[$adapterName])) {
+            throw new QueryException("Adapter with name '" . $adapterName . "' not given!");
         }
-        $this->result = $this->onExecute($this->mappers[$currentMapperName]);
+        $this->result = $this->onExecute($this->adapters[$adapterName]);
         $this->elapsed = microtime(true) - $start;
 
         return $this->result;

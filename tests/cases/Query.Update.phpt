@@ -9,14 +9,12 @@ require __DIR__ . '/../bootstrap.php';
 class QueryUpdateTest extends Tester\TestCase
 {
 
-    /** @var array */
-    private $mappers = [];
+    /** @var array $adapters */
+    private $adapters = [];
 
     public function setUp()
     {
-        $mockista = new \Mockista\Registry;
-        $this->mappers["FooMapper"] = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-        $this->mappers["FooMapper"]->expects("getName")->once()->andReturn("FooMapper");
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Tests\Fixtures\Adapter\Simple");
     }
 
     /**
@@ -24,8 +22,7 @@ class QueryUpdateTest extends Tester\TestCase
      */
     public function testDoNotUpdatePrimary()
     {
-        $this->mappers["FooMapper"]->freeze();
-        new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers, ["id" => 1]);
+        new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, ["id" => 1]);
     }
 
     /**
@@ -33,20 +30,18 @@ class QueryUpdateTest extends Tester\TestCase
      */
     public function testNoValues()
     {
-        $this->mappers["FooMapper"]->expects("unmapEntity")->once()->andReturn([]);
-        $this->mappers["FooMapper"]->freeze();
-
-        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers, []);
+        $this->adapters["FooAdapter"]->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
+        
+        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, []);
         $query->execute();
     }
 
     public function testSuccess()
     {
-        $this->mappers["FooMapper"]->expects("update")->once()->andReturn("1");
-        $this->mappers["FooMapper"]->expects("unmapEntity")->once()->andReturn(["text" => "foo"]);
-        $this->mappers["FooMapper"]->freeze();
+        $this->adapters["FooAdapter"]->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
+        $this->adapters["FooAdapter"]->shouldReceive("update")->once()->andReturn("1");
 
-        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers, ["text" => "foo"]);
+        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, ["text" => "foo"]);
         $query->where("id", "=", 1);
         Assert::same(null, $query->execute());
         Assert::same(['text' => 'foo'], $query->getValues());

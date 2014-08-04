@@ -4,7 +4,7 @@ namespace UniMapper\Query;
 
 use UniMapper\Exception\QueryException,
     UniMapper\Query\IConditionable,
-    UniMapper\Mapper,
+    UniMapper\Adapter,
     UniMapper\Reflection;
 
 class UpdateOne extends \UniMapper\Query implements IConditionable
@@ -15,9 +15,9 @@ class UpdateOne extends \UniMapper\Query implements IConditionable
 
     private $primaryValue;
 
-    public function __construct(Reflection\Entity $entityReflection, array $mappers, $primaryValue, array $data)
+    public function __construct(Reflection\Entity $entityReflection, array $adapters, $primaryValue, array $data)
     {
-        parent::__construct($entityReflection, $mappers);
+        parent::__construct($entityReflection, $adapters);
 
         $this->primaryValue = $primaryValue;
 
@@ -42,17 +42,17 @@ class UpdateOne extends \UniMapper\Query implements IConditionable
         return $this->primaryValue;
     }
 
-    public function onExecute(Mapper $mapper)
+    public function onExecute(Adapter $adapter)
     {
-        $values = $mapper->unmapEntity($this->entity);
+        $values = $adapter->getMapping()->unmapEntity($this->entity);
 
         // Values can not be empty
         if (empty($values)) {
             throw new QueryException("Nothing to update!");
         }
 
-        $mapper->updateOne(
-            $this->entityReflection->getMapperReflection()->getResource(),
+        $adapter->updateOne(
+            $this->entityReflection->getAdapterReflection()->getResource(),
             $this->entityReflection->getPrimaryProperty()->getMappedName(),
             $this->primaryValue,
             $values

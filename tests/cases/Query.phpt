@@ -9,17 +9,12 @@ require __DIR__ . '/../bootstrap.php';
 class QueryTest extends Tester\TestCase
 {
 
-    /** @var \Mockista\Mock $mapperMock */
-    private $mapperMock;
+    /** @var \Mockery\Mock $adapterMock */
+    private $adapterMock;
 
     public function setUp()
     {
-        $mockista = new \Mockista\Registry;
-
-        $this->mapperMock = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-        $this->mapperMock->expects("getName")->once()->andReturn("FooMapper");
-        $this->mapperMock->expects("insert")->once()->andReturn(1);
-        $this->mapperMock->freeze();
+        $this->adapterMock = Mockery::mock("UniMapper\Tests\Fixtures\Adapter\Simple");
     }
 
     /**
@@ -31,12 +26,14 @@ class QueryTest extends Tester\TestCase
     {
         return new Fixtures\Query\Conditionable(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            ["FooMapper" => $this->mapperMock]
+            ["FooAdapter" => $this->adapterMock]
         );
     }
 
     public function testConditions()
     {
+        $this->adapterMock->shouldReceive("insert")->once()->andReturn(1);
+        
         $query = $this->createConditionable();
         $expectedConditions = [];
 
@@ -114,7 +111,7 @@ class QueryTest extends Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\QueryException Mapper 'FooMapper' not given!
+     * @throws UniMapper\Exception\QueryException Adapter 'FooAdapter' not given!
      */
     public function testMapperRequired()
     {

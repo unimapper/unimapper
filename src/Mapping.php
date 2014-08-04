@@ -7,31 +7,15 @@ use UniMapper\Entity,
     UniMapper\Validator,
     UniMapper\Reflection;
 
-/**
- * Mapper is generally used to communicate between repository and data source.
- */
-abstract class Mapper implements Mapper\IMapper
+class Mapping
 {
 
-    /** @var string */
-    protected $name;
-
-    /** @var \UniMapper\Cache */
+    /** @var \UniMapper\Cache $cache */
     protected $cache;
 
-    public function __construct($name)
-    {
-        $this->name = $name;
-    }
-
-    public function setCache(Cache $cache)
+    public function setCache(Cache $cache = null)
     {
         $this->cache = $cache;
-    }
-
-    public function getName()
-    {
-        return $this->name;
     }
 
     /**
@@ -42,7 +26,7 @@ abstract class Mapper implements Mapper\IMapper
      *
      * @return mixed
      *
-     * @throws Exception\MapperException
+     * @throws Exception\MappingException
      */
     public function mapValue(Reflection\Entity\Property $property, $value)
     {
@@ -89,13 +73,13 @@ abstract class Mapper implements Mapper\IMapper
                 try {
                     return new \DateTime($value);
                 } catch (\Exception $e) {
-                    throw new MapperException("Can not map value to DateTime automatically! " . $e->getMessage());
+                    throw new MappingException("Can not map value to DateTime automatically! " . $e->getMessage());
                 }
             }
         }
 
         // Unexpected value type
-        throw new MapperException(
+        throw new MappingException(
             "Unexpected value type given. Can not convert value to entity "
             . "@property $" . $property->getName() . ". Expected " . $type
             . " but " . gettype($value) . " given!"
@@ -120,7 +104,7 @@ abstract class Mapper implements Mapper\IMapper
     public function mapEntity($class, $data)
     {
         if (!Validator::isTraversable($data)) {
-            throw new MapperException("Input data must be traversable!");
+            throw new MappingException("Input data must be traversable!");
         }
 
         if ($this->cache) {
@@ -173,7 +157,7 @@ abstract class Mapper implements Mapper\IMapper
         return $output;
     }
 
-    protected function unmapValue(Reflection\Entity\Property $property, $value)
+    public function unmapValue(Reflection\Entity\Property $property, $value)
     {
         // Apply map filter first
         if ($property->getMapping() && $property->getMapping()->getFilterOut()) {

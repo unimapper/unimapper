@@ -6,25 +6,22 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class QueryFindAllTest extends Tester\TestCase
+class QueryDeleteTest extends Tester\TestCase
 {
 
-    /** @var array */
-    private $mappers = [];
+    /** @var array $adapters */
+    private $adapters = [];
 
     public function setUp()
     {
-        $mockista = new \Mockista\Registry;
-        $this->mappers["FooMapper"] = $mockista->create("UniMapper\Tests\Fixtures\Mapper\Simple");
-        $this->mappers["FooMapper"]->expects("getName")->once()->andReturn("FooMapper");
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Tests\Fixtures\Adapter\Simple");
     }
 
     public function testSuccess()
     {
-        $this->mappers["FooMapper"]->expects("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
-        $this->mappers["FooMapper"]->freeze();
+        $this->adapters["FooAdapter"]->shouldReceive("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
 
-        $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers);
+        $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters);
         $query->where("id", "=", 1);
         Assert::null($query->execute());
     }
@@ -34,12 +31,11 @@ class QueryFindAllTest extends Tester\TestCase
      */
     public function testNoConditionGiven()
     {
-        $this->mappers["FooMapper"]->freeze();
-        $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->mappers);
+        $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters);
         $query->execute();
     }
 
 }
 
-$testCase = new QueryFindAllTest;
+$testCase = new QueryDeleteTest;
 $testCase->run();

@@ -12,9 +12,9 @@ class Update extends \UniMapper\Query implements IConditionable
     /** @var \UniMapper\Entity */
     private $entity;
 
-    public function __construct(Reflection\Entity $entityReflection, array $mappers, array $data)
+    public function __construct(Reflection\Entity $entityReflection, array $adapters, array $data)
     {
-        parent::__construct($entityReflection, $mappers);
+        parent::__construct($entityReflection, $adapters);
 
         // Primary value update is not allowed
         if ($entityReflection->hasPrimaryProperty()) {
@@ -33,9 +33,9 @@ class Update extends \UniMapper\Query implements IConditionable
         return $this->entity->getData();
     }
 
-    public function onExecute(\UniMapper\Mapper $mapper)
+    public function onExecute(\UniMapper\Adapter $adapter)
     {
-        $values = $mapper->unmapEntity($this->entity);
+        $values = $adapter->getMapping()->unmapEntity($this->entity);
 
         // Values can not be empty
         if (empty($values)) {
@@ -46,8 +46,8 @@ class Update extends \UniMapper\Query implements IConditionable
             throw new QueryException("At least one condition must be set!");
         }
 
-        $mapper->update(
-            $this->entityReflection->getMapperReflection()->getResource(),
+        $adapter->update(
+            $this->entityReflection->getAdapterReflection()->getResource(),
             $values,
             $this->conditions
         );

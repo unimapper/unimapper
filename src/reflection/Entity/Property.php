@@ -22,7 +22,7 @@ class Property
     /** @var string */
     protected $name;
 
-    /** @var string */
+    /** @var \UniMapper\Reflection\Entity\Property\Mapping */
     protected $mapping;
 
     /** @var array $basicTypes */
