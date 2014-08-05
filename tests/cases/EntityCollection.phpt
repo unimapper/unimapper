@@ -5,18 +5,29 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-$entity = new Fixtures\Entity\Simple;
-$entity->text = "test";
+class EntityCollectionTest extends Tester\TestCase
+{
 
-$collection = new UniMapper\EntityCollection(get_class($entity));
+    public function testCreateCollection()
+    {
+        $entity = new Fixtures\Entity\Simple;
+        $entity->text = "test";
 
-$collection[] = $entity;
-Assert::same("test", $collection[0]->text);
+        $collection = new UniMapper\EntityCollection(get_class($entity));
 
-$entity->text = "foo";
-$collection[] = $entity;
+        $collection[] = $entity;
+        Assert::same("test", $collection[0]->text);
 
-foreach ($collection as $entity) {
-    Assert::type(get_class($entity), $entity);
-    Assert::same("foo", $entity->text);
+        $entity->text = "foo";
+        $collection[] = $entity;
+
+        foreach ($collection as $entity) {
+            Assert::type(get_class($entity), $entity);
+            Assert::same("foo", $entity->text);
+        }
+    }
+
 }
+
+$testCase = new EntityCollectionTest;
+$testCase->run();
