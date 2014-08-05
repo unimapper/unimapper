@@ -5,12 +5,12 @@ namespace UniMapper\Tests\Fixtures\Adapter;
 class Simple extends \UniMapper\Adapter
 {
 
-    public function count($resource, array $conditions)
+    public function count($resource, $conditions)
     {
         throw new \Exception("You should  mock here!");
     }
 
-    public function delete($resource, array $conditions)
+    public function delete($resource, $conditions)
     {
         throw new \Exception("You should  mock here!");
     }
@@ -20,7 +20,7 @@ class Simple extends \UniMapper\Adapter
         throw new \Exception("You should  mock here!");
     }
 
-    public function findAll($resource, array $selection = [], array $conditions = [], array $orderBy = [], $limit = 0, $offset = 0, array $associations = [])
+    public function findAll($resource, $selection = null, $conditions = null, $orderBy = null, $limit = 0, $offset = 0, array $associations = [])
     {
         throw new \Exception("You should  mock here!");
     }
@@ -30,7 +30,7 @@ class Simple extends \UniMapper\Adapter
         throw new \Exception("You should  mock here!");
     }
 
-    public function update($resource, array $values, array $conditions)
+    public function update($resource, array $values, $conditions = null)
     {
         throw new \Exception("You should  mock here!");
     }
@@ -40,7 +40,7 @@ class Simple extends \UniMapper\Adapter
         throw new \Exception("You should  mock here!");
     }
 
-    public function custom($resource, $query, $method, $contentType, $data)
+    public function raw()
     {
         throw new \Exception("You should  mock here!");
     }

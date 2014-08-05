@@ -1,8 +1,7 @@
 <?php
 
 use Tester\Assert,
-    UniMapper\Reflection,
-    UniMapper\Tests\Fixtures;
+    UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -22,9 +21,9 @@ class QueryTest extends Tester\TestCase
      *
      * @return \UniMapper\Tests\Fixtures\Query\Conditionable
      */
-    private function createConditionable()
+    private function createConditionableQuery()
     {
-        return new Fixtures\Query\Conditionable(
+        return new UniMapper\Query\FindAll(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["FooAdapter" => $this->adapterMock]
         );
@@ -34,7 +33,7 @@ class QueryTest extends Tester\TestCase
     {
         $this->adapterMock->shouldReceive("insert")->once()->andReturn(1);
 
-        $query = $this->createConditionable();
+        $query = $this->createConditionableQuery();
         $expectedConditions = [];
 
         // where()

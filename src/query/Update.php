@@ -46,10 +46,12 @@ class Update extends \UniMapper\Query implements IConditionable
             throw new QueryException("At least one condition must be set!");
         }
 
+        $mapping = $adapter->getMapping();
+
         $adapter->update(
             $this->entityReflection->getAdapterReflection()->getResource(),
             $values,
-            $this->conditions
+            $mapping::unmapConditions($this->entityReflection, $this->conditions)
         );
     }
 

@@ -15,13 +15,16 @@ abstract class Repository
 {
 
     /** @var array $adapters Registered adapters */
-    protected $adapters = [];
+    private $adapters = [];
 
     /** @var \UniMapper\Logger $logger */
     private $logger;
 
     /** @var \UniMapper\Cache $cache */
     private $cache;
+
+    /** @var array $customQueries Registered custom queries */
+    private $customQueries = [];
 
     /**
      * Insert/update entity
@@ -171,6 +174,23 @@ abstract class Repository
     }
 
     /**
+     * Get registered adapter
+     *
+     * @param string $name Adapter name
+     *
+     * @return \UniMapper\Adapter
+     *
+     * @throws RepositoryException
+     */
+    protected function getAdapter($name)
+    {
+        if (!isset($this->adapters[$name])) {
+            throw new RepositoryException("Adapter '" . $name . "' not found!");
+        }
+        return $this->adapters[$name];
+    }
+
+    /**
      * Get related entity name
      *
      * @return string
@@ -200,6 +220,15 @@ abstract class Repository
         $this->adapters[$adapter->getName()] = $adapter;
     }
 
+    public function registerCustomQuery($class)
+    {
+        $class = (string) $class;
+        if (!is_subclass_of($class, "UniMapper\Query\Custom")) {
+            throw new RepositoryException("Registered custom query must be instance of Unimapper\Query\Custom!");
+        }
+        $this->customQueries[] = $class;
+    }
+
     /**
      * Query on entity related to actual repository
      *
@@ -218,6 +247,8 @@ abstract class Repository
      * @return \UniMapper\QueryBuilder
      *
      * @throws \UniMapper\Excpetions\RepositoryException
+     *
+     * @todo should be private
      */
     protected function queryOn($name)
     {
@@ -226,19 +257,23 @@ abstract class Repository
             throw new RepositoryException("Entity with name '" . $name . "' and class '" . $entityClass . "' not found!");
         }
 
+
         if ($this->cache) {
-            return new QueryBuilder(
-                $this->cache->loadEntityReflection($entityClass),
-                $this->adapters,
-                $this->logger
-            );
+            $entityReflection = $this->cache->loadEntityReflection($entityClass);
+        } else {
+            $entityReflection = new Reflection\Entity($entityClass);
         }
 
-        return new QueryBuilder(
-            new Reflection\Entity($entityClass),
+        $queryBuilder = new QueryBuilder(
+            $entityReflection,
             $this->adapters,
             $this->logger
         );
+
+        foreach ($this->customQueries as $class) {
+            $queryBuilder->registerQuery($class);
+        }
+        return $queryBuilder;
     }
 
     public function getLogger()

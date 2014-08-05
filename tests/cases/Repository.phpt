@@ -38,6 +38,23 @@ class RepositoryTest extends Tester\TestCase
         Assert::type("UniMapper\QueryBuilder", $this->repository->query());
     }
 
+    public function testRegisterCustomQuery()
+    {
+        $this->repository->registerCustomQuery("UniMapper\Tests\Fixtures\Query\Custom");
+        $this->repository->registerAdapter(
+            new Fixtures\Adapter\Simple("FooAdapter", new UniMapper\Mapping)
+        );
+        Assert::same("foo", $this->repository->query()->custom()->execute());
+    }
+
+    /**
+     * @throws UniMapper\Exception\RepositoryException Registered custom query must be instance of Unimapper\Query\Custom!
+     */
+    public function testRegisterCustomQueryFailed()
+    {
+        $this->repository->registerCustomQuery("UniMapper\Query\FindAll");
+    }
+
     public function testCreateEntity()
     {
         // Autodetect entity
@@ -124,6 +141,7 @@ class RepositoryTest extends Tester\TestCase
 
     public function testDelete()
     {
+        $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
         $this->adapterMock->shouldReceive("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
         $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
 
@@ -149,6 +167,7 @@ class RepositoryTest extends Tester\TestCase
             ->once()
             ->andReturn([]);
         $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
+        $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
 
         $this->repository->registerAdapter($this->adapterMock);
         $result = $this->repository->find(
@@ -191,7 +210,7 @@ class RepositoryTest extends Tester\TestCase
 
     public function testCount()
     {
-
+        $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
         $this->adapterMock->shouldReceive("getName")
             ->once()
             ->andReturn("FooAdapter");
