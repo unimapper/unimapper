@@ -133,9 +133,7 @@ class Entity
     /**
      * Get adapter definition from annotations
      *
-     * @return \UniMapper\Reflection\Entity\Mapper
-     *
-     * @throws \UniMapper\Exception\PropertyException
+     * @return \UniMapper\Reflection\Entity\Mapper|null
      */
     private function parseAdapter()
     {
@@ -146,7 +144,7 @@ class Entity
         );
 
         if (empty($annotations[0])) {
-            throw new PropertyException("No adapter defined!", $this);
+            return;
         }
 
         if (count($annotations[0]) > 1) {
@@ -154,6 +152,11 @@ class Entity
         }
 
         return new Adapter(substr($annotations[0][0], 8), $this);
+    }
+
+    public function hasAdapter()
+    {
+        return $this->adapter instanceof Adapter;
     }
 
     public function getAdapterReflection()

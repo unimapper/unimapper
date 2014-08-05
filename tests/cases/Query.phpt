@@ -33,7 +33,7 @@ class QueryTest extends Tester\TestCase
     public function testConditions()
     {
         $this->adapterMock->shouldReceive("insert")->once()->andReturn(1);
-        
+
         $query = $this->createConditionable();
         $expectedConditions = [];
 
@@ -113,10 +113,21 @@ class QueryTest extends Tester\TestCase
     /**
      * @throws UniMapper\Exception\QueryException Adapter 'FooAdapter' not given!
      */
-    public function testMapperRequired()
+    public function testAdapterRequired()
     {
         new \UniMapper\Query\FindAll(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
+            []
+        );
+    }
+
+    /**
+     * @throws UniMapper\Exception\QueryException Entity 'UniMapper\Tests\Fixtures\Entity\NoAdapter' has no adapter defined!
+     */
+    public function testNoAdapterEntity()
+    {
+        new \UniMapper\Query\FindAll(
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoAdapter"),
             []
         );
     }

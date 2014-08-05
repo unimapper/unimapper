@@ -29,6 +29,12 @@ abstract class Query implements IQuery
 
     public function __construct(Reflection\Entity $entityReflection, array $adapters)
     {
+        if (!$entityReflection->hasAdapter()) {
+            throw new QueryException(
+                "Entity '" . $entityReflection->getClassName() . "' has no adapter defined!"
+            );
+        }
+
         if (!isset($adapters[$entityReflection->getAdapterReflection()->getName()])) {
             throw new QueryException(
                 "Adapter '" . $entityReflection->getAdapterReflection()->getName() . "' not given!"

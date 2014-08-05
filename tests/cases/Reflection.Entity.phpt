@@ -23,12 +23,10 @@ class ReflectionEntityTest extends Tester\TestCase
         Assert::same("foo", $entity->readonly);
     }
 
-    /**
-     * @throws UniMapper\Exception\PropertyException No adapter defined!
-     */
     public function testNoAdapterDefined()
     {
-        new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoAdapter");
+        $reflection = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoAdapter");
+        Assert::same("UniMapper\Tests\Fixtures\Entity\NoAdapter", $reflection->getClassName());
     }
 
     /**
