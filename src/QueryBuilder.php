@@ -17,14 +17,19 @@ use UniMapper\Reflection,
 class QueryBuilder
 {
 
+    /** @var \UniMapper\Reflection\Entity */
     protected $entityReflection;
 
     /** @var array */
     protected $adapters = [];
+
+    /** @var \UniMapper\Logger */
     protected $logger;
+
+    /** @var array */
     protected $queries = array(
         "count" => "UniMapper\Query\Count",
-        "custom" => "UniMapper\Query\Custom",
+        "raw" => "UniMapper\Query\Raw",
         "delete" => "UniMapper\Query\Delete",
         "findAll" => "UniMapper\Query\FindAll",
         "findOne" => "UniMapper\Query\FindOne",
@@ -43,7 +48,7 @@ class QueryBuilder
     public function __call($name, $arguments)
     {
         if (!isset($this->queries[$name])) {
-            throw new QueryBuilderException("Query with name " . $name . " not registered!");
+            throw new QueryBuilderException("Query with name " . $name . " does not exist!");
         }
 
         array_unshift($arguments, $this->entityReflection, $this->adapters);
@@ -60,11 +65,7 @@ class QueryBuilder
 
     public function registerQuery($class)
     {
-        $name = $class::getName();
-        if (isset($this->queries[$name]) || in_array($class, $this->queries)) {
-            throw new QueryBuilderException("Query with name " . $name . " and class " . $class . " already registered!");
-        }
-        $this->queries[$name] = $class;
+        $this->queries[$class::getName()] = $class;
     }
 
 }

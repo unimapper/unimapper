@@ -90,12 +90,7 @@ abstract class Query implements IQuery
             throw new QueryException("Condition can not be called on associations and computed properties!");
         }
 
-        $this->conditions[] = [
-            $propertyReflection->getMappedName(),
-            $operator,
-            $value,
-            $joiner
-        ];
+        $this->conditions[] = [$propertyName, $operator, $value, $joiner];
     }
 
     protected function addNestedConditions(\Closure $callback, $joiner = 'AND')

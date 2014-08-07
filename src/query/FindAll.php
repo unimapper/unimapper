@@ -13,10 +13,10 @@ use UniMapper\Exception\QueryException,
 class FindAll extends \UniMapper\Query implements IConditionable
 {
 
-    public $limit = null;
-    public $offset = null;
-    public $orderBy = [];
-    public $selection = [];
+    protected $limit;
+    protected $offset;
+    protected $orderBy = [];
+    protected $selection = [];
 
     /** @var array */
     private $associations = [
@@ -28,6 +28,13 @@ class FindAll extends \UniMapper\Query implements IConditionable
     {
         parent::__construct($entityReflection, $adapters);
         $this->selection = array_slice(func_get_args(), 2);
+    }
+
+    public function select($name)
+    {
+        if (!array_search($name, $this->selection)) {
+            $this->selection[] = $name;
+        }
     }
 
     public function associate($propertyName)
@@ -82,11 +89,13 @@ class FindAll extends \UniMapper\Query implements IConditionable
 
     public function onExecute(Adapter $adapter)
     {
+        $mapping = $adapter->getMapping();
+
         $result = $adapter->findAll(
             $this->entityReflection->getAdapterReflection()->getResource(),
-            $this->getSelection($this->selection),
-            $this->conditions,
-            $this->getOrderBy($this->orderBy),
+            $mapping::unmapSelection($this->entityReflection, $this->selection),
+            $mapping::unmapConditions($this->entityReflection, $this->conditions),
+            $mapping::unmapOrderBy($this->entityReflection, $this->orderBy),
             $this->limit,
             $this->offset,
             $this->associations["local"]
@@ -133,7 +142,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
             }
         }
 
-        return $adapter->getMapping()->mapCollection($this->entityReflection->getClassName(), $result);
+        return $mapping->mapCollection($this->entityReflection->getClassName(), $result);
     }
 
     protected function addCondition($propertyName, $operator, $value, $joiner = 'AND')
@@ -151,49 +160,6 @@ class FindAll extends \UniMapper\Query implements IConditionable
         $query = parent::addNestedConditions($callback, $joiner);
         // Add properties from conditions
         $this->selection = array_unique(array_merge($this->selection, $query->selection));
-    }
-
-    protected function getSelection(array $selection)
-    {
-        if (count($selection) === 0) {
-            // Select all if not set
-
-            $selection = array_keys($this->entityReflection->getProperties());
-        } else {
-            // Add primary property automatically if not set in selection
-
-            $primaryPropertyName = $this->entityReflection->getPrimaryProperty()->getName();
-            if (!in_array($primaryPropertyName, $selection)) {
-                $selection[] = $primaryPropertyName;
-            }
-        }
-
-        $result = [];
-        foreach ($selection as $name) {
-
-            if ($this->entityReflection->hasProperty($name)) {
-
-                $property = $this->entityReflection->getProperty($name);
-
-                // Skip associations and computed properties
-                if ($property->isComputed() || $property->isAssociation()) {
-                    continue;
-                }
-
-                $result[] = $property->getMappedName();
-            }
-        }
-        return $result;
-    }
-
-    protected function getOrderBy(array $items)
-    {
-        $unmapped = [];
-        foreach ($items as $name => $direction) {
-            $mappedName = $this->entityReflection->getProperties()[$name]->getMappedName();
-            $unmapped[$mappedName] = $direction;
-        }
-        return $unmapped;
     }
 
     private function hasMany(Adapter $currentAdapter, Adapter $targetAdapter, HasMany $association, array $primaryValues)
@@ -241,6 +207,26 @@ class FindAll extends \UniMapper\Query implements IConditionable
         }
 
         return $result;
+    }
+
+    public function getLimit()
+    {
+        return $this->limit;
+    }
+
+    public function getOffset()
+    {
+        return $this->offset;
+    }
+
+    public function getOrderBy()
+    {
+        return $this->orderBy;
+    }
+
+    public function getSelection()
+    {
+        return $this->selection;
     }
 
     /**

@@ -189,4 +189,60 @@ class Mapping
         return $data;
     }
 
+    public static function unmapSelection(Reflection\Entity $entityReflection, array $selection)
+    {
+        if (count($selection) === 0) {
+            // Select all if not set
+
+            $selection = array_keys($entityReflection->getProperties());
+        } else {
+            // Add primary property automatically if not set in selection
+
+            $primaryPropertyName = $entityReflection->getPrimaryProperty()->getName();
+            if (!in_array($primaryPropertyName, $selection)) {
+                $selection[] = $primaryPropertyName;
+            }
+        }
+
+        $result = [];
+        foreach ($selection as $name) {
+
+            if ($entityReflection->hasProperty($name)) {
+
+                $property = $entityReflection->getProperty($name);
+
+                // Skip associations and computed properties
+                if ($property->isComputed() || $property->isAssociation()) {
+                    continue;
+                }
+
+                $result[] = $property->getMappedName();
+            }
+        }
+        return $result;
+    }
+
+    public static function unmapOrderBy(Reflection\Entity $entityReflection, array $items)
+    {
+        $unmapped = [];
+        foreach ($items as $name => $direction) {
+            $mappedName = $entityReflection->getProperties()[$name]->getMappedName();
+            $unmapped[$mappedName] = $direction;
+        }
+        return $unmapped;
+    }
+
+    public static function unmapConditions(Reflection\Entity $entityReflection, array $conditions)
+    {
+        foreach ($conditions as $condition) {
+
+            if (is_array($condition[0])) {
+                $condition[0] = self::unmapConditions($entityReflection, $condition[0]);
+            } else {
+                $condition[0] = $entityReflection->getProperty($condition[0])->getMappedName();
+            }
+        }
+        return $conditions;
+    }
+
 }

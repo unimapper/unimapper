@@ -14,9 +14,10 @@ class Delete extends \UniMapper\Query implements IConditionable
             throw new QueryException("At least one condition must be set!");
         }
 
+        $mapping = $adapter->getMapping();
         $adapter->delete(
             $this->entityReflection->getAdapterReflection()->getResource(),
-            $this->conditions
+            $mapping::unmapConditions($this->entityReflection, $this->conditions)
         );
     }
 

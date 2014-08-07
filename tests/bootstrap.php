@@ -17,9 +17,8 @@ require __DIR__ . "/fixtures/entity/DuplicatePublicProperty.php";
 require __DIR__ . "/fixtures/entity/NoPrimary.php";
 require __DIR__ . "/fixtures/entity/NoProperty.php";
 require __DIR__ . "/fixtures/adapter/Simple.php";
-require __DIR__ . "/fixtures/query/Conditionable.php";
-require __DIR__ . "/fixtures/query/Simple.php";
 require __DIR__ . "/fixtures/repository/SimpleRepository.php";
+require __DIR__ . "/fixtures/query/Custom.php";
 
 Tester\Environment::setup();
 
