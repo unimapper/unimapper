@@ -29,20 +29,22 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         if ($reflection) {
             if ($reflection->getClassName() !== get_called_class()) {
                 throw new Exception\InvalidArgumentException(
-                    "Expected reflection of class '" . get_called_class() . "' but reflection of '" . $reflection->getClassName() . "' given!"
+                    "Expected reflection of class '" . get_called_class()
+                    . "' but reflection of '" . $reflection->getClassName()
+                    . "' given!"
                 );
             }
             $this->reflection = $reflection;
         }
-        $this->initialize();
+        $this->_initialize();
         $this->validator = new Validator($this);
 
         if ($values) {
-            $this->setValues($values, true);
+            $this->_setValues($values, true);
         }
     }
 
-    private function setValues($values, $readonlyToo = false)
+    private function _setValues($values, $readonlyToo = false)
     {
         if (!Validator::isTraversable($values)) {
             throw new Exception\InvalidArgumentException(
@@ -56,14 +58,22 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
                 $this->{$name} = $value;
             } catch (Exception\PropertyException $e) {
 
-                if ($e instanceof Exception\PropertyValidationException && $e->getCode() === Exception\PropertyValidationException::TYPE) {
+                if ($e instanceof Exception\PropertyValidationException
+                    && $e->getCode() === Exception\PropertyValidationException::TYPE
+                ) {
                     // Try to convert automatically
 
-                    $this->{$name} = $this->reflection->getProperties()[$name]->convertValue($value);
-                } elseif ($e instanceof Exception\PropertyAccessException && $e->getCode() === Exception\PropertyAccessException::READONLY && $readonlyToo) {
+                    $this->{$name} = $this->reflection->getProperties()[$name]
+                        ->convertValue($value);
+
+                } elseif ($e instanceof Exception\PropertyAccessException
+                    && $e->getCode() === Exception\PropertyAccessException::READONLY
+                    && $readonlyToo
+                ) {
                     // Set and convert readonly property automatically
 
-                    $this->data[$name] = $this->reflection->getProperties()[$name]->convertValue($value);
+                    $this->data[$name] = $this->reflection->getProperties()[$name]
+                        ->convertValue($value);
                 }
             }
 
@@ -73,7 +83,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     /**
      * Initialize entity state
      */
-    private function initialize()
+    private function _initialize()
     {
         if (!$this->reflection) {
             $this->reflection = new Reflection\Entity(get_called_class());
@@ -93,25 +103,28 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     public function serialize()
     {
-        return serialize(array_merge($this->data, $this->getPublicPropertyValues()));
+        return serialize(
+            array_merge($this->data, $this->_getPublicPropertyValues())
+        );
     }
 
     public function unserialize($data)
     {
-        $this->initialize();
+        $this->_initialize();
         foreach (unserialize($data) as $name => $value) {
             $this->{$name} = $value;
         }
     }
 
     /**
-     * Import and try to convert values automatically if possible, skip readonly and undefined
+     * Import and try to convert values automatically if possible, skip readonly
+     * and undefined.
      *
      * @param mixed $values Traversable structure (array/object)
      */
     public function import($values)
     {
-        $this->setValues($values);
+        $this->_setValues($values);
     }
 
     /**
@@ -253,17 +266,19 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         foreach ($this->reflection->getProperties() as $propertyName => $property) {
 
             $value = $this->{$propertyName};
-            if (($value instanceof EntityCollection || $value instanceof Entity) && $nesting) {
+            if (($value instanceof EntityCollection || $value instanceof Entity)
+                && $nesting
+            ) {
                 $output[$propertyName] = $value->toArray($nesting);
             } else {
                 $output[$propertyName] = $value;
             }
         }
 
-        return array_merge($output, $this->getPublicPropertyValues());
+        return array_merge($output, $this->_getPublicPropertyValues());
     }
 
-    private function getPublicPropertyValues()
+    private function _getPublicPropertyValues()
     {
         $result = [];
         foreach ($this->reflection->getPublicProperties() as $name) {

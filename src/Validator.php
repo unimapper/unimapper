@@ -69,7 +69,7 @@ class Validator
             throw new \Exception("Condition must be called only on properties!");
         }
         $condition = new Validator\Condition(
-            $this->getValidation($validation),
+            $this->_getValidation($validation),
             $this
         );
         $this->rules[] = $condition;
@@ -93,11 +93,12 @@ class Validator
      *
      * @return \UniMapper\Validator
      */
-    public function addError($message, $severity = Validator\Rule::ERROR, array $indexes = [])
-    {
+    public function addError($message, $severity = Validator\Rule::ERROR,
+        array $indexes = []
+    ) {
         $rule = new Validator\Rule(
             $this->entity,
-            function() {
+            function () {
                 return false;
             },
             $message,
@@ -128,10 +129,17 @@ class Validator
         $this->property = $this->entity->getReflection()->getProperty($name);
 
         if ($this->property->isComputed()) {
-            throw new \Exception("Validation can not be applied on computed properties!");
+            throw new \Exception(
+                "Validation can not be applied on computed properties!"
+            );
         }
-        if ($child && (!$this->property->isTypeEntity() && !$this->property->isTypeCollection())) {
-            throw new \Exception("Child validation can be used only on entities and collections!");
+        if ($child
+            && (!$this->property->isTypeEntity()
+            && !$this->property->isTypeCollection())
+        ) {
+            throw new \Exception(
+                "Child validation can be used only on entities and collections!"
+            );
         }
         $this->child = $child;
 
@@ -163,7 +171,7 @@ class Validator
     {
         $this->rules[] = new Validator\Rule(
             $this->entity,
-            $this->getValidation($validation),
+            $this->_getValidation($validation),
             $message,
             $this->property,
             $severity,
@@ -172,7 +180,7 @@ class Validator
         return $this;
     }
 
-    private function getValidation($definition)
+    private function _getValidation($definition)
     {
         if (is_string($definition) && method_exists(__CLASS__, $definition)) {
             return [__CLASS__, $definition];
@@ -248,10 +256,11 @@ class Validator
      *
      * @return array
      */
-    public function getMessages($minSeverity = Validator\Rule::DEBUG, callable $factory = null)
-    {
+    public function getMessages($minSeverity = Validator\Rule::DEBUG,
+        callable $factory = null
+    ) {
         if ($factory === null) {
-            $factory = function($text, $severity) {
+            $factory = function ($text, $severity) {
                 return new Validator\Message($text, $severity);
             };
         }

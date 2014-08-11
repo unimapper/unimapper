@@ -15,15 +15,19 @@ class UpdateOne extends \UniMapper\Query implements IConditionable
 
     private $primaryValue;
 
-    public function __construct(Reflection\Entity $entityReflection, array $adapters, $primaryValue, array $data)
-    {
+    public function __construct(Reflection\Entity $entityReflection,
+        array $adapters, $primaryValue, array $data
+    ) {
         parent::__construct($entityReflection, $adapters);
 
         $this->primaryValue = $primaryValue;
 
         // Primary value update is not allowed
         if (!$entityReflection->hasPrimaryProperty()) {
-            throw new QueryException("Entity '" . $entityReflection->getClassName() . "' has no primary property!");
+            throw new QueryException(
+                "Entity '" . $entityReflection->getClassName() . "' has no "
+                . "primary property!"
+            );
         }
 
         // Do not change primary value

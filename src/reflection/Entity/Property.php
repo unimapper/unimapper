@@ -218,13 +218,19 @@ class Property
             // Collection
 
             try {
-                return $this->type = new EntityCollection(NC::nameToClass(rtrim($definition, "[]"), NC::$entityMask));
-            } catch (InvalidArgumentException $expection) {
+                return $this->type = new EntityCollection(
+                    NC::nameToClass(rtrim($definition, "[]"), NC::$entityMask)
+                );
+            } catch (InvalidArgumentException $exception) {
 
             }
         }
 
-        throw new PropertyException("Unsupported type '" . $definition . "'!", $this->entityReflection, $this->rawDefinition);
+        throw new PropertyException(
+            "Unsupported type '" . $definition . "'!",
+            $this->entityReflection,
+            $this->rawDefinition
+        );
     }
 
     /**
@@ -240,48 +246,84 @@ class Property
             // m:computed
 
             if ($this->mapping) {
-                throw new PropertyException("Can not combine m:computed with m:mapping!", $this->entityReflection, $definition);
+                throw new PropertyException(
+                    "Can not combine m:computed with m:mapping!",
+                    $this->entityReflection,
+                    $definition
+                );
             }
 
             $computedMethodName = $this->getComputedMethodName();
             if (!method_exists($this->entityReflection->getClassName(), $computedMethodName)) {
-                throw new PropertyException("Can not find computed method with name " . $computedMethodName . "!", $this->entityReflection, $definition);
+                throw new PropertyException(
+                    "Can not find computed method with name "
+                    . $computedMethodName . "!",
+                    $this->entityReflection,
+                    $definition
+                );
             }
             $this->computed = true;
         } elseif (preg_match("#m:map\((.*?)\)#s", $definition, $matches)) {
             // m:map(name='column' filter=in_fnc|out_fnc)
 
             if ($this->mapping) {
-                throw new PropertyException("Mapping already defined!", $this->entityReflection, $definition);
+                throw new PropertyException(
+                    "Mapping already defined!",
+                    $this->entityReflection,
+                    $definition
+                );
             }
 
             if ($this->computed) {
-                throw new PropertyException("Can not combine m:mapping with m:computed!", $this->entityReflection, $definition);
+                throw new PropertyException(
+                    "Can not combine m:mapping with m:computed!",
+                    $this->entityReflection, $definition
+                );
             }
 
-            $this->mapping = new Property\Mapping($matches[1], $definition, $this->entityReflection);
-        }
-        elseif (preg_match("#m:enum\(([a-zA-Z0-9]+|self|parent)::([a-zA-Z0-9_]+)\*\)#", $definition, $matches)) {
+            $this->mapping = new Property\Mapping(
+                $matches[1],
+                $definition,
+                $this->entityReflection
+            );
+        } elseif (preg_match("#m:enum\(([a-zA-Z0-9]+|self|parent)::([a-zA-Z0-9_]+)\*\)#", $definition, $matches)) {
             // m:enum(self::CUSTOM_*)
             // m:enum(parent::CUSTOM_*)
             // m:enum(MY_CLASS::CUSTOM_*)
 
             if ($this->computed) {
-                throw new PropertyException("Can not combine m:computed with m:enum!", $this->entityReflection, $definition);
+                throw new PropertyException(
+                    "Can not combine m:computed with m:enum!",
+                    $this->entityReflection,
+                    $definition
+                );
             }
-            $this->enumeration = new Property\Enumeration($matches, $definition, $this->entityReflection);
+            $this->enumeration = new Property\Enumeration(
+                $matches,
+                $definition,
+                $this->entityReflection
+            );
         } elseif (preg_match("#m:primary#s", $definition, $matches)) {
             // m:primary
 
             if ($this->computed) {
-                throw new PropertyException("Can not combine m:computed with m:primary!", $this->entityReflection, $definition);
+                throw new PropertyException(
+                    "Can not combine m:computed with m:primary!",
+                    $this->entityReflection,
+                    $definition
+                );
             }
             $this->primary = true;
         } elseif (preg_match("#m:assoc\((.*?)\)#s", $definition, $matches)) {
             // m:assoc(1:1=key|targetKey)
 
             if ($this->computed || $this->mapping || $this->enumeration) {
-                throw new PropertyException("Association can not be combined with m:map, m:computed or m:enum!", $this->entityReflection, $definition);
+                throw new PropertyException(
+                    "Association can not be combined with m:map, m:computed or "
+                    . "m:enum!",
+                    $this->entityReflection,
+                    $definition
+                );
             }
 
             // Get target entity class
@@ -290,19 +332,37 @@ class Property
             } elseif (is_subclass_of($this->type, "UniMapper\Entity")) {
                 $targetEntityClass = $this->type;
             } else {
-                throw new PropertyException("Property type must be collection or entity if association defined!", $this->entityReflection, $definition);
+                throw new PropertyException(
+                    "Property type must be collection or entity if association "
+                    . "defined!",
+                    $this->entityReflection,
+                    $definition
+                );
             }
 
             if (!strpos($matches[1], "=")) {
-                throw new PropertyException("Bad association definition!", $this->entityReflection, $definition);
+                throw new PropertyException(
+                    "Bad association definition!",
+                    $this->entityReflection,
+                    $definition
+                );
             }
             list($assocType, $parameters) = explode("=", $matches[1]);
             if (!isset($this->supportedAssociations[$assocType])) {
-                throw new PropertyException("Association type '" . $assocType . "' not supported!", $this->entityReflection, $definition);
+                throw new PropertyException(
+                    "Association type '" . $assocType . "' not supported!",
+                    $this->entityReflection,
+                    $definition
+                );
             }
-            $assocClass = "UniMapper\Reflection\Entity\Property\Association\\" . $this->supportedAssociations[$assocType];
+            $assocClass = "UniMapper\Reflection\Entity\Property\Association\\"
+                . $this->supportedAssociations[$assocType];
 
-            $this->association = new $assocClass($this->entityReflection, new Reflection\Entity($targetEntityClass), $parameters);
+            $this->association = new $assocClass(
+                $this->entityReflection,
+                new Reflection\Entity($targetEntityClass),
+                $parameters
+            );
         }
     }
 
@@ -319,9 +379,12 @@ class Property
         $expectedType = $this->type;
 
         // Enumeration
-        if ($this->enumeration !== null && !$this->enumeration->isValueFromEnum($value)) {
+        if ($this->enumeration !== null
+            && !$this->enumeration->isValueFromEnum($value)
+        ) {
             throw new PropertyValidationException(
-                "Value " . $value . " is not from defined entity enumeration range on property " . $this->name . "!",
+                "Value " . $value . " is not from defined entity enumeration "
+                . "range on property " . $this->name . "!",
                 $this->entityReflection,
                 $this->rawDefinition,
                 PropertyValidationException::ENUMERATION
@@ -335,7 +398,8 @@ class Property
                 return;
             }
             throw new PropertyValidationException(
-                "Expected " . $expectedType . " but " . gettype($value) . " given on property " . $this->name . "!",
+                "Expected " . $expectedType . " but " . gettype($value)
+                . " given on property " . $this->name . "!",
                 $this->entityReflection,
                 $this->rawDefinition,
                 PropertyValidationException::TYPE
@@ -358,7 +422,8 @@ class Property
                 $givenType = get_class($value);
             }
             throw new PropertyValidationException(
-                "Expected " . $expectedType . " but " . $givenType . " given on property " . $this->name . "!",
+                "Expected " . $expectedType . " but " . $givenType
+                . " given on property " . $this->name . "!",
                 $this->entityReflection,
                 $this->rawDefinition,
                 PropertyValidationException::TYPE
@@ -369,7 +434,11 @@ class Property
         if ($givenType === "object") {
             $givenType = get_class($value);
         }
-        throw new \Exception("Expected " . $expectedType . " but " . $givenType . " given on property " . $this->name . ". It could be an internal ORM error!");
+        throw new \Exception(
+            "Expected " . $expectedType . " but " . $givenType
+            . " given on property " . $this->name
+            . ". It could be an internal ORM error!"
+        );
     }
 
     /**
@@ -410,23 +479,34 @@ class Property
             if ($date instanceof \DateTime) {
                 return $date;
             }
-        } elseif ($this->type instanceof EntityCollection && Validator::isTraversable($value)) {
+        } elseif ($this->type instanceof EntityCollection
+            && Validator::isTraversable($value)
+        ) {
             // Collection
 
-            $reflection = new Reflection\Entity($this->type->getEntityClass()); // @todo better reflection giving
+            // @todo better reflection giving
+            $reflection = new Reflection\Entity($this->type->getEntityClass());
+
             $collection = new EntityCollection($reflection->getClassName());
             foreach ($value as $index => $data) {
                 $collection[$index] = $reflection->createEntity($data);
             }
             return $collection;
-        } elseif (is_subclass_of($this->type, "UniMapper\Entity") && Validator::isTraversable($value)) {
+        } elseif (is_subclass_of($this->type, "UniMapper\Entity")
+            && Validator::isTraversable($value)
+        ) {
             // Entity
 
-            $reflection = new Reflection\Entity($this->type); // @todo better reflection giving
+            // @todo better reflection giving
+            $reflection = new Reflection\Entity($this->type);
+
             return $reflection->createEntity($value);
         }
 
-        throw new InvalidArgumentException("Can not convert value on property '" . $this->name . "' automatically!");
+        throw new InvalidArgumentException(
+            "Can not convert value on property '" . $this->name
+            . "' automatically!"
+        );
     }
 
     public function isTypeBasic()
@@ -466,7 +546,7 @@ class Property
 
     public function getComputedMethodName()
     {
-       return "compute" . ucfirst($this->name);
+        return "compute" . ucfirst($this->name);
     }
 
 }

@@ -16,8 +16,9 @@ class PropertyException extends \UniMapper\Exception
     /** @var string $definition Property definition */
     protected $definition;
 
-    public function __construct($message, Reflection\Entity $entityReflection, $definition = null, $code = 0)
-    {
+    public function __construct($message, Reflection\Entity $entityReflection,
+        $definition = null, $code = 0
+    ) {
         parent::__construct($message, $code);
         $this->entityReflection = $entityReflection;
         $this->definition = $definition;
@@ -41,9 +42,11 @@ class PropertyException extends \UniMapper\Exception
     public function getEntityLine()
     {
         if ($this->definition) {
-            foreach (file($this->getEntityPath(), FILE_IGNORE_NEW_LINES) as $lineNumber => $line) {
+            foreach (file($this->getEntityPath(), FILE_IGNORE_NEW_LINES)
+                as $lineNumber => $line
+            ) {
                 if (strpos($line, $this->definition) !== false) {
-                   return $lineNumber + 1;
+                    return $lineNumber + 1;
                 }
             }
         }

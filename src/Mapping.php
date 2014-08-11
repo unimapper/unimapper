@@ -73,7 +73,10 @@ class Mapping
                 try {
                     return new \DateTime($value);
                 } catch (\Exception $e) {
-                    throw new MappingException("Can not map value to DateTime automatically! " . $e->getMessage());
+                    throw new MappingException(
+                        "Can not map value to DateTime automatically! "
+                        . $e->getMessage()
+                    );
                 }
             }
         }
@@ -134,7 +137,10 @@ class Mapping
             }
 
             // Map value
-            $values[$propertyName] = $this->mapValue($reflection->getProperty($propertyName), $value);
+            $values[$propertyName] = $this->mapValue(
+                $reflection->getProperty($propertyName),
+                $value
+            );
         }
 
         return $reflection->createEntity($values);
@@ -151,8 +157,12 @@ class Mapping
     {
         $output = [];
         foreach ($entity->getData() as $propertyName => $value) {
+
             $property = $entity->getReflection()->getProperties()[$propertyName];
-            $output[$property->getMappedName()] = $this->unmapValue($property, $value);
+            $output[$property->getMappedName()] = $this->unmapValue(
+                $property,
+                $value
+            );
         }
         return $output;
     }
@@ -189,8 +199,9 @@ class Mapping
         return $data;
     }
 
-    public static function unmapSelection(Reflection\Entity $entityReflection, array $selection)
-    {
+    public static function unmapSelection(Reflection\Entity $entityReflection,
+        array $selection
+    ) {
         if (count($selection) === 0) {
             // Select all if not set
 
@@ -198,7 +209,9 @@ class Mapping
         } else {
             // Add primary property automatically if not set in selection
 
-            $primaryPropertyName = $entityReflection->getPrimaryProperty()->getName();
+            $primaryPropertyName = $entityReflection->getPrimaryProperty()
+                ->getName();
+
             if (!in_array($primaryPropertyName, $selection)) {
                 $selection[] = $primaryPropertyName;
             }
@@ -222,8 +235,9 @@ class Mapping
         return $result;
     }
 
-    public static function unmapOrderBy(Reflection\Entity $entityReflection, array $items)
-    {
+    public static function unmapOrderBy(Reflection\Entity $entityReflection,
+        array $items
+    ) {
         $unmapped = [];
         foreach ($items as $name => $direction) {
             $mappedName = $entityReflection->getProperties()[$name]->getMappedName();
@@ -232,14 +246,20 @@ class Mapping
         return $unmapped;
     }
 
-    public static function unmapConditions(Reflection\Entity $entityReflection, array $conditions)
-    {
+    public static function unmapConditions(Reflection\Entity $entityReflection,
+        array $conditions
+    ) {
         foreach ($conditions as $condition) {
 
             if (is_array($condition[0])) {
-                $condition[0] = self::unmapConditions($entityReflection, $condition[0]);
+
+                $condition[0] = self::unmapConditions(
+                    $entityReflection,
+                    $condition[0]
+                );
             } else {
-                $condition[0] = $entityReflection->getProperty($condition[0])->getMappedName();
+                $condition[0] = $entityReflection->getProperty($condition[0])
+                    ->getMappedName();
             }
         }
         return $conditions;

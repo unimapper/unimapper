@@ -17,22 +17,23 @@ abstract class Association
     /** @var array $parameters Additional association informations */
     protected $parameters = [];
 
-    public function __construct(Reflection\Entity $currentEntityReflection, Reflection\Entity $targetEntityReflection, $parameters)
-    {
-        if (!$currentEntityReflection->hasAdapter()) {
+    public function __construct(Reflection\Entity $currentReflection,
+        Reflection\Entity $targetReflection, $parameters
+    ) {
+        if (!$currentReflection->hasAdapter()) {
             throw new Exception\PropertyParseException(
                 "Can not use associations while current entity "
-                . $currentEntityReflection->getClassName()
+                . $currentReflection->getClassName()
                 . " has no adapter defined!"
             );
         }
-        $this->currentEntityReflection = $currentEntityReflection;
+        $this->currentEntityReflection = $currentReflection;
 
-        $this->targetEntityReflection = $targetEntityReflection;
-        if (!$targetEntityReflection->hasAdapter()) {
+        $this->targetEntityReflection = $targetReflection;
+        if (!$targetReflection->hasAdapter()) {
             throw new Exception\PropertyParseException(
                 "Can not use associations while target entity "
-                . $targetEntityReflection->getClassName()
+                . $targetReflection->getClassName()
                 . " has no adapter defined!"
             );
         }
@@ -62,7 +63,8 @@ abstract class Association
 
     public function isRemote()
     {
-        return $this->currentEntityReflection->getAdapterReflection()->getName() !== $this->targetEntityReflection->getAdapterReflection()->getName();
+        return $this->currentEntityReflection->getAdapterReflection()->getName()
+            !== $this->targetEntityReflection->getAdapterReflection()->getName();
     }
 
 }

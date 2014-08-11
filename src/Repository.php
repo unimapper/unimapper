@@ -37,12 +37,16 @@ abstract class Repository
     {
         $requiredClass = NC::nameToClass($this->getEntityName(), NC::$entityMask);
         if (!$entity instanceof $requiredClass) {
-            throw new RepositoryException("Entity must be instance of ". $requiredClass . "!");
+            throw new RepositoryException(
+                "Entity must be instance of ". $requiredClass . "!"
+            );
         }
 
         $reflection = $entity->getReflection();
         if (!$reflection->hasPrimaryProperty()) {
-            throw new RepositoryException("Can not save entity without primary property!");
+            throw new RepositoryException(
+                "Can not save entity without primary property!"
+            );
         }
 
         $primaryName = $reflection->getPrimaryProperty()->getName();
@@ -102,18 +106,25 @@ abstract class Repository
     {
         $requiredClass = NC::nameToClass($this->getEntityName(), NC::$entityMask);
         if (!$entity instanceof $requiredClass) {
-            throw new RepositoryException("Entity must be instance of ". $requiredClass . "!");
+            throw new RepositoryException(
+                "Entity must be instance of ". $requiredClass . "!"
+            );
         }
 
         $reflection = $entity->getReflection();
         if (!$reflection->hasPrimaryProperty()) {
-            throw new RepositoryException("Can not delete entity without primary property!");
+            throw new RepositoryException(
+                "Can not delete entity without primary property!"
+            );
         }
 
         $primaryName = $reflection->getPrimaryProperty()->getName();
         $primaryValue = $entity->{$primaryName};
         if ($primaryValue === null) {
-            throw new RepositoryException("Primary value in entity '" . $this->getEntityName() . "' must be set!");
+            throw new RepositoryException(
+                "Primary value in entity '" . $this->getEntityName()
+                . "' must be set!"
+            );
         }
 
         $this->query()->delete()->where($primaryName, "=", $primaryValue)->execute();
@@ -134,7 +145,7 @@ abstract class Repository
      * Create new entity
      *
      * @param mixed  $values Iterable value like array or stdClass object
-     * @param string $name   Entity name, default is entity related to current repository
+     * @param string $name   Entity name, default is current related entity
      *
      * @return \UniMapper\Entity
      */
@@ -153,8 +164,9 @@ abstract class Repository
         return $reflection->createEntity($values);
     }
 
-    public function find(array $filter = [], array $orderBy = [], $limit = 0, $offset = 0)
-    {
+    public function find(array $filter = [], array $orderBy = [], $limit = 0,
+        $offset = 0
+    ) {
         $query = $this->query()->findAll();
 
         foreach ($filter as $rule) {
@@ -224,7 +236,9 @@ abstract class Repository
     {
         $class = (string) $class;
         if (!is_subclass_of($class, "UniMapper\Query\Custom")) {
-            throw new RepositoryException("Registered custom query must be instance of Unimapper\Query\Custom!");
+            throw new RepositoryException(
+                "Registered custom query must be instance of Unimapper\Query\Custom!"
+            );
         }
         $this->customQueries[] = $class;
     }
@@ -254,7 +268,10 @@ abstract class Repository
     {
         $entityClass = NC::nameToClass($name, NC::$entityMask);
         if (!is_subclass_of($entityClass, "UniMapper\Entity")) {
-            throw new RepositoryException("Entity with name '" . $name . "' and class '" . $entityClass . "' not found!");
+            throw new RepositoryException(
+                "Entity with name '" . $name . "' and class '" . $entityClass
+                . "' not found!"
+            );
         }
 
 

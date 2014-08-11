@@ -17,8 +17,9 @@ class Enumeration
     /** @var array */
     protected $index = array();
 
-    public function __construct($definition, $rawDefinition, Reflection\Entity $entityReflection)
-    {
+    public function __construct($definition, $rawDefinition,
+        Reflection\Entity $entityReflection
+    ) {
         if (empty($definition)) {
             throw new PropertyException(
                 "Enumeration definition can not be empty!",

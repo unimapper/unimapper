@@ -38,8 +38,9 @@ class QueryBuilder
         "updateOne" => "UniMapper\Query\UpdateOne"
     );
 
-    public function __construct(Reflection\Entity $entityReflection, array $adapters, Logger $logger = null)
-    {
+    public function __construct(Reflection\Entity $entityReflection,
+        array $adapters, Logger $logger = null
+    ) {
         $this->entityReflection = $entityReflection;
         $this->adapters = $adapters;
         $this->logger = $logger;
@@ -48,7 +49,9 @@ class QueryBuilder
     public function __call($name, $arguments)
     {
         if (!isset($this->queries[$name])) {
-            throw new QueryBuilderException("Query with name " . $name . " does not exist!");
+            throw new QueryBuilderException(
+                "Query with name " . $name . " does not exist!"
+            );
         }
 
         array_unshift($arguments, $this->entityReflection, $this->adapters);

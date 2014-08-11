@@ -7,9 +7,10 @@ class BelongsToOne extends \UniMapper\Reflection\Entity\Property\Association
 
     const TYPE = "1:1";
 
-    public function __construct(Reflection\Entity $currentEntityReflection, Reflection\Entity $targetEntityReflection, $parameters)
-    {
-        parent::__construct($currentEntityReflection, $targetEntityReflection, $parameters);
+    public function __construct(Reflection\Entity $currentReflection,
+        Reflection\Entity $targetReflection, $parameters
+    ) {
+        parent::__construct($currentReflection, $targetReflection, $parameters);
         if (!isset($this->parameters[0])) {
             throw new \Exception("You must define foreign key!");
         }

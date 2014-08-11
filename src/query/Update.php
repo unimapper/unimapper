@@ -12,8 +12,9 @@ class Update extends \UniMapper\Query implements IConditionable
     /** @var \UniMapper\Entity */
     private $entity;
 
-    public function __construct(Reflection\Entity $entityReflection, array $adapters, array $data)
-    {
+    public function __construct(Reflection\Entity $entityReflection,
+        array $adapters, array $data
+    ) {
         parent::__construct($entityReflection, $adapters);
 
         // Primary value update is not allowed
@@ -21,7 +22,10 @@ class Update extends \UniMapper\Query implements IConditionable
 
             $primaryName = $entityReflection->getPrimaryProperty()->getMappedName();
             if (isset($data[$primaryName])) {
-                throw new QueryException("Update is not allowed on primary property '" .  $primaryName . "'!");
+                throw new QueryException(
+                    "Update is not allowed on primary property '"
+                    .  $primaryName . "'!"
+                );
             }
         }
 

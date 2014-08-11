@@ -5,7 +5,8 @@ namespace UniMapper;
 /**
  * Entity collection as ArrayList
  */
-class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSerializable
+class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
+    \JsonSerializable
 {
 
     /** @var string $entityClass Entity class */
@@ -24,7 +25,9 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     public function __construct($entityClass)
     {
         if (!is_subclass_of($entityClass, "UniMapper\Entity")) {
-            throw new Exception\InvalidArgumentException("Class must be instance of entity!");
+            throw new Exception\InvalidArgumentException(
+                "Class must be instance of entity!"
+            );
         }
         $this->entityClass = $entityClass;
     }
@@ -83,7 +86,8 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     {
         if (!$value instanceof $this->entityClass) {
             throw new Exception\InvalidArgumentException(
-                "Expected entity " . $this->entityClass . " but " . gettype($value) . " given!"
+                "Expected entity " . $this->entityClass . " but "
+                . gettype($value) . " given!"
             );
         }
         if (is_null($offset)) {
@@ -167,7 +171,8 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate, 
     {
         foreach ($this->data as $entity) {
 
-            $primaryPropertyName = $entity->getReflection()->getPrimaryProperty()->getName();
+            $primaryPropertyName = $entity->getReflection()->getPrimaryProperty()
+                ->getName();
             $primaryValue = $entity->{$primaryPropertyName};
             if ($primaryValue === $value && $primaryValue !== null) {
                 return $entity;

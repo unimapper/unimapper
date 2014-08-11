@@ -7,9 +7,10 @@ class HasOne extends \UniMapper\Reflection\Entity\Property\Association
 
     const TYPE = "N:1";
 
-    public function __construct(Reflection\Entity $currentEntityReflection, Reflection\Entity $targetEntityReflection, $parameters)
-    {
-        parent::__construct($currentEntityReflection, $targetEntityReflection, $parameters);
+    public function __construct(Reflection\Entity $currentReflection,
+        Reflection\Entity $targetReflection, $parameters
+    ) {
+        parent::__construct($currentReflection, $targetReflection, $parameters);
         if (!isset($this->parameters[0])) {
             throw new \Exception("You must define a reference key!");
         }

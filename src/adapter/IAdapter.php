@@ -9,9 +9,13 @@ interface IAdapter
 
     public function delete($resource, $conditions);
 
-    public function findOne($resource, $primaryName, $primaryValue, array $associations = []);
+    public function findOne($resource, $primaryName, $primaryValue,
+        array $associations = []
+    );
 
-    public function findAll($resource, $selection = null, $conditions = null, $orderBy = null, $limit = 0, $offset = 0, array $associations = []);
+    public function findAll($resource, $selection = null, $conditions = null,
+        $orderBy = null, $limit = 0, $offset = 0, array $associations = []
+    );
 
     public function insert($resource, array $values);
 

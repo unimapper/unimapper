@@ -44,15 +44,20 @@ class Entity
         $this->className = $reflection->getName();
         $this->fileName = $reflection->getFileName();
         $this->docComment = $reflection->getDocComment();
-        $this->parentClassName = $reflection->getParentClass()->name; // @todo undefined method, needs some refactoring
+
+        // @todo undefined method, needs some refactoring
+        $this->parentClassName = $reflection->getParentClass()->name;
+
         $this->constants = $reflection->getConstants();
 
-        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC)
+            as $property
+        ) {
             $this->publicProperties[] =  $property->getName();
         }
 
-        $this->adapter = $this->parseAdapter();
-        $this->parseProperties();
+        $this->adapter = $this->_parseAdapter();
+        $this->_parseProperties();
     }
 
     public function createEntity($values = [])
@@ -79,11 +84,12 @@ class Entity
     /**
      * Parse properties from annotations
      *
-     * @return array Collection of \UniMapper\Reflection\Entity\Property with property name as index
+     * @return array Collection of \UniMapper\Reflection\Entity\Property with
+     *               property name as index.
      *
      * @throws \UniMapper\Exception\PropertyException
      */
-    private function parseProperties()
+    private function _parseProperties()
     {
         preg_match_all(
             '/\s*\*\s*@property([ -](read)*\s*.*)/',
@@ -105,7 +111,8 @@ class Entity
             }
             if (in_array($property->getName(), $this->publicProperties)) {
                 throw new PropertyException(
-                    "Property '" . $property->getName() ."' already defined as public property!",
+                    "Property '" . $property->getName()
+                    ."' already defined as public property!",
                     $this,
                     $definition
                 );
@@ -113,12 +120,20 @@ class Entity
 
             // Primary property
             if ($property->isPrimary() && $this->primaryPropertyName !== null) {
-                throw new PropertyException("Primary property already defined!", $this, $annotation);
+                throw new PropertyException(
+                    "Primary property already defined!",
+                    $this,
+                    $annotation
+                );
             } elseif ($property->isPrimary()) {
                 $this->primaryPropertyName = $property->getName();
             }
             if ($property->isAssociation() && $this->primaryPropertyName === null) {
-                throw new PropertyException("You must define primary property before the association!", $this, $annotation);
+                throw new PropertyException(
+                    "You must define primary property before the association!",
+                    $this,
+                    $annotation
+                );
             }
 
             $this->properties[$property->getName()] = $property;
@@ -126,7 +141,10 @@ class Entity
 
         // Include inherited doc comments too
         if (stripos($this->docComment, "{@inheritDoc}") !== false) {
-            $this->properties = array_merge($this->properties, $this->getEntityProperties($this->parentClassName)); // @todo
+            $this->properties = array_merge(
+                $this->properties,
+                $this->getEntityProperties($this->parentClassName)
+            ); // @todo broken
         }
     }
 
@@ -135,7 +153,7 @@ class Entity
      *
      * @return \UniMapper\Reflection\Entity\Mapper|null
      */
-    private function parseAdapter()
+    private function _parseAdapter()
     {
         preg_match_all(
             '#@adapter (.*?)\n#s',
@@ -148,7 +166,11 @@ class Entity
         }
 
         if (count($annotations[0]) > 1) {
-            throw new PropertyException("Only one adapter definition allowed!", $this, $annotations[0][1]);
+            throw new PropertyException(
+                "Only one adapter definition allowed!",
+                $this,
+                $annotations[0][1]
+            );
         }
 
         return new Adapter(substr($annotations[0][0], 8), $this);
@@ -209,7 +231,9 @@ class Entity
     public function getPrimaryProperty()
     {
         if (!$this->hasPrimaryProperty()) {
-            throw new \Exception("Primary property not defined in " . $this->className . "!");
+            throw new \Exception(
+                "Primary property not defined in " . $this->className . "!"
+            );
         }
         return $this->properties[$this->primaryPropertyName];
     }
