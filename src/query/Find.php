@@ -10,7 +10,7 @@ use UniMapper\Exception\QueryException,
     UniMapper\Adapter,
     UniMapper\Query\IConditionable;
 
-class FindAll extends \UniMapper\Query implements IConditionable
+class Find extends \UniMapper\Query implements IConditionable
 {
 
     protected $limit;
@@ -95,7 +95,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
     {
         $mapping = $adapter->getMapping();
 
-        $result = $adapter->findAll(
+        $result = $adapter->find(
             $this->entityReflection->getAdapterReflection()->getResource(),
             $mapping::unmapSelection($this->entityReflection, $this->selection),
             $mapping::unmapConditions($this->entityReflection, $this->conditions),
@@ -196,7 +196,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
     private function _hasMany(Adapter $currentAdapter, Adapter $targetAdapter,
         HasMany $association, array $primaryValues
     ) {
-        $joinResult = $currentAdapter->findAll(
+        $joinResult = $currentAdapter->find(
             $association->getJoinResource(),
             [$association->getJoinKey(), $association->getReferenceKey()],
             [[$association->getJoinKey(), "IN", $primaryValues, "AND"]]
@@ -208,7 +208,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
             $association->getJoinKey()]
         );
 
-        $targetResult = $targetAdapter->findAll(
+        $targetResult = $targetAdapter->find(
             $association->getTargetResource(),
             [], // @todo
             [
@@ -248,7 +248,7 @@ class FindAll extends \UniMapper\Query implements IConditionable
     private function _belongsToMany(Adapter $targetAdapter,
         BelongsToMany $association, array $primaryValues
     ) {
-        $result = $targetAdapter->findAll(
+        $result = $targetAdapter->find(
             $association->getTargetResource(),
             [], // @todo
             [

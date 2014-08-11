@@ -13,7 +13,7 @@ interface IAdapter
         array $associations = []
     );
 
-    public function findAll($resource, $selection = null, $conditions = null,
+    public function find($resource, $selection = null, $conditions = null,
         $orderBy = null, $limit = 0, $offset = 0, array $associations = []
     );
 

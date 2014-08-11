@@ -167,7 +167,7 @@ abstract class Repository
     public function find(array $filter = [], array $orderBy = [], $limit = 0,
         $offset = 0
     ) {
-        $query = $this->query()->findAll();
+        $query = $this->query()->find();
 
         foreach ($filter as $rule) {
             $query->where($rule[0], $rule[1], $rule[2]);

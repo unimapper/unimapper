@@ -52,7 +52,7 @@ class RepositoryTest extends Tester\TestCase
      */
     public function testRegisterCustomQueryFailed()
     {
-        $this->repository->registerCustomQuery("UniMapper\Query\FindAll");
+        $this->repository->registerCustomQuery("UniMapper\Query\Find");
     }
 
     public function testCreateEntity()
@@ -154,7 +154,7 @@ class RepositoryTest extends Tester\TestCase
 
     public function testFind()
     {
-        $this->adapterMock->shouldReceive("findAll")
+        $this->adapterMock->shouldReceive("find")
             ->with(
                 "resource",
                 ["id", "text", "empty", "link", "email_address", "time", "ip", "mark", "entity", "collection", "readonly", "stored_data"],

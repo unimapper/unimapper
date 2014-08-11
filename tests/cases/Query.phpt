@@ -23,7 +23,7 @@ class QueryTest extends Tester\TestCase
      */
     private function createConditionableQuery()
     {
-        return new UniMapper\Query\FindAll(
+        return new UniMapper\Query\Find(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["FooAdapter" => $this->adapterMock]
         );
@@ -114,7 +114,7 @@ class QueryTest extends Tester\TestCase
      */
     public function testAdapterRequired()
     {
-        new \UniMapper\Query\FindAll(
+        new \UniMapper\Query\Find(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             []
         );
@@ -125,7 +125,7 @@ class QueryTest extends Tester\TestCase
      */
     public function testNoAdapterEntity()
     {
-        new \UniMapper\Query\FindAll(
+        new \UniMapper\Query\Find(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoAdapter"),
             []
         );

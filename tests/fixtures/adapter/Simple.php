@@ -20,7 +20,7 @@ class Simple extends \UniMapper\Adapter
         throw new \Exception("You should  mock here!");
     }
 
-    public function findAll($resource, $selection = null, $conditions = null, $orderBy = null, $limit = 0, $offset = 0, array $associations = [])
+    public function find($resource, $selection = null, $conditions = null, $orderBy = null, $limit = 0, $offset = 0, array $associations = [])
     {
         throw new \Exception("You should  mock here!");
     }

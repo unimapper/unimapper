@@ -7,7 +7,7 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class QueryFindAllTest extends Tester\TestCase
+class QueryFindTest extends Tester\TestCase
 {
 
     /** @var array $adapters */
@@ -29,7 +29,7 @@ class QueryFindAllTest extends Tester\TestCase
         $collection[] = $entity1;
         $collection[] = $entity2;
 
-        $this->adapters["FooAdapter"]->shouldReceive("findAll")
+        $this->adapters["FooAdapter"]->shouldReceive("find")
             ->with(
                 "resource",
                 ["link", "text", "id"],
@@ -52,7 +52,7 @@ class QueryFindAllTest extends Tester\TestCase
         $this->adapters["FooAdapter"]->shouldReceive("mapCollection")->with(get_class($entity1), [["id" => 2], ["id" => 3]])->once()->andReturn($collection);
         $this->adapters["FooAdapter"]->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
 
-        $query = new Query\FindAll(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, "url", "text");
+        $query = new Query\Find(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, "url", "text");
         $query->where("id", ">", 1)
                 ->orWhereAre(function($query) {
                     $query->where("text", "LIKE", "%foo");
@@ -67,5 +67,5 @@ class QueryFindAllTest extends Tester\TestCase
 
 }
 
-$testCase = new QueryFindAllTest;
+$testCase = new QueryFindTest;
 $testCase->run();

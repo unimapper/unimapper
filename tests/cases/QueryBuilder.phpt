@@ -27,9 +27,9 @@ class QueryBuilderTest extends Tester\TestCase
         Assert::type("UniMapper\Query\Count", $this->builder->count());
     }
 
-    public function testFindAll()
+    public function testFind()
     {
-        Assert::type("UniMapper\Query\FindAll", $this->builder->findAll());
+        Assert::type("UniMapper\Query\Find", $this->builder->find());
     }
 
     public function testFindOne()

@@ -6,7 +6,7 @@ use UniMapper\Reflection,
     UniMapper\Exception\QueryBuilderException;
 
 /**
- * @method \UniMapper\Query\FindAll   findAll()
+ * @method \UniMapper\Query\Find      find()
  * @method \UniMapper\Query\FindOne   findOne($primaryValue)
  * @method \UniMapper\Query\Insert    insert(array $data)
  * @method \UniMapper\Query\Update    update(array $data)
@@ -31,7 +31,7 @@ class QueryBuilder
         "count" => "UniMapper\Query\Count",
         "raw" => "UniMapper\Query\Raw",
         "delete" => "UniMapper\Query\Delete",
-        "findAll" => "UniMapper\Query\FindAll",
+        "find" => "UniMapper\Query\Find",
         "findOne" => "UniMapper\Query\FindOne",
         "insert" => "UniMapper\Query\Insert",
         "update" => "UniMapper\Query\Update",
