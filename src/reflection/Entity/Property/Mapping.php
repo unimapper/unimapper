@@ -26,6 +26,9 @@ class Mapping
     /** @var string $rawDefinition */
     private $rawDefinition;
 
+    /** @var  array */
+    private $options;
+
     public function __construct($definition, $rawDefinition,
         Reflection\Entity $entityReflection
     ) {
@@ -46,11 +49,7 @@ class Mapping
                 $this->filterOut = $this->_createCallable($out);
                 break;
             default:
-                throw new PropertyException(
-                    "Unknown mapping definition '" . $name . "'!",
-                    $entityReflection,
-                    $rawDefinition
-                );
+                $this->options[$name] = trim($value, "'");
             }
         }
     }
@@ -83,6 +82,16 @@ class Mapping
     public function getFilterOut()
     {
         return $this->filterOut;
+    }
+
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    public function getOption($name, $default = null)
+    {
+        return isset($this->options[$name]) ? $this->options[$name] : $default;
     }
 
 }
