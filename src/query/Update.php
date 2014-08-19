@@ -55,7 +55,7 @@ class Update extends \UniMapper\Query implements IConditionable
         $adapter->update(
             $this->entityReflection->getAdapterReflection()->getResource(),
             $values,
-            $mapping::unmapConditions($this->entityReflection, $this->conditions)
+            $mapping->unmapConditions($this->entityReflection, $this->conditions)
         );
     }
 

@@ -97,9 +97,9 @@ class Find extends \UniMapper\Query implements IConditionable
 
         $result = $adapter->find(
             $this->entityReflection->getAdapterReflection()->getResource(),
-            $mapping::unmapSelection($this->entityReflection, $this->selection),
-            $mapping::unmapConditions($this->entityReflection, $this->conditions),
-            $mapping::unmapOrderBy($this->entityReflection, $this->orderBy),
+            $mapping->unmapSelection($this->entityReflection, $this->selection),
+            $mapping->unmapConditions($this->entityReflection, $this->conditions),
+            $mapping->unmapOrderBy($this->entityReflection, $this->orderBy),
             $this->limit,
             $this->offset,
             $this->associations["local"]

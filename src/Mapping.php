@@ -199,7 +199,7 @@ class Mapping
         return $data;
     }
 
-    public static function unmapSelection(Reflection\Entity $entityReflection,
+    public function unmapSelection(Reflection\Entity $entityReflection,
         array $selection
     ) {
         if (count($selection) === 0) {
@@ -235,7 +235,7 @@ class Mapping
         return $result;
     }
 
-    public static function unmapOrderBy(Reflection\Entity $entityReflection,
+    public function unmapOrderBy(Reflection\Entity $entityReflection,
         array $items
     ) {
         $unmapped = [];
@@ -246,14 +246,14 @@ class Mapping
         return $unmapped;
     }
 
-    public static function unmapConditions(Reflection\Entity $entityReflection,
+    public function unmapConditions(Reflection\Entity $entityReflection,
         array $conditions
     ) {
         foreach ($conditions as $condition) {
 
             if (is_array($condition[0])) {
 
-                $condition[0] = self::unmapConditions(
+                $condition[0] = $this->unmapConditions(
                     $entityReflection,
                     $condition[0]
                 );
