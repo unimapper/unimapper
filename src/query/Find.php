@@ -35,6 +35,7 @@ class Find extends \UniMapper\Query implements IConditionable
         if (!array_search($name, $this->selection)) {
             $this->selection[] = $name;
         }
+        return $this;
     }
 
     public function associate($propertyName)
