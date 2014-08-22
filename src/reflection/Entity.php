@@ -37,11 +37,21 @@ class Entity
     /** @var string */
     private $primaryPropertyName;
 
+    /** @var boolean */
+    private $initialized = false;
+
     public function __construct($class)
     {
-        $reflection = new \ReflectionClass($class);
+        $this->className = $class;
+        if (!$this->initialized) {
+            $this->_initialize();
+        }
+    }
 
-        $this->className = $reflection->getName();
+    private function _initialize()
+    {
+        $reflection = new \ReflectionClass($this->className);
+
         $this->fileName = $reflection->getFileName();
         $this->docComment = $reflection->getDocComment();
 
@@ -58,6 +68,7 @@ class Entity
 
         $this->adapter = $this->_parseAdapter();
         $this->_parseProperties();
+        $this->initialized = true;
     }
 
     public function createEntity($values = [])
