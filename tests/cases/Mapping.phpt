@@ -20,7 +20,7 @@ class MappingTest extends Tester\TestCase
     public function testMapEntity()
     {
         $entity = $this->mapping->mapEntity(
-            new Reflection\Entity("Simple"),
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             [
                 "email_address" => "john.doe@example.com",
                 "publicProperty" => "foo",
