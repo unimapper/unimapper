@@ -74,7 +74,7 @@ class FindOne extends \UniMapper\Query implements IConditionable
         }
 
         return $adapter->getMapping()->mapEntity(
-            $this->entityReflection->getClassName(),
+            $this->entityReflection,
             $result
         );
     }

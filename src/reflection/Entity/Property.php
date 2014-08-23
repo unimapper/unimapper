@@ -6,15 +6,15 @@ use UniMapper\EntityCollection,
     UniMapper\Validator,
     UniMapper\Reflection,
     UniMapper\NamingConvention as NC,
-    UniMapper\Exception\PropertyValidationException,
-    UniMapper\Exception\InvalidArgumentException,
-    UniMapper\Exception\PropertyException;
+    UniMapper\Exception;
 
 /**
  * Entity property reflection
  */
 class Property
 {
+
+    const TYPE_DATETIME = "DateTime";
 
     /** @var string */
     protected $type;
@@ -111,7 +111,7 @@ class Property
     public function getName()
     {
         if ($this->name === null) {
-            throw new PropertyException(
+            throw new Exception\PropertyException(
                 "Property name is not set!",
                 $this->entityReflection,
                 $this->rawDefinition
@@ -143,7 +143,7 @@ class Property
     {
         $length = strlen($definition);
         if ($length === 1 || substr($definition, 0, 1) !== "$") {
-            throw new PropertyException(
+            throw new Exception\PropertyException(
                 "Invalid property name definition!",
                 $this->entityReflection,
                 $this->rawDefinition
@@ -197,7 +197,7 @@ class Property
      *
      * @param string $definition Docblok definition
      *
-     * @throws \UniMapper\Exception\PropertyException
+     * @throws Exception\PropertyException
      */
     protected function readType($definition)
     {
@@ -206,27 +206,31 @@ class Property
             // Basic type
 
             return $this->type = $definition;
-        } elseif ($definition === "DateTime") {
+        } elseif ($definition === self::TYPE_DATETIME) {
             // DateTime
 
             return $this->type = $definition;
         } elseif (class_exists(NC::nameToClass($definition, NC::$entityMask))) {
             // Entity
 
-            return $this->type = NC::nameToClass($definition, NC::$entityMask);
+            return $this->type = new Reflection\Entity(
+                NC::nameToClass($definition, NC::$entityMask)
+            );
         } elseif (preg_match("#(.*?)\[\]#s", $definition)) {
             // Collection
 
             try {
-                return $this->type = new EntityCollection(
+                $entityReflection = new Reflection\Entity(
                     NC::nameToClass(rtrim($definition, "[]"), NC::$entityMask)
                 );
-            } catch (InvalidArgumentException $exception) {
+            } catch (Exception\InvalidArgumentException $exception) {
 
             }
+
+            return $this->type = new EntityCollection($entityReflection);
         }
 
-        throw new PropertyException(
+        throw new Exception\PropertyException(
             "Unsupported type '" . $definition . "'!",
             $this->entityReflection,
             $this->rawDefinition
@@ -246,7 +250,7 @@ class Property
             // m:computed
 
             if ($this->mapping) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Can not combine m:computed with m:mapping!",
                     $this->entityReflection,
                     $definition
@@ -255,7 +259,7 @@ class Property
 
             $computedMethodName = $this->getComputedMethodName();
             if (!method_exists($this->entityReflection->getClassName(), $computedMethodName)) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Can not find computed method with name "
                     . $computedMethodName . "!",
                     $this->entityReflection,
@@ -267,7 +271,7 @@ class Property
             // m:map(name='column' filter=in_fnc|out_fnc)
 
             if ($this->mapping) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Mapping already defined!",
                     $this->entityReflection,
                     $definition
@@ -275,7 +279,7 @@ class Property
             }
 
             if ($this->computed) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Can not combine m:mapping with m:computed!",
                     $this->entityReflection, $definition
                 );
@@ -292,7 +296,7 @@ class Property
             // m:enum(MY_CLASS::CUSTOM_*)
 
             if ($this->computed) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Can not combine m:computed with m:enum!",
                     $this->entityReflection,
                     $definition
@@ -307,7 +311,7 @@ class Property
             // m:primary
 
             if ($this->computed) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Can not combine m:computed with m:primary!",
                     $this->entityReflection,
                     $definition
@@ -318,7 +322,7 @@ class Property
             // m:assoc(1:1=key|targetKey)
 
             if ($this->computed || $this->mapping || $this->enumeration) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Association can not be combined with m:map, m:computed or "
                     . "m:enum!",
                     $this->entityReflection,
@@ -328,11 +332,11 @@ class Property
 
             // Get target entity class
             if ($this->type instanceof EntityCollection) {
-                $targetEntityClass = $this->type->getEntityClass();
+                $targetEntityClass = $this->type->getEntityReflection()->getClassName();
             } elseif (is_subclass_of($this->type, "UniMapper\Entity")) {
                 $targetEntityClass = $this->type;
             } else {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Property type must be collection or entity if association "
                     . "defined!",
                     $this->entityReflection,
@@ -341,7 +345,7 @@ class Property
             }
 
             if (!strpos($matches[1], "=")) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Bad association definition!",
                     $this->entityReflection,
                     $definition
@@ -349,7 +353,7 @@ class Property
             }
             list($assocType, $parameters) = explode("=", $matches[1]);
             if (!isset($this->supportedAssociations[$assocType])) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Association type '" . $assocType . "' not supported!",
                     $this->entityReflection,
                     $definition
@@ -382,12 +386,12 @@ class Property
         if ($this->enumeration !== null
             && !$this->enumeration->isValueFromEnum($value)
         ) {
-            throw new PropertyValidationException(
+            throw new Exception\PropertyValidationException(
                 "Value " . $value . " is not from defined entity enumeration "
                 . "range on property " . $this->name . "!",
                 $this->entityReflection,
                 $this->rawDefinition,
-                PropertyValidationException::ENUMERATION
+                Exception\PropertyValidationException::ENUMERATION
             );
         }
 
@@ -397,12 +401,12 @@ class Property
             if (gettype($value) === $expectedType) {
                 return;
             }
-            throw new PropertyValidationException(
+            throw new Exception\PropertyValidationException(
                 "Expected " . $expectedType . " but " . gettype($value)
                 . " given on property " . $this->name . "!",
                 $this->entityReflection,
                 $this->rawDefinition,
-                PropertyValidationException::TYPE
+                Exception\PropertyValidationException::TYPE
             );
         }
 
@@ -421,12 +425,12 @@ class Property
             if ($givenType === "object") {
                 $givenType = get_class($value);
             }
-            throw new PropertyValidationException(
+            throw new Exception\PropertyValidationException(
                 "Expected " . $expectedType . " but " . $givenType
                 . " given on property " . $this->name . "!",
                 $this->entityReflection,
                 $this->rawDefinition,
-                PropertyValidationException::TYPE
+                Exception\PropertyValidationException::TYPE
             );
         }
 
@@ -448,7 +452,7 @@ class Property
      *
      * @return mixed
      *
-     * @throws InvalidArgumentException
+     * @throws Exception\InvalidArgumentException
      */
     public function convertValue($value)
     {
@@ -462,7 +466,7 @@ class Property
             if (settype($value, $this->type)) {
                 return $value;
             }
-        } elseif ($this->type === "DateTime") {
+        } elseif ($this->type === self::TYPE_DATETIME) {
             // DateTime
 
             $date = $value;
@@ -484,26 +488,22 @@ class Property
         ) {
             // Collection
 
-            // @todo better reflection giving
-            $reflection = new Reflection\Entity($this->type->getEntityClass());
-
-            $collection = new EntityCollection($reflection->getClassName());
+            $collection = clone $this->type;
             foreach ($value as $index => $data) {
-                $collection[$index] = $reflection->createEntity($data);
+
+                $collection[$index] = $this->type->getEntityReflection()
+                    ->createEntity($data);
             }
             return $collection;
-        } elseif (is_subclass_of($this->type, "UniMapper\Entity")
+        } elseif ($this->type instanceof Reflection\Entity
             && Validator::isTraversable($value)
         ) {
             // Entity
 
-            // @todo better reflection giving
-            $reflection = new Reflection\Entity($this->type);
-
-            return $reflection->createEntity($value);
+            return $this->type->createEntity($value);
         }
 
-        throw new InvalidArgumentException(
+        throw new Exception\InvalidArgumentException(
             "Can not convert value on property '" . $this->name
             . "' automatically!"
         );

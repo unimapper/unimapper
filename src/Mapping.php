@@ -10,14 +10,6 @@ use UniMapper\Entity,
 class Mapping
 {
 
-    /** @var \UniMapper\Cache $cache */
-    protected $cache;
-
-    public function setCache(Cache $cache = null)
-    {
-        $this->cache = $cache;
-    }
-
     /**
      * Convert value to defined property format
      *
@@ -57,27 +49,23 @@ class Mapping
             }
 
         } elseif ($type instanceof EntityCollection) {
+            // Collection
 
-            return $this->mapCollection($type->getEntityClass(), $value);
+            return $this->mapCollection($type->getEntityReflection(), $value);
+        } elseif ($type instanceof Reflection\Entity) {
+            // Entity
 
-        } elseif (class_exists($type)) {
+            return $this->mapEntity($type, $value);
+        } elseif ($type === Reflection\Entity\Property::TYPE_DATETIME) {
+            // DateTime
 
-            if ($value instanceof $type) {
-                // Expected object already given
-                return $value;
-            } elseif ($type instanceof Entity) {
-                // Entity
-                return $this->mapEntity(get_class($type), $value);
-            } elseif ($type === "DateTime") {
-                // DateTime
-                try {
-                    return new \DateTime($value);
-                } catch (\Exception $e) {
-                    throw new MappingException(
-                        "Can not map value to DateTime automatically! "
-                        . $e->getMessage()
-                    );
-                }
+            try {
+                return new \DateTime($value);
+            } catch (\Exception $e) {
+                throw new MappingException(
+                    "Can not map value to DateTime automatically! "
+                    . $e->getMessage()
+                );
             }
         }
 
@@ -89,7 +77,7 @@ class Mapping
         );
     }
 
-    public function mapCollection($entityClass, $data)
+    public function mapCollection(Reflection\Entity $entityReflection, $data)
     {
         if (!Validator::isTraversable($data)) {
             throw new Exception\InvalidArgumentException(
@@ -97,23 +85,17 @@ class Mapping
             );
         }
 
-        $collection = new EntityCollection($entityClass);
+        $collection = new EntityCollection($entityReflection);
         foreach ($data as $value) {
-            $collection[] = $this->mapEntity($entityClass, $value);
+            $collection[] = $this->mapEntity($entityReflection, $value);
         }
         return $collection;
     }
 
-    public function mapEntity($class, $data)
+    public function mapEntity(Reflection\Entity $entityReflection, $data)
     {
         if (!Validator::isTraversable($data)) {
             throw new MappingException("Input data must be traversable!");
-        }
-
-        if ($this->cache) {
-            $reflection = $this->cache->loadEntityReflection($class);
-        } else {
-            $reflection = new Reflection\Entity($class);
         }
 
         $values = [];
@@ -122,7 +104,7 @@ class Mapping
             $propertyName = $index;
 
             // Map property name if needed
-            foreach ($reflection->getProperties() as $propertyReflection) {
+            foreach ($entityReflection->getProperties() as $propertyReflection) {
 
                 if ($propertyReflection->getMappedName() === $index) {
 
@@ -132,18 +114,18 @@ class Mapping
             }
 
             // Skip undefined properties
-            if (!$reflection->hasProperty($propertyName)) {
+            if (!$entityReflection->hasProperty($propertyName)) {
                 continue;
             }
 
             // Map value
             $values[$propertyName] = $this->mapValue(
-                $reflection->getProperty($propertyName),
+                $entityReflection->getProperty($propertyName),
                 $value
             );
         }
 
-        return $reflection->createEntity($values);
+        return $entityReflection->createEntity($values);
     }
 
     /**

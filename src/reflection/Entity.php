@@ -2,7 +2,7 @@
 
 namespace UniMapper\Reflection;
 
-use UniMapper\Exception\PropertyException;
+use UniMapper\Exception;
 
 /**
  * Entity reflection
@@ -50,6 +50,12 @@ class Entity
 
     private function _initialize()
     {
+        if (!is_subclass_of($this->className, "UniMapper\Entity")) {
+            throw new Exception\InvalidArgumentException(
+                "Class must be instance of entity!"
+            );
+        }
+
         $reflection = new \ReflectionClass($this->className);
 
         $this->fileName = $reflection->getFileName();
@@ -114,16 +120,16 @@ class Entity
 
             // Prevent duplications
             if (isset($properties[$property->getName()])) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Duplicate property with name '" . $property->getName() . "'!",
                     $this,
                     $definition
                 );
             }
             if (in_array($property->getName(), $this->publicProperties)) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Property '" . $property->getName()
-                    ."' already defined as public property!",
+                    . "' already defined as public property!",
                     $this,
                     $definition
                 );
@@ -131,7 +137,7 @@ class Entity
 
             // Primary property
             if ($property->isPrimary() && $this->primaryPropertyName !== null) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "Primary property already defined!",
                     $this,
                     $annotation
@@ -140,7 +146,7 @@ class Entity
                 $this->primaryPropertyName = $property->getName();
             }
             if ($property->isAssociation() && $this->primaryPropertyName === null) {
-                throw new PropertyException(
+                throw new Exception\PropertyException(
                     "You must define primary property before the association!",
                     $this,
                     $annotation
@@ -177,7 +183,7 @@ class Entity
         }
 
         if (count($annotations[0]) > 1) {
-            throw new PropertyException(
+            throw new Exception\PropertyException(
                 "Only one adapter definition allowed!",
                 $this,
                 $annotations[0][1]

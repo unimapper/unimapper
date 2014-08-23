@@ -165,10 +165,7 @@ class Find extends \UniMapper\Query implements IConditionable
             }
         }
 
-        return $mapping->mapCollection(
-            $this->entityReflection->getClassName(),
-            $result
-        );
+        return $mapping->mapCollection($this->entityReflection, $result);
     }
 
     protected function addCondition($propertyName, $operator, $value,

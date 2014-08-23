@@ -20,11 +20,6 @@ abstract class Adapter implements Adapter\IAdapter
         $this->mapping = $mapping;
     }
 
-    public function setCache(Cache $cache)
-    {
-        $this->mapping->setCache($cache);
-    }
-
     public function getName()
     {
         return $this->name;

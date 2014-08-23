@@ -1,6 +1,7 @@
 <?php
 
 use Tester\Assert,
+    UniMapper\Reflection,
     UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
@@ -19,7 +20,7 @@ class MappingTest extends Tester\TestCase
     public function testMapEntity()
     {
         $entity = $this->mapping->mapEntity(
-            "UniMapper\Tests\Fixtures\Entity\Simple",
+            new Reflection\Entity("Simple"),
             [
                 "email_address" => "john.doe@example.com",
                 "publicProperty" => "foo",
@@ -60,7 +61,7 @@ class MappingTest extends Tester\TestCase
     public function testMapCollection()
     {
         $collection = $this->mapping->mapCollection(
-            "UniMapper\Tests\Fixtures\Entity\Simple",
+            new Reflection\Entity("Simple"),
             [
                 [
                     "email_address" => "john.doe@example.com",
@@ -86,7 +87,7 @@ class MappingTest extends Tester\TestCase
         $entity->publicProperty = "foo";
 
         $collection = new \UniMapper\EntityCollection(
-            "UniMapper\Tests\Fixtures\Entity\Simple"
+            new Reflection\Entity("Simple")
         );
         $collection[] = $entity;
 

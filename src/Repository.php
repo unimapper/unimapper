@@ -274,7 +274,6 @@ abstract class Repository
             );
         }
 
-
         if ($this->cache) {
             $entityReflection = $this->cache->loadEntityReflection($entityClass);
         } else {
@@ -290,6 +289,7 @@ abstract class Repository
         foreach ($this->customQueries as $class) {
             $queryBuilder->registerQuery($class);
         }
+
         return $queryBuilder;
     }
 

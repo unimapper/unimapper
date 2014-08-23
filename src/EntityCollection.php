@@ -9,27 +9,18 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     \JsonSerializable
 {
 
-    /** @var string $entityClass Entity class */
-    private $entityClass = null;
+    /** @var \UniMapper\Reflection\Entity $entityReflection Entity reflection */
+    private $entityReflection;
 
     /** @var array $data Data container */
-    private $data = array();
+    private $data = [];
 
     /**
-     * Constructor
-     *
-     * @param string $entityClass Pass entity class and define collection type
-     *
-     * @return void
+     * @param Reflection\Entity $entityReflection
      */
-    public function __construct($entityClass)
+    public function __construct(Reflection\Entity $entityReflection)
     {
-        if (!is_subclass_of($entityClass, "UniMapper\Entity")) {
-            throw new Exception\InvalidArgumentException(
-                "Class must be instance of entity!"
-            );
-        }
-        $this->entityClass = $entityClass;
+        $this->entityReflection = $entityReflection;
     }
 
     /**
@@ -43,13 +34,13 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     }
 
     /**
-     * Get entity class
+     * Get entity reflection
      *
-     * @return string
+     * @return \UniMapper\Reflection\Entity
      */
-    public function getEntityClass()
+    public function getEntityReflection()
     {
-        return $this->entityClass;
+        return $this->entityReflection;
     }
 
     /**
@@ -84,9 +75,11 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
      */
     public function offsetSet($offset, $value)
     {
-        if (!$value instanceof $this->entityClass) {
+        $entityClass = $this->entityReflection->getClassName();
+
+        if (!$value instanceof $entityClass) {
             throw new Exception\InvalidArgumentException(
-                "Expected entity " . $this->entityClass . " but "
+                "Expected entity " . $entityClass . " but "
                 . gettype($value) . " given!"
             );
         }
