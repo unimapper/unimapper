@@ -470,9 +470,7 @@ class Property
                     $this->rawDefinition,
                     Exception\PropertyValidationException::TYPE
                 );
-            } elseif ($value->getEntityReflection()->getClassName()
-                !== $expectedType->getEntityReflection()->getClassName()
-            ) {
+            } elseif ($value->getEntityReflection()->getClassName() !== $expectedType->getEntityReflection()->getClassName()) {
                 throw new Exception\PropertyValidationException(
                     "Expected collection of entity "
                     . $expectedType->getEntityReflection()->getClassName()
