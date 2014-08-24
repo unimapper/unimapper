@@ -29,7 +29,7 @@ class FindOne extends \UniMapper\Query implements IConditionable
             );
         }
 
-        $entityReflection->getPrimaryProperty()->validateValue($primaryValue);
+        $entityReflection->getPrimaryProperty()->validateValueType($primaryValue);
 
         $this->primaryValue = $primaryValue;
     }

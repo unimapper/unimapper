@@ -1,53 +1,76 @@
 <?php
 
-use Tester\Assert;
+use Tester\Assert,
+    UniMapper\EntityCollection,
+    UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
 class ReflectionEntityPropertyTest extends Tester\TestCase
 {
 
-    private function createPropertyReflection($definition, $entityClass = "UniMapper\Tests\Fixtures\Entity\Simple")
-    {
-        return new UniMapper\Reflection\Entity\Property($definition, new UniMapper\Reflection\Entity($entityClass));
+    private function _createReflection(
+        $definition,
+        $entityClass = "UniMapper\Tests\Fixtures\Entity\Simple"
+    ) {
+        return new Reflection\Entity\Property(
+            $definition,
+            new Reflection\Entity($entityClass)
+        );
     }
 
-    public function testValidateValue()
+    public function testvalidateValueType()
     {
         // Integer
-        $this->createPropertyReflection('integer $id m:primary')->validateValue(1);
+        $this->_createReflection('integer $id m:primary')
+            ->validateValueType(1);
 
         // String
-        $this->createPropertyReflection('string $test')->validateValue("text");
+        $this->_createReflection('string $test')->validateValueType("text");
 
         // DateTime
-        $this->createPropertyReflection('DateTime $time')->validateValue(new DateTime);
+        $this->_createReflection('DateTime $time')
+            ->validateValueType(new DateTime);
 
         // Collection
-        $this->createPropertyReflection('NoAdapter[] $collection')->validateValue(new UniMapper\EntityCollection("UniMapper\Tests\Fixtures\Entity\Simple"));
+        $this->_createReflection('NoAdapter[] $collection')
+            ->validateValueType(
+                new EntityCollection("UniMapper\Tests\Fixtures\Entity\Simple")
+            );
     }
 
     public function testConvertValue()
     {
         // string -> integer
-        Assert::same(1, $this->createPropertyReflection('integer $id m:primary')->convertValue("1"));
+        Assert::same(1, $this->_createReflection('integer $id m:primary')->convertValue("1"));
 
         // integer -> string
-        Assert::same("1", $this->createPropertyReflection('string $test')->convertValue(1));
+        Assert::same("1", $this->_createReflection('string $test')->convertValue(1));
 
         // string -> datetime
-        Assert::same("02. 01. 2012", $this->createPropertyReflection('DateTime $time')->convertValue("2012-02-01")->format("m. d. Y"));
+        Assert::same(
+            "02. 01. 2012",
+            $this->_createReflection('DateTime $time')
+                ->convertValue("2012-02-01")
+                ->format("m. d. Y")
+        );
 
         // string -> boolean
-        Assert::same(true, $this->createPropertyReflection('boolean $true')->convertValue("true"));
-        Assert::same(false, $this->createPropertyReflection('boolean $false')->convertValue("false"));
+        Assert::same(
+            true,
+            $this->_createReflection('boolean $true')->convertValue("true")
+        );
+        Assert::false(
+            $this->_createReflection('boolean $false')->convertValue("false")
+        );
 
         // array -> collection
         $data = [
             ["url" => "http://example.com"],
             ["url" => "http://johndoe.com"]
         ];
-        $collection = $this->createPropertyReflection('Simple[] $collection')->convertValue($data);
+        $collection = $this->_createReflection('Simple[] $collection')
+            ->convertValue($data);
         Assert::type("UniMapper\EntityCollection", $collection);
         Assert::same(2, count($collection));
         Assert::isEqual("http://example.com", $collection[0]->url);
@@ -59,12 +82,14 @@ class ReflectionEntityPropertyTest extends Tester\TestCase
      */
     public function testCanNotConvertValue()
     {
-        $this->createPropertyReflection('Simple[] $collection')->convertValue("foo");
+        $this->_createReflection('Simple[] $collection')->convertValue("foo");
     }
 
     public function testReadonly()
     {
-        Assert::false($this->createPropertyReflection('-read string $readonly')->isWritable());
+        Assert::false(
+            $this->_createReflection('-read string $readonly')->isWritable()
+        );
     }
 
     /**
@@ -72,7 +97,7 @@ class ReflectionEntityPropertyTest extends Tester\TestCase
      */
     public function testInvalidInteger()
     {
-        $this->createPropertyReflection('DateTime $time')->validateValue("foo");
+        $this->_createReflection('DateTime $time')->validateValueType("foo");
     }
 
     /**
@@ -80,7 +105,7 @@ class ReflectionEntityPropertyTest extends Tester\TestCase
      */
     public function testInvalidString()
     {
-        $this->createPropertyReflection('string $test')->validateValue(1);
+        $this->_createReflection('string $test')->validateValueType(1);
     }
 
     /**
@@ -88,15 +113,16 @@ class ReflectionEntityPropertyTest extends Tester\TestCase
      */
     public function testInvalidDateTime()
     {
-        $this->createPropertyReflection('DateTime $time')->validateValue("foo");
+        $this->_createReflection('DateTime $time')->validateValueType("foo");
     }
 
     /**
      * @throws UniMapper\Exception\PropertyValidationException Expected integer but string given on property id!
      */
-    public function testInvalidcollection()
+    public function testInvalidCollection()
     {
-        $this->createPropertyReflection('integer $id m:primary')->validateValue("foo");
+        $this->_createReflection('integer $id m:primary')
+            ->validateValueType("foo");
     }
 
     /**
@@ -104,7 +130,9 @@ class ReflectionEntityPropertyTest extends Tester\TestCase
      */
     public function testUnsupportedClasses()
     {
-        $this->createPropertyReflection('UniMapper\Tests\Fixtures\Entity\Simple $entity');
+        $this->_createReflection(
+            'UniMapper\Tests\Fixtures\Entity\Simple $entity'
+        );
     }
 
 }

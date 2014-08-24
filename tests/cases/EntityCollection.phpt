@@ -13,7 +13,7 @@ class EntityCollectionTest extends Tester\TestCase
         $entity = new Fixtures\Entity\Simple;
         $entity->text = "test";
 
-        $collection = new UniMapper\EntityCollection(get_class($entity));
+        $collection = new UniMapper\EntityCollection($entity->getReflection());
 
         $collection[] = $entity;
         Assert::same("test", $collection[0]->text);

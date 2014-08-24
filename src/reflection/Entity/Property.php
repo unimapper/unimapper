@@ -213,14 +213,14 @@ class Property
         } elseif (class_exists(NC::nameToClass($definition, NC::$entityMask))) {
             // Entity
 
-            return $this->type = new Reflection\Entity(
+            return $this->type = $this->_loadReflection(
                 NC::nameToClass($definition, NC::$entityMask)
             );
         } elseif (preg_match("#(.*?)\[\]#s", $definition)) {
             // Collection
 
             try {
-                $entityReflection = new Reflection\Entity(
+                $entityReflection = $this->_loadReflection(
                     NC::nameToClass(rtrim($definition, "[]"), NC::$entityMask)
                 );
             } catch (Exception\InvalidArgumentException $exception) {
@@ -235,6 +235,32 @@ class Property
             $this->entityReflection,
             $this->rawDefinition
         );
+    }
+
+    /**
+     * Load lazy entity reflection
+     *
+     * @param string $entityClass
+     *
+     * @return \UniMapper\Reflection\Entity
+     */
+    private function _loadReflection($entityClass)
+    {
+        if ($this->entityReflection->getClassName() === $entityClass) {
+            return $this->entityReflection;
+        } elseif (isset($this->entityReflection->getRelated()[$entityClass])) {
+            return $this->entityReflection->getRelated()[$entityClass];
+        }
+
+        $related = $this->entityReflection->getRelated();
+        $related[$this->entityReflection->getClassName()]
+            = $this->entityReflection;
+
+        $reflection = new Reflection\Entity($entityClass, $related);
+
+        $this->entityReflection->addRelated($reflection);
+
+        return $reflection;
     }
 
     /**
@@ -332,9 +358,9 @@ class Property
 
             // Get target entity class
             if ($this->type instanceof EntityCollection) {
-                $targetEntityClass = $this->type->getEntityReflection()->getClassName();
-            } elseif (is_subclass_of($this->type, "UniMapper\Entity")) {
-                $targetEntityClass = $this->type;
+                $targetEntityReflection = $this->type->getEntityReflection();
+            } elseif ($this->type instanceof Reflection\Entity) {
+                $targetEntityReflection = $this->type;
             } else {
                 throw new Exception\PropertyException(
                     "Property type must be collection or entity if association "
@@ -364,21 +390,21 @@ class Property
 
             $this->association = new $assocClass(
                 $this->entityReflection,
-                new Reflection\Entity($targetEntityClass),
+                $targetEntityReflection,
                 $parameters
             );
         }
     }
 
     /**
-     * Validate property value type
+     * Validate value type
      *
      * @param mixed $value Given value
      *
      * @throws \UniMapper\Exception\PropertyValidationException
      * @throws \Exception
      */
-    public function validateValue($value)
+    public function validateValueType($value)
     {
         $expectedType = $this->type;
 
@@ -410,38 +436,76 @@ class Property
             );
         }
 
-        // Object
-        if (is_object($expectedType)) {
-            $expectedType = get_class($expectedType);
-        }
-
-        if (class_exists($expectedType)) {
-
-            if ($value instanceof $expectedType) {
-                return;
-            }
-
-            $givenType = gettype($value);
-            if ($givenType === "object") {
-                $givenType = get_class($value);
-            }
-            throw new Exception\PropertyValidationException(
-                "Expected " . $expectedType . " but " . $givenType
-                . " given on property " . $this->name . "!",
-                $this->entityReflection,
-                $this->rawDefinition,
-                Exception\PropertyValidationException::TYPE
-            );
-        }
-
+        // Object validation
         $givenType = gettype($value);
         if ($givenType === "object") {
             $givenType = get_class($value);
         }
+
+        if ($expectedType instanceof Reflection\Entity) {
+            // Entity
+
+            $expectedType = $expectedType->getClassName();
+            if ($value instanceof $expectedType) {
+                return;
+            } else {
+                throw new Exception\PropertyValidationException(
+                    "Expected entity " . $expectedType . "but " . $givenType
+                    . "given on property " . $this->name . "!",
+                    $this->entityReflection,
+                    $this->rawDefinition,
+                    Exception\PropertyValidationException::TYPE
+                );
+            }
+
+        } elseif ($expectedType instanceof EntityCollection) {
+            // Collection
+
+            if (!$value instanceof EntityCollection) {
+
+                throw new Exception\PropertyValidationException(
+                    "Expected entity collection but " . $givenType . " given on"
+                    . " property " . $this->name . "!",
+                    $this->entityReflection,
+                    $this->rawDefinition,
+                    Exception\PropertyValidationException::TYPE
+                );
+            } elseif ($value->getEntityReflection()->getClassName()
+                !== $expectedType->getEntityReflection()->getClassName()
+            ) {
+                throw new Exception\PropertyValidationException(
+                    "Expected collection of entity "
+                    . $expectedType->getEntityReflection()->getClassName()
+                    . " but collection of entity "
+                    . $value->getEntityReflection()->getClassName()
+                    . " given on property " . $this->name . "!",
+                    $this->entityReflection,
+                    $this->rawDefinition,
+                    Exception\PropertyValidationException::TYPE
+                );
+            } else {
+                return;
+            }
+
+        } elseif ($expectedType === self::TYPE_DATETIME) {
+            // DateTime
+
+            if ($value instanceof \DateTime) {
+                return;
+            } else {
+                throw new Exception\PropertyValidationException(
+                    "Expected DateTime but " . $givenType . " given on"
+                    . " property " . $this->name . "!",
+                    $this->entityReflection,
+                    $this->rawDefinition,
+                    Exception\PropertyValidationException::TYPE
+                );
+            }
+        }
+
         throw new \Exception(
-            "Expected " . $expectedType . " but " . $givenType
-            . " given on property " . $this->name
-            . ". It could be an internal ORM error!"
+            "Expected " . $expectedType . " but " . $givenType . " given on "
+            . "property " . $this->name . ". It could be an internal ORM error!"
         );
     }
 

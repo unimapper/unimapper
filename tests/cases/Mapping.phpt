@@ -61,7 +61,7 @@ class MappingTest extends Tester\TestCase
     public function testMapCollection()
     {
         $collection = $this->mapping->mapCollection(
-            new Reflection\Entity("Simple"),
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             [
                 [
                     "email_address" => "john.doe@example.com",
@@ -87,7 +87,7 @@ class MappingTest extends Tester\TestCase
         $entity->publicProperty = "foo";
 
         $collection = new \UniMapper\EntityCollection(
-            new Reflection\Entity("Simple")
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
         );
         $collection[] = $entity;
 

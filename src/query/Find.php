@@ -106,7 +106,7 @@ class Find extends \UniMapper\Query implements IConditionable
             $this->associations["local"]
         );
         if (empty($result)) {
-            return new EntityCollection($this->entityReflection->getClassName());
+            return new EntityCollection($this->entityReflection);
         }
 
         if ($this->associations["remote"]) {

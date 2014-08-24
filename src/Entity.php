@@ -159,7 +159,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             if ($computedValue === null) {
                 return null;
             }
-            $properties[$name]->validateValue($computedValue);
+            $properties[$name]->validateValueType($computedValue);
             return $computedValue;
         }
 
@@ -211,7 +211,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         }
 
         if ($value !== null) {
-            $properties[$name]->validateValue($value);
+            $properties[$name]->validateValueType($value);
         }
 
         // Set value

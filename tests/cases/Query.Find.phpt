@@ -25,7 +25,7 @@ class QueryFindTest extends Tester\TestCase
         $entity2 = new Fixtures\Entity\Simple;
         $entity2->id = 3;
 
-        $collection = new UniMapper\EntityCollection("UniMapper\Tests\Fixtures\Entity\Simple");
+        $collection = new UniMapper\EntityCollection($entity1->getReflection());
         $collection[] = $entity1;
         $collection[] = $entity2;
 

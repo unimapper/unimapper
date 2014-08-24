@@ -40,9 +40,29 @@ class Entity
     /** @var boolean */
     private $initialized = false;
 
-    public function __construct($class)
+    /** @var array $related List of related entity reflections */
+    private $related = [];
+
+    /**
+     * @param string $class   Entity class name
+     * @param array  $related Related reflections
+     *
+     * @throws \Exception
+     */
+    public function __construct($class, array $related = [])
     {
-        $this->className = $class;
+        $this->className = (string) $class;
+
+        foreach ($related as $reflection) {
+
+            if (!$reflection instanceof Entity) {
+                throw new \Exception(
+                    "Related reflection must be entity reflection instance!"
+                );
+            }
+            $this->related[$reflection->getClassName()] = $reflection;
+        }
+
         if (!$this->initialized) {
             $this->_initialize();
         }
@@ -52,7 +72,8 @@ class Entity
     {
         if (!is_subclass_of($this->className, "UniMapper\Entity")) {
             throw new Exception\InvalidArgumentException(
-                "Class must be instance of entity!"
+                "Class must be subclass of UniMapper\Entity but "
+                . $this->className . " given!"
             );
         }
 
@@ -77,6 +98,16 @@ class Entity
         $this->initialized = true;
     }
 
+    /**
+     * Add related entity reflection
+     *
+     * @param \UniMapper\Reflection\Entity $reflection
+     */
+    public function addRelated(Entity $reflection)
+    {
+        $this->related[$reflection->getClassName()] = $reflection;
+    }
+
     public function createEntity($values = [])
     {
         $entityClass = $this->className;
@@ -96,6 +127,11 @@ class Entity
     public function getFileName()
     {
         return $this->fileName;
+    }
+
+    public function getRelated()
+    {
+        return $this->related;
     }
 
     /**
