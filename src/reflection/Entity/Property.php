@@ -578,7 +578,7 @@ class Property
 
     public function isTypeEntity()
     {
-        return is_subclass_of($this->type, "UniMapper\Entity");
+        return $this->type instanceof Reflection\Entity;
     }
 
     public function isTypeCollection()

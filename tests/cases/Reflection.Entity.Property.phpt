@@ -135,6 +135,18 @@ class ReflectionEntityPropertyTest extends Tester\TestCase
         );
     }
 
+    public function testIsTypeEntity()
+    {
+        Assert::true(
+            $this->_createReflection(
+                'Simple $entity'
+            )->isTypeEntity()
+        );
+        Assert::false(
+            $this->_createReflection('integer $id m:primary')->isTypeEntity()
+        );
+    }
+
 }
 
 $testCase = new ReflectionEntityPropertyTest;
