@@ -74,6 +74,28 @@ class RepositoryTest extends Tester\TestCase
         Assert::same("foo", $nestedEntity->text);
     }
 
+    public function testCreateCollection()
+    {
+        // Autodetect entity
+        $collection = $this->repository->createCollection(
+            [["text" => "foo", "publicProperty" => "foo"]]
+        );
+        Assert::type("UniMapper\EntityCollection", $collection);
+        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $collection[0]);
+        Assert::same("foo", $collection[0]->text);
+        Assert::same("foo", $collection[0]->publicProperty);
+
+        // Force entity
+        $nestedCollection = $this->repository->createCollection(
+            [["text" => "foo"]],
+            "Nested"
+        );
+
+        Assert::type("UniMapper\EntityCollection", $nestedCollection);
+        Assert::type("UniMapper\Tests\Fixtures\Entity\Nested", $nestedCollection[0]);
+        Assert::same("foo", $nestedCollection[0]->text);
+    }
+
     public function testSaveUpdate()
     {
         $this->adapterMock->shouldReceive("updateOne")->once()->with("resource", "id", 1, ["text" => "foo"]);

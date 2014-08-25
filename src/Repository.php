@@ -155,13 +155,42 @@ abstract class Repository
             $name = $this->getName();
         }
 
-        $class = NC::nameToClass($name, NC::$entityMask);
-        if ($this->cache) {
-            $reflection = $this->cache->loadEntityReflection($class);
-        } else {
-            $reflection = new Reflection\Entity($class);
+        return $this->getEntityReflection(
+            NC::nameToClass($name, NC::$entityMask)
+        )->createEntity($values);
+    }
+
+    /**
+     * Create new entity collection
+     *
+     * @param string $name Entity name, default is current related entity
+     *
+     * @return \UniMapper\Entity
+     */
+    public function createCollection($values = null, $name = null)
+    {
+        // Get entity class
+        if ($name === null) {
+            $name = $this->getName();
         }
-        return $reflection->createEntity($values);
+        $class = NC::nameToClass($name, NC::$entityMask);
+
+        // Create empty collection
+        $collection = new EntityCollection($this->getEntityReflection($class));
+
+        // Add values
+        if ($values) {
+
+            foreach ($values as $item) {
+
+                if (!$item instanceof $class) {
+                    $item = $this->createEntity($item, $name);
+                }
+                $collection[] = $item;
+            }
+        }
+
+        return $collection;
     }
 
     public function find(array $filter = [], array $orderBy = [], $limit = 0,
@@ -210,6 +239,24 @@ abstract class Repository
     public function getEntityName()
     {
         return $this->getName();
+    }
+
+    /**
+     * Get entity reflection
+     *
+     * @param string $class
+     */
+    protected function getEntityReflection($class = null)
+    {
+        if ($class === null) {
+            $class = NC::nameToClass($this->getName(), NC::$repositoryMask);
+        }
+
+        if ($this->cache) {
+            return $this->cache->loadEntityReflection($class);
+        }
+
+        return $reflection = new Reflection\Entity($class);
     }
 
     public function getName()
@@ -274,11 +321,7 @@ abstract class Repository
             );
         }
 
-        if ($this->cache) {
-            $entityReflection = $this->cache->loadEntityReflection($entityClass);
-        } else {
-            $entityReflection = new Reflection\Entity($entityClass);
-        }
+        $entityReflection = $this->getEntityReflection($entityClass);
 
         $queryBuilder = new QueryBuilder(
             $entityReflection,
