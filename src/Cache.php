@@ -29,7 +29,7 @@ abstract class Cache implements Cache\ICache
             $this->save(
                 $key,
                 $reflection,
-                $this->getRelatedFiles($reflection)
+                $this->_getRelatedFiles($reflection)
             );
         }
         return $reflection;
@@ -43,7 +43,7 @@ abstract class Cache implements Cache\ICache
      *
      * @return array
      */
-    private function getRelatedFiles(Reflection\Entity $reflection, array $files = [])
+    private function _getRelatedFiles(Reflection\Entity $reflection, array $files = [])
     {
         foreach ($reflection->getRelated() as $childReflection) {
 
@@ -52,7 +52,7 @@ abstract class Cache implements Cache\ICache
 
                 $files[] = $fileName;
                 if ($childReflection->getRelated()) {
-                    $files = array_merge($files, $this->getRelatedFiles($childReflection, $files));
+                    $files = array_merge($files, $this->_getRelatedFiles($childReflection, $files));
                 }
             }
         }
