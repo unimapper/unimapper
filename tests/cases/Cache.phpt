@@ -15,6 +15,8 @@ class CacheTest extends Tester\TestCase
 
     public function setUp()
     {
+        Tester\Environment::$checkAssertions = false;
+
         $this->repository = new Fixtures\Repository\SimpleRepository;
         $this->cacheMock = Mockery::mock("UniMapper\Tests\Fixtures\Cache\CustomCache[load,save,remove]");
         $this->repository->setCache($this->cacheMock);
