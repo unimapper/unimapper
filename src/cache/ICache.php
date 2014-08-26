@@ -9,6 +9,6 @@ interface ICache
 
     public function remove($key);
 
-    public function save($key, $data, $fileDependency = null);
+    public function save($key, $data, array $fileDependency);
 
 }

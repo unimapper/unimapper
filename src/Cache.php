@@ -8,7 +8,8 @@ use UniMapper\Reflection,
 abstract class Cache implements Cache\ICache
 {
 
-    protected $entityKeyPrefix = "EntityReflection-";
+    /** @var string $entityKeyPrefix */
+    protected $entityKeyPrefix = "UniMapper-Reflection-Entity-";
 
     /**
      * Load entity reflection from cache
@@ -17,16 +18,46 @@ abstract class Cache implements Cache\ICache
      *
      * @return \UniMapper\Reflection\Entity
      */
-    final public function loadEntityReflection($class)
+    public function loadEntityReflection($class)
     {
         $key = $this->entityKeyPrefix . NC::classToName($class, NC::$entityMask);
 
         $reflection = $this->load($key);
         if (!$reflection) {
+
             $reflection = new Reflection\Entity($class);
-            $this->save($key, $reflection, $reflection->getFileName());
+            $this->save(
+                $key,
+                $reflection,
+                $this->getRelatedFiles($reflection)
+            );
         }
         return $reflection;
+    }
+
+    /**
+     * Get related entity class files
+     *
+     * @param \UniMapper\Reflection\Entity $reflection
+     * @param array                        $files
+     *
+     * @return array
+     */
+    private function getRelatedFiles(Reflection\Entity $reflection, array $files = [])
+    {
+        foreach ($reflection->getRelated() as $childReflection) {
+
+            $fileName = $childReflection->getFileName();
+            if (!array_search($fileName, $files, true)) {
+
+                $files[] = $fileName;
+                if ($childReflection->getRelated()) {
+                    $files = array_merge($files, $this->getRelatedFiles($childReflection, $files));
+                }
+            }
+        }
+
+        return array_values(array_unique($files));
     }
 
 }
