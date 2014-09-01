@@ -24,24 +24,23 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     /** @var \UniMapper\Validator $validator */
     protected $validator;
 
-    public function __construct(Reflection\Entity $reflection = null, $values = [])
+    public function __construct(Reflection\Entity $reflection, $values = [])
     {
-        if ($reflection) {
-            if ($reflection->getClassName() !== get_called_class()) {
-                throw new Exception\InvalidArgumentException(
-                    "Expected reflection of class '" . get_called_class()
-                    . "' but reflection of '" . $reflection->getClassName()
-                    . "' given!"
-                );
-            }
-            $this->reflection = $reflection;
+        if ($reflection->getClassName() !== get_called_class()) {
+            throw new Exception\InvalidArgumentException(
+                "Expected reflection of class '" . get_called_class()
+                . "' but reflection of '" . $reflection->getClassName()
+                . "' given!"
+            );
         }
-        $this->_initialize();
+        $this->reflection = $reflection;
         $this->validator = new Validator($this);
 
         if ($values) {
             $this->_setValues($values, true);
         }
+
+        $this->_resetIterator();
     }
 
     private function _setValues($values, $readonlyToo = false)
@@ -81,9 +80,9 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     }
 
     /**
-     * Initialize entity state
+     * Reset iterator
      */
-    private function _initialize()
+    private function _resetIterator()
     {
         if (!$this->reflection) {
             $this->reflection = new Reflection\Entity(get_called_class());
@@ -110,7 +109,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 
     public function unserialize($data)
     {
-        $this->_initialize();
+        $this->_resetIterator();
         foreach (unserialize($data) as $name => $value) {
             $this->{$name} = $value;
         }

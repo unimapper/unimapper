@@ -2,12 +2,11 @@
 
 use Tester\Assert,
     UniMapper\Query,
-    UniMapper\Reflection,
-    UniMapper\Tests\Fixtures;
+    UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
-class QueryFindTest extends Tester\TestCase
+class QueryFindTest extends UniMapper\Tests\TestCase
 {
 
     /** @var array $adapters */
@@ -20,10 +19,8 @@ class QueryFindTest extends Tester\TestCase
 
     public function testSimple()
     {
-        $entity1 = new Fixtures\Entity\Simple;
-        $entity1->id = 2;
-        $entity2 = new Fixtures\Entity\Simple;
-        $entity2->id = 3;
+        $entity1 = $this->createEntity("Simple", ["id" => 2]);
+        $entity2 = $this->createEntity("Simple", ["id" => 3]);
 
         $collection = new UniMapper\EntityCollection($entity1->getReflection());
         $collection[] = $entity1;

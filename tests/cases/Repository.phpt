@@ -5,7 +5,7 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class RepositoryTest extends Tester\TestCase
+class RepositoryTest extends UniMapper\Tests\TestCase
 {
 
     /** @var \UniMapper\Repository $repository */
@@ -104,9 +104,7 @@ class RepositoryTest extends Tester\TestCase
 
         $this->repository->registerAdapter($this->adapterMock);
 
-        $entity = new Fixtures\Entity\Simple;
-        $entity->id = 1;
-        $entity->text = "foo";
+        $entity = $this->createEntity("Simple", ["id" => 1, "text" => "foo"]);
         $this->repository->save($entity);
     }
 
@@ -118,16 +116,17 @@ class RepositoryTest extends Tester\TestCase
 
         $this->repository->registerAdapter($this->adapterMock);
 
-        $entity = new Fixtures\Entity\Simple;
+        $entity = $this->createEntity("Simple", ["text" => "foo"]);
         $entity->text = "foo";
         $this->repository->save($entity);
     }
 
     public function testSaveInvalid()
     {
-        $entity = new Fixtures\Entity\Simple;
-        $entity->text = "foo";
-        $entity->email = "invalidemail";
+        $entity = $this->createEntity(
+            "Simple",
+            ["email" => "invalidemail", "text" => "foo"]
+        );
         $entity->getValidator()->on("email")->addRule(\UniMapper\Validator::EMAIL, "Invalid e-mail format!");
 
         try {
@@ -157,7 +156,7 @@ class RepositoryTest extends Tester\TestCase
 
         $this->repository->registerAdapter($this->adapterMock);
 
-        $entity = new Fixtures\Entity\Simple;
+        $entity = $this->createEntity("Simple");
         $this->repository->delete($entity);
     }
 
@@ -169,8 +168,7 @@ class RepositoryTest extends Tester\TestCase
 
         $this->repository->registerAdapter($this->adapterMock);
 
-        $entity = new Fixtures\Entity\Simple;
-        $entity->id = 1;
+        $entity = $this->createEntity("Simple", ["id" => 1]);
         $this->repository->delete($entity);
     }
 
@@ -205,9 +203,7 @@ class RepositoryTest extends Tester\TestCase
 
     public function testFindOne()
     {
-        $entity = new Fixtures\Entity\Simple;
-        $entity->id = 1;
-        $entity->text = "foo";
+        $entity = $this->createEntity("Simple", ["id" => 1, "text" => "foo"]);
 
         $this->adapterMock->shouldReceive("findOne")
             ->with("resource", "id", $entity->id, [])

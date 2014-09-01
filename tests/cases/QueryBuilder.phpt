@@ -4,7 +4,7 @@ use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
-class QueryBuilderTest extends Tester\TestCase
+class QueryBuilderTest extends UniMapper\Tests\TestCase
 {
 
     /** @var \UniMapper\QueryBuilder $builder */

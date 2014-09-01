@@ -4,7 +4,7 @@ use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
-class QueryInsertTest extends Tester\TestCase
+class QueryInsertTest extends UniMapper\Tests\TestCase
 {
 
     /** @var \Mockery\Mock */

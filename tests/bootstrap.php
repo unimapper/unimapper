@@ -9,6 +9,7 @@ if (!$loader) {
 // @todo
 //$loader->addPsr4("UniMapper\Tests\Fixtures\\", __DIR__ . "/fixtures");
 
+require __DIR__ . "/TestCase.php";
 require __DIR__ . "/fixtures/cache/CustomCache.php";
 require __DIR__ . "/fixtures/entity/NoAdapter.php";
 require __DIR__ . "/fixtures/entity/Simple.php";

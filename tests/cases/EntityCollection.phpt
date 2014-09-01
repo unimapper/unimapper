@@ -1,17 +1,15 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Tests\Fixtures;
+use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
-class EntityCollectionTest extends Tester\TestCase
+class EntityCollectionTest extends UniMapper\Tests\TestCase
 {
 
     public function testCreateCollection()
     {
-        $entity = new Fixtures\Entity\Simple;
-        $entity->text = "test";
+        $entity = $this->createEntity("Simple", ["text" => "test"]);
 
         $collection = new UniMapper\EntityCollection($entity->getReflection());
 

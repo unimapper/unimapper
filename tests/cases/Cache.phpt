@@ -4,7 +4,7 @@ use UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
 
-class CacheTest extends Tester\TestCase
+class CacheTest extends UniMapper\Tests\TestCase
 {
 
     /** @var \UniMapper\Tests\Fixtures\Repository\SimpleRepository */

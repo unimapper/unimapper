@@ -5,7 +5,7 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class NamingConventionTest extends Tester\TestCase
+class NamingConventionTest extends UniMapper\Tests\TestCase
 {
 
     public function testTrimNamespace()

@@ -4,7 +4,7 @@ use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
-class QueryCountTest extends Tester\TestCase
+class QueryCountTest extends UniMapper\Tests\TestCase
 {
 
     public function testCount()

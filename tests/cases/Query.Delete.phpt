@@ -6,7 +6,7 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class QueryDeleteTest extends Tester\TestCase
+class QueryDeleteTest extends UniMapper\Tests\TestCase
 {
 
     /** @var array $adapters */

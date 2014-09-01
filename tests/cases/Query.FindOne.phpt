@@ -2,12 +2,11 @@
 
 use Tester\Assert,
     UniMapper\Query,
-    UniMapper\Reflection,
-    UniMapper\Tests\Fixtures;
+    UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
-class QueryFindOneTest extends Tester\TestCase
+class QueryFindOneTest extends UniMapper\Tests\TestCase
 {
 
     /** @var array $adapters */
@@ -20,8 +19,7 @@ class QueryFindOneTest extends Tester\TestCase
 
     public function testSuccess()
     {
-        $entity = new Fixtures\Entity\Simple;
-        $entity->id = 1;
+        $entity = $this->createEntity("Simple", ["id" => 1]);
 
         $this->adapters["FooAdapter"]->shouldReceive("findOne")
             ->with("resource", "id", 1, [])

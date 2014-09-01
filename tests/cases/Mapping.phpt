@@ -1,12 +1,11 @@
 <?php
 
 use Tester\Assert,
-    UniMapper\Reflection,
-    UniMapper\Tests\Fixtures;
+    UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
-class MappingTest extends Tester\TestCase
+class MappingTest extends UniMapper\Tests\TestCase
 {
 
     /** @var \UniMapper\Mapping */
@@ -41,11 +40,15 @@ class MappingTest extends Tester\TestCase
 
     public function testUnmapEntity()
     {
-        $entity = new Fixtures\Entity\Simple;
-        $entity->email = "john.doe@example.com";
-        $entity->url = "http://example.com";
-        $entity->empty = null;
-        $entity->storedData = ["one", "two", "three"];
+        $entity = $this->createEntity(
+            "Simple",
+            [
+                "email" => "john.doe@example.com",
+                "url" => "http://example.com",
+                "empty" => null,
+                "storedData" => ["one", "two", "three"]
+            ]
+        );
 
         Assert::same(
             [
@@ -81,10 +84,14 @@ class MappingTest extends Tester\TestCase
 
     public function testUnmapCollection()
     {
-        $entity = new Fixtures\Entity\Simple;
-        $entity->email = "john.doe@example.com";
-        $entity->url = "http://example.com";
-        $entity->publicProperty = "foo";
+        $entity = $this->createEntity(
+            "Simple",
+            [
+                "email" => "john.doe@example.com",
+                "url" => "http://example.com",
+                "publicProperty" => "foo"
+            ]
+        );
 
         $collection = new \UniMapper\EntityCollection(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")

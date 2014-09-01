@@ -1,12 +1,11 @@
 <?php
 
 use Tester\Assert,
-    UniMapper\Validator,
-    UniMapper\Tests\Fixtures;
+    UniMapper\Validator;
 
 require __DIR__ . '/../bootstrap.php';
 
-class ValidatorTest extends Tester\TestCase
+class ValidatorTest extends UniMapper\Tests\TestCase
 {
 
     /** @var \UniMapper\Validator $validator */
@@ -14,7 +13,7 @@ class ValidatorTest extends Tester\TestCase
 
     public function setUp()
     {
-        $this->validator = new Validator(new Fixtures\Entity\Simple);
+        $this->validator = new Validator($this->createEntity("Simple"));
     }
 
     public function testOnEntity()
@@ -96,8 +95,8 @@ class ValidatorTest extends Tester\TestCase
                 }, "Collection must contain two items at least!");
 
         $entity = $this->validator->getEntity();
-        $entity->collection[] = new Fixtures\Entity\Nested;
-        $entity->collection['testIndex'] = new Fixtures\Entity\Nested;
+        $entity->collection[] = $this->createEntity("Nested");
+        $entity->collection['testIndex'] = $this->createEntity("Nested");
         $this->validator->validate();
 
         Assert::isEqual(
@@ -152,7 +151,7 @@ class ValidatorTest extends Tester\TestCase
      */
     public function testConditionMustBeOnProperty()
     {
-        $validator = new Validator(new Fixtures\Entity\Simple);
+        $validator = new Validator($this->createEntity("Simple"));
         $validator->addCondition(Validator::FILLED);
     }
 
@@ -161,7 +160,7 @@ class ValidatorTest extends Tester\TestCase
      */
     public function testOnUndefined()
     {
-        $validator = new Validator(new Fixtures\Entity\Simple);
+        $validator = new Validator($this->createEntity("Simple"));
         $validator->on("undefined");
     }
 
@@ -170,7 +169,7 @@ class ValidatorTest extends Tester\TestCase
      */
     public function testOnComputed()
     {
-        $validator = new Validator(new Fixtures\Entity\Simple);
+        $validator = new Validator($this->createEntity("Simple"));
         $validator->on("year");
     }
 

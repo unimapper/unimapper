@@ -5,7 +5,7 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class QueryTest extends Tester\TestCase
+class QueryTest extends UniMapper\Tests\TestCase
 {
 
     /** @var \Mockery\Mock $adapterMock */

@@ -4,7 +4,7 @@ use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
-class ReflectionEntityPropertyMappingTest extends Tester\TestCase
+class ReflectionEntityPropertyMappingTest extends UniMapper\Tests\TestCase
 {
 
 

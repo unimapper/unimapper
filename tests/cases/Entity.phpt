@@ -1,11 +1,10 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Tests\Fixtures;
+use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
-class EntityTest extends Tester\TestCase
+class EntityTest extends UniMapper\Tests\TestCase
 {
 
     /** @var \UniMapper\Tests\Fixtures\Entity\Simple */
@@ -13,10 +12,14 @@ class EntityTest extends Tester\TestCase
 
     public function setUp()
     {
-        $this->entity = new Fixtures\Entity\Simple;
-        $this->entity->text = "test";
-        $this->entity->id = 1;
-        $this->entity->empty = "";
+        $this->entity = $this->createEntity(
+            "Simple",
+            [
+                "text" => "test",
+                "id" => 1,
+                "empty" => ""
+            ]
+        );
     }
 
     public function testPublicProperties()
@@ -63,10 +66,10 @@ class EntityTest extends Tester\TestCase
 
     public function testToArray()
     {
-        $nestedEntity = new Fixtures\Entity\Nested;
-        $nestedEntity->text = "foo";
+        $nestedEntity = $this->createEntity("Nested", ["text" => "foo"]);
+
         $this->entity->collection[] = $nestedEntity;
-        $this->entity->entity = new Fixtures\Entity\Nested;
+        $this->entity->entity = $this->createEntity("Nested");
 
         Assert::same(
             array(
@@ -156,7 +159,6 @@ class EntityTest extends Tester\TestCase
 
         $this->entity->undefined;
     }
-
 
     public function testSerializable()
     {
@@ -304,8 +306,10 @@ class EntityTest extends Tester\TestCase
 
     public function testEntityWithoutProperties()
     {
-        $entity = new Fixtures\Entity\NoProperty;
-        Assert::count(0, $entity->getReflection()->getProperties());
+        Assert::count(
+            0,
+            $this->createEntity("NoProperty")->getReflection()->getProperties()
+        );
     }
 
 }
