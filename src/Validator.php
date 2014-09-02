@@ -58,7 +58,6 @@ class Validator
     /**
      * Add validation condition
      *
-     * @param string $name       Property name in entity
      * @param mixed  $validation Callable or some default validation method name
      *
      * @return \UniMapper\Validator
@@ -235,6 +234,36 @@ class Validator
             }
         }
 
+        // Run nested validators - every entity may have its own validator
+        foreach ($this->entity->getData() as $propertyName => $value) {
+
+            if ($value instanceof Entity) {
+
+                $validator = $value->getValidator();
+
+                if (!$validator->validate($failOn)) {
+
+                    foreach ($validator->getErrors() as $error) {
+
+                        $rule = clone $error;
+                        $rule->setPath(
+                            array_merge([$propertyName], $rule->getPath())
+                        );
+                        $this->errors[] = $rule;
+                    }
+                }
+
+                foreach ($validator->getWarnings() as $warning) {
+
+                    $rule = clone $warning;
+                    $rule->setPath(
+                        array_merge([$propertyName], $rule->getPath())
+                    );
+                    $this->warnings[] = $rule;
+                }
+            }
+        }
+
         return count($this->errors) === 0;
     }
 
@@ -249,19 +278,20 @@ class Validator
     }
 
     /**
-     * Get messages sorted by properties
+     * Get messages
      *
      * @param integer  $minSeverity
      * @param callable $factory
      *
      * @return array
      */
-    public function getMessages($minSeverity = Validator\Rule::DEBUG,
+    public function getMessages(
+        $minSeverity = Validator\Rule::DEBUG,
         callable $factory = null
     ) {
         if ($factory === null) {
-            $factory = function ($text, $severity) {
-                return new Validator\Message($text, $severity);
+            $factory = function ($text, $severity, $path) {
+                return new Validator\Message($text, $severity, $path);
             };
         }
 
@@ -270,22 +300,36 @@ class Validator
 
             if ($rule->getSeverity() <= $minSeverity) {
 
-                if ($rule->getChild()) {
+                if ($rule->getProperty() !== null
+                    && $rule->getProperty()->isTypeCollection()
+                ) {
+                    foreach ($rule->getFailedChildIndexes() as $index) {
 
-                    if ($rule->getProperty()->isTypeCollection()) {
-                        foreach ($rule->getFailedChildIndexes() as $index) {
-                            $messages["properties"][$rule->getProperty()->getName()][$rule->getChild()][$index][] = $factory($rule->getMessage(), $rule->getSeverity());
+                        $path = $rule->getPath();
+                        if (count($path) > 1) {
+
+                            $leaf = array_pop($path);
+                            $path = array_merge($path, [$index, $leaf]);
+                        } else {
+                            $path[] = $index;
                         }
-                    } else {
-                        $messages["properties"][$rule->getProperty()->getName()][$rule->getChild()][] = $factory($rule->getMessage(), $rule->getSeverity());
+
+                        $messages[] = $factory(
+                            $rule->getMessage(),
+                            $rule->getSeverity(),
+                            $path
+                        );
                     }
-                } elseif ($rule->getProperty()) {
-                    $messages["properties"][$rule->getProperty()->getName()][] = $factory($rule->getMessage(), $rule->getSeverity());
                 } else {
-                    $messages["global"][] = $factory($rule->getMessage(), $rule->getSeverity());
+                    $messages[] = $factory(
+                        $rule->getMessage(),
+                        $rule->getSeverity(),
+                        $rule->getPath()
+                    );
                 }
             }
         }
+
         return $messages;
     }
 

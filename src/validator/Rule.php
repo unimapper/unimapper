@@ -22,6 +22,8 @@ class Rule
     protected $child;
     protected $childFailed = [];
 
+    protected $path;
+
     public function __construct(
         Entity $entity,
         callable $validation,
@@ -37,6 +39,35 @@ class Rule
         $this->severity = $severity;
         $this->child = $child;
     }
+
+    /**
+     * @param array $path
+     */
+    public function setPath($path)
+    {
+        $this->path = $path;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPath()
+    {
+        if ($this->path === null) {
+
+            $this->path = [];
+            if ($this->property) {
+
+                $this->path[] = $this->property->getName();
+                if ($this->child) {
+                    $this->path[] = $this->child;
+                }
+            }
+        }
+        return $this->path;
+    }
+
+
 
     public function getProperty()
     {
@@ -85,9 +116,10 @@ class Rule
                             $this->childFailed[] = $index;
                         }
                     }
+                    unset($entity);
                     return count($this->childFailed) === 0;
                 } else {
-                    return (bool) $definition($entity->{$this->child});
+                    return (bool) $definition($value->{$this->child});
                 }
             } else {
                 return (bool) $definition($value);

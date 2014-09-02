@@ -19,17 +19,22 @@ class Message implements \JsonSerializable
     /** @var integer $severity */
     private $severity;
 
-    public function __construct($text, $severity)
+    /** @var  array */
+    private $path;
+
+    public function __construct($text, $severity, $path = [])
     {
         $this->text = $text;
         $this->severity = $severity;
+        $this->path = $path;
     }
 
     public function jsonSerialize()
     {
         return [
             "text" => $this->text,
-            "severity" => $this->getSeverity()
+            "severity" => $this->getSeverity(),
+            "path" => $this->getPath(),
         ];
     }
 
@@ -41,6 +46,11 @@ class Message implements \JsonSerializable
     public function getSeverity()
     {
         return $this->severityText[$this->severity];
+    }
+
+    public function getPath()
+    {
+        return $this->path;
     }
 
 }

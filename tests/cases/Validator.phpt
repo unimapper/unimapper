@@ -11,9 +11,13 @@ class ValidatorTest extends UniMapper\Tests\TestCase
     /** @var \UniMapper\Validator $validator */
     private $validator;
 
+    /** @var \UniMapper\Tests\Fixtures\Entity\Simple */
+    private $entity;
+
     public function setUp()
     {
-        $this->validator = new Validator($this->createEntity("Simple"));
+        $this->entity = $this->createEntity("Simple");
+        $this->validator = new Validator($this->entity);
     }
 
     public function testOnEntity()
@@ -133,17 +137,22 @@ class ValidatorTest extends UniMapper\Tests\TestCase
 
         $messages = $this->validator->getMessages(
             Validator\Rule::DEBUG,
-            function($message, $severity) {
+            function($message, $severity, $path) {
                 $object = new \stdClass;
                 $object->message = $message;
                 $object->severity = $severity;
+                $object->path = $path;
                 return $object;
             }
         );
-        Assert::same("Id is required!", $messages["properties"]["id"][0]->message);
-        Assert::same(Validator\Rule::ERROR, $messages["properties"]["id"][0]->severity);
-        Assert::same("This is just info!", $messages["properties"]["email"][0]->message);
-        Assert::same(Validator\Rule::INFO, $messages["properties"]["email"][0]->severity);
+
+        Assert::same("Id is required!", $messages[0]->message);
+        Assert::same(Validator\Rule::ERROR, $messages[0]->severity);
+        Assert::same(["id"], $messages[0]->path);
+
+        Assert::same("This is just info!", $messages[1]->message);
+        Assert::same(Validator\Rule::INFO, $messages[1]->severity);
+        Assert::same(["email"], $messages[1]->path);
     }
 
     /**
@@ -224,6 +233,31 @@ class ValidatorTest extends UniMapper\Tests\TestCase
             ),
             $this->validator->getMessages()
         );
+    }
+
+    public function testNestedValidators()
+    {
+        $nested = $this->createEntity("Nested");
+        $nested->getValidator()
+            ->on("text")
+                ->addRule(Validator::EMAIL, "Text must be e-mail!");
+
+        // Get even deeper
+        $nested->entity = $this->createEntity("Simple");
+        $nested->entity->getValidator()
+                ->on("url")
+                    ->addRule(Validator::URL, "Invalid URL!");
+
+        $this->entity->entity = $nested;
+
+        Assert::false($this->validator->validate());
+
+        $messages = $this->validator->getMessages();
+        Assert::count(2, $messages);
+        Assert::same(['entity', 'text'], $messages[0]->getPath());
+        Assert::same("Text must be e-mail!", $messages[0]->getText());
+        Assert::same(['entity', 'entity', 'url'], $messages[1]->getPath());
+        Assert::same("Invalid URL!", $messages[1]->getText());
     }
 
 }
