@@ -451,7 +451,7 @@ class Property
             } else {
                 throw new Exception\PropertyValidationException(
                     "Expected entity " . $expectedType . " but " . $givenType
-                    . "given on property " . $this->name . "!",
+                    . " given on property " . $this->name . "!",
                     $this->entityReflection,
                     $this->rawDefinition,
                     Exception\PropertyValidationException::TYPE
