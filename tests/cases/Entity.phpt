@@ -69,6 +69,10 @@ class EntityTest extends UniMapper\Tests\TestCase
         $nestedEntity = $this->createEntity("Nested", ["text" => "foo"]);
 
         $this->entity->collection[] = $nestedEntity;
+        $this->entity->hasMany[] = $this->createEntity(
+            "Remote",
+            ["id" => 1]
+        );
         $this->entity->entity = $this->createEntity("Nested");
 
         Assert::same(
@@ -84,6 +88,7 @@ class EntityTest extends UniMapper\Tests\TestCase
                 'mark' => NULL,
                 'entity' => $this->entity->entity,
                 'collection' => $this->entity->collection,
+                'hasMany' => $this->entity->hasMany,
                 'readonly' => NULL,
                 'storedData' => NULL,
                 'publicProperty' => 'defaultValue',
@@ -118,6 +123,7 @@ class EntityTest extends UniMapper\Tests\TestCase
                         'publicProperty' => 'defaultValue'
                     ),
                 ),
+                'hasMany' => array(array('id' => 1, 'hasManyNoDominance' => array())),
                 'readonly' => NULL,
                 'storedData' => NULL,
                 'publicProperty' => 'defaultValue',
@@ -138,7 +144,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     public function testJsonSerializable()
     {
         Assert::same(
-            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"readonly":null,"storedData":null,"publicProperty":"defaultValue"}',
+            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"hasMany":[],"readonly":null,"storedData":null,"publicProperty":"defaultValue"}',
             json_encode($this->entity)
         );
     }
@@ -260,44 +266,26 @@ class EntityTest extends UniMapper\Tests\TestCase
     public function testIterate()
     {
         $expected = [
-            'names' => [
-                'id',
-                'text',
-                'empty',
-                'url',
-                'email',
-                'time',
-                'year',
-                'ip',
-                'mark',
-                'entity',
-                'collection',
-                'readonly',
-                'storedData',
-                'publicProperty'
-            ],
-            'values' => [
-                1,
-                'test',
-                '',
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                $this->entity->collection,
-                null,
-                null,
-                'defaultValue'
-            ],
+            'id',
+            'text',
+            'empty',
+            'url',
+            'email',
+            'time',
+            'year',
+            'ip',
+            'mark',
+            'entity',
+            'collection',
+            'hasMany',
+            'readonly',
+            'storedData',
+            'publicProperty'
         ];
 
-        $given = ['names' => [], 'values' => []];
+        $given = [];
         foreach ($this->entity as $name => $value) {
-           $given['names'][] = $name;
-           $given['values'][] = $value;
+           $given[] = $name;
         }
         Assert::same($expected, $given);
         Assert::same('publicProperty', key($this->entity));

@@ -2,7 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exception\QueryException,
+use UniMapper\Exception,
     UniMapper\Reflection;
 
 class Insert extends \UniMapper\Query
@@ -29,7 +29,7 @@ class Insert extends \UniMapper\Query
 
         // Values can not be empty
         if (empty($values)) {
-            throw new QueryException("Nothing to insert!");
+            throw new Exception\QueryException("Nothing to insert!");
         }
 
         // Prevent to set empty primary property
@@ -51,7 +51,7 @@ class Insert extends \UniMapper\Query
         if ($this->entityReflection->hasPrimaryProperty()) {
 
             if ($primaryValue === null) {
-                throw new QueryException(
+                throw new Exception\QueryException(
                     "Insert should return primary value but null given!"
                 );
             }

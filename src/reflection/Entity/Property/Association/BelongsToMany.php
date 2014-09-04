@@ -2,25 +2,31 @@
 
 namespace UniMapper\Reflection\Entity\Property\Association;
 
-use UniMapper\Reflection;
+use UniMapper\Reflection,
+    UniMapper\Exception;
 
-class BelongsToMany extends \UniMapper\Reflection\Entity\Property\Association
+class BelongsToMany extends Reflection\Entity\Property\Association
 {
 
-    const TYPE = "1:N";
+    protected $expression = "1:N\s*=\s*(.*)";
 
-    public function __construct(Reflection\Entity $currentReflection,
-        Reflection\Entity $targetReflection, $parameters
+    public function __construct(
+        Reflection\Entity $currentReflection,
+        Reflection\Entity $targetReflection,
+        $definition
     ) {
-        parent::__construct($currentReflection, $targetReflection, $parameters);
-        if (!isset($this->parameters[0])) {
-            throw new \Exception("You must define foreign key!");
+        parent::__construct($currentReflection, $targetReflection, $definition);
+
+        if (empty($this->matches[1])) {
+            throw new Exception\AssociationParseException(
+                "You must define foreign key name '". $definition . "'!"
+            );
         }
     }
 
     public function getForeignKey()
     {
-        return $this->parameters[0];
+        return $this->matches[1];
     }
 
 }

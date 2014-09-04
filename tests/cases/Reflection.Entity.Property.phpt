@@ -147,6 +147,20 @@ class ReflectionEntityPropertyTest extends UniMapper\Tests\TestCase
         );
     }
 
+    public function testAssocHasMany()
+    {
+        $property = $this->_createReflection('Simple[] $hasMany m:assoc(M:N=sourceId|source_target|targetId)');
+        Assert::true($property->isAssociation());
+        Assert::type("UniMapper\Reflection\Entity\Property\Association\HasMany", $property->getAssociation());
+    }
+
+    public function testAssocBelongsToMany()
+    {
+        $property = $this->_createReflection('Simple[] $belongsToMany m:assoc(1:N=sourceId)');
+        Assert::true($property->isAssociation());
+        Assert::type("UniMapper\Reflection\Entity\Property\Association\BelongsToMany", $property->getAssociation());
+    }
+
 }
 
 $testCase = new ReflectionEntityPropertyTest;

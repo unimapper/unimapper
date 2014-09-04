@@ -2,21 +2,16 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Query\IConditionable,
-    UniMapper\Exception\QueryException,
+use UniMapper\Exception,
+    UniMapper\Reflection\Entity\Property\Association\HasMany,
+    UniMapper\Reflection\Entity\Property\Association\BelongsToMany,
     UniMapper\Reflection;
 
-class FindOne extends \UniMapper\Query implements IConditionable
+class FindOne extends Selection
 {
 
     /** @var mixed */
     public $primaryValue;
-
-    /** @var array */
-    private $associations = [
-        "local" => [],
-        "remote" => []
-    ];
 
     public function __construct(Reflection\Entity $entityReflection,
         array $adapters, $primaryValue
@@ -24,7 +19,7 @@ class FindOne extends \UniMapper\Query implements IConditionable
         parent::__construct($entityReflection, $adapters);
 
         if (!$entityReflection->hasPrimaryProperty()) {
-            throw new QueryException(
+            throw new Exception\QueryException(
                 "Can not use findOne() on entity without primary property!"
             );
         }
@@ -32,32 +27,6 @@ class FindOne extends \UniMapper\Query implements IConditionable
         $entityReflection->getPrimaryProperty()->validateValueType($primaryValue);
 
         $this->primaryValue = $primaryValue;
-    }
-
-    public function associate($propertyName)
-    {
-        foreach (func_get_args() as $name) {
-
-            if (!isset($this->entityReflection->getProperties()[$name])) {
-                throw new QueryException("Property '" . $name . "' not defined!");
-            }
-
-            $property = $this->entityReflection->getProperties()[$name];
-            if (!$property->isAssociation()) {
-                throw new QueryException(
-                    "Property '" . $name . "' is not defined as association!"
-                );
-            }
-
-            $association = $property->getAssociation();
-            if ($association->isRemote()) {
-                $this->associations["remote"][$name] = $association;
-            } else {
-                $this->associations["local"][$name] = $association;
-            }
-        }
-
-        return $this;
     }
 
     public function onExecute(\UniMapper\Adapter $adapter)
@@ -71,6 +40,57 @@ class FindOne extends \UniMapper\Query implements IConditionable
 
         if (!$result) {
             return false;
+        }
+
+        // Get remote associations
+        if ($this->associations["remote"]) {
+
+            $associated = [];
+            foreach ($this->associations["remote"]
+                as $propertyName => $association
+            ) {
+
+                if (!isset($this->adapters[$association->getTargetAdapterName()])) {
+                    throw new Exception\QueryException(
+                        "Adapter with name '"
+                        . $association->getTargetAdapterName() . "' not set!"
+                    );
+                }
+
+                if ($association instanceof HasMany) {
+                    $associated[$propertyName] = $this->hasMany(
+                        $adapter,
+                        $this->adapters[$association->getTargetAdapterName()],
+                        $association,
+                        [$this->primaryValue]
+                    );
+                } elseif ($association instanceof BelongsToMany) {
+                    $associated[$propertyName] = $this->belongsToMany(
+                        $this->adapters[$association->getTargetAdapterName()],
+                        $association,
+                        [$this->primaryValue]
+                    );
+                } else {
+                    throw new Exception\QueryException(
+                        "Unsupported remote association "
+                        . get_class($association) . "!"
+                    );
+                }
+            }
+
+            if (is_object($result)) {
+                $result = (array) $result;
+            }
+
+            // Merge returned associations
+            foreach ($associated as $propertyName => $associatedResult) {
+
+                $primaryValue = $result[$association->getPrimaryKey()];
+
+                if (isset($associatedResult[$primaryValue])) {
+                    $result[$propertyName] = $associatedResult[$primaryValue];
+                }
+            }
         }
 
         return $adapter->getMapping()->mapEntity(

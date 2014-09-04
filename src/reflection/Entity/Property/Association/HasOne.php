@@ -2,23 +2,30 @@
 
 namespace UniMapper\Reflection\Entity\Property\Association;
 
-class HasOne extends \UniMapper\Reflection\Entity\Property\Association
+use UniMapper\Reflection;
+
+class HasOne extends Reflection\Entity\Property\Association
 {
 
-    const TYPE = "N:1";
+    protected $expression = "1:1\s*=\s*(.*)";
 
-    public function __construct(Reflection\Entity $currentReflection,
-        Reflection\Entity $targetReflection, $parameters
+    public function __construct(
+        Reflection\Entity $currentReflection,
+        Reflection\Entity $targetReflection,
+        $definition
     ) {
-        parent::__construct($currentReflection, $targetReflection, $parameters);
-        if (!isset($this->parameters[0])) {
-            throw new \Exception("You must define a reference key!");
+        parent::__construct($currentReflection, $targetReflection, $definition);
+
+        if (empty($this->matches[0])) {
+            throw new Exception\AssociationParseException(
+                "You must define a reference key!"
+            );
         }
     }
 
     public function getReferenceKey()
     {
-        return $this->parameters[0];
+        return $this->matches[0];
     }
 
 }

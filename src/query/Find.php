@@ -2,27 +2,19 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exception\QueryException,
+use UniMapper\Exception,
     UniMapper\Reflection,
     UniMapper\Reflection\Entity\Property\Association\BelongsToMany,
     UniMapper\Reflection\Entity\Property\Association\HasMany,
-    UniMapper\EntityCollection,
-    UniMapper\Adapter,
-    UniMapper\Query\IConditionable;
+    UniMapper\EntityCollection;
 
-class Find extends \UniMapper\Query implements IConditionable
+class Find extends Selection implements IConditionable
 {
 
     protected $limit;
     protected $offset;
     protected $orderBy = [];
     protected $selection = [];
-
-    /** @var array */
-    private $associations = [
-        "local" => [],
-        "remote" => []
-    ];
 
     public function __construct(Reflection\Entity $entityReflection, array $adapters)
     {
@@ -35,32 +27,6 @@ class Find extends \UniMapper\Query implements IConditionable
         if (!array_search($name, $this->selection)) {
             $this->selection[] = $name;
         }
-        return $this;
-    }
-
-    public function associate($propertyName)
-    {
-        foreach (func_get_args() as $name) {
-
-            if (!isset($this->entityReflection->getProperties()[$name])) {
-                throw new QueryException("Property '" . $name . "' not defined!");
-            }
-
-            $property = $this->entityReflection->getProperties()[$name];
-            if (!$property->isAssociation()) {
-                throw new QueryException(
-                    "Property '" . $name . "' is not defined as association!"
-                );
-            }
-
-            $association = $property->getAssociation();
-            if ($association->isRemote()) {
-                $this->associations["remote"][$name] = $association;
-            } else {
-                $this->associations["local"][$name] = $association;
-            }
-        }
-
         return $this;
     }
 
@@ -79,20 +45,20 @@ class Find extends \UniMapper\Query implements IConditionable
     public function orderBy($propertyName, $direction = "asc")
     {
         if (!$this->entityReflection->hasProperty($propertyName)) {
-            throw new QueryException(
+            throw new Exception\QueryException(
                 "Invalid property name '" . $propertyName . "'!"
             );
         }
 
         $direction = strtolower($direction);
         if ($direction !== "asc" && $direction !== "desc") {
-            throw new QueryException("Order direction must be 'asc' or 'desc'!");
+            throw new Exception\QueryException("Order direction must be 'asc' or 'desc'!");
         }
         $this->orderBy[$propertyName] = $direction;
         return $this;
     }
 
-    public function onExecute(Adapter $adapter)
+    public function onExecute(\UniMapper\Adapter $adapter)
     {
         $mapping = $adapter->getMapping();
 
@@ -105,13 +71,14 @@ class Find extends \UniMapper\Query implements IConditionable
             $this->offset,
             $this->associations["local"]
         );
+
         if (empty($result)) {
             return new EntityCollection($this->entityReflection);
         }
 
+        // Get remote associations
         if ($this->associations["remote"]) {
 
-            // Get remote associations
             $primaryPropertyName = $this->entityReflection->getPrimaryProperty()
                 ->getMappedName();
 
@@ -129,21 +96,28 @@ class Find extends \UniMapper\Query implements IConditionable
                 as $propertyName => $association
             ) {
 
+                if (!isset($this->adapters[$association->getTargetAdapterName()])) {
+                    throw new Exception\QueryException(
+                        "Adapter with name '"
+                        . $association->getTargetAdapterName() . "' not set!"
+                    );
+                }
+
                 if ($association instanceof HasMany) {
-                    $associated[$propertyName] = $this->_hasMany(
+                    $associated[$propertyName] = $this->hasMany(
                         $adapter,
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
                         $primaryValues
                     );
-                } elseif ($association instanceof HasOne) {
-                    $associated[$propertyName] = $this->_belongsToMany(
+                } elseif ($association instanceof BelongsToMany) {
+                    $associated[$propertyName] = $this->belongsToMany(
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
                         $primaryValues
                     );
                 } else {
-                    throw new QueryException(
+                    throw new Exception\QueryException(
                         "Unsupported remote association "
                         . get_class($association) . "!"
                     );
@@ -153,13 +127,16 @@ class Find extends \UniMapper\Query implements IConditionable
             // Merge returned associations
             foreach ($result as $index => $item) {
 
+                if (is_object($item)) {
+                    $item = (array) $item;
+                }
+
                 foreach ($associated as $propertyName => $associatedResult) {
 
-                    // @todo potencial future bug, association wrong?
-                    $primaryValue = $item->{$association->getPrimaryKey()};
+                    $primaryValue = $item[$association->getPrimaryKey()];
 
                     if (isset($associatedResult[$primaryValue])) {
-                        $item[$propertyName] = $associatedResult[$primaryValue];
+                        $result[$index][$propertyName] = $associatedResult[$primaryValue];
                     }
                 }
             }
@@ -191,80 +168,6 @@ class Find extends \UniMapper\Query implements IConditionable
         );
     }
 
-    private function _hasMany(Adapter $currentAdapter, Adapter $targetAdapter,
-        HasMany $association, array $primaryValues
-    ) {
-        $joinResult = $currentAdapter->find(
-            $association->getJoinResource(),
-            [$association->getJoinKey(), $association->getReferenceKey()],
-            [[$association->getJoinKey(), "IN", $primaryValues, "AND"]]
-        );
-
-        $joinResult = $this->_groupResult(
-            $joinResult,
-            [$association->getReferenceKey(),
-            $association->getJoinKey()]
-        );
-
-        $targetResult = $targetAdapter->find(
-            $association->getTargetResource(),
-            [], // @todo
-            [
-                [
-                    $association->getForeignKey(),
-                    "IN",
-                    array_keys($joinResult),
-                    "AND"
-                ]
-            ]
-        );
-
-        $targetResult = $this->_groupResult(
-            $targetResult,
-            [$association->getForeignKey()]
-        );
-
-        $result = [];
-        foreach ($joinResult as $targetKey => $join) {
-
-            foreach ($join as $originKey => $data) {
-                if (!isset($targetResult[$targetKey])) {
-                    throw new \Exception(
-                        "Can not merge associated result key '" . $targetKey
-                        . "' not found in result from '"
-                        . $association->getTargetResource()
-                        . "'! Maybe wrong value in join table/resource."
-                    );
-                }
-                $result[$originKey][] = $targetResult[$targetKey];
-            }
-        }
-
-        return $result;
-    }
-
-    private function _belongsToMany(Adapter $targetAdapter,
-        BelongsToMany $association, array $primaryValues
-    ) {
-        $result = $targetAdapter->find(
-            $association->getTargetResource(),
-            [], // @todo
-            [
-                [
-                    $association->getForeignKey(),
-                    "IN",
-                    array_keys($primaryValues), "AND"
-                ]
-            ]
-        );
-
-        if (!$result) {
-            return [];
-        }
-
-        return $result;
-    }
-
     public function getLimit()
     {
         return $this->limit;
@@ -283,51 +186,6 @@ class Find extends \UniMapper\Query implements IConditionable
     public function getSelection()
     {
         return $this->selection;
-    }
-
-    /**
-     * Group associative array
-     *
-     * @param array $original
-     * @param array $keys
-     * @param int   $level
-     *
-     * @return array
-     *
-     * @link http://tigrou.nl/2012/11/26/group-a-php-array-to-a-tree-structure/
-     */
-    private function _groupResult($original, $keys, $level = 0)
-    {
-        $converted = [];
-        $key = $keys[$level];
-        $isDeepest = sizeof($keys) - 1 == $level;
-
-        $level++;
-
-        $filtered = [];
-        foreach ($original as $k => $subArray) {
-
-            $subArray = (array) $subArray;
-            $thisLevel = $subArray[$key];
-            if ($isDeepest) {
-                $converted[$thisLevel] = $subArray;
-            } else {
-                $converted[$thisLevel] = [];
-            }
-            $filtered[$thisLevel][] = $subArray;
-        }
-
-        if (!$isDeepest) {
-            foreach (array_keys($converted) as $value) {
-                $converted[$value] = $this->_groupResult(
-                    $filtered[$value],
-                    $keys,
-                    $level
-                );
-            }
-        }
-
-        return $converted;
     }
 
 }

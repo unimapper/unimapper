@@ -2,49 +2,74 @@
 
 namespace UniMapper\Reflection\Entity\Property\Association;
 
-use UniMapper\Reflection;
+use UniMapper\Reflection,
+    UniMapper\Exception;
 
-class HasMany extends \UniMapper\Reflection\Entity\Property\Association
+class HasMany extends Reflection\Entity\Property\Association
 {
 
-    const TYPE = "M:N";
+    protected $expression = "M(:|>|<)N=(.*)\|(.*)\|(.*)";
 
-    public function __construct(Reflection\Entity $currentReflection,
-        Reflection\Entity $targetReflection, $parameters
+    protected $dominant = true;
+
+    public function __construct(
+        Reflection\Entity $currentReflection,
+        Reflection\Entity $targetReflection,
+        $definition
     ) {
-        parent::__construct($currentReflection, $targetReflection, $parameters);
+        parent::__construct($currentReflection, $targetReflection, $definition);
+
         if (!$targetReflection->hasPrimaryProperty()) {
-            throw new \Exception("Target entity must define primary property!");
+            throw new Exception\AssociationParseException(
+                "Target entity must define primary property!"
+            );
         }
-        if (!isset($this->parameters[0])) {
-            throw new \Exception("You must define join key!");
+
+        if ($this->isRemote() && $this->matches[1] === "<") {
+            $this->dominant = false;
         }
-        if (!isset($this->parameters[1])) {
-            throw new \Exception("You must define join resource!");
+
+        if (empty($this->matches[2])) {
+            throw new Exception\AssociationParseException(
+                "You must define join key!"
+            );
         }
-        if (!isset($this->parameters[2])) {
-            throw new \Exception("You must define reference key!");
+        if (empty($this->matches[3])) {
+            throw new Exception\AssociationParseException(
+                "You must define join resource!"
+            );
+        }
+
+        if (empty($this->matches[4])) {
+            throw new Exception\AssociationParseException(
+                "You must define reference key!!"
+            );
         }
     }
 
     public function getJoinKey()
     {
-        return $this->parameters[0];
+        return $this->matches[2];
     }
 
     public function getJoinResource()
     {
-        return $this->parameters[1];
+        return $this->matches[3];
     }
 
     public function getReferenceKey()
     {
-        return $this->parameters[2];
+        return $this->matches[4];
     }
 
     public function getForeignKey()
     {
-        return $this->targetEntityReflection->getPrimaryProperty()->getMappedName();
+        return $this->targetReflection->getPrimaryProperty()->getMappedName();
+    }
+
+    public function isDominant()
+    {
+        return $this->dominant;
     }
 
 }

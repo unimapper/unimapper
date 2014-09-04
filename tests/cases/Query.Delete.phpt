@@ -20,7 +20,7 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
     public function testSuccess()
     {
         $this->adapters["FooAdapter"]->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
-        $this->adapters["FooAdapter"]->shouldReceive("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
+        $this->adapters["FooAdapter"]->shouldReceive("delete")->with("simple_resource", [["id", "=", 1, "AND"]])->once();
 
         $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters);
         $query->where("id", "=", 1);

@@ -2,8 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exception\QueryException,
-    UniMapper\Query\IConditionable,
+use UniMapper\Exception,
     UniMapper\Reflection;
 
 class Update extends \UniMapper\Query implements IConditionable
@@ -22,7 +21,7 @@ class Update extends \UniMapper\Query implements IConditionable
 
             $primaryName = $entityReflection->getPrimaryProperty()->getMappedName();
             if (isset($data[$primaryName])) {
-                throw new QueryException(
+                throw new Exception\QueryException(
                     "Update is not allowed on primary property '"
                     .  $primaryName . "'!"
                 );
@@ -43,11 +42,11 @@ class Update extends \UniMapper\Query implements IConditionable
 
         // Values can not be empty
         if (empty($values)) {
-            throw new QueryException("Nothing to update!");
+            throw new Exception\QueryException("Nothing to update!");
         }
 
         if (count($this->conditions) === 0) {
-            throw new QueryException("At least one condition must be set!");
+            throw new Exception\QueryException("At least one condition must be set!");
         }
 
         $mapping = $adapter->getMapping();

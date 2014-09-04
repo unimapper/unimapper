@@ -11,7 +11,7 @@ class QueryCountTest extends UniMapper\Tests\TestCase
     {
         $adapterMock = Mockery::mock("UniMapper\Tests\Fixtures\Adapter\Simple");
         $adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
-        $adapterMock->shouldReceive("count")->with("resource", [["id", "=", 1, "AND"]])->once()->andReturn("1");
+        $adapterMock->shouldReceive("count")->with("simple_resource", [["id", "=", 1, "AND"]])->once()->andReturn("1");
 
         $query = new \UniMapper\Query\Count(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),

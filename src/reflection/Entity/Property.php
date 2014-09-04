@@ -46,12 +46,12 @@ class Property
     /** @var \UniMapper\Reflection\Entity\Property\Association $association */
     protected $association;
 
-    /** @var array */
-    private $supportedAssociations = [
-        Property\Association\HasOne::TYPE => "HasOne",
-        Property\Association\HasMany::TYPE => "HasMany",
-        Property\Association\BelongsToOne::TYPE => "BelongsToOne",
-        Property\Association\BelongsToMany::TYPE => "BelongsToMany"
+    /** @var array $associations List of registered associations */
+    private $associations = [
+        "UniMapper\Reflection\Entity\Property\Association\HasOne",
+        "UniMapper\Reflection\Entity\Property\Association\HasMany",
+        "UniMapper\Reflection\Entity\Property\Association\BelongsToOne",
+        "UniMapper\Reflection\Entity\Property\Association\BelongsToMany"
     ];
 
     /** @var boolean */
@@ -345,7 +345,17 @@ class Property
             }
             $this->primary = true;
         } elseif (preg_match("#m:assoc\((.*?)\)#s", $definition, $matches)) {
-            // m:assoc(1:1=key|targetKey)
+            // m:assoc(....)
+
+            if (!$this->entityReflection->hasAdapter()) {
+                throw new Exception\PropertyException(
+                    "Can not use associations while entity "
+                    . $this->entityReflection->getClassName()
+                    . " has no adapter defined!",
+                    $this->entityReflection,
+                    $definition
+                );
+            }
 
             if ($this->computed || $this->mapping || $this->enumeration) {
                 throw new Exception\PropertyException(
@@ -369,30 +379,44 @@ class Property
                     $definition
                 );
             }
-
-            if (!strpos($matches[1], "=")) {
+            if (!$targetEntityReflection->hasAdapter()) {
                 throw new Exception\PropertyException(
-                    "Bad association definition!",
+                    "Can not use associations while target entity "
+                    . $targetEntityReflection->getClassName()
+                    . " has no adapter defined!",
                     $this->entityReflection,
                     $definition
                 );
             }
-            list($assocType, $parameters) = explode("=", $matches[1]);
-            if (!isset($this->supportedAssociations[$assocType])) {
+
+            foreach ($this->associations as $assocClass) {
+
+                try {
+
+                    $this->association = new $assocClass(
+                        $this->entityReflection,
+                        $targetEntityReflection,
+                        $matches[1]
+                    );
+                } catch (Exception\AssociationParseException $e) {
+
+                    if ($e->getCode() !== Exception\AssociationParseException::INVALID_TYPE) {
+                        throw new Exception\PropertyException(
+                            $e->getMessage(),
+                            $this->entityReflection,
+                            $definition
+                        );
+                    }
+                }
+            }
+
+            if (!$this->association) {
                 throw new Exception\PropertyException(
-                    "Association type '" . $assocType . "' not supported!",
+                    "Unrecognized association m:map(" . $matches[1] . ")!",
                     $this->entityReflection,
                     $definition
                 );
             }
-            $assocClass = "UniMapper\Reflection\Entity\Property\Association\\"
-                . $this->supportedAssociations[$assocType];
-
-            $this->association = new $assocClass(
-                $this->entityReflection,
-                $targetEntityReflection,
-                $parameters
-            );
         }
     }
 

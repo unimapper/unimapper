@@ -8,63 +8,59 @@ use UniMapper\Reflection,
 abstract class Association
 {
 
-    /** @var \UniMapper\Reflection\Entity */
-    protected $currentEntityReflection;
+    /** @var string $expression Regular expression for definition */
+    protected $expression;
+
+    /** @var array $matches Matched items from regular */
+    protected $matches;
 
     /** @var \UniMapper\Reflection\Entity */
-    protected $targetEntityReflection;
+    protected $currentReflection;
 
-    /** @var array $parameters Additional association informations */
-    protected $parameters = [];
+    /** @var \UniMapper\Reflection\Entity */
+    protected $targetReflection;
 
-    public function __construct(Reflection\Entity $currentReflection,
-        Reflection\Entity $targetReflection, $parameters
+    public function __construct(
+        Reflection\Entity $currentReflection,
+        Reflection\Entity $targetReflection,
+        $definition
     ) {
-        if (!$currentReflection->hasAdapter()) {
-            throw new Exception\PropertyParseException(
-                "Can not use associations while current entity "
-                . $currentReflection->getClassName()
-                . " has no adapter defined!"
+        if (!preg_match("/" . $this->expression . "/", $definition, $matches)) {
+            throw new Exception\AssociationParseException(
+                "Invalid association type definition '". $definition . "'!",
+                Exception\AssociationParseException::INVALID_TYPE
             );
         }
-        $this->currentEntityReflection = $currentReflection;
+        $this->matches = $matches;
 
-        $this->targetEntityReflection = $targetReflection;
-        if (!$targetReflection->hasAdapter()) {
-            throw new Exception\PropertyParseException(
-                "Can not use associations while target entity "
-                . $targetReflection->getClassName()
-                . " has no adapter defined!"
-            );
-        }
-
-        $this->parameters = explode("|", $parameters);
+        $this->currentReflection = $currentReflection;
+        $this->targetReflection = $targetReflection;
     }
 
     public function getPrimaryKey()
     {
-        return $this->currentEntityReflection->getPrimaryProperty()->getMappedName();
+        return $this->currentReflection->getPrimaryProperty()->getMappedName();
     }
 
     public function getTargetReflection()
     {
-        return $this->targetEntityReflection;
+        return $this->targetReflection;
     }
 
     public function getTargetResource()
     {
-        return $this->targetEntityReflection->getAdapterReflection()->getResource();
+        return $this->targetReflection->getAdapterReflection()->getResource();
     }
 
     public function getTargetAdapterName()
     {
-        return $this->targetEntityReflection->getAdapterReflection()->getName();
+        return $this->targetReflection->getAdapterReflection()->getName();
     }
 
     public function isRemote()
     {
-        return $this->currentEntityReflection->getAdapterReflection()->getName()
-            !== $this->targetEntityReflection->getAdapterReflection()->getName();
+        return $this->currentReflection->getAdapterReflection()->getName()
+            !== $this->targetReflection->getAdapterReflection()->getName();
     }
 
 }

@@ -7,7 +7,6 @@ require __DIR__ . '/../bootstrap.php';
 class ReflectionEntityPropertyMappingTest extends UniMapper\Tests\TestCase
 {
 
-
     public function testNameAndFilter()
     {
         $reflection = new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple");

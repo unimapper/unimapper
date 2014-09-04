@@ -98,7 +98,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
     public function testSaveUpdate()
     {
-        $this->adapterMock->shouldReceive("updateOne")->once()->with("resource", "id", 1, ["text" => "foo"]);
+        $this->adapterMock->shouldReceive("updateOne")->once()->with("simple_resource", "id", 1, ["text" => "foo"]);
         $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
         $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
 
@@ -110,7 +110,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
     public function testSaveInsert()
     {
-        $this->adapterMock->shouldReceive("insert")->once()->with("resource", ["text" => "foo"])->andReturn(["id" => 1]);
+        $this->adapterMock->shouldReceive("insert")->once()->with("simple_resource", ["text" => "foo"])->andReturn(["id" => 1]);
         $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
         $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
 
@@ -163,7 +163,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
     public function testDelete()
     {
         $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
-        $this->adapterMock->shouldReceive("delete")->with("resource", [["id", "=", 1, "AND"]])->once();
+        $this->adapterMock->shouldReceive("delete")->with("simple_resource", [["id", "=", 1, "AND"]])->once();
         $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
 
         $this->repository->registerAdapter($this->adapterMock);
@@ -176,8 +176,8 @@ class RepositoryTest extends UniMapper\Tests\TestCase
     {
         $this->adapterMock->shouldReceive("find")
             ->with(
-                "resource",
-                ["id", "text", "empty", "link", "email_address", "time", "ip", "mark", "entity", "collection", "readonly", "stored_data"],
+                "simple_resource",
+                ["id", "text", "empty", "link", "email_address", "time", "ip", "mark", "entity", "readonly", "stored_data"],
                 [["text", "LIKE", "foo", "AND"]],
                 ["time" => "desc"],
                 10,
@@ -206,7 +206,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         $entity = $this->createEntity("Simple", ["id" => 1, "text" => "foo"]);
 
         $this->adapterMock->shouldReceive("findOne")
-            ->with("resource", "id", $entity->id, [])
+            ->with("simple_resource", "id", $entity->id, [])
             ->once()
             ->andReturn(["id" => $entity->id, "text" => $entity->text]);
 
@@ -234,7 +234,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->andReturn("FooAdapter");
 
         $this->adapterMock->shouldReceive("count")
-            ->with("resource", [["text", "LIKE", "foo", "AND"]])
+            ->with("simple_resource", [["text", "LIKE", "foo", "AND"]])
             ->once()
             ->andReturn(2);
 

@@ -3,21 +3,22 @@
 namespace UniMapper\Tests\Fixtures\Entity;
 
 /**
- * @adapter FooAdapter(resource)
+ * @adapter FooAdapter(simple_resource)
  *
- * @property       integer    $id         m:primary
+ * @property       integer    $id               m:primary
  * @property       string     $text
  * @property       string     $empty
- * @property       string     $url        m:map(name='link')
- * @property       string     $email      m:map(name='email_address')
+ * @property       string     $url              m:map(name='link')
+ * @property       string     $email            m:map(name='email_address')
  * @property       DateTime   $time
- * @property       integer    $year       m:computed
+ * @property       integer    $year             m:computed
  * @property       string     $ip
  * @property       integer    $mark
  * @property       Nested     $entity
- * @property       Nested[]   $collection
+ * @property       Nested[]   $collection       m:assoc(M:N=simpleId|simple_nested|nestedId)
+ * @property       Remote[]   $hasMany          m:assoc(M:N=simpleId|simple_remote|remoteId)
  * @property-read  string     $readonly
- * @property       array      $storedData m:map(name='stored_data';filter=stringToArray|arrayToString)
+ * @property       array      $storedData       m:map(name='stored_data';filter=stringToArray|arrayToString)
  */
 class Simple extends \UniMapper\Entity
 {

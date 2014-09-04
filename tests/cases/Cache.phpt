@@ -30,6 +30,7 @@ class CacheTest extends UniMapper\Tests\TestCase
 
         $simpleEntityReflection = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Simple");
         $nestedEntityReflection = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Nested");
+        $remoteEntityReflection = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Remote");
 
         $this->cacheMock->shouldReceive("save")
             ->once()
@@ -38,7 +39,8 @@ class CacheTest extends UniMapper\Tests\TestCase
                 Mockery::type("UniMapper\Reflection\Entity"),
                 [
                     $nestedEntityReflection->getFileName(),
-                    $simpleEntityReflection->getFileName()
+                    $simpleEntityReflection->getFileName(),
+                    $remoteEntityReflection->getFileName()
                 ]
             );
 

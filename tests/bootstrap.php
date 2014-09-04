@@ -14,6 +14,7 @@ require __DIR__ . "/fixtures/cache/CustomCache.php";
 require __DIR__ . "/fixtures/entity/NoAdapter.php";
 require __DIR__ . "/fixtures/entity/Simple.php";
 require __DIR__ . "/fixtures/entity/Nested.php";
+require __DIR__ . "/fixtures/entity/Remote.php";
 require __DIR__ . "/fixtures/entity/DuplicateProperty.php";
 require __DIR__ . "/fixtures/entity/DuplicatePublicProperty.php";
 require __DIR__ . "/fixtures/entity/NoPrimary.php";
