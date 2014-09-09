@@ -10,7 +10,7 @@ class Count extends \UniMapper\Query implements IConditionable
         $mapping = $adapter->getMapping();
         return (int) $adapter->count(
             $this->entityReflection->getAdapterReflection()->getResource(),
-            $mapping->unmapConditions($this->entityReflection, $this->conditions)
+            $mapping->unmapConditions($this->conditions, $this->entityReflection)
         );
     }
 

@@ -21,7 +21,9 @@ abstract class Selection extends \UniMapper\Query
         foreach (func_get_args() as $name) {
 
             if (!isset($this->entityReflection->getProperties()[$name])) {
-                throw new Exception\QueryException("Property '" . $name . "' not defined!");
+                throw new Exception\QueryException(
+                    "Property '" . $name . "' not defined!"
+                );
             }
 
             $property = $this->entityReflection->getProperties()[$name];
@@ -68,9 +70,14 @@ abstract class Selection extends \UniMapper\Query
 
         $joinResult = $currentAdapter->find(
             $association->getJoinResource(),
-            [$association->getJoinKey(), $association->getReferenceKey()],
-            [[$association->getJoinKey(), "IN", $primaryValues, "AND"]]
+            $currentAdapter->getMapping()->unmapSelection(
+                [$association->getJoinKey(), $association->getReferenceKey()]
+            ),
+            $currentAdapter->getMapping()->unmapConditions(
+                [[$association->getJoinKey(), "IN", $primaryValues, "AND"]]
+            )
         );
+
         if (!$joinResult) {
             return [];
         }
@@ -85,15 +92,17 @@ abstract class Selection extends \UniMapper\Query
 
         $targetResult = $targetAdapter->find(
             $association->getTargetResource(),
-            [],
-            [
+            $targetAdapter->getMapping()->unmapSelection([]),
+            $targetAdapter->getMapping()->unmapConditions(
                 [
-                    $association->getForeignKey(),
-                    "IN",
-                    array_keys($joinResult),
-                    "AND"
+                    [
+                        $association->getForeignKey(),
+                        "IN",
+                        array_keys($joinResult),
+                        "AND"
+                    ]
                 ]
-            ]
+            )
         );
         if (!$targetResult) {
             return [];
@@ -128,16 +137,21 @@ abstract class Selection extends \UniMapper\Query
         BelongsToMany $association,
         array $primaryValues
     ) {
+        $mapping = $targetAdapter->getMapping();
+
         $result = $targetAdapter->find(
             $association->getTargetResource(),
-            [],
-            [
+            $mapping->unmapSelection([]),
+            $mapping->unmapConditions(
                 [
-                    $association->getForeignKey(),
-                    "IN",
-                    array_keys($primaryValues), "AND"
+                    [
+                        $association->getForeignKey(),
+                        "IN",
+                        array_keys($primaryValues),
+                        "AND"
+                    ]
                 ]
-            ]
+            )
         );
 
         if (!$result) {

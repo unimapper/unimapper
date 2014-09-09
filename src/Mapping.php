@@ -181,45 +181,35 @@ class Mapping
         return $data;
     }
 
-    public function unmapSelection(Reflection\Entity $entityReflection,
-        array $selection
+    public function unmapSelection(
+        array $selection,
+        Reflection\Entity $entityReflection = null
     ) {
-        if (count($selection) === 0) {
-            // Select all if not set
-
-            $selection = array_keys($entityReflection->getProperties());
-        } else {
-            // Add primary property automatically if not set in selection
-
-            $primaryPropertyName = $entityReflection->getPrimaryProperty()
-                ->getName();
-
-            if (!in_array($primaryPropertyName, $selection)) {
-                $selection[] = $primaryPropertyName;
-            }
+        if (!$entityReflection) {
+            return $selection;
         }
 
-        $result = [];
-        foreach ($selection as $name) {
+        foreach ($selection as $index => $name) {
 
             if ($entityReflection->hasProperty($name)) {
 
-                $property = $entityReflection->getProperty($name);
-
-                // Skip associations and computed properties
-                if ($property->isComputed() || $property->isAssociation()) {
-                    continue;
-                }
-
-                $result[] = $property->getMappedName();
+                $selection[$index] = $entityReflection
+                    ->getProperty($name)
+                    ->getMappedName();
             }
         }
-        return $result;
+
+        return $selection;
     }
 
-    public function unmapOrderBy(Reflection\Entity $entityReflection,
-        array $items
+    public function unmapOrderBy(
+        array $items,
+        Reflection\Entity $entityReflection = null
     ) {
+        if (!$entityReflection) {
+            return $items;
+        }
+
         $unmapped = [];
         foreach ($items as $name => $direction) {
             $mappedName = $entityReflection->getProperties()[$name]->getMappedName();
@@ -228,20 +218,25 @@ class Mapping
         return $unmapped;
     }
 
-    public function unmapConditions(Reflection\Entity $entityReflection,
-        array $conditions
+    public function unmapConditions(
+        array $conditions,
+        Reflection\Entity $entityReflection = null
     ) {
         foreach ($conditions as $condition) {
 
             if (is_array($condition[0])) {
 
                 $condition[0] = $this->unmapConditions(
-                    $entityReflection,
-                    $condition[0]
+                    $condition[0],
+                    $entityReflection
                 );
             } else {
-                $condition[0] = $entityReflection->getProperty($condition[0])
-                    ->getMappedName();
+
+                if ($entityReflection) {
+                    $condition[0] = $entityReflection
+                        ->getProperty($condition[0])
+                        ->getMappedName();
+                }
             }
         }
         return $conditions;

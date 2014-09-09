@@ -19,14 +19,31 @@ class Find extends Selection implements IConditionable
     public function __construct(Reflection\Entity $entityReflection, array $adapters)
     {
         parent::__construct($entityReflection, $adapters);
-        $this->selection = array_slice(func_get_args(), 2);
+
+        $selection = array_slice(func_get_args(), 2);
+        array_walk($selection, [$this, "select"]);
     }
 
     public function select($name)
     {
+        if (!$this->entityReflection->hasProperty($name)) {
+            throw new Exception\QueryException(
+                "Property " . $name . " is not defined on entity "
+                . $this->entityReflection->getClassName() . "!"
+            );
+        }
+
+        $property = $this->entityReflection->getProperty($name);
+        if ($property->isAssociation() || $property->isComputed()) {
+            throw new Exception\QueryException(
+                "Associations and computed properties can not be selected!"
+            );
+        }
+
         if (!array_search($name, $this->selection)) {
             $this->selection[] = $name;
         }
+
         return $this;
     }
 
@@ -64,9 +81,9 @@ class Find extends Selection implements IConditionable
 
         $result = $adapter->find(
             $this->entityReflection->getAdapterReflection()->getResource(),
-            $mapping->unmapSelection($this->entityReflection, $this->selection),
-            $mapping->unmapConditions($this->entityReflection, $this->conditions),
-            $mapping->unmapOrderBy($this->entityReflection, $this->orderBy),
+            $mapping->unmapSelection($this->_createSelection(), $this->entityReflection),
+            $mapping->unmapConditions($this->conditions, $this->entityReflection),
+            $mapping->unmapOrderBy($this->orderBy, $this->entityReflection),
             $this->limit,
             $this->offset,
             $this->associations["local"]
@@ -181,6 +198,32 @@ class Find extends Selection implements IConditionable
     public function getSelection()
     {
         return $this->selection;
+    }
+
+    private function _createSelection()
+    {
+        if (empty($this->selection)) {
+
+            $selection = [];
+            foreach ($this->entityReflection->getProperties() as $property) {
+
+                if (!$property->isAssociation() && !$property->isComputed()) {
+                    $selection[] = $property->getName();
+                }
+            }
+        } else {
+            $primaryPropertyName = $this->entityReflection
+                ->getPrimaryProperty()
+                ->getName();
+
+            // Add primary property automatically
+            $selection = $this->selection;
+            if (!in_array($primaryPropertyName, $selection)) {
+                $selection[] = $primaryPropertyName;
+            }
+        }
+
+        return $selection;
     }
 
 }
