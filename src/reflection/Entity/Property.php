@@ -555,19 +555,22 @@ class Property
         } elseif ($this->type === self::TYPE_DATETIME) {
             // DateTime
 
-            $date = $value;
-            if (Validator::isTraversable($value)) {
-                if (isset($value["date"])) {
-                    $date = $value["date"];
-                }
+            if ($value instanceof \DateTime) {
+                return $value;
+            } elseif (is_array($value) && isset($value["date"])) {
+                $date = $value["date"];
+            } elseif (is_object($value) && isset($value->date)) {
+                $date = $value->date;
+            } else {
+                $date = $value;
             }
-            try {
-                $date = new \DateTime($date);
-            } catch (\Exception $e) {
 
-            }
-            if ($date instanceof \DateTime) {
-                return $date;
+            if (isset($date)) {
+                try {
+                    return new \DateTime($date);
+                } catch (\Exception $e) {
+
+                }
             }
         } elseif ($this->type instanceof EntityCollection
             && Validator::isTraversable($value)

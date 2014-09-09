@@ -55,6 +55,21 @@ class ReflectionEntityPropertyTest extends UniMapper\Tests\TestCase
                 ->format("m. d. Y")
         );
 
+        // array -> datetime
+        Assert::type(
+            "DateTime",
+            $this->_createReflection('DateTime $time')
+                ->convertValue(["date" => "2012-02-01"])
+        );
+
+        // object -> datetime
+        $dateTime = new \stdClass;
+        $dateTime->date = "2012-02-01";
+        Assert::type(
+            "DateTime",
+            $this->_createReflection('DateTime $time')->convertValue($dateTime)
+        );
+
         // string -> boolean
         Assert::same(
             true,
