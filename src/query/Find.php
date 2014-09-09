@@ -91,7 +91,6 @@ class Find extends Selection implements IConditionable
                 $primaryValues[] = $item[$primaryPropertyName];
             }
 
-            $associated = [];
             foreach ($this->associations["remote"]
                 as $propertyName => $association
             ) {
@@ -104,14 +103,14 @@ class Find extends Selection implements IConditionable
                 }
 
                 if ($association instanceof HasMany) {
-                    $associated[$propertyName] = $this->hasMany(
+                    $associated = $this->hasMany(
                         $adapter,
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
                         $primaryValues
                     );
                 } elseif ($association instanceof BelongsToMany) {
-                    $associated[$propertyName] = $this->belongsToMany(
+                    $associated = $this->belongsToMany(
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
                         $primaryValues
@@ -122,21 +121,17 @@ class Find extends Selection implements IConditionable
                         . get_class($association) . "!"
                     );
                 }
-            }
 
-            // Merge returned associations
-            foreach ($result as $index => $item) {
-
-                if (is_object($item)) {
-                    $item = (array) $item;
+                if (!$associated) {
+                    continue;
                 }
 
-                foreach ($associated as $propertyName => $associatedResult) {
+                // Merge returned associations
+                foreach ($result as $index => $item) {
 
                     $primaryValue = $item[$association->getPrimaryKey()];
-
-                    if (isset($associatedResult[$primaryValue])) {
-                        $result[$index][$propertyName] = $associatedResult[$primaryValue];
+                    if (isset($associated[$primaryValue])) {
+                        $result[$index][$propertyName] = $associated[$primaryValue];
                     }
                 }
             }

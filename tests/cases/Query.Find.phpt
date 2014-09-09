@@ -85,6 +85,30 @@ class QueryFindTest extends UniMapper\Tests\TestCase
         Assert::count(0, $query->associate("collection")->execute());
     }
 
+    public function testAssociateHasManyRemoteNoRecords()
+    {
+        $this->adapters["FooAdapter"]->shouldReceive("find")
+            ->with("simple_resource", ["id"], [], [], null, null, [])
+            ->once()
+            ->andReturn([["id" => 1], ["id" => 2]]);
+        $this->adapters["FooAdapter"]->shouldReceive("find")
+            ->with(
+                "simple_remote",
+                ['simpleId', 'remoteId'],
+                [["simpleId", "IN", [1, 2], "AND"]]
+            )
+            ->once()
+            ->andReturn([]);
+
+        $query = new Query\Find(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, "id");
+        $result = $query->associate("hasMany")->execute();
+
+        Assert::count(2, $result);
+
+        Assert::count(0, $result[0]->hasMany);
+        Assert::count(0, $result[1]->hasMany);
+    }
+
     public function testAssociateHasManyRemote()
     {
         $this->adapters["FooAdapter"]->shouldReceive("find")

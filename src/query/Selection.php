@@ -71,8 +71,11 @@ abstract class Selection extends \UniMapper\Query
             [$association->getJoinKey(), $association->getReferenceKey()],
             [[$association->getJoinKey(), "IN", $primaryValues, "AND"]]
         );
+        if (!$joinResult) {
+            return [];
+        }
 
-        $joinResult = $this->groupResult(
+        $joinResult = $this->groupArray(
             $joinResult,
             [
                 $association->getReferenceKey(),
@@ -92,8 +95,11 @@ abstract class Selection extends \UniMapper\Query
                 ]
             ]
         );
+        if (!$targetResult) {
+            return [];
+        }
 
-        $targetResult = $this->groupResult(
+        $targetResult = $this->groupArray(
             $targetResult,
             [$association->getForeignKey()]
         );
