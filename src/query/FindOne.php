@@ -31,9 +31,11 @@ class FindOne extends Selection
 
     public function onExecute(\UniMapper\Adapter $adapter)
     {
+        $primaryProperty = $this->entityReflection->getPrimaryProperty();
+
         $result = $adapter->findOne(
             $this->entityReflection->getAdapterReflection()->getResource(),
-            $this->entityReflection->getPrimaryProperty()->getMappedName(),
+            $primaryProperty->getMappedName(),
             $this->primaryValue,
             $this->associations["local"]
         );
@@ -45,7 +47,10 @@ class FindOne extends Selection
         // Get remote associations
         if ($this->associations["remote"]) {
 
-            $associated = [];
+            $result = (array) $result;
+
+            $primaryValue = $result[$primaryProperty->getMappedName()];
+
             foreach ($this->associations["remote"]
                 as $propertyName => $association
             ) {
@@ -58,17 +63,17 @@ class FindOne extends Selection
                 }
 
                 if ($association instanceof HasMany) {
-                    $associated[$propertyName] = $this->hasMany(
+                    $associated = $this->hasMany(
                         $adapter,
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
-                        [$this->primaryValue]
+                        [$primaryValue]
                     );
                 } elseif ($association instanceof BelongsToMany) {
-                    $associated[$propertyName] = $this->belongsToMany(
+                    $associated = $this->belongsToMany(
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
-                        [$this->primaryValue]
+                        [$primaryValue]
                     );
                 } else {
                     throw new Exception\QueryException(
@@ -76,19 +81,10 @@ class FindOne extends Selection
                         . get_class($association) . "!"
                     );
                 }
-            }
 
-            if (is_object($result)) {
-                $result = (array) $result;
-            }
-
-            // Merge returned associations
-            foreach ($associated as $propertyName => $associatedResult) {
-
-                $primaryValue = $result[$association->getPrimaryKey()];
-
-                if (isset($associatedResult[$primaryValue])) {
-                    $result[$propertyName] = $associatedResult[$primaryValue];
+                // Merge returned associations
+                if (isset($associated[$primaryValue])) {
+                    $result[$propertyName] = $associated[$primaryValue];
                 }
             }
         }
