@@ -176,6 +176,13 @@ class ReflectionEntityPropertyTest extends UniMapper\Tests\TestCase
         Assert::type("UniMapper\Reflection\Entity\Property\Association\BelongsToMany", $property->getAssociation());
     }
 
+    public function testAssocBelongstToOne()
+    {
+        $property = $this->_createReflection('Simple $belongsToOne m:assoc(1:1=sourceId)');
+        Assert::true($property->isAssociation());
+        Assert::type("UniMapper\Reflection\Entity\Property\Association\BelongsToOne", $property->getAssociation());
+    }
+
 }
 
 $testCase = new ReflectionEntityPropertyTest;
