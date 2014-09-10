@@ -7,7 +7,7 @@ use UniMapper\Reflection;
 class HasOne extends Reflection\Entity\Property\Association
 {
 
-    protected $expression = "1:1\s*=\s*(.*)";
+    protected $expression = "N:1\s*=\s*(.*)";
 
     public function __construct(
         Reflection\Entity $currentReflection,
@@ -16,7 +16,7 @@ class HasOne extends Reflection\Entity\Property\Association
     ) {
         parent::__construct($currentReflection, $targetReflection, $definition);
 
-        if (empty($this->matches[0])) {
+        if (empty($this->matches[1])) {
             throw new Exception\AssociationParseException(
                 "You must define a reference key!"
             );
@@ -25,7 +25,7 @@ class HasOne extends Reflection\Entity\Property\Association
 
     public function getReferenceKey()
     {
-        return $this->matches[0];
+        return $this->matches[1];
     }
 
 }
