@@ -62,7 +62,7 @@ class Mapping
             try {
                 return new \DateTime($value);
             } catch (\Exception $e) {
-                throw new MappingException(
+                throw new Exception\MappingException(
                     "Can not map value to DateTime automatically! "
                     . $e->getMessage()
                 );
@@ -70,7 +70,7 @@ class Mapping
         }
 
         // Unexpected value type
-        throw new MappingException(
+        throw new Exception\MappingException(
             "Unexpected value type given. Can not convert value to entity "
             . "@property $" . $property->getName() . ". Expected " . $type
             . " but " . gettype($value) . " given!"
@@ -95,7 +95,7 @@ class Mapping
     public function mapEntity(Reflection\Entity $entityReflection, $data)
     {
         if (!Validator::isTraversable($data)) {
-            throw new MappingException("Input data must be traversable!");
+            throw new Exception\MappingException("Input data must be traversable!");
         }
 
         $values = [];
