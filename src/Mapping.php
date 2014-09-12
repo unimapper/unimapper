@@ -59,13 +59,25 @@ class Mapping
         } elseif ($type === Reflection\Entity\Property::TYPE_DATETIME) {
             // DateTime
 
-            try {
-                return new \DateTime($value);
-            } catch (\Exception $e) {
-                throw new Exception\MappingException(
-                    "Can not map value to DateTime automatically! "
-                    . $e->getMessage()
-                );
+            if ($value instanceof \DateTime) {
+                return $value;
+            } elseif (is_array($value) && isset($value["date"])) {
+                $date = $value["date"];
+            } elseif (is_object($value) && isset($value->date)) {
+                $date = $value->date;
+            } else {
+                $date = $value;
+            }
+
+            if (isset($date)) {
+                try {
+                    return new \DateTime($date);
+                } catch (\Exception $e) {
+                    throw new Exception\MappingException(
+                        "Can not map value to DateTime automatically! "
+                        . $e->getMessage()
+                    );
+                }
             }
         }
 
