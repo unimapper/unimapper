@@ -65,7 +65,9 @@ class Validator
     public function addCondition($validation)
     {
         if (!$this->property) {
-            throw new \Exception("Condition must be called only on properties!");
+            throw new Exception\InvalidArgumentException(
+                "Condition must be called only on properties!"
+            );
         }
         $condition = new Validator\Condition(
             $this->_getValidation($validation),
@@ -123,12 +125,14 @@ class Validator
     public function on($name, $child = null)
     {
         if (!$this->entity->getReflection()->hasProperty($name)) {
-            throw new \Exception("Unknown property '" . $name . "'!");
+            throw new Exception\InvalidArgumentException(
+                "Unknown property '" . $name . "'!"
+            );
         }
         $this->property = $this->entity->getReflection()->getProperty($name);
 
         if ($this->property->isComputed()) {
-            throw new \Exception(
+            throw new Exception\InvalidArgumentException(
                 "Validation can not be applied on computed properties!"
             );
         }
@@ -136,7 +140,7 @@ class Validator
             && (!$this->property->isTypeEntity()
             && !$this->property->isTypeCollection())
         ) {
-            throw new \Exception(
+            throw new Exception\InvalidArgumentException(
                 "Child validation can be used only on entities and collections!"
             );
         }

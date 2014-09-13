@@ -64,6 +64,14 @@ class QueryBuilderTest extends UniMapper\Tests\TestCase
         Assert::same("foo", $this->builder->custom()->execute());
     }
 
+    /**
+     * @throws UniMapper\Exception\InvalidArgumentException Query with name unknown does not exist!
+     */
+    public function testUnknownQuery()
+    {
+        $this->builder->unknown();
+    }
+
 }
 
 $testCase = new QueryBuilderTest;

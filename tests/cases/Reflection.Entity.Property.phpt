@@ -108,7 +108,7 @@ class ReflectionEntityPropertyTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyValidationException Expected DateTime but string given on property time!
+     * @throws UniMapper\Exception\PropertyValueException Expected DateTime but string given on property time!
      */
     public function testInvalidInteger()
     {
@@ -116,7 +116,7 @@ class ReflectionEntityPropertyTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyValidationException Expected string but integer given on property test!
+     * @throws UniMapper\Exception\PropertyValueException Expected string but integer given on property test!
      */
     public function testInvalidString()
     {
@@ -124,7 +124,7 @@ class ReflectionEntityPropertyTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyValidationException Expected DateTime but string given on property time!
+     * @throws UniMapper\Exception\PropertyValueException Expected DateTime but string given on property time!
      */
     public function testInvalidDateTime()
     {
@@ -132,7 +132,7 @@ class ReflectionEntityPropertyTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyValidationException Expected integer but string given on property id!
+     * @throws UniMapper\Exception\PropertyValueException Expected integer but string given on property id!
      */
     public function testInvalidCollection()
     {

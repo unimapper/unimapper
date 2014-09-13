@@ -2,7 +2,7 @@
 
 namespace UniMapper\Exception;
 
-class PropertyValidationException extends PropertyException
+class PropertyValueException extends PropertyException
 {
 
     const TYPE = 1,

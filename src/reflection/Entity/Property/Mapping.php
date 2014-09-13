@@ -2,14 +2,15 @@
 
 namespace UniMapper\Reflection\Entity\Property;
 
-use UniMapper\Exception\PropertyException,
-    UniMapper\Reflection;
+use UniMapper\Exception;
 
 /**
- * Property mapping definition
+ * Property mapping definition like m:map(name='column' filter=in_fnc|out_fnc)
  */
 class Mapping
 {
+
+    const EXPRESSION = "#m:map\((.*?)\)#s";
 
     /** @var string $name Mapped name */
     private $name;
@@ -20,21 +21,11 @@ class Mapping
     /** @var callable $filterIn */
     private $filterOut;
 
-    /** @var \UniMapper\Reflection\Entity $entityReflection */
-    private $entityReflection;
-
-    /** @var string $rawDefinition */
-    private $rawDefinition;
-
     /** @var  array */
     private $options;
 
-    public function __construct($definition, $rawDefinition,
-        Reflection\Entity $entityReflection
-    ) {
-        $this->rawDefinition = $rawDefinition;
-        $this->entityReflection = $entityReflection;
-
+    public function __construct($entityClass, $definition)
+    {
         foreach (explode(";", $definition) as $parameter) {
 
             list($name, $value) = array_pad(explode('=', $parameter, 2), 2, null);
@@ -45,8 +36,8 @@ class Mapping
             case "filter":
 
                 list($in, $out) = explode("|", $value);
-                $this->filterIn = $this->_createCallable($in);
-                $this->filterOut = $this->_createCallable($out);
+                $this->filterIn = $this->_createCallable($entityClass, $in);
+                $this->filterOut = $this->_createCallable($entityClass, $out);
                 break;
             default:
                 $this->options[$name] = trim($value, "'");
@@ -54,18 +45,16 @@ class Mapping
         }
     }
 
-    private function _createCallable($definition)
+    private function _createCallable($entityClass, $definition)
     {
-        if (method_exists($this->entityReflection->getClassName(), $definition)) {
-            return [$this->entityReflection->getClassName(), $definition];
+        if (method_exists($entityClass, $definition)) {
+            return [$entityClass, $definition];
         } elseif (is_callable($definition)) {
             return $definition;
         }
-        throw new PropertyException(
+        throw new Exception\DefinitionException(
             "Invalid mapping definition. Filter must contain valid callbacks "
-            . "or entity function name but '" . $definition . "' given!",
-            $this->entityReflection,
-            $this->rawDefinition
+            . "or entity function name but '" . $definition . "' given!"
         );
     }
 

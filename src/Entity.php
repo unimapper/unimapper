@@ -57,8 +57,8 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
                 $this->{$name} = $value;
             } catch (Exception\PropertyException $e) {
 
-                if ($e instanceof Exception\PropertyValidationException
-                    && $e->getCode() === Exception\PropertyValidationException::TYPE
+                if ($e instanceof Exception\PropertyValueException
+                    && $e->getCode() === Exception\PropertyValueException::TYPE
                 ) {
                     // Try to convert automatically
 

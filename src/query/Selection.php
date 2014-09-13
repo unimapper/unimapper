@@ -118,7 +118,7 @@ abstract class Selection extends \UniMapper\Query
 
             foreach ($join as $originKey => $data) {
                 if (!isset($targetResult[$targetKey])) {
-                    throw new \Exception(
+                    throw new Exception\UnexpectedException(
                         "Can not merge associated result key '" . $targetKey
                         . "' not found in result from '"
                         . $association->getTargetResource()

@@ -20,7 +20,7 @@ class HasMany extends Reflection\Entity\Property\Association
         parent::__construct($currentReflection, $targetReflection, $definition);
 
         if (!$targetReflection->hasPrimaryProperty()) {
-            throw new Exception\AssociationParseException(
+            throw new Exception\DefinitionException(
                 "Target entity must define primary property!"
             );
         }
@@ -30,18 +30,18 @@ class HasMany extends Reflection\Entity\Property\Association
         }
 
         if (empty($this->matches[2])) {
-            throw new Exception\AssociationParseException(
+            throw new Exception\DefinitionException(
                 "You must define join key!"
             );
         }
         if (empty($this->matches[3])) {
-            throw new Exception\AssociationParseException(
+            throw new Exception\DefinitionException(
                 "You must define join resource!"
             );
         }
 
         if (empty($this->matches[4])) {
-            throw new Exception\AssociationParseException(
+            throw new Exception\DefinitionException(
                 "You must define reference key!!"
             );
         }

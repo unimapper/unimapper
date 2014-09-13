@@ -16,8 +16,11 @@ class PropertyException extends \UniMapper\Exception
     /** @var string $definition Property definition */
     protected $definition;
 
-    public function __construct($message, Reflection\Entity $entityReflection,
-        $definition = null, $code = 0
+    public function __construct(
+        $message,
+        Reflection\Entity $entityReflection,
+        $definition = null,
+        $code = 0
     ) {
         parent::__construct($message, $code);
         $this->entityReflection = $entityReflection;

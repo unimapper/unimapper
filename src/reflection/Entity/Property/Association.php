@@ -26,9 +26,9 @@ abstract class Association
         $definition
     ) {
         if (!preg_match("/" . $this->expression . "/", $definition, $matches)) {
-            throw new Exception\AssociationParseException(
+            throw new Exception\DefinitionException(
                 "Invalid association type definition '". $definition . "'!",
-                Exception\AssociationParseException::INVALID_TYPE
+                Exception\DefinitionException::DO_NOT_FAIL
             );
         }
         $this->matches = $matches;

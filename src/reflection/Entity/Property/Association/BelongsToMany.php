@@ -18,7 +18,7 @@ class BelongsToMany extends Reflection\Entity\Property\Association
         parent::__construct($currentReflection, $targetReflection, $definition);
 
         if (empty($this->matches[1])) {
-            throw new Exception\AssociationParseException(
+            throw new Exception\DefinitionException(
                 "You must define foreign key name '". $definition . "'!"
             );
         }

@@ -17,7 +17,7 @@ class HasOne extends Reflection\Entity\Property\Association
         parent::__construct($currentReflection, $targetReflection, $definition);
 
         if (empty($this->matches[1])) {
-            throw new Exception\AssociationParseException(
+            throw new Exception\PropertyDefinitionException(
                 "You must define a reference key!"
             );
         }
