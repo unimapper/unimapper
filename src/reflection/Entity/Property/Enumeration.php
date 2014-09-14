@@ -19,7 +19,7 @@ class Enumeration
     /** @var array $index */
     private $index = [];
 
-    public function __construct($definition, Reflection\Entity $entityReflection)
+    public function __construct(array $definition, Reflection\Entity $entityReflection)
     {
         if (empty($definition)) {
             throw new Exception\DefinitionException(

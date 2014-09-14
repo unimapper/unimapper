@@ -338,7 +338,6 @@ class Property
             try {
                 $this->enumeration = new Property\Enumeration(
                     $matches,
-                    $definition,
                     $this->entityReflection
                 );
             } catch (Exception\DefinitionException $e) {
