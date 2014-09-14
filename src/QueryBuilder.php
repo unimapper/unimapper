@@ -2,8 +2,7 @@
 
 namespace UniMapper;
 
-use UniMapper\Reflection,
-    UniMapper\Exception\QueryBuilderException;
+use UniMapper\Reflection;
 
 /**
  * @method \UniMapper\Query\Find      find()
@@ -27,7 +26,7 @@ class QueryBuilder
     protected $logger;
 
     /** @var array */
-    protected $queries = array(
+    protected $queries = [
         "count" => "UniMapper\Query\Count",
         "raw" => "UniMapper\Query\Raw",
         "delete" => "UniMapper\Query\Delete",
@@ -36,7 +35,7 @@ class QueryBuilder
         "insert" => "UniMapper\Query\Insert",
         "update" => "UniMapper\Query\Update",
         "updateOne" => "UniMapper\Query\UpdateOne"
-    );
+    ];
 
     public function __construct(Reflection\Entity $entityReflection,
         array $adapters, Logger $logger = null
@@ -49,7 +48,7 @@ class QueryBuilder
     public function __call($name, $arguments)
     {
         if (!isset($this->queries[$name])) {
-            throw new QueryBuilderException(
+            throw new Exception\InvalidArgumentException(
                 "Query with name " . $name . " does not exist!"
             );
         }

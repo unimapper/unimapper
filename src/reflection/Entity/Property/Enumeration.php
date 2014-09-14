@@ -2,7 +2,7 @@
 
 namespace UniMapper\Reflection\Entity\Property;
 
-use UniMapper\Exception\PropertyException,
+use UniMapper\Exception,
     UniMapper\Reflection;
 
 /**
@@ -11,20 +11,19 @@ use UniMapper\Exception\PropertyException,
 class Enumeration
 {
 
-    /** @var array */
-    protected $values = array();
+    const EXPRESSION = "#m:enum\(([a-zA-Z0-9]+)::([a-zA-Z0-9_]+)\*\)#";
 
-    /** @var array */
-    protected $index = array();
+    /** @var array $values */
+    private $values = [];
 
-    public function __construct($definition, $rawDefinition,
-        Reflection\Entity $entityReflection
-    ) {
+    /** @var array $index */
+    private $index = [];
+
+    public function __construct($definition, Reflection\Entity $entityReflection)
+    {
         if (empty($definition)) {
-            throw new PropertyException(
-                "Enumeration definition can not be empty!",
-                $entityReflection,
-                $rawDefinition
+            throw new Exception\DefinitionException(
+                "Enumeration definition can not be empty!"
             );
         }
 
@@ -38,10 +37,8 @@ class Enumeration
             $reflectionClass = new \ReflectionClass($aliases->map($class));
             $constants = $reflectionClass->getConstants();
         } else {
-            throw new PropertyException(
-                "Invalid enumeration definition!",
-                $entityReflection,
-                $rawDefinition
+            throw new Exception\DefinitionException(
+                "Invalid enumeration definition!"
             );
         }
 
@@ -61,7 +58,7 @@ class Enumeration
     /**
      * Tells whether given value is from enumeration
      *
-     * @param mixed $value Value
+     * @param mixed $value
      *
      * @return boolean
      */

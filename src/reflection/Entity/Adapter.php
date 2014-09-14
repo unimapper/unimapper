@@ -2,7 +2,7 @@
 
 namespace UniMapper\Reflection;
 
-use UniMapper\Exception\PropertyException;
+use UniMapper\Exception;
 
 /**
  * Entity adapter definition
@@ -11,24 +11,13 @@ class Adapter
 {
 
     /** @var string */
-    protected $name = null;
+    private $name;
 
-    /** @var \UniMapper\Reflection\Entity $entityReflection */
-    protected $entityReflection;
-
-    /** @var string $definition Raw property docblok definition */
-    protected $rawDefinition;
-
-    public function __construct($definition, Entity $entityReflection)
+    public function __construct($definition)
     {
-        $this->rawDefinition = $definition;
-        $this->entityReflection = $entityReflection;
-
         if ($definition === "") {
-            throw new PropertyException(
-                "Adapter name is not set!",
-                $this->entityReflection,
-                $this->rawDefinition
+            throw new Exception\DefinitionException(
+                "Adapter name is not set!"
             );
         }
 
@@ -36,12 +25,16 @@ class Adapter
             // eg. MyAdapterName(resource_name)
 
             $this->name = trim($matches[1]);
+            if (empty($this->name)) {
+                throw new Exception\DefinitionException(
+                    "Adapter name is not defined"
+                );
+            }
+
             $this->resource = $matches[2];
         } else {
-            throw new PropertyException(
-                "Invalid adapter definition!",
-                $this->entityReflection,
-                $this->rawDefinition
+            throw new Exception\DefinitionException(
+                "Invalid adapter definition!"
             );
         }
     }
@@ -50,18 +43,9 @@ class Adapter
      * Get adapter name
      *
      * @return string
-     *
-     * @throws \UniMapper\Exception\PropertyException
      */
     public function getName()
     {
-        if ($this->name === null) {
-            throw new PropertyException(
-                "Adapter name is not set!",
-                $this->entityReflection,
-                $this->rawDefinition
-            );
-        }
         return $this->name;
     }
 

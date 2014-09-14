@@ -56,7 +56,7 @@ class Entity
         foreach ($related as $reflection) {
 
             if (!$reflection instanceof Entity) {
-                throw new \Exception(
+                throw new Exception\InvalidArgumentException(
                     "Related reflection must be entity reflection instance!"
                 );
             }
@@ -140,7 +140,7 @@ class Entity
      * @return array Collection of \UniMapper\Reflection\Entity\Property with
      *               property name as index.
      *
-     * @throws \UniMapper\Exception\PropertyException
+     * @throws Exception\PropertyException
      */
     private function _parseProperties()
     {
@@ -226,7 +226,15 @@ class Entity
             );
         }
 
-        return new Adapter(substr($annotations[0][0], 8), $this);
+        try {
+            return new Adapter(substr($annotations[0][0], 8), $this);
+        } catch (Exception\DefinitionException $e) {
+            throw new Exception\PropertyException(
+                $e->getMessage(),
+                $this,
+                $annotations[0][1]
+            );
+        }
     }
 
     public function hasAdapter()
@@ -251,12 +259,14 @@ class Entity
      *
      * @return \UniMapper\Reflection\Entity\Property
      *
-     * @throws \Exception
+     * @throws Exception\InvalidArgumentException
      */
     public function getProperty($name)
     {
         if (!$this->hasProperty($name)) {
-            throw new \Exception("Unknown property " . $name . "!");
+            throw new Exception\InvalidArgumentException(
+                "Unknown property " . $name . "!"
+            );
         }
         return $this->properties[$name];
     }
@@ -280,11 +290,13 @@ class Entity
      * Get primary property reflection
      *
      * @return \UniMapper\Reflection\Entity\Property
+     *
+     * @throws Exception\UnexpectedException
      */
     public function getPrimaryProperty()
     {
         if (!$this->hasPrimaryProperty()) {
-            throw new \Exception(
+            throw new Exception\UnexpectedException(
                 "Primary property not defined in " . $this->className . "!"
             );
         }

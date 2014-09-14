@@ -150,7 +150,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyValidationException Expected integer but string given on property id!
+     * @throws UniMapper\Exception\PropertyValueException Expected integer but string given on property id!
      */
     public function testInvalidPropertyType()
     {
