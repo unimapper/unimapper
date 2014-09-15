@@ -79,7 +79,7 @@ class Find extends Selection implements IConditionable
     {
         $mapping = $adapter->getMapping();
 
-        $result = $adapter->find(
+        $result = (array) $adapter->find(
             $this->entityReflection->getAdapterReflection()->getResource(),
             $mapping->unmapSelection($this->_createSelection(), $this->entityReflection),
             $mapping->unmapConditions($this->conditions, $this->entityReflection),
@@ -102,10 +102,11 @@ class Find extends Selection implements IConditionable
             $primaryValues = [];
             foreach ($result as $item) {
 
-                if (!is_array($item)) {
-                    $item = (array) $item;
+                if (is_array($item)) {
+                    $primaryValues[] = $item[$primaryPropertyName];
+                } else {
+                    $primaryValues[] = $item->{$primaryPropertyName};
                 }
-                $primaryValues[] = $item[$primaryPropertyName];
             }
 
             foreach ($this->associations["remote"]
@@ -146,9 +147,19 @@ class Find extends Selection implements IConditionable
                 // Merge returned associations
                 foreach ($result as $index => $item) {
 
-                    $primaryValue = $item[$association->getPrimaryKey()];
+                    if (is_array($item)) {
+                        $primaryValue = $item[$association->getPrimaryKey()];
+                    } else {
+                        $primaryValue = $item->{$association->getPrimaryKey()};
+                    }
+
                     if (isset($associated[$primaryValue])) {
-                        $result[$index][$propertyName] = $associated[$primaryValue];
+
+                        if (is_array($result[$index])) {
+                            $result[$index][$propertyName] = $associated[$primaryValue];
+                        } else {
+                            $result[$index]->{$propertyName} = $associated[$primaryValue];
+                        }
                     }
                 }
             }
