@@ -79,7 +79,7 @@ class QueryFindTest extends UniMapper\Tests\TestCase
                 })
             )
             ->once()
-            ->andReturn([]);
+            ->andReturn(false);
 
         $query = new Query\Find(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, "id");
         Assert::count(0, $query->associate("collection")->execute());

@@ -79,7 +79,7 @@ class Find extends Selection implements IConditionable
     {
         $mapping = $adapter->getMapping();
 
-        $result = (array) $adapter->find(
+        $result = $adapter->find(
             $this->entityReflection->getAdapterReflection()->getResource(),
             $mapping->unmapSelection($this->_createSelection(), $this->entityReflection),
             $mapping->unmapConditions($this->conditions, $this->entityReflection),
@@ -92,6 +92,8 @@ class Find extends Selection implements IConditionable
         if (empty($result)) {
             return new EntityCollection($this->entityReflection);
         }
+
+        settype($result, "array");
 
         // Get remote associations
         if ($this->associations["remote"]) {
