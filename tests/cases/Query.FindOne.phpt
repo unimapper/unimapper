@@ -92,6 +92,29 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
         Assert::same(3, $result->hasMany[1]->id);
     }
 
+    public function testAssociateHasOneRemote()
+    {
+        $this->adapters["FooAdapter"]->shouldReceive("findOne")
+            ->with("simple_resource", "id", 1, [])
+            ->once()
+            ->andReturn(["id" => 1, "remoteId" => 2]);
+
+        $this->adapters["RemoteAdapter"]->shouldReceive("find")
+            ->with(
+                "remote_resource",
+                [],
+                [["id", "IN", [2], "AND"]]
+            )
+            ->once()
+            ->andReturn([["id" => 2]]);
+
+        $query = new Query\FindOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, 1);
+        $result = $query->associate("hasOne")->execute();
+
+        Assert::same(1, $result->id);
+        Assert::same(2, $result->hasOne->id);
+    }
+
     public function testAssociateHasManyRemoteNoDominance()
     {
         $this->adapters["RemoteAdapter"]->shouldReceive("findOne")

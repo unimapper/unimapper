@@ -4,6 +4,7 @@ namespace UniMapper\Query;
 
 use UniMapper\Exception,
     UniMapper\Reflection\Entity\Property\Association\HasMany,
+    UniMapper\Reflection\Entity\Property\Association\HasOne,
     UniMapper\Reflection\Entity\Property\Association\BelongsToMany,
     UniMapper\Reflection;
 
@@ -13,8 +14,10 @@ class FindOne extends Selection
     /** @var mixed */
     public $primaryValue;
 
-    public function __construct(Reflection\Entity $entityReflection,
-        array $adapters, $primaryValue
+    public function __construct(
+        Reflection\Entity $entityReflection,
+        array $adapters,
+        $primaryValue
     ) {
         parent::__construct($entityReflection, $adapters);
 
@@ -47,13 +50,9 @@ class FindOne extends Selection
         // Get remote associations
         if ($this->associations["remote"]) {
 
-            $result = (array) $result;
+            settype($result, "array");
 
-            $primaryValue = $result[$primaryProperty->getMappedName()];
-
-            foreach ($this->associations["remote"]
-                as $propertyName => $association
-            ) {
+            foreach ($this->associations["remote"] as $colName => $association) {
 
                 if (!isset($this->adapters[$association->getTargetAdapterName()])) {
                     throw new Exception\QueryException(
@@ -62,20 +61,34 @@ class FindOne extends Selection
                     );
                 }
 
+                $refValue = $result[$primaryProperty->getMappedName()];
+
                 if ($association instanceof HasMany) {
+
                     $associated = $this->hasMany(
                         $adapter,
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
-                        [$primaryValue]
+                        [$refValue]
+                    );
+                } elseif ($association instanceof HasOne) {
+
+                    $refValue = $result[$association->getReferenceKey()];
+
+                    $associated = $this->hasOne(
+                        $this->adapters[$association->getTargetAdapterName()],
+                        $association,
+                        [$refValue]
                     );
                 } elseif ($association instanceof BelongsToMany) {
+
                     $associated = $this->belongsToMany(
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
-                        [$primaryValue]
+                        [$refValue]
                     );
                 } else {
+
                     throw new Exception\QueryException(
                         "Unsupported remote association "
                         . get_class($association) . "!"
@@ -83,8 +96,8 @@ class FindOne extends Selection
                 }
 
                 // Merge returned associations
-                if (isset($associated[$primaryValue])) {
-                    $result[$propertyName] = $associated[$primaryValue];
+                if (isset($associated[$refValue])) {
+                    $result[$colName] = $associated[$refValue];
                 }
             }
         }

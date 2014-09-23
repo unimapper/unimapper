@@ -17,6 +17,7 @@ namespace UniMapper\Tests\Fixtures\Entity;
  * @property       Nested     $entity
  * @property       Nested[]   $collection       m:assoc(M:N=simpleId|simple_nested|nestedId)
  * @property       Remote[]   $hasMany          m:assoc(M:N=simpleId|simple_remote|remoteId)
+ * @property       Remote     $hasOne           m:assoc(N:1=remoteId)
  * @property-read  string     $readonly
  * @property       array      $storedData       m:map(name='stored_data';filter=stringToArray|arrayToString)
  */

@@ -4,6 +4,7 @@ namespace UniMapper\Query;
 
 use UniMapper\Adapter,
     UniMapper\Exception,
+    UniMapper\Reflection\Entity\Property\Association\HasOne,
     UniMapper\Reflection\Entity\Property\Association\HasMany,
     UniMapper\Reflection\Entity\Property\Association\BelongsToMany;
 
@@ -42,6 +43,53 @@ abstract class Selection extends \UniMapper\Query
         }
 
         return $this;
+    }
+
+    /**
+     * Process HasOne association
+     *
+     * @param Adapter $targetAdapter
+     * @param HasMany $association
+     * @param array   $primaryValues
+     *
+     * @return array
+     */
+    protected function hasOne(
+        Adapter $targetAdapter,
+        HasOne $association,
+        array $primaryValues
+    ) {
+        $mapping = $targetAdapter->getMapping();
+
+        $result = $targetAdapter->find(
+            $association->getTargetResource(),
+            $mapping->unmapSelection([]),
+            $mapping->unmapConditions(
+                [
+                    [
+                        $association->getTargetReflection()
+                            ->getPrimaryProperty()
+                            ->getMappedName(),
+                        "IN",
+                        $primaryValues,
+                        "AND"
+                    ]
+                ]
+            )
+        );
+
+        if (empty($result)) {
+            return [];
+        }
+
+        return $this->groupArray(
+            $result,
+            [
+                $association->getTargetReflection()
+                    ->getPrimaryProperty()
+                    ->getMappedName()
+            ]
+        );
     }
 
     /**

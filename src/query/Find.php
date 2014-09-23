@@ -5,6 +5,7 @@ namespace UniMapper\Query;
 use UniMapper\Exception,
     UniMapper\Reflection,
     UniMapper\Reflection\Entity\Property\Association\BelongsToMany,
+    UniMapper\Reflection\Entity\Property\Association\HasOne,
     UniMapper\Reflection\Entity\Property\Association\HasMany,
     UniMapper\EntityCollection;
 
@@ -101,19 +102,19 @@ class Find extends Selection implements IConditionable
             $primaryPropertyName = $this->entityReflection->getPrimaryProperty()
                 ->getMappedName();
 
-            $primaryValues = [];
-            foreach ($result as $item) {
+            foreach ($this->associations["remote"] as $colName => $association) {
 
-                if (is_array($item)) {
-                    $primaryValues[] = $item[$primaryPropertyName];
-                } else {
-                    $primaryValues[] = $item->{$primaryPropertyName};
+                $refValues = [];
+                foreach ($result as $item) {
+
+                    if (is_array($item)) {
+                        $refValues[] = $item[$primaryPropertyName];
+                    } else {
+                        $refValues[] = $item->{$primaryPropertyName};
+                    }
                 }
-            }
 
-            foreach ($this->associations["remote"]
-                as $propertyName => $association
-            ) {
+                $refKey = $association->getPrimaryKey();
 
                 if (!isset($this->adapters[$association->getTargetAdapterName()])) {
                     throw new Exception\QueryException(
@@ -123,46 +124,55 @@ class Find extends Selection implements IConditionable
                 }
 
                 if ($association instanceof HasMany) {
+
                     $associated = $this->hasMany(
                         $adapter,
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
-                        $primaryValues
+                        $refValues
                     );
                 } elseif ($association instanceof BelongsToMany) {
+
                     $associated = $this->belongsToMany(
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
-                        $primaryValues
+                        $refValues
                     );
+                } elseif ($association instanceof HasOne) {
+
+                    $refValues = [];
+                    foreach ($result as $item) {
+
+                        if (is_array($item)) {
+                            $refValues[] = $item[$association->getReferenceKey()];
+                        } else {
+                            $refValues[] = $item->{$association->getReferenceKey()};
+                        }
+                    }
+                    $associated = $this->hasOne(
+                        $this->adapters[$association->getTargetAdapterName()],
+                        $association,
+                        $refValues
+                    );
+
+                    $refKey = $association->getReferenceKey();
                 } else {
+
                     throw new Exception\QueryException(
                         "Unsupported remote association "
                         . get_class($association) . "!"
                     );
                 }
 
-                if (!$associated) {
-                    continue;
-                }
-
                 // Merge returned associations
-                foreach ($result as $index => $item) {
+                if (!empty($associated)) {
 
-                    if (is_array($item)) {
-                        $primaryValue = $item[$association->getPrimaryKey()];
-                    } else {
-                        $primaryValue = $item->{$association->getPrimaryKey()};
-                    }
-
-                    if (isset($associated[$primaryValue])) {
-
-                        if (is_array($result[$index])) {
-                            $result[$index][$propertyName] = $associated[$primaryValue];
-                        } else {
-                            $result[$index]->{$propertyName} = $associated[$primaryValue];
-                        }
-                    }
+                    $result = $this->_mergeAssociated(
+                        $result,
+                        $associated,
+                        $refKey,
+                        $colName
+                    );
                 }
             }
         }
@@ -236,7 +246,54 @@ class Find extends Selection implements IConditionable
             }
         }
 
+        // Add required keys from remote associations
+        foreach ($this->associations["remote"] as $association) {
+
+            $refKey = $association->getReferenceKey();
+            if ($association instanceof HasOne
+                && !in_array($refKey, $selection, true)
+            ) {
+                $selection[] = $refKey;
+            }
+        }
+
         return $selection;
+    }
+
+    /**
+     * Merge associated data with result
+     *
+     * @param array  $result
+     * @param array  $associated
+     * @param string $refKey
+     * @param string $colName
+     *
+     * @return array
+     */
+    private function _mergeAssociated(
+        array $result,
+        array $associated,
+        $refKey,
+        $colName
+    ) {
+        foreach ($result as $index => $item) {
+
+            if (is_array($item)) {
+                $refValue = $item[$refKey];
+            } else {
+                $refValue = $item->{$refKey};
+            }
+
+            if (isset($associated[$refValue])) {
+
+                if (is_array($result[$index])) {
+                    $result[$index][$colName] = $associated[$refValue];
+                } else {
+                    $result[$index]->{$colName} = $associated[$refValue];
+                }
+            }
+        }
+        return $result;
     }
 
 }

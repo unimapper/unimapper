@@ -89,6 +89,7 @@ class EntityTest extends UniMapper\Tests\TestCase
                 'entity' => $this->entity->entity,
                 'collection' => $this->entity->collection,
                 'hasMany' => $this->entity->hasMany,
+                'hasOne' => $this->entity->hasOne,
                 'readonly' => NULL,
                 'storedData' => NULL,
                 'publicProperty' => 'defaultValue',
@@ -124,6 +125,7 @@ class EntityTest extends UniMapper\Tests\TestCase
                     ),
                 ),
                 'hasMany' => array(array('id' => 1, 'hasManyNoDominance' => array())),
+                'hasOne' => NULL,
                 'readonly' => NULL,
                 'storedData' => NULL,
                 'publicProperty' => 'defaultValue',
@@ -144,7 +146,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     public function testJsonSerializable()
     {
         Assert::same(
-            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"hasMany":[],"readonly":null,"storedData":null,"publicProperty":"defaultValue"}',
+            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"hasMany":[],"hasOne":null,"readonly":null,"storedData":null,"publicProperty":"defaultValue"}',
             json_encode($this->entity)
         );
     }
@@ -278,6 +280,7 @@ class EntityTest extends UniMapper\Tests\TestCase
             'entity',
             'collection',
             'hasMany',
+            'hasOne',
             'readonly',
             'storedData',
             'publicProperty'
