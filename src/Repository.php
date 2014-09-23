@@ -194,7 +194,7 @@ abstract class Repository
     }
 
     public function find(array $filter = [], array $orderBy = [], $limit = 0,
-        $offset = 0
+        $offset = 0, array $associate = []
     ) {
         $query = $this->query()->find();
 
@@ -206,12 +206,22 @@ abstract class Repository
             $query->orderBy($orderByRule[0], $orderByRule[1]);
         }
 
+        if ($associate) {
+            call_user_func_array([$query, "associate"], $associate);
+        }
+
         return $query->limit($limit)->offset($offset)->execute();
     }
 
-    public function findOne($primaryValue)
+    public function findOne($primaryValue, array $associate = [])
     {
-        return $this->query()->findOne($primaryValue)->execute();
+        $query = $this->query()->findOne($primaryValue);
+
+        if ($associate) {
+            call_user_func_array([$query, "associate"], $associate);
+        }
+
+        return $query->execute();
     }
 
     /**
