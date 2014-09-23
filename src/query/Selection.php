@@ -82,7 +82,7 @@ abstract class Selection extends \UniMapper\Query
             return [];
         }
 
-        return $this->groupArray(
+        return $this->groupResult(
             $result,
             [
                 $association->getTargetReflection()
@@ -130,7 +130,7 @@ abstract class Selection extends \UniMapper\Query
             return [];
         }
 
-        $joinResult = $this->groupArray(
+        $joinResult = $this->groupResult(
             $joinResult,
             [
                 $association->getReferenceKey(),
@@ -156,7 +156,7 @@ abstract class Selection extends \UniMapper\Query
             return [];
         }
 
-        $targetResult = $this->groupArray(
+        $targetResult = $this->groupResult(
             $targetResult,
             [$association->getForeignKey()]
         );

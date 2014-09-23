@@ -179,7 +179,7 @@ abstract class Query implements IQuery
      *
      * @throws \Exception
      */
-    protected function groupArray(array $original, array $keys, $level = 0)
+    protected function groupResult(array $original, array $keys, $level = 0)
     {
         $converted = [];
         $key = $keys[$level];
@@ -198,6 +198,11 @@ abstract class Query implements IQuery
             }
 
             $thisLevel = $subArray[$key];
+
+            if (is_object($thisLevel)) {
+                $thisLevel = (string) $thisLevel;
+            }
+
             if ($isDeepest) {
                 $converted[$thisLevel] = $subArray;
             } else {
@@ -208,7 +213,7 @@ abstract class Query implements IQuery
 
         if (!$isDeepest) {
             foreach (array_keys($converted) as $value) {
-                $converted[$value] = $this->groupArray(
+                $converted[$value] = $this->groupResult(
                     $filtered[$value],
                     $keys,
                     $level
