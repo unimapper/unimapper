@@ -104,6 +104,35 @@ class MappingTest extends UniMapper\Tests\TestCase
         );
     }
 
+    public function testUnmapConditions()
+    {
+        Assert::same(
+            array(
+                array('link', 'LIKE', 'url', 'AND'),
+                array(
+                    array(
+                        array('email_address', 'LIKE', '%email_foo%', 'AND'),
+                        array('email_address', 'LIKE', '%another_email_foo', 'OR')
+                    ),
+                    'OR'
+                )
+            ),
+            $this->mapping->unmapConditions(
+                [
+                    ["url", "LIKE", "url", "AND"],
+                    [
+                        [
+                            ["email", "LIKE", "%email_foo%", "AND"],
+                            ["email", "LIKE", "%another_email_foo", "OR"]
+                        ],
+                        "OR"
+                    ]
+                ],
+                new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
+            )
+        );
+    }
+
 }
 
 $testCase = new MappingTest;

@@ -234,18 +234,18 @@ class Mapping
         array $conditions,
         Reflection\Entity $entityReflection = null
     ) {
-        foreach ($conditions as $condition) {
+        foreach ($conditions as $index => $condition) {
 
             if (is_array($condition[0])) {
 
-                $condition[0] = $this->unmapConditions(
+                $conditions[$index][0] = $this->unmapConditions(
                     $condition[0],
                     $entityReflection
                 );
             } else {
 
                 if ($entityReflection) {
-                    $condition[0] = $entityReflection
+                    $conditions[$index][0] = $entityReflection
                         ->getProperty($condition[0])
                         ->getMappedName();
                 }
