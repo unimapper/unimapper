@@ -234,6 +234,10 @@ class Mapping
         array $conditions,
         Reflection\Entity $entityReflection = null
     ) {
+        if (!$entityReflection) {
+            return $conditions;
+        }
+
         foreach ($conditions as $index => $condition) {
 
             if (is_array($condition[0])) {
@@ -244,11 +248,9 @@ class Mapping
                 );
             } else {
 
-                if ($entityReflection) {
-                    $conditions[$index][0] = $entityReflection
-                        ->getProperty($condition[0])
-                        ->getMappedName();
-                }
+                $conditions[$index][0] = $entityReflection
+                    ->getProperty($condition[0])
+                    ->getMappedName();
             }
         }
         return $conditions;
