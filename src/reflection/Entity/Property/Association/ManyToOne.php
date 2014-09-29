@@ -4,7 +4,7 @@ namespace UniMapper\Reflection\Entity\Property\Association;
 
 use UniMapper\Reflection;
 
-class HasOne extends Reflection\Entity\Property\Association
+class ManyToOne extends Reflection\Entity\Property\Association
 {
 
     protected $expression = "N:1\s*=\s*(.*)";

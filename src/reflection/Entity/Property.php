@@ -48,10 +48,10 @@ class Property
 
     /** @var array $associations List of available associations */
     private $associations = [
-        "UniMapper\Reflection\Entity\Property\Association\HasOne",
-        "UniMapper\Reflection\Entity\Property\Association\HasMany",
-        "UniMapper\Reflection\Entity\Property\Association\BelongsToOne",
-        "UniMapper\Reflection\Entity\Property\Association\BelongsToMany"
+        "UniMapper\Reflection\Entity\Property\Association\ManyToOne",
+        "UniMapper\Reflection\Entity\Property\Association\ManyToMany",
+        "UniMapper\Reflection\Entity\Property\Association\OneToOne",
+        "UniMapper\Reflection\Entity\Property\Association\OneToMany"
     ];
 
     /** @var boolean $writable */

@@ -4,9 +4,10 @@ namespace UniMapper\Query;
 
 use UniMapper\Exception,
     UniMapper\Reflection,
-    UniMapper\Reflection\Entity\Property\Association\BelongsToMany,
-    UniMapper\Reflection\Entity\Property\Association\HasOne,
-    UniMapper\Reflection\Entity\Property\Association\HasMany,
+    UniMapper\Reflection\Entity\Property\Association\OneToMany,
+    UniMapper\Reflection\Entity\Property\Association\OneToOne,
+    UniMapper\Reflection\Entity\Property\Association\ManyToOne,
+    UniMapper\Reflection\Entity\Property\Association\ManyToMany,
     UniMapper\EntityCollection;
 
 class Find extends Selection implements IConditionable
@@ -123,39 +124,58 @@ class Find extends Selection implements IConditionable
                     );
                 }
 
-                if ($association instanceof HasMany) {
+                if ($association instanceof ManyToMany) {
 
-                    $associated = $this->hasMany(
+                    $associated = $this->manyToMany(
                         $adapter,
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
                         $refValues
                     );
-                } elseif ($association instanceof BelongsToMany) {
+                } elseif ($association instanceof OneToOne) {
 
-                    $associated = $this->belongsToMany(
-                        $this->adapters[$association->getTargetAdapterName()],
-                        $association,
-                        $refValues
-                    );
-                } elseif ($association instanceof HasOne) {
+                    $refKey = $association->getForeignKey();
 
                     $refValues = [];
                     foreach ($result as $item) {
 
                         if (is_array($item)) {
-                            $refValues[] = $item[$association->getReferenceKey()];
+                            $refValues[] = $item[$refKey];
                         } else {
-                            $refValues[] = $item->{$association->getReferenceKey()};
+                            $refValues[] = $item->{$refKey};
                         }
                     }
-                    $associated = $this->hasOne(
+
+                    $associated = $this->oneToOne(
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
                         $refValues
                     );
+                } elseif ($association instanceof OneToMany) {
+
+                    $associated = $this->oneToMany(
+                        $this->adapters[$association->getTargetAdapterName()],
+                        $association,
+                        $refValues
+                    );
+                } elseif ($association instanceof ManyToOne) {
 
                     $refKey = $association->getReferenceKey();
+
+                    $refValues = [];
+                    foreach ($result as $item) {
+
+                        if (is_array($item)) {
+                            $refValues[] = $item[$refKey];
+                        } else {
+                            $refValues[] = $item->{$refKey};
+                        }
+                    }
+                    $associated = $this->manyToOne(
+                        $this->adapters[$association->getTargetAdapterName()],
+                        $association,
+                        $refValues
+                    );
                 } else {
 
                     throw new Exception\QueryException(
@@ -250,7 +270,7 @@ class Find extends Selection implements IConditionable
         foreach ($this->associations["remote"] as $association) {
 
             $refKey = $association->getReferenceKey();
-            if ($association instanceof HasOne
+            if ($association instanceof ManyToOne
                 && !in_array($refKey, $selection, true)
             ) {
                 $selection[] = $refKey;

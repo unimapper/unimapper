@@ -4,9 +4,10 @@ namespace UniMapper\Query;
 
 use UniMapper\Adapter,
     UniMapper\Exception,
-    UniMapper\Reflection\Entity\Property\Association\HasOne,
-    UniMapper\Reflection\Entity\Property\Association\HasMany,
-    UniMapper\Reflection\Entity\Property\Association\BelongsToMany;
+    UniMapper\Reflection\Entity\Property\Association\ManyToOne,
+    UniMapper\Reflection\Entity\Property\Association\ManyToMany,
+    UniMapper\Reflection\Entity\Property\Association\OneToOne,
+    UniMapper\Reflection\Entity\Property\Association\OneToMany;
 
 abstract class Selection extends \UniMapper\Query
 {
@@ -46,17 +47,17 @@ abstract class Selection extends \UniMapper\Query
     }
 
     /**
-     * Process HasOne association
+     * Process ManyToOne association
      *
-     * @param Adapter $targetAdapter
-     * @param HasMany $association
-     * @param array   $primaryValues
+     * @param Adapter    $targetAdapter
+     * @param ManyToMany $association
+     * @param array      $primaryValues
      *
      * @return array
      */
-    protected function hasOne(
+    protected function manyToOne(
         Adapter $targetAdapter,
-        HasOne $association,
+        ManyToOne $association,
         array $primaryValues
     ) {
         $mapping = $targetAdapter->getMapping();
@@ -93,11 +94,11 @@ abstract class Selection extends \UniMapper\Query
     }
 
     /**
-     * Process HasMany association
+     * Process ManyToMany association
      *
      * @param Adapter $currentAdapter
      * @param Adapter $targetAdapter
-     * @param HasMany $association
+     * @param ManyToMany $association
      * @param array   $primaryValues
      *
      * @return array
@@ -106,10 +107,10 @@ abstract class Selection extends \UniMapper\Query
      *
      * @todo should be optimized with 1 query only on same adapters
      */
-    protected function hasMany(
+    protected function manyToMany(
         Adapter $currentAdapter,
         Adapter $targetAdapter,
-        HasMany $association,
+        ManyToMany $association,
         array $primaryValues
     ) {
         if (!$association->isDominant()) {
@@ -180,9 +181,56 @@ abstract class Selection extends \UniMapper\Query
         return $result;
     }
 
-    protected function belongsToMany(
+    /**
+     * Process OneToOne association
+     *
+     * @param Adapter  $targetAdapter
+     * @param OneToOne $association
+     * @param array    $primaryValues
+     *
+     * @return array
+     */
+    protected function oneToOne(
         Adapter $targetAdapter,
-        BelongsToMany $association,
+        OneToOne $association,
+        array $primaryValues
+    ) {
+        $mapping = $targetAdapter->getMapping();
+
+        $result = $targetAdapter->find(
+            $association->getTargetResource(),
+            $mapping->unmapSelection([]),
+            $mapping->unmapConditions(
+                [
+                    [
+                        $association->getTargetReflection()
+                            ->getPrimaryProperty()
+                            ->getMappedName(),
+                        "IN",
+                        $primaryValues,
+                        "AND"
+                    ]
+                ]
+            )
+        );
+
+        if (empty($result)) {
+            return [];
+        }
+
+        return $this->groupResult(
+            $result,
+            [
+                $association->getTargetReflection()
+                    ->getPrimaryProperty()
+                    ->getMappedName()
+            ]
+        );
+    }
+
+    protected function oneToMany(
+        Adapter $targetAdapter,
+        OneToMany $association,
         array $primaryValues
     ) {
         $mapping = $targetAdapter->getMapping();

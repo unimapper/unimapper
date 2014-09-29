@@ -2,7 +2,7 @@
 
 namespace UniMapper\Reflection\Entity\Property\Association;
 
-class BelongsToOne extends BelongsToMany
+class OneToOne extends OneToMany
 {
 
     protected $expression = "1:1\s*=\s*(.*)";

@@ -5,7 +5,7 @@ namespace UniMapper\Reflection\Entity\Property\Association;
 use UniMapper\Reflection,
     UniMapper\Exception;
 
-class BelongsToMany extends Reflection\Entity\Property\Association
+class OneToMany extends Reflection\Entity\Property\Association
 {
 
     protected $expression = "1:N\s*=\s*(.*)";

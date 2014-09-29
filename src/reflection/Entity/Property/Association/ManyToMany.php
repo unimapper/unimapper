@@ -5,7 +5,7 @@ namespace UniMapper\Reflection\Entity\Property\Association;
 use UniMapper\Reflection,
     UniMapper\Exception;
 
-class HasMany extends Reflection\Entity\Property\Association
+class ManyToMany extends Reflection\Entity\Property\Association
 {
 
     protected $expression = "M(:|>|<)N=(.*)\|(.*)\|(.*)";

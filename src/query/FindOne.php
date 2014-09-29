@@ -3,9 +3,10 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exception,
-    UniMapper\Reflection\Entity\Property\Association\HasMany,
-    UniMapper\Reflection\Entity\Property\Association\HasOne,
-    UniMapper\Reflection\Entity\Property\Association\BelongsToMany,
+    UniMapper\Reflection\Entity\Property\Association\ManyToMany,
+    UniMapper\Reflection\Entity\Property\Association\ManyToOne,
+    UniMapper\Reflection\Entity\Property\Association\OneToMany,
+    UniMapper\Reflection\Entity\Property\Association\OneToOne,
     UniMapper\Reflection;
 
 class FindOne extends Selection
@@ -63,26 +64,35 @@ class FindOne extends Selection
 
                 $refValue = $result[$primaryProperty->getMappedName()];
 
-                if ($association instanceof HasMany) {
+                if ($association instanceof ManyToMany) {
 
-                    $associated = $this->hasMany(
+                    $associated = $this->manyToMany(
                         $adapter,
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
                         [$refValue]
                     );
-                } elseif ($association instanceof HasOne) {
+                } elseif ($association instanceof OneToOne) {
 
-                    $refValue = $result[$association->getReferenceKey()];
+                    $refValue = $result[$association->getForeignKey()];
 
-                    $associated = $this->hasOne(
+                    $associated = $this->oneToOne(
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
                         [$refValue]
                     );
-                } elseif ($association instanceof BelongsToMany) {
+                } elseif ($association instanceof ManyToOne) {
 
-                    $associated = $this->belongsToMany(
+                    $refValue = $result[$association->getReferenceKey()];
+
+                    $associated = $this->manyToOne(
+                        $this->adapters[$association->getTargetAdapterName()],
+                        $association,
+                        [$refValue]
+                    );
+                } elseif ($association instanceof OneToMany) {
+
+                    $associated = $this->oneToMany(
                         $this->adapters[$association->getTargetAdapterName()],
                         $association,
                         [$refValue]

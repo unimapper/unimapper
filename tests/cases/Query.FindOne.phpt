@@ -36,7 +36,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
         Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $result);
     }
 
-    public function testAssociateHasMany()
+    public function testAssociateManyToMany()
     {
         $this->adapters["FooAdapter"]->shouldReceive("findOne")
             ->with(
@@ -44,7 +44,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
                 "id",
                 1,
                 Mockery::on(function($arg) {
-                    return $arg["collection"] instanceof Reflection\Entity\Property\Association\HasMany;
+                    return $arg["collection"] instanceof Reflection\Entity\Property\Association\ManyToMany;
                 })
             )
             ->once()
@@ -54,7 +54,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
         Assert::false($query->associate("collection")->execute());
     }
 
-    public function testAssociateHasManyRemote()
+    public function testAssociateManyToManyRemote()
     {
         $this->adapters["FooAdapter"]->shouldReceive("findOne")
             ->with("simple_resource", "id", 1, [])
@@ -84,15 +84,15 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
             ->andReturn([["id" => 2], ["id" => 3]]);
 
         $query = new Query\FindOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, 1);
-        $result = $query->associate("hasMany")->execute();
+        $result = $query->associate("manyToMany")->execute();
 
         Assert::same(1, $result->id);
-        Assert::count(2, $result->hasMany);
-        Assert::same(2, $result->hasMany[0]->id);
-        Assert::same(3, $result->hasMany[1]->id);
+        Assert::count(2, $result->manyToMany);
+        Assert::same(2, $result->manyToMany[0]->id);
+        Assert::same(3, $result->manyToMany[1]->id);
     }
 
-    public function testAssociateHasOneRemote()
+    public function testAssociateManyToOneRemote()
     {
         $this->adapters["FooAdapter"]->shouldReceive("findOne")
             ->with("simple_resource", "id", 1, [])
@@ -109,13 +109,13 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
             ->andReturn([["id" => 2]]);
 
         $query = new Query\FindOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, 1);
-        $result = $query->associate("hasOne")->execute();
+        $result = $query->associate("manyToOne")->execute();
 
         Assert::same(1, $result->id);
-        Assert::same(2, $result->hasOne->id);
+        Assert::same(2, $result->manyToOne->id);
     }
 
-    public function testAssociateHasManyRemoteNoDominance()
+    public function testAssociateManyToManyRemoteNoDominance()
     {
         $this->adapters["RemoteAdapter"]->shouldReceive("findOne")
             ->with("remote_resource", "id", 1, [])
@@ -146,12 +146,12 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
             ->andReturn([["id" => 2], ["id" => 3]]);
 
         $query = new Query\FindOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote"), $this->adapters, 1);
-        $result = $query->associate("hasManyNoDominance")->execute();
+        $result = $query->associate("manyToManyNoDominance")->execute();
 
         Assert::same(1, $result->id);
-        Assert::count(2, $result->hasManyNoDominance);
-        Assert::same(2, $result->hasManyNoDominance[0]->id);
-        Assert::same(3, $result->hasManyNoDominance[1]->id);
+        Assert::count(2, $result->manyToManyNoDominance);
+        Assert::same(2, $result->manyToManyNoDominance[0]->id);
+        Assert::same(3, $result->manyToManyNoDominance[1]->id);
     }
 
 }

@@ -69,7 +69,7 @@ class EntityTest extends UniMapper\Tests\TestCase
         $nestedEntity = $this->createEntity("Nested", ["text" => "foo"]);
 
         $this->entity->collection[] = $nestedEntity;
-        $this->entity->hasMany[] = $this->createEntity(
+        $this->entity->manyToMany[] = $this->createEntity(
             "Remote",
             ["id" => 1]
         );
@@ -88,8 +88,9 @@ class EntityTest extends UniMapper\Tests\TestCase
                 'mark' => NULL,
                 'entity' => $this->entity->entity,
                 'collection' => $this->entity->collection,
-                'hasMany' => $this->entity->hasMany,
-                'hasOne' => $this->entity->hasOne,
+                'manyToMany' => $this->entity->manyToMany,
+                'manyToOne' => $this->entity->manyToOne,
+                'oneToOne' => $this->entity->oneToOne,
                 'readonly' => NULL,
                 'storedData' => NULL,
                 'publicProperty' => 'defaultValue',
@@ -124,8 +125,9 @@ class EntityTest extends UniMapper\Tests\TestCase
                         'publicProperty' => 'defaultValue'
                     ),
                 ),
-                'hasMany' => array(array('id' => 1, 'hasManyNoDominance' => array())),
-                'hasOne' => NULL,
+                'manyToMany' => array(array('id' => 1, 'manyToManyNoDominance' => array())),
+                'manyToOne' => NULL,
+                'oneToOne' => NULL,
                 'readonly' => NULL,
                 'storedData' => NULL,
                 'publicProperty' => 'defaultValue',
@@ -146,7 +148,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     public function testJsonSerializable()
     {
         Assert::same(
-            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"hasMany":[],"hasOne":null,"readonly":null,"storedData":null,"publicProperty":"defaultValue"}',
+            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"manyToMany":[],"manyToOne":null,"oneToOne":null,"readonly":null,"storedData":null,"publicProperty":"defaultValue"}',
             json_encode($this->entity)
         );
     }
@@ -279,8 +281,9 @@ class EntityTest extends UniMapper\Tests\TestCase
             'mark',
             'entity',
             'collection',
-            'hasMany',
-            'hasOne',
+            'manyToMany',
+            'manyToOne',
+            'oneToOne',
             'readonly',
             'storedData',
             'publicProperty'

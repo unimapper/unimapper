@@ -162,25 +162,25 @@ class ReflectionEntityPropertyTest extends UniMapper\Tests\TestCase
         );
     }
 
-    public function testAssocHasMany()
+    public function testAssocManyToMany()
     {
-        $property = $this->_createReflection('Simple[] $hasMany m:assoc(M:N=sourceId|source_target|targetId)');
+        $property = $this->_createReflection('Simple[] $manyToMany m:assoc(M:N=sourceId|source_target|targetId)');
         Assert::true($property->isAssociation());
-        Assert::type("UniMapper\Reflection\Entity\Property\Association\HasMany", $property->getAssociation());
+        Assert::type("UniMapper\Reflection\Entity\Property\Association\ManyToMany", $property->getAssociation());
     }
 
-    public function testAssocBelongsToMany()
+    public function testAssocOneToMany()
     {
-        $property = $this->_createReflection('Simple[] $belongsToMany m:assoc(1:N=sourceId)');
+        $property = $this->_createReflection('Simple[] $oneToMany m:assoc(1:N=sourceId)');
         Assert::true($property->isAssociation());
-        Assert::type("UniMapper\Reflection\Entity\Property\Association\BelongsToMany", $property->getAssociation());
+        Assert::type("UniMapper\Reflection\Entity\Property\Association\OneToMany", $property->getAssociation());
     }
 
-    public function testAssocBelongstToOne()
+    public function testAssocOneToOne()
     {
-        $property = $this->_createReflection('Simple $belongsToOne m:assoc(1:1=sourceId)');
+        $property = $this->_createReflection('Simple $oneToOne m:assoc(1:1=targetId)');
         Assert::true($property->isAssociation());
-        Assert::type("UniMapper\Reflection\Entity\Property\Association\BelongsToOne", $property->getAssociation());
+        Assert::type("UniMapper\Reflection\Entity\Property\Association\OneToOne", $property->getAssociation());
     }
 
 }
