@@ -2,7 +2,7 @@
 
 namespace UniMapper\Tests\Fixtures\Cache;
 
-class CustomCache extends \UniMapper\Cache
+class CustomCache implements \UniMapper\Cache\ICache
 {
 
     public function load($key)
@@ -15,7 +15,7 @@ class CustomCache extends \UniMapper\Cache
         throw new \Exception("You should mock here!");
     }
 
-    public function save($key, $data, array $fileDependency)
+    public function save($key, $data, array $options = [])
     {
         throw new \Exception("You should mock here!");
     }

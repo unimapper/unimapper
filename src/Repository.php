@@ -4,6 +4,7 @@ namespace UniMapper;
 
 use UniMapper\Exception\RepositoryException,
     UniMapper\NamingConvention as NC,
+    UniMapper\Cache\ICache,
     UniMapper\Reflection;
 
 /**
@@ -20,7 +21,7 @@ abstract class Repository
     /** @var \UniMapper\Logger $logger */
     private $logger;
 
-    /** @var \UniMapper\Cache $cache */
+    /** @var \UniMapper\Cache\ICache $cache */
     private $cache;
 
     /** @var array $customQueries Registered custom queries */
@@ -263,7 +264,21 @@ abstract class Repository
         }
 
         if ($this->cache) {
-            return $this->cache->loadEntityReflection($class);
+
+            $reflection = $this->cache->load($class);
+            if (!$reflection) {
+
+                $reflection = new Reflection\Entity($class);
+                $this->cache->save(
+                    $class,
+                    $reflection,
+                    [
+                        ICache::FILES => $reflection->getRelatedFiles(),
+                        ICache::TAGS => [ICache::TAG_REFLECTION]
+                    ]
+                );
+            }
+            return $reflection;
         }
 
         return $reflection = new Reflection\Entity($class);
@@ -274,7 +289,7 @@ abstract class Repository
         return NC::classToName(get_called_class(), NC::$repositoryMask);
     }
 
-    public function setCache(Cache $cache)
+    public function setCache(Cache\ICache $cache)
     {
         $this->cache = $cache;
     }
@@ -336,6 +351,7 @@ abstract class Repository
         $queryBuilder = new QueryBuilder(
             $entityReflection,
             $this->adapters,
+            $this->cache,
             $this->logger
         );
 

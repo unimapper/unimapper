@@ -14,8 +14,11 @@ class UpdateOne extends \UniMapper\Query implements IConditionable
 
     private $primaryValue;
 
-    public function __construct(Reflection\Entity $entityReflection,
-        array $adapters, $primaryValue, array $data
+    public function __construct(
+        Reflection\Entity $entityReflection,
+        array $adapters,
+        $primaryValue,
+        array $data
     ) {
         parent::__construct($entityReflection, $adapters);
 

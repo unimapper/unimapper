@@ -1,7 +1,8 @@
 <?php
 
 use Tester\Assert,
-    UniMapper\Tests\Fixtures;
+    UniMapper\Tests\Fixtures,
+    UniMapper\Cache\ICache;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -72,6 +73,31 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         );
         Assert::type("UniMapper\Tests\Fixtures\Entity\Nested", $nestedEntity);
         Assert::same("foo", $nestedEntity->text);
+    }
+
+    public function testCreateEntityFromCache()
+    {
+        $simpleRef = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Simple");
+        $nestedRef = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Nested");
+        $remoteRef = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Remote");
+
+        $cacheMock = Mockery::mock("UniMapper\Tests\Fixtures\Cache\CustomCache");
+        $cacheMock->shouldReceive("load")->with("UniMapper\Tests\Fixtures\Entity\Simple")->andReturn(false);
+        $cacheMock->shouldReceive("save")->with(
+            "UniMapper\Tests\Fixtures\Entity\Simple",
+            Mockery::type("UniMapper\Reflection\Entity"),
+            [
+                ICache::FILES => [
+                    $nestedRef->getFileName(),
+                    $simpleRef->getFileName(),
+                    $remoteRef->getFileName()
+                ],
+                ICache::TAGS => [ICache::TAG_REFLECTION]
+            ]
+        );
+
+        $this->repository->setCache($cacheMock);
+        $this->repository->createEntity();
     }
 
     public function testCreateCollection()

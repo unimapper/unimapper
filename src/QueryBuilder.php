@@ -25,6 +25,9 @@ class QueryBuilder
     /** @var \UniMapper\Logger */
     protected $logger;
 
+    /** @var \UniMapper\Cache\ICache */
+    protected $cache;
+
     /** @var array */
     protected $queries = [
         "count" => "UniMapper\Query\Count",
@@ -37,11 +40,15 @@ class QueryBuilder
         "updateOne" => "UniMapper\Query\UpdateOne"
     ];
 
-    public function __construct(Reflection\Entity $entityReflection,
-        array $adapters, Logger $logger = null
+    public function __construct(
+        Reflection\Entity $entityReflection,
+        array $adapters,
+        Cache\ICache $cache = null,
+        Logger $logger = null
     ) {
         $this->entityReflection = $entityReflection;
         $this->adapters = $adapters;
+        $this->cache = $cache;
         $this->logger = $logger;
     }
 
@@ -57,6 +64,10 @@ class QueryBuilder
 
         $class = new \ReflectionClass($this->queries[$name]);
         $query = $class->newInstanceArgs($arguments);
+
+        if ($this->cache) {
+            $query->setCache($this->cache);
+        }
 
         if ($this->logger) {
             $this->logger->logQuery($query);

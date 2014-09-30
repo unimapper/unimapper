@@ -11,8 +11,10 @@ class Insert extends \UniMapper\Query
     /** @var \UniMapper\Entity */
     private $entity;
 
-    public function __construct(Reflection\Entity $entityReflection,
-        array $adapters, array $data
+    public function __construct(
+        Reflection\Entity $entityReflection,
+        array $adapters,
+        array $data
     ) {
         parent::__construct($entityReflection, $adapters);
         $this->entity = $entityReflection->createEntity($data);

@@ -30,6 +30,9 @@ abstract class Query implements IQuery
     /** @var \UniMapper\Reflection\Entity */
     protected $entityReflection;
 
+    /** @var \UniMapper\Cache\ICache */
+    protected $cache;
+
     public function __construct(Reflection\Entity $reflection, array $adapters)
     {
         if (!$reflection->hasAdapter()) {
@@ -48,6 +51,11 @@ abstract class Query implements IQuery
 
         $this->adapters = $adapters;
         $this->entityReflection = $reflection;
+    }
+
+    public function setCache(\UniMapper\Cache\ICache $cache)
+    {
+        $this->cache = $cache;
     }
 
     public function getResult()

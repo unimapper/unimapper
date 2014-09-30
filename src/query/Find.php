@@ -8,6 +8,8 @@ use UniMapper\Exception,
     UniMapper\Reflection\Entity\Property\Association\OneToOne,
     UniMapper\Reflection\Entity\Property\Association\ManyToOne,
     UniMapper\Reflection\Entity\Property\Association\ManyToMany,
+    UniMapper\NamingConvention as UNC,
+    UniMapper\Cache\ICache,
     UniMapper\EntityCollection;
 
 class Find extends Selection implements IConditionable
@@ -17,9 +19,13 @@ class Find extends Selection implements IConditionable
     protected $offset;
     protected $orderBy = [];
     protected $selection = [];
+    protected $cached = false;
+    protected $cachedOptions = [];
 
-    public function __construct(Reflection\Entity $entityReflection, array $adapters)
-    {
+    public function __construct(
+        Reflection\Entity $entityReflection,
+        array $adapters
+    ) {
         parent::__construct($entityReflection, $adapters);
 
         $selection = array_slice(func_get_args(), 2);
@@ -61,6 +67,13 @@ class Find extends Selection implements IConditionable
         return $this;
     }
 
+    public function cached($val, array $options = [])
+    {
+        $this->cached = (bool) $val;
+        $this->cachedOptions = $options;
+        return $this;
+    }
+
     public function orderBy($propertyName, $direction = "asc")
     {
         if (!$this->entityReflection->hasProperty($propertyName)) {
@@ -80,6 +93,18 @@ class Find extends Selection implements IConditionable
     public function onExecute(\UniMapper\Adapter $adapter)
     {
         $mapping = $adapter->getMapping();
+
+        if ($this->cached) {
+
+            if (!$this->cache) {
+                throw new Exception\QueryException("Cache not set!");
+            }
+
+            $cachedResult = $this->cache->load($this->getQueryChecksum());
+            if ($cachedResult) {
+                return $mapping->mapCollection($this->entityReflection, $cachedResult);
+            }
+        }
 
         $result = $adapter->find(
             $this->entityReflection->getAdapterReflection()->getResource(),
@@ -195,6 +220,21 @@ class Find extends Selection implements IConditionable
                     );
                 }
             }
+        }
+
+        if ($this->cached) {
+
+            $cachedOptions = $this->cachedOptions;
+            if (isset($cachedOptions[ICache::TAGS])) {
+                $cachedOptions[ICache::TAGS][] = ICache::TAG_QUERY; // @todo is it really array?
+            } else {
+                $cachedOptions[ICache::TAGS] = [ICache::TAG_QUERY];
+            }
+            $this->cache->save(
+                $this->getQueryChecksum(),
+                $result,
+                $cachedOptions
+            );
         }
 
         return $mapping->mapCollection($this->entityReflection, $result);
@@ -314,6 +354,32 @@ class Find extends Selection implements IConditionable
             }
         }
         return $result;
+    }
+
+    /**
+     * Get a unique query checksum
+     *
+     * @return integer
+     */
+    private function _getQueryChecksum()
+    {
+        return crc32(
+            serialize(
+                [
+                    "name" => $this->getName(),
+                    "entity" => UNC::classToName(
+                        $this->entityReflection->getClassName(), UNC::$entityMask
+                    ),
+                    "limit" => $this->limit,
+                    "offset" => $this->offset,
+                    "selection" => $this->selection,
+                    "orderBy" => $this->orderBy,
+                    "localAssociations" => array_keys($this->associations["local"]),
+                    "remoteAssociations" => array_keys($this->associations["remote"]),
+                    "conditions" => $this->conditions
+                ]
+            )
+        );
     }
 
 }

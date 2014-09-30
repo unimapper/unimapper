@@ -135,6 +135,30 @@ class Entity
     }
 
     /**
+     * Get related entity class files
+     *
+     * @param array $files
+     *
+     * @return array
+     */
+    public function getRelatedFiles(array $files = [])
+    {
+        foreach ($this->related as $childReflection) {
+
+            $fileName = $childReflection->getFileName();
+            if (!array_search($fileName, $files, true)) {
+
+                $files[] = $fileName;
+                if ($childReflection->getRelated()) {
+                    $files = array_merge($files, $childReflection->getRelatedFiles($files));
+                }
+            }
+        }
+
+        return array_values(array_unique($files));
+    }
+
+    /**
      * Parse properties from annotations
      *
      * @return array Collection of \UniMapper\Reflection\Entity\Property with
