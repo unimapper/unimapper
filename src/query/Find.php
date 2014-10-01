@@ -9,8 +9,7 @@ use UniMapper\Exception,
     UniMapper\Reflection\Entity\Property\Association\ManyToOne,
     UniMapper\Reflection\Entity\Property\Association\ManyToMany,
     UniMapper\NamingConvention as UNC,
-    UniMapper\Cache\ICache,
-    UniMapper\EntityCollection;
+    UniMapper\Cache\ICache;
 
 class Find extends Selection implements IConditionable
 {
@@ -67,9 +66,9 @@ class Find extends Selection implements IConditionable
         return $this;
     }
 
-    public function cached($val, array $options = [])
+    public function cached($enable = true, array $options = [])
     {
-        $this->cached = (bool) $val;
+        $this->cached = (bool) $enable;
         $this->cachedOptions = $options;
         return $this;
     }
@@ -116,14 +115,10 @@ class Find extends Selection implements IConditionable
             $this->associations["local"]
         );
 
-        if (empty($result)) {
-            return new EntityCollection($this->entityReflection);
-        }
-
-        settype($result, "array");
-
         // Get remote associations
-        if ($this->associations["remote"]) {
+        if ($this->associations["remote"] && !empty($result)) {
+
+            settype($result, "array");
 
             $primaryPropertyName = $this->entityReflection->getPrimaryProperty()
                 ->getMappedName();
@@ -237,7 +232,10 @@ class Find extends Selection implements IConditionable
             );
         }
 
-        return $mapping->mapCollection($this->entityReflection, $result);
+        return $mapping->mapCollection(
+            $this->entityReflection,
+            empty($result) ? [] : $result
+        );
     }
 
     protected function addCondition($propertyName, $operator, $value,
