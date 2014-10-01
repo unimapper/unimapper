@@ -10,9 +10,10 @@ class UpdateOne extends \UniMapper\Query implements IConditionable
 {
 
     /** @var \UniMapper\Entity */
-    private $entity;
+    protected $entity;
 
-    private $primaryValue;
+    /** @var mixed */
+    protected $primaryValue;
 
     public function __construct(
         Reflection\Entity $entityReflection,
@@ -38,17 +39,7 @@ class UpdateOne extends \UniMapper\Query implements IConditionable
         $this->entity = $entityReflection->createEntity($data);
     }
 
-    public function getValues()
-    {
-        return $this->values;
-    }
-
-    public function getPrimaryValue()
-    {
-        return $this->primaryValue;
-    }
-
-    public function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Adapter $adapter)
     {
         $values = $adapter->getMapping()->unmapEntity($this->entity);
 

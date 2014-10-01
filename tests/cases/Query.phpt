@@ -39,12 +39,12 @@ class QueryTest extends UniMapper\Tests\TestCase
         // where()
         $query->where("id", ">", 1);
         $expectedConditions[] = ["id", ">", 1, "AND"];
-        Assert::same($expectedConditions, $query->getConditions());
+        Assert::same($expectedConditions, $query->conditions);
 
         // orWhere()
         $query->orWhere("text", "=", "foo");
         $expectedConditions[] = ["text", "=", "foo", "OR"];
-        Assert::same($expectedConditions, $query->getConditions());
+        Assert::same($expectedConditions, $query->conditions);
 
         // whereAre()
         $query->whereAre(function($query) {
@@ -58,7 +58,7 @@ class QueryTest extends UniMapper\Tests\TestCase
             ],
             'AND'
         ];
-        Assert::same($expectedConditions, $query->getConditions());
+        Assert::same($expectedConditions, $query->conditions);
 
         // orWhereAre()
         $query->orWhereAre(function($query) {
@@ -72,7 +72,7 @@ class QueryTest extends UniMapper\Tests\TestCase
             ],
             'OR'
         ];
-        Assert::same($expectedConditions, $query->getConditions());
+        Assert::same($expectedConditions, $query->conditions);
 
         // Deep nesting
         $query->whereAre(function($query) {
@@ -106,7 +106,7 @@ class QueryTest extends UniMapper\Tests\TestCase
             ],
             'AND'
         ];
-        Assert::same($expectedConditions, $query->getConditions());
+        Assert::same($expectedConditions, $query->conditions);
     }
 
     /**

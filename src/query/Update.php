@@ -9,7 +9,7 @@ class Update extends \UniMapper\Query implements IConditionable
 {
 
     /** @var \UniMapper\Entity */
-    private $entity;
+    protected $entity;
 
     public function __construct(
         Reflection\Entity $entityReflection,
@@ -33,12 +33,7 @@ class Update extends \UniMapper\Query implements IConditionable
         $this->entity = $entityReflection->createEntity($data);
     }
 
-    public function getValues()
-    {
-        return $this->entity->getData();
-    }
-
-    public function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Adapter $adapter)
     {
         $values = $adapter->getMapping()->unmapEntity($this->entity);
 

@@ -90,7 +90,7 @@ class Find extends Selection implements IConditionable
         return $this;
     }
 
-    public function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Adapter $adapter)
     {
         $mapping = $adapter->getMapping();
 
@@ -100,7 +100,7 @@ class Find extends Selection implements IConditionable
                 throw new Exception\QueryException("Cache not set!");
             }
 
-            $cachedResult = $this->cache->load($this->getQueryChecksum());
+            $cachedResult = $this->cache->load($this->_getQueryChecksum());
             if ($cachedResult) {
                 return $mapping->mapCollection($this->entityReflection, $cachedResult);
             }
@@ -231,7 +231,7 @@ class Find extends Selection implements IConditionable
                 $cachedOptions[ICache::TAGS] = [ICache::TAG_QUERY];
             }
             $this->cache->save(
-                $this->getQueryChecksum(),
+                $this->_getQueryChecksum(),
                 $result,
                 $cachedOptions
             );
@@ -261,26 +261,6 @@ class Find extends Selection implements IConditionable
         $this->selection = array_unique(
             array_merge($this->selection, $query->selection)
         );
-    }
-
-    public function getLimit()
-    {
-        return $this->limit;
-    }
-
-    public function getOffset()
-    {
-        return $this->offset;
-    }
-
-    public function getOrderBy()
-    {
-        return $this->orderBy;
-    }
-
-    public function getSelection()
-    {
-        return $this->selection;
     }
 
     private function _createSelection()

@@ -3,10 +3,9 @@
 namespace UniMapper;
 
 use UniMapper\Reflection,
-    UniMapper\Query\IQuery,
     UniMapper\Exception\QueryException;
 
-abstract class Query implements IQuery
+abstract class Query
 {
 
     /** @var integer */
@@ -53,29 +52,14 @@ abstract class Query implements IQuery
         $this->entityReflection = $reflection;
     }
 
+    public function __get($name)
+    {
+        return $this->{$name};
+    }
+
     public function setCache(\UniMapper\Cache\ICache $cache)
     {
         $this->cache = $cache;
-    }
-
-    public function getResult()
-    {
-        return $this->result;
-    }
-
-    public function getConditions()
-    {
-        return $this->conditions;
-    }
-
-    public function getElapsed()
-    {
-        return $this->elapsed;
-    }
-
-    public function getEntityReflection()
-    {
-        return $this->entityReflection;
     }
 
     public static function getName()

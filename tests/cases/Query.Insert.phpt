@@ -19,14 +19,14 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
     public function testSuccess()
     {
         $this->adapterMock->shouldReceive("insert")->once()->andReturn("1");
-        
+
         $query = new \UniMapper\Query\Insert(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["FooAdapter" => $this->adapterMock],
             ["text" => "foo"]
         );
         Assert::same(1, $query->execute());
-        Assert::same(['text' => 'foo'], $query->getValues());
+        Assert::same(['text' => 'foo'], $query->entity->getData());
     }
 
     /**

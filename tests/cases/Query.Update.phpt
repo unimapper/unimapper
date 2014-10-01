@@ -31,7 +31,7 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
     public function testNoValues()
     {
         $this->adapters["FooAdapter"]->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
-        
+
         $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, []);
         $query->execute();
     }
@@ -44,7 +44,7 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
         $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, ["text" => "foo"]);
         $query->where("id", "=", 1);
         Assert::same(null, $query->execute());
-        Assert::same(['text' => 'foo'], $query->getValues());
+        Assert::same(['text' => 'foo'], $query->entity->getData());
     }
 
 }

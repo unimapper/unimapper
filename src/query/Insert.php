@@ -9,7 +9,7 @@ class Insert extends \UniMapper\Query
 {
 
     /** @var \UniMapper\Entity */
-    private $entity;
+    protected $entity;
 
     public function __construct(
         Reflection\Entity $entityReflection,
@@ -20,12 +20,7 @@ class Insert extends \UniMapper\Query
         $this->entity = $entityReflection->createEntity($data);
     }
 
-    public function getValues()
-    {
-        return $this->entity->getData();
-    }
-
-    public function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Adapter $adapter)
     {
         $values = $adapter->getMapping()->unmapEntity($this->entity);
 

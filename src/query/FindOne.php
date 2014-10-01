@@ -33,7 +33,7 @@ class FindOne extends Selection
         $this->primaryValue = $primaryValue;
     }
 
-    public function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Adapter $adapter)
     {
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
 
