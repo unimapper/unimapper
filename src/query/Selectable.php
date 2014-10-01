@@ -9,7 +9,7 @@ use UniMapper\Adapter,
     UniMapper\Reflection\Entity\Property\Association\OneToOne,
     UniMapper\Reflection\Entity\Property\Association\OneToMany;
 
-abstract class Selection extends \UniMapper\Query
+abstract class Selectable extends Conditionable
 {
 
     /** @var array */
@@ -255,6 +255,64 @@ abstract class Selection extends \UniMapper\Query
         }
 
         return $result;
+    }
+
+    /**
+     * Group associative array
+     *
+     * @param array $original
+     * @param array $keys
+     * @param int   $level
+     *
+     * @return array
+     *
+     * @link http://tigrou.nl/2012/11/26/group-a-php-array-to-a-tree-structure/
+     *
+     * @throws \Exception
+     */
+    protected function groupResult(array $original, array $keys, $level = 0)
+    {
+        $converted = [];
+        $key = $keys[$level];
+        $isDeepest = sizeof($keys) - 1 == $level;
+
+        $level++;
+
+        $filtered = [];
+        foreach ($original as $k => $subArray) {
+
+            $subArray = (array) $subArray;
+            if (!isset($subArray[$key])) {
+                throw new \Exception(
+                    "Index '" . $key . "' not found on level '" . $level . "'!"
+                );
+            }
+
+            $thisLevel = $subArray[$key];
+
+            if (is_object($thisLevel)) {
+                $thisLevel = (string) $thisLevel;
+            }
+
+            if ($isDeepest) {
+                $converted[$thisLevel] = $subArray;
+            } else {
+                $converted[$thisLevel] = [];
+            }
+            $filtered[$thisLevel][] = $subArray;
+        }
+
+        if (!$isDeepest) {
+            foreach (array_keys($converted) as $value) {
+                $converted[$value] = $this->groupResult(
+                    $filtered[$value],
+                    $keys,
+                    $level
+                );
+            }
+        }
+
+        return $converted;
     }
 
 }

@@ -5,7 +5,7 @@ namespace UniMapper\Query;
 use UniMapper\Exception,
     UniMapper\Reflection;
 
-class Update extends \UniMapper\Query implements IConditionable
+class Update extends Conditionable
 {
 
     /** @var \UniMapper\Entity */

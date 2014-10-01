@@ -9,7 +9,7 @@ use UniMapper\Exception,
     UniMapper\Reflection\Entity\Property\Association\OneToOne,
     UniMapper\Reflection;
 
-class FindOne extends Selection
+class FindOne extends Selectable
 {
 
     /** @var mixed */

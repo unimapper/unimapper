@@ -11,7 +11,7 @@ use UniMapper\Exception,
     UniMapper\NamingConvention as UNC,
     UniMapper\Cache\ICache;
 
-class Find extends Selection implements IConditionable
+class Find extends Selectable
 {
 
     protected $limit;

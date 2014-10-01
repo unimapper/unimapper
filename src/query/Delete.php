@@ -2,10 +2,9 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exception,
-    UniMapper\Query\IConditionable;
+use UniMapper\Exception;
 
-class Delete extends \UniMapper\Query implements IConditionable
+class Delete extends Conditionable
 {
 
     protected function onExecute(\UniMapper\Adapter $adapter)

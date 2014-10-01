@@ -3,10 +3,9 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exception,
-    UniMapper\Query\IConditionable,
     UniMapper\Reflection;
 
-class UpdateOne extends \UniMapper\Query implements IConditionable
+class UpdateOne extends Conditionable
 {
 
     /** @var \UniMapper\Entity */

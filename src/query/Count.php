@@ -2,7 +2,7 @@
 
 namespace UniMapper\Query;
 
-class Count extends \UniMapper\Query implements IConditionable
+class Count extends Conditionable
 {
 
     protected function onExecute(\UniMapper\Adapter $adapter)
