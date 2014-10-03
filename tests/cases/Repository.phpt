@@ -124,14 +124,16 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
     public function testSaveUpdate()
     {
-        $this->adapterMock->shouldReceive("updateOne")->once()->with("simple_resource", "id", 1, ["text" => "foo"]);
+        $this->adapterMock->shouldReceive("updateOne")->once()->with("simple_resource", "id", 2, ["text" => "foo"]);
         $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
         $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
 
         $this->repository->registerAdapter($this->adapterMock);
 
-        $entity = $this->createEntity("Simple", ["id" => 1, "text" => "foo"]);
+        $entity = $this->createEntity("Simple", ["id" => 2, "text" => "foo"]);
         $this->repository->save($entity);
+
+        Assert::same(2, $entity->id);
     }
 
     public function testSaveInsert()
@@ -142,9 +144,11 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
         $this->repository->registerAdapter($this->adapterMock);
 
-        $entity = $this->createEntity("Simple", ["text" => "foo"]);
+        $entity = $this->createEntity("Simple", ["id" => null, "text" => "foo"]);
         $entity->text = "foo";
         $this->repository->save($entity);
+
+        Assert::same(1, $entity->id);
     }
 
     public function testSaveInvalid()

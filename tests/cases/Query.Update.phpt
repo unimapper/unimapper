@@ -18,14 +18,6 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\QueryException Update is not allowed on primary property 'id'!
-     */
-    public function testDoNotUpdatePrimary()
-    {
-        new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, ["id" => 1]);
-    }
-
-    /**
      * @throws UniMapper\Exception\QueryException Nothing to update!
      */
     public function testNoValues()

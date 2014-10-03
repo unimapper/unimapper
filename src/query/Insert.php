@@ -29,17 +29,6 @@ class Insert extends \UniMapper\Query
             throw new Exception\QueryException("Nothing to insert!");
         }
 
-        // Prevent to set empty primary property
-        if ($this->entityReflection->hasPrimaryProperty()) {
-
-            $primaryName = $this->entityReflection->getPrimaryProperty()
-                ->getMappedName();
-
-            if (empty($values[$primaryName])) {
-                unset($values[$primaryName]);
-            }
-        }
-
         $primaryValue = $adapter->insert(
             $this->entityReflection->getAdapterReflection()->getResource(),
             $values

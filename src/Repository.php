@@ -77,7 +77,21 @@ abstract class Repository
             throw new Exception\ValidatorException($entity->getValidator());
         }
 
-        return $this->query()->insert($entity->getData())->execute();
+        $values = $entity->getData();
+
+        // Prevent to force empty primary property
+        if ($entity->getReflection()->hasPrimaryProperty()) {
+
+            $primaryName = $entity->getReflection()
+                ->getPrimaryProperty()
+                ->getMappedName();
+
+            if (empty($values[$primaryName])) {
+                unset($values[$primaryName]);
+            }
+        }
+
+        return $this->query()->insert($values)->execute();
     }
 
     /**
@@ -93,7 +107,22 @@ abstract class Repository
         if (!$entity->getValidator()->validate()) {
             throw new Exception\ValidatorException($entity->getValidator());
         }
-        $this->query()->updateOne($primaryValue, $entity->getData())->execute();
+
+        $values = $entity->getData();
+
+        // Prevent to change primary value
+        if ($entity->getReflection()->hasPrimaryProperty()) {
+
+            $primaryName = $entity->getReflection()
+                ->getPrimaryProperty()
+                ->getMappedName();
+
+            if (isset($values[$primaryName])) {
+                unset($values[$primaryName]);
+            }
+        }
+
+        $this->query()->updateOne($primaryValue, $values)->execute();
     }
 
     /**

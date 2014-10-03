@@ -17,19 +17,6 @@ class Update extends Conditionable
         array $data
     ) {
         parent::__construct($entityReflection, $adapters);
-
-        // Primary value update is not allowed
-        if ($entityReflection->hasPrimaryProperty()) {
-
-            $primaryName = $entityReflection->getPrimaryProperty()->getMappedName();
-            if (isset($data[$primaryName])) {
-                throw new Exception\QueryException(
-                    "Update is not allowed on primary property '"
-                    .  $primaryName . "'!"
-                );
-            }
-        }
-
         $this->entity = $entityReflection->createEntity($data);
     }
 
