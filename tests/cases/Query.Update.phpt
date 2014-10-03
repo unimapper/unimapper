@@ -38,13 +38,18 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
 
     public function testSuccess()
     {
-        $this->adapters["FooAdapter"]->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
-        $this->adapters["FooAdapter"]->shouldReceive("update")->once()->andReturn("1");
+        $this->adapters["FooAdapter"]->shouldReceive("getMapping")
+            ->once()
+            ->andReturn(new UniMapper\Mapping);
 
-        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, ["text" => "foo"]);
+        $this->adapters["FooAdapter"]->shouldReceive("update")
+            ->once()
+            ->with("simple_resource", ['text'=>'foo'], [["id", "=", 1, "AND"]])
+            ->andReturn("1");
+
+        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, ["text" => "foo", "oneToOne" => ["id" => 3]]);
         $query->where("id", "=", 1);
         Assert::same(null, $query->execute());
-        Assert::same(['text' => 'foo'], $query->entity->getData());
     }
 
 }

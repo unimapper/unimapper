@@ -153,6 +153,12 @@ class Mapping
         foreach ($entity->getData() as $propertyName => $value) {
 
             $property = $entity->getReflection()->getProperties()[$propertyName];
+
+            // Skip associations
+            if ($property->isAssociation()) {
+                continue;
+            }
+
             $output[$property->getMappedName()] = $this->unmapValue(
                 $property,
                 $value

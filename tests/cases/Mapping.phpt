@@ -46,7 +46,8 @@ class MappingTest extends UniMapper\Tests\TestCase
                 "email" => "john.doe@example.com",
                 "url" => "http://example.com",
                 "empty" => null,
-                "storedData" => ["one", "two", "three"]
+                "storedData" => ["one", "two", "three"],
+                "oneToOne" => ["id" => 3]
             ]
         );
 
