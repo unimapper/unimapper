@@ -90,6 +90,12 @@ class ReflectionEntityPropertyTest extends UniMapper\Tests\TestCase
         Assert::same(2, count($collection));
         Assert::isEqual("http://example.com", $collection[0]->url);
         Assert::isEqual("http://johndoe.com", $collection[1]->url);
+
+        // array -> entity
+        $entity = $this->_createReflection('Simple $entity')
+            ->convertValue(["id" => "8"]);
+        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity);
+        Assert::same(8, $entity->id);
     }
 
     /**
