@@ -298,11 +298,14 @@ abstract class Repository
             if (!$reflection) {
 
                 $reflection = new Reflection\Entity($class);
+
                 $this->cache->save(
                     $class,
                     $reflection,
                     [
-                        ICache::FILES => $reflection->getRelatedFiles(),
+                        ICache::FILES => $reflection->getRelatedFiles(
+                            [$reflection->getFileName()]
+                        ),
                         ICache::TAGS => [ICache::TAG_REFLECTION]
                     ]
                 );

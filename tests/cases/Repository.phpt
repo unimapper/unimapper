@@ -88,8 +88,8 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             Mockery::type("UniMapper\Reflection\Entity"),
             [
                 ICache::FILES => [
-                    $nestedRef->getFileName(),
                     $simpleRef->getFileName(),
+                    $nestedRef->getFileName(),
                     $remoteRef->getFileName()
                 ],
                 ICache::TAGS => [ICache::TAG_REFLECTION]
