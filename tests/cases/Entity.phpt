@@ -125,7 +125,7 @@ class EntityTest extends UniMapper\Tests\TestCase
                         'publicProperty' => 'defaultValue'
                     ),
                 ),
-                'manyToMany' => array(array('id' => 1, 'manyToManyNoDominance' => array())),
+                'manyToMany' => array(array('id' => 1, 'manyToManyNoDominance' => array(), 'text' => NULL)),
                 'manyToOne' => NULL,
                 'oneToOne' => NULL,
                 'readonly' => NULL,
@@ -304,6 +304,27 @@ class EntityTest extends UniMapper\Tests\TestCase
             0,
             $this->createEntity("NoProperty")->getReflection()->getProperties()
         );
+    }
+
+    public function testAssociation()
+    {
+        Assert::type("UniMapper\Association\ManyToMany", $this->entity->manyToMany());
+    }
+
+    /**
+     * @throws UniMapper\Exception\PropertyAccessException Undefined property 'undefined'!
+     */
+    public function testAssociationUndefined()
+    {
+        $this->entity->undefined();
+    }
+
+    /**
+     * @throws UniMapper\Exception\PropertyAccessException Only association properties can be called as function!
+     */
+    public function testAssociationNotAllowed()
+    {
+        $this->entity->id();
     }
 
 }

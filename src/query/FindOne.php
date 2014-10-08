@@ -3,10 +3,10 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exception,
-    UniMapper\Reflection\Entity\Property\Association\ManyToMany,
-    UniMapper\Reflection\Entity\Property\Association\ManyToOne,
-    UniMapper\Reflection\Entity\Property\Association\OneToMany,
-    UniMapper\Reflection\Entity\Property\Association\OneToOne,
+    UniMapper\Association\ManyToMany,
+    UniMapper\Association\ManyToOne,
+    UniMapper\Association\OneToMany,
+    UniMapper\Association\OneToOne,
     UniMapper\Reflection;
 
 class FindOne extends Selectable
@@ -37,12 +37,19 @@ class FindOne extends Selectable
     {
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
 
-        $result = $adapter->findOne(
+        $query = $adapter->createFindOne(
             $this->entityReflection->getAdapterReflection()->getResource(),
             $primaryProperty->getMappedName(),
-            $this->primaryValue,
-            $this->associations["local"]
+            $this->primaryValue
         );
+
+        if ($this->associations["local"]) {
+            $query->setAssociations($this->associations["local"]);
+        }
+
+        $result = $adapter->execute($query);
+
+        $this->adapterQueries[] = $query->getRaw();
 
         if (!$result) {
             return false;

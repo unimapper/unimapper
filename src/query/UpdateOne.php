@@ -47,12 +47,16 @@ class UpdateOne extends Conditionable
             throw new Exception\QueryException("Nothing to update!");
         }
 
-        $adapter->updateOne(
+        $query = $adapter->createUpdateOne(
             $this->entityReflection->getAdapterReflection()->getResource(),
             $this->entityReflection->getPrimaryProperty()->getMappedName(),
             $this->primaryValue,
             $values
         );
+
+        $adapter->execute($query);
+
+        $this->adapterQueries[] = $query->getRaw();
     }
 
 }

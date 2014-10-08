@@ -183,7 +183,7 @@ class Mapping
         return $value;
     }
 
-    /*
+    /**
      * Convert entity to simple array
      *
      *  @param \UniMapper\EntityCollection $collection Entity collection
@@ -197,69 +197,6 @@ class Mapping
             $data[$index] = $this->unmapEntity($entity);
         }
         return $data;
-    }
-
-    public function unmapSelection(
-        array $selection,
-        Reflection\Entity $entityReflection = null
-    ) {
-        if (!$entityReflection) {
-            return $selection;
-        }
-
-        foreach ($selection as $index => $name) {
-
-            if ($entityReflection->hasProperty($name)) {
-
-                $selection[$index] = $entityReflection
-                    ->getProperty($name)
-                    ->getMappedName();
-            }
-        }
-
-        return $selection;
-    }
-
-    public function unmapOrderBy(
-        array $items,
-        Reflection\Entity $entityReflection = null
-    ) {
-        if (!$entityReflection) {
-            return $items;
-        }
-
-        $unmapped = [];
-        foreach ($items as $name => $direction) {
-            $mappedName = $entityReflection->getProperties()[$name]->getMappedName();
-            $unmapped[$mappedName] = $direction;
-        }
-        return $unmapped;
-    }
-
-    public function unmapConditions(
-        array $conditions,
-        Reflection\Entity $entityReflection = null
-    ) {
-        if (!$entityReflection) {
-            return $conditions;
-        }
-
-        foreach ($conditions as $index => $condition) {
-
-            if (is_array($condition[0])) {
-
-                $conditions[$index][0] = $this->unmapConditions(
-                    $condition[0],
-                    $entityReflection
-                );
-            } else {
-
-                $conditions[$index][0] = $entityReflection
-                    ->getProperty($condition[0])
-                    ->getMappedName();
-            }
-        }
-        return $conditions;
     }
 
 }

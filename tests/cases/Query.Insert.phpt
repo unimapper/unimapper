@@ -12,15 +12,23 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->adapterMock = Mockery::mock("UniMapper\Tests\Fixtures\Adapter\Simple");
+        $this->adapterMock = Mockery::mock("UniMapper\Adapter");
         $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
     }
 
     public function testSuccess()
     {
-        $this->adapterMock->shouldReceive("insert")
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("getRaw")->once();
+
+        $this->adapterMock->shouldReceive("createInsert")
             ->once()
             ->with("simple_resource", ['text'=>'foo'])
+            ->andReturn($adapterQueryMock);
+
+        $this->adapterMock->shouldReceive("execute")
+            ->once()
+            ->with($adapterQueryMock)
             ->andReturn("1");
 
         $query = new \UniMapper\Query\Insert(

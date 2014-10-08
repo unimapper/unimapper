@@ -7,13 +7,15 @@ class Count extends Conditionable
 
     protected function onExecute(\UniMapper\Adapter $adapter)
     {
-        return (int) $adapter->count(
-            $this->entityReflection->getAdapterReflection()->getResource(),
-            $adapter->getMapping()->unmapConditions(
-                $this->conditions,
-                $this->entityReflection
-            )
+        $query = $adapter->createCount(
+            $this->entityReflection->getAdapterReflection()->getResource()
         );
+        $query->setConditions($this->conditions);
+        $result = (int) $adapter->execute($query);
+
+        $this->adapterQueries[] = $query->getRaw();
+
+        return $result;
     }
 
 }

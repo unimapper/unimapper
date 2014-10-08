@@ -10,7 +10,7 @@ use UniMapper\Exception;
 class Entity
 {
 
-    /** @var \UniMapper\Reflection\Entity\Adapter */
+    /** @var \UniMapper\Reflection\Adapter */
     private $adapter;
 
     /** @var array */

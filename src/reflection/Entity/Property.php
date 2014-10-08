@@ -5,6 +5,7 @@ namespace UniMapper\Reflection\Entity;
 use UniMapper\EntityCollection,
     UniMapper\Validator,
     UniMapper\Reflection,
+    UniMapper\Association,
     UniMapper\NamingConvention as UNC,
     UniMapper\Exception;
 
@@ -43,15 +44,15 @@ class Property
     /** @var boolean $computed Is property computed? */
     private $computed = false;
 
-    /** @var Reflection\Entity\Property\Association $association */
+    /** @var Association $association */
     private $association;
 
     /** @var array $associations List of available associations */
     private $associations = [
-        "UniMapper\Reflection\Entity\Property\Association\ManyToOne",
-        "UniMapper\Reflection\Entity\Property\Association\ManyToMany",
-        "UniMapper\Reflection\Entity\Property\Association\OneToOne",
-        "UniMapper\Reflection\Entity\Property\Association\OneToMany"
+        "UniMapper\Association\ManyToOne",
+        "UniMapper\Association\ManyToMany",
+        "UniMapper\Association\OneToOne",
+        "UniMapper\Association\OneToMany"
     ];
 
     /** @var boolean $writable */
@@ -392,10 +393,11 @@ class Property
                 try {
 
                     $this->association = new $assocClass(
-                        $this->entityReflection,
+                        $this,
                         $targetEntityReflection,
                         $matches[1]
                     );
+                    break;
                 } catch (Exception\DefinitionException $e) {
 
                     if ($e->getCode() !== Exception\DefinitionException::DO_NOT_FAIL) {
@@ -410,7 +412,25 @@ class Property
 
             if (!$this->association) {
                 throw new Exception\PropertyException(
-                    "Unrecognized association m:map(" . $matches[1] . ")!",
+                    "Unrecognized association m:assoc(" . $matches[1] . ")!",
+                    $this->entityReflection,
+                    $this->rawDefinition
+                );
+            }
+
+            if ($this->association instanceof Association\Multi
+                && !$this->type instanceof EntityCollection
+            ) {
+                throw new Exception\PropertyException(
+                    "Type must be entity collection! " . $this->name .$this->rawDefinition,
+                    $this->entityReflection,
+                    $this->rawDefinition
+                );
+            } elseif ($this->association instanceof Association\Single
+                && !$this->type instanceof Reflection\Entity
+            ) {
+                throw new Exception\PropertyException(
+                    "Type must be entity!",
                     $this->entityReflection,
                     $this->rawDefinition
                 );

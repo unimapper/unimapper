@@ -24,6 +24,9 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     /** @var \UniMapper\Validator $validator */
     protected $validator;
 
+    /** @var array $associated List of modified associations */
+    private $associated = [];
+
     public function __construct(Reflection\Entity $reflection, $values = [])
     {
         if ($reflection->getClassName() !== get_called_class()) {
@@ -127,6 +130,40 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     }
 
     /**
+     * @param string $name
+     * @param array  $arguments
+     *
+     * @return Association
+     *
+     * @throws Exception\PropertyAccessException
+     */
+    public function __call($name, $arguments)
+    {
+        if (!$this->reflection->hasProperty($name)) {
+            throw new Exception\PropertyAccessException(
+                "Undefined property '" . $name . "'!",
+                $this->reflection,
+                null,
+                Exception\PropertyAccessException::UNDEFINED
+            );
+        }
+
+        $propertyReflection = $this->reflection->getProperty($name);
+        if (!$propertyReflection->isAssociation()) {
+            throw new Exception\PropertyAccessException(
+                "Only association properties can be called as function!",
+                $this->reflection
+            );
+        }
+
+        if (!in_array($name, $this->associated, true)) {
+            $this->associated[$name] = $this->reflection->getProperty($name)->getAssociation();
+        }
+
+        return $this->associated[$name];
+    }
+
+    /**
      * Get property value
      *
      * @param string $name Property name
@@ -225,6 +262,11 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     public function __unset($name)
     {
         unset($this->data[$name]);
+    }
+
+    public function getAssociated()
+    {
+        return $this->associated;
     }
 
     public function getReflection()

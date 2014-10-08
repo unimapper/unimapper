@@ -14,7 +14,10 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Tests\Fixtures\Adapter\Simple");
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
+        $this->adapters["FooAdapter"]->shouldReceive("getMapping")
+            ->once()
+            ->andReturn(new UniMapper\Mapping);
     }
 
     /**
@@ -22,21 +25,26 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
      */
     public function testNoValues()
     {
-        $this->adapters["FooAdapter"]->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
-
         $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, []);
         $query->execute();
     }
 
     public function testSuccess()
     {
-        $this->adapters["FooAdapter"]->shouldReceive("getMapping")
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("setConditions")
             ->once()
-            ->andReturn(new UniMapper\Mapping);
+            ->with([["id", "=", 1, "AND"]]);
+        $adapterQueryMock->shouldReceive("getRaw")->once();
 
-        $this->adapters["FooAdapter"]->shouldReceive("update")
+        $this->adapters["FooAdapter"]->shouldReceive("createUpdate")
             ->once()
-            ->with("simple_resource", ['text'=>'foo'], [["id", "=", 1, "AND"]])
+            ->with("simple_resource", ['text'=>'foo'])
+            ->andReturn($adapterQueryMock);
+
+        $this->adapters["FooAdapter"]->shouldReceive("execute")
+            ->once()
+            ->with($adapterQueryMock)
             ->andReturn("1");
 
         $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, ["text" => "foo", "oneToOne" => ["id" => 3]]);

@@ -8,6 +8,8 @@ use UniMapper\Reflection,
 abstract class Query
 {
 
+    protected $executed = false;
+
     /** @var integer */
     private $elapsed;
 
@@ -22,6 +24,9 @@ abstract class Query
 
     /** @var \UniMapper\Cache\ICache */
     protected $cache;
+
+    /** @var array $adapterQueries List of queries executed on adapter */
+    protected $adapterQueries = [];
 
     public function __construct(Reflection\Entity $reflection, array $adapters)
     {
@@ -71,6 +76,7 @@ abstract class Query
         }
         $this->result = $this->onExecute($this->adapters[$adapterName]);
         $this->elapsed = microtime(true) - $start;
+        $this->executed = true;
 
         return $this->result;
     }

@@ -33,13 +33,14 @@ class Update extends Conditionable
             throw new Exception\QueryException("At least one condition must be set!");
         }
 
-        $mapping = $adapter->getMapping();
-
-        $adapter->update(
+        $query = $adapter->createUpdate(
             $this->entityReflection->getAdapterReflection()->getResource(),
-            $values,
-            $mapping->unmapConditions($this->conditions, $this->entityReflection)
+            $values
         );
+        $query->setConditions($this->conditions);
+        $adapter->execute($query);
+
+        $this->adapterQueries[] = $query->getRaw();
     }
 
 }

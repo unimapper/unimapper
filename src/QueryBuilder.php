@@ -5,12 +5,14 @@ namespace UniMapper;
 use UniMapper\Reflection;
 
 /**
+ * @method \UniMapper\Query\Associate associate($primaryValue, Association $association)
  * @method \UniMapper\Query\Find      find()
  * @method \UniMapper\Query\FindOne   findOne($primaryValue)
  * @method \UniMapper\Query\Insert    insert(array $data)
  * @method \UniMapper\Query\Update    update(array $data)
  * @method \UniMapper\Query\UpdateOne updateOne($primaryValue, array $data)
  * @method \UniMapper\Query\Delete    delete()
+ * @method \UniMapper\Query\DeleteOne deleteOne($primaryValue)
  * @method \UniMapper\Query\Count     count()
  */
 class QueryBuilder
@@ -30,9 +32,11 @@ class QueryBuilder
 
     /** @var array */
     protected $queries = [
+        "associate" => "UniMapper\Query\Associate",
         "count" => "UniMapper\Query\Count",
         "raw" => "UniMapper\Query\Raw",
         "delete" => "UniMapper\Query\Delete",
+        "deleteOne" => "UniMapper\Query\DeleteOne",
         "find" => "UniMapper\Query\Find",
         "findOne" => "UniMapper\Query\FindOne",
         "insert" => "UniMapper\Query\Insert",

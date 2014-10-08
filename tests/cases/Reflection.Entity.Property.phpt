@@ -170,23 +170,37 @@ class ReflectionEntityPropertyTest extends UniMapper\Tests\TestCase
 
     public function testAssocManyToMany()
     {
-        $property = $this->_createReflection('Simple[] $manyToMany m:assoc(M:N=sourceId|source_target|targetId)');
-        Assert::true($property->isAssociation());
-        Assert::type("UniMapper\Reflection\Entity\Property\Association\ManyToMany", $property->getAssociation());
+        // Local
+        $local = $this->_createReflection('Simple[] $manyToMany m:assoc(M:N=sourceId|source_target|targetId)');
+        Assert::type("UniMapper\Association\ManyToMany", $local->getAssociation());
+        Assert::true($local->isAssociation());
+        Assert::false($local->getAssociation()->isRemote());
+        Assert::same("FooAdapter", $local->getAssociation()->getTargetAdapterName());
+
+        // Remote
+        $remote = $this->_createReflection('Remote[] $manyToMany m:assoc(M:N=localId|local_remote|remoteId)');
+        Assert::true($remote->getAssociation()->isRemote());
+        Assert::true($remote->getAssociation()->isDominant());
+        Assert::same("RemoteAdapter", $remote->getAssociation()->getTargetAdapterName());
+
+        // Remote - not dominant
+        $remoteNotDominant = $this->_createReflection('Remote[] $manyToMany m:assoc(M<N=localId|local_remote|remoteId)');
+        Assert::true($remoteNotDominant->getAssociation()->isRemote());
+        Assert::false($remoteNotDominant->getAssociation()->isDominant());
     }
 
     public function testAssocOneToMany()
     {
         $property = $this->_createReflection('Simple[] $oneToMany m:assoc(1:N=sourceId)');
         Assert::true($property->isAssociation());
-        Assert::type("UniMapper\Reflection\Entity\Property\Association\OneToMany", $property->getAssociation());
+        Assert::type("UniMapper\Association\OneToMany", $property->getAssociation());
     }
 
     public function testAssocOneToOne()
     {
         $property = $this->_createReflection('Simple $oneToOne m:assoc(1:1=targetId)');
         Assert::true($property->isAssociation());
-        Assert::type("UniMapper\Reflection\Entity\Property\Association\OneToOne", $property->getAssociation());
+        Assert::type("UniMapper\Association\OneToOne", $property->getAssociation());
     }
 
 }

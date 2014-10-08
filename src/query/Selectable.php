@@ -4,10 +4,10 @@ namespace UniMapper\Query;
 
 use UniMapper\Adapter,
     UniMapper\Exception,
-    UniMapper\Reflection\Entity\Property\Association\ManyToOne,
-    UniMapper\Reflection\Entity\Property\Association\ManyToMany,
-    UniMapper\Reflection\Entity\Property\Association\OneToOne,
-    UniMapper\Reflection\Entity\Property\Association\OneToMany;
+    UniMapper\Association\ManyToOne,
+    UniMapper\Association\ManyToMany,
+    UniMapper\Association\OneToOne,
+    UniMapper\Association\OneToMany;
 
 abstract class Selectable extends Conditionable
 {
@@ -60,24 +60,23 @@ abstract class Selectable extends Conditionable
         ManyToOne $association,
         array $primaryValues
     ) {
-        $mapping = $targetAdapter->getMapping();
-
-        $result = $targetAdapter->find(
-            $association->getTargetResource(),
-            $mapping->unmapSelection([]),
-            $mapping->unmapConditions(
+        $query = $targetAdapter->createFind($association->getTargetResource());
+        $query->setConditions(
+            [
                 [
-                    [
-                        $association->getTargetReflection()
-                            ->getPrimaryProperty()
-                            ->getMappedName(),
-                        "IN",
-                        $primaryValues,
-                        "AND"
-                    ]
+                    $association->getTargetReflection()
+                        ->getPrimaryProperty()
+                        ->getMappedName(),
+                    "IN",
+                    $primaryValues,
+                    "AND"
                 ]
-            )
+            ]
         );
+
+        $result = $targetAdapter->execute($query);
+
+        $this->adapterQueries[] = $query->getRaw();
 
         if (empty($result)) {
             return [];
@@ -117,15 +116,17 @@ abstract class Selectable extends Conditionable
             $currentAdapter = $targetAdapter;
         }
 
-        $joinResult = $currentAdapter->find(
+        $joinQuery = $currentAdapter->createFind(
             $association->getJoinResource(),
-            $currentAdapter->getMapping()->unmapSelection(
-                [$association->getJoinKey(), $association->getReferenceKey()]
-            ),
-            $currentAdapter->getMapping()->unmapConditions(
-                [[$association->getJoinKey(), "IN", $primaryValues, "AND"]]
-            )
+            [$association->getJoinKey(), $association->getReferenceKey()]
         );
+        $joinQuery->setConditions(
+            [[$association->getJoinKey(), "IN", $primaryValues, "AND"]]
+        );
+
+        $joinResult = $currentAdapter->execute($joinQuery);
+
+        $this->adapterQueries[] = $joinQuery->getRaw();
 
         if (!$joinResult) {
             return [];
@@ -139,20 +140,24 @@ abstract class Selectable extends Conditionable
             ]
         );
 
-        $targetResult = $targetAdapter->find(
-            $association->getTargetResource(),
-            $targetAdapter->getMapping()->unmapSelection([]),
-            $targetAdapter->getMapping()->unmapConditions(
-                [
-                    [
-                        $association->getForeignKey(),
-                        "IN",
-                        array_keys($joinResult),
-                        "AND"
-                    ]
-                ]
-            )
+        $targetQuery = $targetAdapter->createFind(
+            $association->getTargetResource()
         );
+        $targetQuery->setConditions(
+            [
+                [
+                    $association->getForeignKey(),
+                    "IN",
+                    array_keys($joinResult),
+                    "AND"
+                ]
+            ]
+        );
+
+        $targetResult = $targetAdapter->execute($targetQuery);
+
+        $this->adapterQueries[] = $targetQuery->getRaw();
+
         if (!$targetResult) {
             return [];
         }
@@ -195,24 +200,23 @@ abstract class Selectable extends Conditionable
         OneToOne $association,
         array $primaryValues
     ) {
-        $mapping = $targetAdapter->getMapping();
-
-        $result = $targetAdapter->find(
-            $association->getTargetResource(),
-            $mapping->unmapSelection([]),
-            $mapping->unmapConditions(
+        $query = $targetAdapter->createFind($association->getTargetResource());
+        $query->setConditions(
+            [
                 [
-                    [
-                        $association->getTargetReflection()
-                            ->getPrimaryProperty()
-                            ->getMappedName(),
-                        "IN",
-                        $primaryValues,
-                        "AND"
-                    ]
+                    $association->getTargetReflection()
+                        ->getPrimaryProperty()
+                        ->getMappedName(),
+                    "IN",
+                    $primaryValues,
+                    "AND"
                 ]
-            )
+            ]
         );
+
+        $result = $targetAdapter->execute($query);
+
+        $this->adapterQueries[] = $query->getRaw();
 
         if (empty($result)) {
             return [];
@@ -233,22 +237,21 @@ abstract class Selectable extends Conditionable
         OneToMany $association,
         array $primaryValues
     ) {
-        $mapping = $targetAdapter->getMapping();
-
-        $result = $targetAdapter->find(
-            $association->getTargetResource(),
-            $mapping->unmapSelection([]),
-            $mapping->unmapConditions(
+        $query = $targetAdapter->createFind($association->getTargetResource());
+        $query->setConditions(
+            [
                 [
-                    [
-                        $association->getForeignKey(),
-                        "IN",
-                        array_keys($primaryValues),
-                        "AND"
-                    ]
+                    $association->getForeignKey(),
+                    "IN",
+                    array_keys($primaryValues),
+                    "AND"
                 ]
-            )
+            ]
         );
+
+        $result = $targetAdapter->execute($query);
+
+        $this->adapterQueries[] = $query->getRaw();
 
         if (!$result) {
             return [];

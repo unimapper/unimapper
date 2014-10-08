@@ -2,25 +2,30 @@
 
 namespace UniMapper\Adapter;
 
+use UniMapper\Association\ManyToMany;
+
 interface IAdapter
 {
 
-    public function count($resource, $conditions);
+    const ASSOC_REMOVE = "remove",
+          ASSOC_ADD = "add";
 
-    public function delete($resource, $conditions);
+    public function createDelete($resource);
 
-    public function findOne($resource, $primaryName, $primaryValue,
-        array $associations = []
-    );
+    public function createFindOne($resource, $column, $primaryValue);
 
-    public function find($resource, $selection = null, $conditions = null,
-        $orderBy = null, $limit = 0, $offset = 0, array $associations = []
-    );
+    public function createFind($resource, array $selection = [], array $orderBy = [], $limit = 0, $offset = 0);
 
-    public function insert($resource, array $values);
+    public function createCount($resource);
 
-    public function update($resource, array $values, $conditions = null);
+    public function createInsert($resource, array $values);
 
-    public function updateOne($resource, $primaryName, $primaryValue, array $values);
+    public function createUpdate($resource, array $values);
+
+    public function createUpdateOne($resource, $column, $primaryValue, array $values);
+
+    public function createModifyManyToMany(ManyToMany $association, $primaryValue, array $keys, $action = self::ASSOC_ADD);
+
+    public function execute(IQuery $query);
 
 }

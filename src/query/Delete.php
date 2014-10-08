@@ -15,11 +15,13 @@ class Delete extends Conditionable
             );
         }
 
-        $mapping = $adapter->getMapping();
-        $adapter->delete(
-            $this->entityReflection->getAdapterReflection()->getResource(),
-            $mapping->unmapConditions($this->conditions, $this->entityReflection)
+        $query = $adapter->createDelete(
+            $this->entityReflection->getAdapterReflection()->getResource()
         );
+        $query->setConditions($this->conditions);
+        $adapter->execute($query);
+
+        $this->adapterQueries[] = $query->getRaw();
     }
 
 }

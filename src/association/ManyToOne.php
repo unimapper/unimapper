@@ -1,20 +1,21 @@
 <?php
 
-namespace UniMapper\Reflection\Entity\Property\Association;
+namespace UniMapper\Association;
 
-use UniMapper\Reflection;
+use UniMapper\Reflection,
+    UniMapper\Exception;
 
-class ManyToOne extends Reflection\Entity\Property\Association
+class ManyToOne extends Single
 {
 
     protected $expression = "N:1\s*=\s*(.*)";
 
     public function __construct(
-        Reflection\Entity $currentReflection,
+        Reflection\Entity\Property $propertyReflection,
         Reflection\Entity $targetReflection,
         $definition
     ) {
-        parent::__construct($currentReflection, $targetReflection, $definition);
+        parent::__construct($propertyReflection, $targetReflection, $definition);
 
         if (empty($this->matches[1])) {
             throw new Exception\PropertyDefinitionException(

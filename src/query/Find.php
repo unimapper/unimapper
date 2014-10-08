@@ -4,15 +4,18 @@ namespace UniMapper\Query;
 
 use UniMapper\Exception,
     UniMapper\Reflection,
-    UniMapper\Reflection\Entity\Property\Association\OneToMany,
-    UniMapper\Reflection\Entity\Property\Association\OneToOne,
-    UniMapper\Reflection\Entity\Property\Association\ManyToOne,
-    UniMapper\Reflection\Entity\Property\Association\ManyToMany,
+    UniMapper\Association\OneToMany,
+    UniMapper\Association\OneToOne,
+    UniMapper\Association\ManyToOne,
+    UniMapper\Association\ManyToMany,
     UniMapper\NamingConvention as UNC,
     UniMapper\Cache\ICache;
 
 class Find extends Selectable
 {
+
+    const ASC = "asc",
+          DESC = "desc";
 
     protected $limit;
     protected $offset;
@@ -48,7 +51,7 @@ class Find extends Selectable
         }
 
         if (!array_search($name, $this->selection)) {
-            $this->selection[] = $name;
+            $this->selection[] = $property->getMappedName();
         }
 
         return $this;
@@ -73,19 +76,20 @@ class Find extends Selectable
         return $this;
     }
 
-    public function orderBy($propertyName, $direction = "asc")
+    public function orderBy($name, $direction = self::ASC)
     {
-        if (!$this->entityReflection->hasProperty($propertyName)) {
+        if (!$this->entityReflection->hasProperty($name)) {
             throw new Exception\QueryException(
-                "Invalid property name '" . $propertyName . "'!"
+                "Invalid property name '" . $name . "'!"
             );
         }
 
         $direction = strtolower($direction);
-        if ($direction !== "asc" && $direction !== "desc") {
+        if ($direction !== self::ASC && $direction !== self::DESC) {
             throw new Exception\QueryException("Order direction must be 'asc' or 'desc'!");
         }
-        $this->orderBy[$propertyName] = $direction;
+
+        $this->orderBy[$this->entityReflection->getProperty($name)->getMappedName()] = $direction;
         return $this;
     }
 
@@ -105,15 +109,27 @@ class Find extends Selectable
             }
         }
 
-        $result = $adapter->find(
+        $query = $adapter->createFind(
             $this->entityReflection->getAdapterReflection()->getResource(),
-            $mapping->unmapSelection($this->_createSelection(), $this->entityReflection),
-            $mapping->unmapConditions($this->conditions, $this->entityReflection),
-            $mapping->unmapOrderBy($this->orderBy, $this->entityReflection),
+            $this->_createSelection(),
+            $this->orderBy,
             $this->limit,
-            $this->offset,
-            $this->associations["local"]
+            $this->offset
         );
+
+        if ($this->conditions) {
+            $query->setConditions($this->conditions);
+        }
+
+        if ($this->associations["local"]) {
+            $query->setAssociations($this->associations["local"]);
+        };
+
+        // Execute adapter query
+        $result = $adapter->execute($query);
+
+        // Log generated adapter query
+        $this->adapterQueries[] = $query->getRaw();
 
         // Get remote associations
         if ($this->associations["remote"] && !empty($result)) {
@@ -279,18 +295,19 @@ class Find extends Selectable
             foreach ($this->entityReflection->getProperties() as $property) {
 
                 if (!$property->isAssociation() && !$property->isComputed()) {
-                    $selection[] = $property->getName();
+                    $selection[] = $property->getMappedName();
                 }
             }
         } else {
-            $primaryPropertyName = $this->entityReflection
+
+            $primaryName = $this->entityReflection
                 ->getPrimaryProperty()
-                ->getName();
+                ->getMappedName();
 
             // Add primary property automatically
             $selection = $this->selection;
-            if (!in_array($primaryPropertyName, $selection)) {
-                $selection[] = $primaryPropertyName;
+            if (!in_array($primaryName, $selection)) {
+                $selection[] = $primaryName;
             }
         }
 

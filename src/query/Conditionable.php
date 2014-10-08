@@ -28,9 +28,9 @@ abstract class Conditionable extends \UniMapper\Query
             );
         }
 
-        $propertyReflection = $this->entityReflection->getProperty($name);
-        if ($propertyReflection->isAssociation()
-            || $propertyReflection->isComputed()
+        $property = $this->entityReflection->getProperty($name);
+        if ($property->isAssociation()
+            || $property->isComputed()
         ) {
             throw new QueryException(
                 "Condition can not be called on associations and computed "
@@ -38,7 +38,7 @@ abstract class Conditionable extends \UniMapper\Query
             );
         }
 
-        $this->conditions[] = [$name, $operator, $value, $joiner];
+        $this->conditions[] = [$property->getMappedName(), $operator, $value, $joiner];
     }
 
     protected function addNestedConditions(\Closure $callback, $joiner = 'AND')

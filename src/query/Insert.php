@@ -29,10 +29,14 @@ class Insert extends \UniMapper\Query
             throw new Exception\QueryException("Nothing to insert!");
         }
 
-        $primaryValue = $adapter->insert(
+        $query = $adapter->createInsert(
             $this->entityReflection->getAdapterReflection()->getResource(),
             $values
         );
+
+        $primaryValue = $adapter->execute($query);
+
+        $this->adapterQueries[] = $query->getRaw();
 
         if ($this->entityReflection->hasPrimaryProperty()) {
 

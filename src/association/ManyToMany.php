@@ -1,11 +1,11 @@
 <?php
 
-namespace UniMapper\Reflection\Entity\Property\Association;
+namespace UniMapper\Association;
 
 use UniMapper\Reflection,
     UniMapper\Exception;
 
-class ManyToMany extends Reflection\Entity\Property\Association
+class ManyToMany extends Multi
 {
 
     protected $expression = "M(:|>|<)N=(.*)\|(.*)\|(.*)";
@@ -13,11 +13,11 @@ class ManyToMany extends Reflection\Entity\Property\Association
     protected $dominant = true;
 
     public function __construct(
-        Reflection\Entity $currentReflection,
+        Reflection\Entity\Property $propertyReflection,
         Reflection\Entity $targetReflection,
         $definition
     ) {
-        parent::__construct($currentReflection, $targetReflection, $definition);
+        parent::__construct($propertyReflection, $targetReflection, $definition);
 
         if (!$targetReflection->hasPrimaryProperty()) {
             throw new Exception\DefinitionException(

@@ -54,10 +54,8 @@ abstract class Repository
         $primaryValue = $entity->{$primaryName};
 
         if ($primaryValue === null) {
-            // Insert
             $entity->{$primaryName} = $this->insert($entity);
         } else {
-            // Update
             $this->update($entity, $primaryValue);
         }
     }
@@ -91,7 +89,10 @@ abstract class Repository
             }
         }
 
-        return $this->query()->insert($values)->execute();
+        $primaryValue = $this->query()->insert($values)->execute();
+        $this->_saveAssociations($primaryValue, $entity);
+
+        return $primaryValue;
     }
 
     /**
@@ -123,6 +124,14 @@ abstract class Repository
         }
 
         $this->query()->updateOne($primaryValue, $values)->execute();
+        $this->_saveAssociations($primaryValue, $entity);
+    }
+
+    private function _saveAssociations($primaryValue, Entity $entity)
+    {
+        foreach ($entity->getAssociated() as $association) {
+            $this->query()->associate($primaryValue, $association)->execute();
+        }
     }
 
     /**

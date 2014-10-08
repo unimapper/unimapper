@@ -18,7 +18,10 @@ class RepositoryTest extends UniMapper\Tests\TestCase
     public function setUp()
     {
         $this->repository = new Fixtures\Repository\SimpleRepository;
-        $this->adapterMock = Mockery::mock("UniMapper\Tests\Fixtures\Adapter\Simple");
+
+        $this->adapterMock = Mockery::mock("UniMapper\Adapter");
+        $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
+        $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
     }
 
     public function testGetName()
@@ -33,18 +36,15 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
     public function testQuery()
     {
-        $this->repository->registerAdapter(
-            new Fixtures\Adapter\Simple("FooAdapter", new UniMapper\Mapping)
-        );
+        $this->repository->registerAdapter($this->adapterMock);
         Assert::type("UniMapper\QueryBuilder", $this->repository->query());
     }
 
     public function testRegisterCustomQuery()
     {
         $this->repository->registerCustomQuery("UniMapper\Tests\Fixtures\Query\Custom");
-        $this->repository->registerAdapter(
-            new Fixtures\Adapter\Simple("FooAdapter", new UniMapper\Mapping)
-        );
+        $this->repository->registerAdapter($this->adapterMock);
+
         Assert::same("foo", $this->repository->query()->custom()->execute());
     }
 
@@ -124,9 +124,16 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
     public function testSaveUpdate()
     {
-        $this->adapterMock->shouldReceive("updateOne")->once()->with("simple_resource", "id", 2, ["text" => "foo"]);
-        $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
-        $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("getRaw")->once();
+
+        $this->adapterMock->shouldReceive("createUpdateOne")
+            ->once()
+            ->with("simple_resource", "id", 2, ["text" => "foo"])
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("execute")
+            ->once()
+            ->with($adapterQueryMock);
 
         $this->repository->registerAdapter($this->adapterMock);
 
@@ -138,9 +145,17 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
     public function testSaveInsert()
     {
-        $this->adapterMock->shouldReceive("insert")->once()->with("simple_resource", ["text" => "foo"])->andReturn(["id" => 1]);
-        $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
-        $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("getRaw")->once();
+
+        $this->adapterMock->shouldReceive("createInsert")
+            ->once()
+            ->with("simple_resource", ["text" => "foo"])
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("execute")
+            ->once()
+            ->with($adapterQueryMock)
+            ->andReturn(["id" => 1]);
 
         $this->repository->registerAdapter($this->adapterMock);
 
@@ -182,8 +197,6 @@ class RepositoryTest extends UniMapper\Tests\TestCase
      */
     public function testDeletNoPrimaryValue()
     {
-        $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
-
         $this->repository->registerAdapter($this->adapterMock);
 
         $entity = $this->createEntity("Simple");
@@ -192,86 +205,25 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
     public function testDelete()
     {
-        $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
-        $this->adapterMock->shouldReceive("delete")->with("simple_resource", [["id", "=", 1, "AND"]])->once();
-        $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("setConditions")
+            ->with([["id", "=", 1, "AND"]])
+            ->once();
+        $adapterQueryMock->shouldReceive("getRaw")->once();
+
+        $this->adapterMock->shouldReceive("createDelete")
+            ->with("simple_resource")
+            ->once()
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("execute")
+            ->with($adapterQueryMock)
+            ->once()
+            ->andReturn(null);
 
         $this->repository->registerAdapter($this->adapterMock);
 
         $entity = $this->createEntity("Simple", ["id" => 1]);
         $this->repository->delete($entity);
-    }
-
-    public function testFind()
-    {
-        $this->adapterMock->shouldReceive("find")
-            ->with(
-                "simple_resource",
-                ["id", "text", "empty", "link", "email_address", "time", "ip", "mark", "entity", "readonly", "stored_data"],
-                [["text", "LIKE", "foo", "AND"]],
-                ["time" => "desc"],
-                10,
-                20,
-                []
-            )
-            ->once()
-            ->andReturn([]);
-        $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
-        $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
-
-        $this->repository->registerAdapter($this->adapterMock);
-        $result = $this->repository->find(
-            [["text", "LIKE", "foo"]],
-            [["time", "DESC"]],
-            10,
-            20
-        );
-
-        Assert::type("UniMapper\EntityCollection", $result);
-        Assert::count(0, $result);
-    }
-
-    public function testFindOne()
-    {
-        $entity = $this->createEntity("Simple", ["id" => 1, "text" => "foo"]);
-
-        $this->adapterMock->shouldReceive("findOne")
-            ->with("simple_resource", "id", $entity->id, [])
-            ->once()
-            ->andReturn(["id" => $entity->id, "text" => $entity->text]);
-
-        $this->adapterMock->shouldReceive("getMapping")
-            ->once()
-            ->andReturn(new UniMapper\Mapping);
-
-        $this->adapterMock->shouldReceive("getName")
-            ->once()
-            ->andReturn("FooAdapter");
-
-        $this->repository->registerAdapter($this->adapterMock);
-        $result = $this->repository->findOne($entity->id);
-
-        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $result);
-        Assert::same($entity->id, $result->id);
-        Assert::same($entity->text, $result->text);
-    }
-
-    public function testCount()
-    {
-        $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
-        $this->adapterMock->shouldReceive("getName")
-            ->once()
-            ->andReturn("FooAdapter");
-
-        $this->adapterMock->shouldReceive("count")
-            ->with("simple_resource", [["text", "LIKE", "foo", "AND"]])
-            ->once()
-            ->andReturn(2);
-
-        $this->repository->registerAdapter($this->adapterMock);
-
-        $result = $this->repository->count([["text", "LIKE", "foo"]]);
-        Assert::same(2, $result);
     }
 
 }

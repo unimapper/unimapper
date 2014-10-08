@@ -2,6 +2,7 @@
 
 use Tester\Assert,
     UniMapper\Query,
+    UniMapper\Association,
     UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
@@ -12,21 +13,31 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
     /** @var array $adapters */
     private $adapters = [];
 
+    /** @var \Mockery\Mock */
+    private $adapterQueryMock;
+
     public function setUp()
     {
-        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Tests\Fixtures\Adapter\Simple");
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
         $this->adapters["FooAdapter"]->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
 
-        $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Tests\Fixtures\Adapter\Simple");
+        $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter");
         $this->adapters["RemoteAdapter"]->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
+
+        $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $this->adapterQueryMock->shouldReceive("getRaw")->once();
     }
 
     public function testNoAssociations()
     {
         $entity = $this->createEntity("Simple", ["id" => 1]);
 
-        $this->adapters["FooAdapter"]->shouldReceive("findOne")
-            ->with("simple_resource", "id", 1, [])
+        $this->adapters["FooAdapter"]->shouldReceive("createFindOne")
+            ->with("simple_resource", "id", 1)
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]->shouldReceive("execute")
+            ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(["id" => 1]);
 
@@ -38,15 +49,20 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
 
     public function testAssociateManyToMany()
     {
-        $this->adapters["FooAdapter"]->shouldReceive("findOne")
+        $this->adapterQueryMock->shouldReceive("setAssociations")
             ->with(
-                "simple_resource",
-                "id",
-                1,
                 Mockery::on(function($arg) {
-                    return $arg["collection"] instanceof Reflection\Entity\Property\Association\ManyToMany;
+                    return $arg["collection"] instanceof Association\ManyToMany;
                 })
             )
+            ->once();
+
+        $this->adapters["FooAdapter"]->shouldReceive("createFindOne")
+            ->with("simple_resource", "id", 1)
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]->shouldReceive("execute")
+            ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(false);
 
@@ -56,16 +72,24 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
 
     public function testAssociateManyToManyRemote()
     {
-        $this->adapters["FooAdapter"]->shouldReceive("findOne")
-            ->with("simple_resource", "id", 1, [])
+        $this->adapters["FooAdapter"]->shouldReceive("createFindOne")
+            ->with("simple_resource", "id", 1)
             ->once()
-            ->andReturn(["id" => 1]);
-        $this->adapters["FooAdapter"]->shouldReceive("find")
-            ->with(
-                "simple_remote",
-                ['simpleId', 'remoteId'],
-                [["simpleId", "IN", [1], "AND"]]
-            )
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]->shouldReceive("execute")
+             ->once()
+             ->with($this->adapterQueryMock)
+             ->andReturn(["id" => 1]);
+
+        $this->adapterQueryMock->shouldReceive("setConditions")
+            ->with([["simpleId", "IN", [1], "AND"]])
+            ->once();
+        $this->adapters["FooAdapter"]->shouldReceive("createFind")
+            ->with("simple_remote", ['simpleId', 'remoteId'])
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]->shouldReceive("execute")
+            ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(
                 [
@@ -74,12 +98,15 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
                 ]
             );
 
-        $this->adapters["RemoteAdapter"]->shouldReceive("find")
-            ->with(
-                "remote_resource",
-                [],
-                [["id", "IN", [2, 3], "AND"]]
-            )
+        $this->adapters["RemoteAdapter"]->shouldReceive("createFind")
+            ->with("remote_resource")
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapterQueryMock->shouldReceive("setConditions")
+            ->with([["id", "IN", [2, 3], "AND"]])
+            ->once();
+        $this->adapters["RemoteAdapter"]->shouldReceive("execute")
+            ->with($this->adapterQueryMock)
             ->once()
             ->andReturn([["id" => 2], ["id" => 3]]);
 
@@ -94,17 +121,22 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
 
     public function testAssociateManyToOneRemote()
     {
-        $this->adapters["FooAdapter"]->shouldReceive("findOne")
-            ->with("simple_resource", "id", 1, [])
+        $this->adapters["FooAdapter"]->shouldReceive("createFindOne")
+            ->with("simple_resource", "id", 1)
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]->shouldReceive("execute")
+            ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(["id" => 1, "remoteId" => 2]);
 
-        $this->adapters["RemoteAdapter"]->shouldReceive("find")
-            ->with(
-                "remote_resource",
-                [],
-                [["id", "IN", [2], "AND"]]
-            )
+        $this->adapterQueryMock->shouldReceive("setConditions")->with([["id", "IN", [2], "AND"]])->once();
+        $this->adapters["RemoteAdapter"]->shouldReceive("createFind")
+            ->with("remote_resource")
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["RemoteAdapter"]->shouldReceive("execute")
+            ->with($this->adapterQueryMock)
             ->once()
             ->andReturn([["id" => 2]]);
 
@@ -117,17 +149,27 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
 
     public function testAssociateManyToManyRemoteNoDominance()
     {
-        $this->adapters["RemoteAdapter"]->shouldReceive("findOne")
-            ->with("remote_resource", "id", 1, [])
+        $this->adapters["RemoteAdapter"]->shouldReceive("createFindOne")
+            ->with("remote_resource", "id", 1)
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["RemoteAdapter"]->shouldReceive("execute")
+            ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(["id" => 1]);
 
-        $this->adapters["FooAdapter"]->shouldReceive("find")
+        $this->adapterQueryMock->shouldReceive("setConditions")
+            ->with([["remoteId", "IN", [1], "AND"]])
+            ->once();
+        $this->adapters["FooAdapter"]->shouldReceive("createFind")
             ->with(
                 "simple_remote",
-                ['remoteId', 'simpleId'],
-                [["remoteId", "IN", [1], "AND"]]
+                ['remoteId', 'simpleId']
             )
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]->shouldReceive("execute")
+            ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(
                 [
@@ -136,12 +178,15 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
                 ]
             );
 
-        $this->adapters["FooAdapter"]->shouldReceive("find")
-            ->with(
-                "simple_resource",
-                [],
-                [["id", "IN", [2, 3], "AND"]]
-            )
+        $this->adapters["FooAdapter"]->shouldReceive("createFind")
+            ->with("simple_resource")
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapterQueryMock->shouldReceive("setConditions")
+             ->with([["id", "IN", [2, 3], "AND"]])
+             ->once();
+        $this->adapters["FooAdapter"]->shouldReceive("execute")
+            ->with($this->adapterQueryMock)
             ->once()
             ->andReturn([["id" => 2], ["id" => 3]]);
 
