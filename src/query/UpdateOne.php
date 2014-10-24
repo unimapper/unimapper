@@ -49,7 +49,7 @@ class UpdateOne extends Conditionable
 
         $query = $adapter->createUpdateOne(
             $this->entityReflection->getAdapterReflection()->getResource(),
-            $this->entityReflection->getPrimaryProperty()->getMappedName(),
+            $this->entityReflection->getPrimaryProperty()->getName(true),
             $this->primaryValue,
             $values
         );

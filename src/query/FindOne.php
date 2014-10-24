@@ -39,7 +39,7 @@ class FindOne extends Selectable
 
         $query = $adapter->createFindOne(
             $this->entityReflection->getAdapterReflection()->getResource(),
-            $primaryProperty->getMappedName(),
+            $primaryProperty->getName(true),
             $this->primaryValue
         );
 
@@ -69,7 +69,7 @@ class FindOne extends Selectable
                     );
                 }
 
-                $refValue = $result[$primaryProperty->getMappedName()];
+                $refValue = $result[$primaryProperty->getName(true)];
 
                 if ($association instanceof ManyToMany) {
 

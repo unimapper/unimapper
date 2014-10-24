@@ -38,7 +38,7 @@ abstract class Association
     {
         return $this->propertyReflection->getEntityReflection()
             ->getPrimaryProperty()
-            ->getMappedName();
+            ->getName(true);
     }
 
     public function getTargetReflection()

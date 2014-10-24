@@ -40,7 +40,7 @@ abstract class Conditionable extends \UniMapper\Query
             );
         }
 
-        $this->conditions[] = [$property->getMappedName(), $operator, $value, $joiner];
+        $this->conditions[] = [$property->getName(true), $operator, $value, $joiner];
     }
 
     protected function addNestedConditions(\Closure $callback, $joiner = 'AND')

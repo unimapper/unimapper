@@ -66,7 +66,7 @@ abstract class Selectable extends Conditionable
                 [
                     $association->getTargetReflection()
                         ->getPrimaryProperty()
-                        ->getMappedName(),
+                        ->getName(true),
                     "IN",
                     $primaryValues,
                     "AND"
@@ -87,7 +87,7 @@ abstract class Selectable extends Conditionable
             [
                 $association->getTargetReflection()
                     ->getPrimaryProperty()
-                    ->getMappedName()
+                    ->getName(true)
             ]
         );
     }
@@ -206,7 +206,7 @@ abstract class Selectable extends Conditionable
                 [
                     $association->getTargetReflection()
                         ->getPrimaryProperty()
-                        ->getMappedName(),
+                        ->getName(true),
                     "IN",
                     $primaryValues,
                     "AND"
@@ -227,7 +227,7 @@ abstract class Selectable extends Conditionable
             [
                 $association->getTargetReflection()
                     ->getPrimaryProperty()
-                    ->getMappedName()
+                    ->getName(true)
             ]
         );
     }

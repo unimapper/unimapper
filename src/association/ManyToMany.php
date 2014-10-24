@@ -64,7 +64,7 @@ class ManyToMany extends Multi
 
     public function getForeignKey()
     {
-        return $this->targetReflection->getPrimaryProperty()->getMappedName();
+        return $this->targetReflection->getPrimaryProperty()->getName(true);
     }
 
     public function isDominant()

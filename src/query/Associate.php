@@ -103,7 +103,7 @@ class Associate extends \UniMapper\Query
 
             $adapterQuery = $adapter->createUpdateOne(
                 $this->entityReflection->getAdapterReflection()->getResource(),
-                $this->entityReflection->getPrimaryProperty()->getMappedName(),
+                $this->entityReflection->getPrimaryProperty()->getName(true),
                 $this->primaryValue,
                 [$this->association->getReferenceKey() => $this->association->getAttached()]
             );

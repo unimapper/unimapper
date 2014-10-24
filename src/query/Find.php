@@ -51,7 +51,7 @@ class Find extends Selectable
         }
 
         if (!array_search($name, $this->selection)) {
-            $this->selection[] = $property->getMappedName();
+            $this->selection[] = $property->getName(true);
         }
 
         return $this;
@@ -89,7 +89,7 @@ class Find extends Selectable
             throw new Exception\QueryException("Order direction must be 'asc' or 'desc'!");
         }
 
-        $this->orderBy[$this->entityReflection->getProperty($name)->getMappedName()] = $direction;
+        $this->orderBy[$this->entityReflection->getProperty($name)->getName(true)] = $direction;
         return $this;
     }
 
@@ -137,7 +137,7 @@ class Find extends Selectable
             settype($result, "array");
 
             $primaryPropertyName = $this->entityReflection->getPrimaryProperty()
-                ->getMappedName();
+                ->getName(true);
 
             foreach ($this->associations["remote"] as $colName => $association) {
 
@@ -270,7 +270,7 @@ class Find extends Selectable
         parent::addCondition($propertyName, $operator, $value, $joiner);
 
         // Add properties from conditions
-        $mappedName = $this->entityReflection->getProperty($propertyName)->getMappedName();
+        $mappedName = $this->entityReflection->getProperty($propertyName)->getName(true);
         if ($this->selection && !in_array($mappedName, $this->selection)
         ) {
             $this->selection[] = $mappedName;
@@ -295,14 +295,14 @@ class Find extends Selectable
             foreach ($this->entityReflection->getProperties() as $property) {
 
                 if (!$property->isAssociation() && !$property->isComputed()) {
-                    $selection[] = $property->getMappedName();
+                    $selection[] = $property->getName(true);
                 }
             }
         } else {
 
             $primaryName = $this->entityReflection
                 ->getPrimaryProperty()
-                ->getMappedName();
+                ->getName(true);
 
             // Add primary property automatically
             $selection = $this->selection;

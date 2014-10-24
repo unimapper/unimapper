@@ -134,25 +134,6 @@ class Property
     }
 
     /**
-     * Get property name
-     *
-     * @return string
-     *
-     * @throws \UniMapper\Exception\PropertyException
-     */
-    public function getName()
-    {
-        if ($this->name === null) {
-            throw new Exception\PropertyException(
-                "Property name is not set!",
-                $this->entityReflection,
-                $this->rawDefinition
-            );
-        }
-        return $this->name;
-    }
-
-    /**
      * Get entity reflection
      *
      * @return \UniMapper\Reflection\Entity
@@ -192,9 +173,16 @@ class Property
         return $this->enumeration;
     }
 
-    public function getMappedName()
+    /**
+     * Get property name
+     *
+     * @param bool $unmapped
+     *
+     * @return string
+     */
+    public function getName($unmapped = false)
     {
-        if ($this->mapping && $this->mapping->getName()) {
+        if ($unmapped && $this->mapping && $this->mapping->getName()) {
             return $this->mapping->getName();
         }
         return $this->name;

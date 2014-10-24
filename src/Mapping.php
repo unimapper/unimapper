@@ -118,7 +118,7 @@ class Mapping
             // Map property name if needed
             foreach ($entityReflection->getProperties() as $propertyReflection) {
 
-                if ($propertyReflection->getMappedName() === $index) {
+                if ($propertyReflection->getName(true) === $index) {
 
                     $propertyName = $propertyReflection->getName();
                     break;
@@ -159,7 +159,7 @@ class Mapping
                 continue;
             }
 
-            $output[$property->getMappedName()] = $this->unmapValue(
+            $output[$property->getName(true)] = $this->unmapValue(
                 $property,
                 $value
             );
