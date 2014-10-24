@@ -10,7 +10,7 @@ class QueryCountTest extends UniMapper\Tests\TestCase
     public function testCount()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $adapterQueryMock->shouldReceive("setConditions")->with([["id", "=", 1, "AND"]])->once();
+        $adapterQueryMock->shouldReceive("setConditions")->with([["simplePrimaryId", "=", 1, "AND"]])->once();
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $adapterMock = Mockery::mock("UniMapper\Adapter");

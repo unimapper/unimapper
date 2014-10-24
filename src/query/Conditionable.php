@@ -2,6 +2,8 @@
 
 namespace UniMapper\Query;
 
+use UniMapper\Exception\QueryException;
+
 abstract class Conditionable extends \UniMapper\Query
 {
 

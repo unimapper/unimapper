@@ -125,7 +125,7 @@ class QueryAssociateTest extends UniMapper\Tests\TestCase
     {
         $this->adapters["FooAdapter"]
             ->shouldReceive("createUpdateOne")
-            ->with("simple_resource", "id", 1, ["remoteId" => 2])
+            ->with("simple_resource", "simplePrimaryId", 1, ["remoteId" => 2])
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]

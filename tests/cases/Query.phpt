@@ -38,7 +38,7 @@ class QueryTest extends UniMapper\Tests\TestCase
 
         // where()
         $query->where("id", ">", 1);
-        $expectedConditions[] = ["id", ">", 1, "AND"];
+        $expectedConditions[] = ["simplePrimaryId", ">", 1, "AND"];
         Assert::same($expectedConditions, $query->conditions);
 
         // orWhere()
@@ -53,7 +53,7 @@ class QueryTest extends UniMapper\Tests\TestCase
         });
         $expectedConditions[] = [
             [
-                ['id', '<', 2, 'AND'],
+                ['simplePrimaryId', '<', 2, 'AND'],
                 ['text', 'LIKE', 'anotherFoo', 'OR']
             ],
             'AND'
@@ -67,7 +67,7 @@ class QueryTest extends UniMapper\Tests\TestCase
         });
         $expectedConditions[] = [
             [
-                ['id', '<', 5, 'AND'],
+                ['simplePrimaryId', '<', 5, 'AND'],
                 ['text', 'LIKE', 'yetAnotherFoo', 'OR'],
             ],
             'OR'
@@ -88,7 +88,7 @@ class QueryTest extends UniMapper\Tests\TestCase
         });
         $expectedConditions[] = [
             [
-                ['id', '=', 4, 'AND'],
+                ['simplePrimaryId', '=', 4, 'AND'],
                 [
                     [
                         ['text', 'LIKE', 'yetAnotherFoo2', 'AND'],

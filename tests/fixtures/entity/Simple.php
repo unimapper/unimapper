@@ -5,7 +5,7 @@ namespace UniMapper\Tests\Fixtures\Entity;
 /**
  * @adapter FooAdapter(simple_resource)
  *
- * @property       integer    $id               m:primary
+ * @property       integer    $id               m:map(name='simplePrimaryId') m:primary
  * @property       string     $text
  * @property       string     $empty
  * @property       string     $url              m:map(name='link')

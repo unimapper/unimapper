@@ -129,7 +129,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
         $this->adapterMock->shouldReceive("createUpdateOne")
             ->once()
-            ->with("simple_resource", "id", 2, ["text" => "foo"])
+            ->with("simple_resource", "simplePrimaryId", 2, ["text" => "foo"])
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("execute")
             ->once()
@@ -159,7 +159,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
         $this->repository->registerAdapter($this->adapterMock);
 
-        $entity = $this->createEntity("Simple", ["id" => null, "text" => "foo"]);
+        $entity = $this->createEntity("Simple", ["simplePrimaryId" => null, "text" => "foo"]);
         $entity->text = "foo";
         $this->repository->save($entity);
 
@@ -209,7 +209,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $this->adapterMock->shouldReceive("createDeleteOne")
-            ->with("simple_resource", "id", 1)
+            ->with("simple_resource", "simplePrimaryId", 1)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("execute")

@@ -82,7 +82,7 @@ abstract class Repository
 
             $primaryName = $entity->getReflection()
                 ->getPrimaryProperty()
-                ->getMappedName();
+                ->getName();
 
             if (empty($values[$primaryName])) {
                 unset($values[$primaryName]);
@@ -110,18 +110,6 @@ abstract class Repository
         }
 
         $values = $entity->getData();
-
-        // Prevent to change primary value
-        if ($entity->getReflection()->hasPrimaryProperty()) {
-
-            $primaryName = $entity->getReflection()
-                ->getPrimaryProperty()
-                ->getMappedName();
-
-            if (isset($values[$primaryName])) {
-                unset($values[$primaryName]);
-            }
-        }
 
         $this->query()->updateOne($primaryValue, $values)->execute();
         $this->_saveAssociations($primaryValue, $entity);
@@ -366,7 +354,7 @@ abstract class Repository
      *
      * @return \UniMapper\QueryBuilder
      *
-     * @throws \UniMapper\Excpetions\RepositoryException
+     * @throws \UniMapper\Exception\RepositoryException
      *
      * @todo should be private
      */

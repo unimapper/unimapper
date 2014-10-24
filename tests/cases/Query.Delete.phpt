@@ -30,7 +30,7 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
             ->andReturn($adapterQueryMock);
 
         $adapterQueryMock->shouldReceive("setConditions")
-            ->with([["id", "=", 1, "AND"]])
+            ->with([["simplePrimaryId", "=", 1, "AND"]])
             ->once();
         $adapterQueryMock->shouldReceive("getRaw")->once();
 

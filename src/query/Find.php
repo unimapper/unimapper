@@ -270,10 +270,10 @@ class Find extends Selectable
         parent::addCondition($propertyName, $operator, $value, $joiner);
 
         // Add properties from conditions
-        if (count($this->selection) > 0
-            && !in_array($propertyName, $this->selection)
+        $mappedName = $this->entityReflection->getProperty($propertyName)->getMappedName();
+        if ($this->selection && !in_array($mappedName, $this->selection)
         ) {
-            $this->selection[] = $propertyName;
+            $this->selection[] = $mappedName;
         }
     }
 

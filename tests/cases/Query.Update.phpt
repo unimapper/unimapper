@@ -34,7 +34,7 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $adapterQueryMock->shouldReceive("setConditions")
             ->once()
-            ->with([["id", "=", 1, "AND"]]);
+            ->with([["simplePrimaryId", "=", 1, "AND"]]);
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $this->adapters["FooAdapter"]->shouldReceive("createUpdate")
