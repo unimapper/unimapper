@@ -45,9 +45,11 @@ class DeleteOne extends \UniMapper\Query
             $this->primaryValue
         );
 
-        $adapter->execute($query);
+        $success = (bool) $adapter->execute($query);
 
         $this->adapterQueries[] = $query->getRaw();
+
+        return $success;
     }
 
 }

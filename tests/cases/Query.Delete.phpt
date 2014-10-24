@@ -37,11 +37,11 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
         $this->adapters["FooAdapter"]->shouldReceive("execute")
             ->with($adapterQueryMock)
             ->once()
-            ->andReturn(null);
+            ->andReturn("2");
 
         $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters);
         $query->where("id", "=", 1);
-        Assert::null($query->execute());
+        Assert::same(2, $query->execute());
     }
 
     /**

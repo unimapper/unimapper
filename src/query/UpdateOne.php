@@ -54,9 +54,11 @@ class UpdateOne extends Conditionable
             $values
         );
 
-        $adapter->execute($query);
+        $success = (bool) $adapter->execute($query);
 
         $this->adapterQueries[] = $query->getRaw();
+
+        return $success;
     }
 
 }

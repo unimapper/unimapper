@@ -45,11 +45,11 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
         $this->adapters["FooAdapter"]->shouldReceive("execute")
             ->once()
             ->with($adapterQueryMock)
-            ->andReturn("1");
+            ->andReturn("2");
 
         $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, ["text" => "foo", "oneToOne" => ["id" => 3]]);
         $query->where("id", "=", 1);
-        Assert::same(null, $query->execute());
+        Assert::same(2, $query->execute());
     }
 
 }

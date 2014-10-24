@@ -38,9 +38,12 @@ class Update extends Conditionable
             $values
         );
         $query->setConditions($this->conditions);
-        $adapter->execute($query);
+
+        $affectedCount = (int) $adapter->execute($query);
 
         $this->adapterQueries[] = $query->getRaw();
+
+        return $affectedCount;
     }
 
 }

@@ -133,7 +133,8 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("execute")
             ->once()
-            ->with($adapterQueryMock);
+            ->with($adapterQueryMock)
+            ->andReturn(true);
 
         $this->repository->registerAdapter($this->adapterMock);
 
@@ -141,6 +142,29 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         $this->repository->save($entity);
 
         Assert::same(2, $entity->id);
+    }
+
+    /**
+     * @throws UniMapper\Exception\RepositoryException Entity was not successfully updated!
+     */
+    public function testSaveUpdateFailed()
+    {
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("getRaw")->once();
+
+        $this->adapterMock->shouldReceive("createUpdateOne")
+            ->once()
+            ->with("simple_resource", "simplePrimaryId", 2, ["text" => "foo"])
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("execute")
+            ->once()
+            ->with($adapterQueryMock)
+            ->andReturn(false);
+
+        $this->repository->registerAdapter($this->adapterMock);
+
+        $entity = $this->createEntity("Simple", ["id" => 2, "text" => "foo"]);
+        $this->repository->save($entity);
     }
 
     public function testSaveInsert()
@@ -215,7 +239,30 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         $this->adapterMock->shouldReceive("execute")
             ->with($adapterQueryMock)
             ->once()
-            ->andReturn(null);
+            ->andReturn(true);
+
+        $this->repository->registerAdapter($this->adapterMock);
+
+        $entity = $this->createEntity("Simple", ["id" => 1]);
+        $this->repository->delete($entity);
+    }
+
+    /**
+     * @throws UniMapper\Exception\RepositoryException Entity was not successfully deleted!
+     */
+    public function testDeleteFailed()
+    {
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("getRaw")->once();
+
+        $this->adapterMock->shouldReceive("createDeleteOne")
+            ->with("simple_resource", "simplePrimaryId", 1)
+            ->once()
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("execute")
+            ->with($adapterQueryMock)
+            ->once()
+            ->andReturn(false);
 
         $this->repository->registerAdapter($this->adapterMock);
 

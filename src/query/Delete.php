@@ -19,9 +19,12 @@ class Delete extends Conditionable
             $this->entityReflection->getAdapterReflection()->getResource()
         );
         $query->setConditions($this->conditions);
-        $adapter->execute($query);
+
+        $affectedCount = (int) $adapter->execute($query);
 
         $this->adapterQueries[] = $query->getRaw();
+
+        return $affectedCount;
     }
 
 }

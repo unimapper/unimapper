@@ -111,7 +111,10 @@ abstract class Repository
 
         $values = $entity->getData();
 
-        $this->query()->updateOne($primaryValue, $values)->execute();
+        if (!$this->query()->updateOne($primaryValue, $values)->execute()) {
+            throw new RepositoryException("Entity was not successfully updated!");
+        }
+
         $this->_saveAssociations($primaryValue, $entity);
     }
 
@@ -147,7 +150,9 @@ abstract class Repository
 
         $primaryName = $reflection->getPrimaryProperty()->getName();
 
-        $this->query()->deleteOne($entity->{$primaryName})->execute();
+        if (!$this->query()->deleteOne($entity->{$primaryName})->execute()) {
+            throw new RepositoryException("Entity was not successfully deleted!");
+        }
     }
 
     public function count($filter = [])
