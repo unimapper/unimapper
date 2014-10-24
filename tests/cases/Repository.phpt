@@ -193,9 +193,9 @@ class RepositoryTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\RepositoryException Primary value in entity 'Simple' must be set!
+     * @throws UniMapper\Exception\QueryException Primary value can not be empty!
      */
-    public function testDeletNoPrimaryValue()
+    public function testDeleteNoPrimaryValue()
     {
         $this->repository->registerAdapter($this->adapterMock);
 
@@ -206,13 +206,10 @@ class RepositoryTest extends UniMapper\Tests\TestCase
     public function testDelete()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $adapterQueryMock->shouldReceive("setConditions")
-            ->with([["id", "=", 1, "AND"]])
-            ->once();
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
-        $this->adapterMock->shouldReceive("createDelete")
-            ->with("simple_resource")
+        $this->adapterMock->shouldReceive("createDeleteOne")
+            ->with("simple_resource", "id", 1)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("execute")

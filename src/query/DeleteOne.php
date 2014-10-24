@@ -24,6 +24,12 @@ class DeleteOne extends \UniMapper\Query
             );
         }
 
+        if (empty($primaryValue)) {
+            throw new Exception\QueryException(
+                "Primary value can not be empty!"
+            );
+        }
+
         $entityReflection->getPrimaryProperty()->validateValueType($primaryValue);
 
         $this->primaryValue = $primaryValue;

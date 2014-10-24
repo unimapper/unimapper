@@ -158,15 +158,8 @@ abstract class Repository
         }
 
         $primaryName = $reflection->getPrimaryProperty()->getName();
-        $primaryValue = $entity->{$primaryName};
-        if ($primaryValue === null) {
-            throw new RepositoryException(
-                "Primary value in entity '" . $this->getEntityName()
-                . "' must be set!"
-            );
-        }
 
-        $this->query()->delete()->where($primaryName, "=", $primaryValue)->execute();
+        $this->query()->deleteOne($entity->{$primaryName})->execute();
     }
 
     public function count($filter = [])
