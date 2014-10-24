@@ -2,7 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exception\QueryException;
+use UniMapper\Exception;
 
 abstract class Conditionable extends \UniMapper\Query
 {
@@ -19,11 +19,11 @@ abstract class Conditionable extends \UniMapper\Query
     protected function addCondition($name, $operator, $value, $joiner = 'AND')
     {
         if (!$this->entityReflection->hasProperty($name)) {
-            throw new QueryException("Invalid property name '" . $name . "'!");
+            throw new Exception\QueryException("Invalid property name '" . $name . "'!");
         }
 
         if ($operator !== null && !in_array($operator, $this->conditionOperators)) {
-            throw new QueryException(
+            throw new Exception\QueryException(
                 "Condition operator " . $operator . " not allowed! "
                 . "You can use one of the following "
                 . implode(" ", $this->conditionOperators) . "."
@@ -34,10 +34,24 @@ abstract class Conditionable extends \UniMapper\Query
         if ($property->isAssociation()
             || $property->isComputed()
         ) {
-            throw new QueryException(
+            throw new Exception\QueryException(
                 "Condition can not be called on associations and computed "
                 . "properties!"
             );
+        }
+
+        try {
+
+            if (is_array($value)) {
+
+                foreach ($value as $item) {
+                    $property->validateValueType($item);
+                }
+            } else {
+                $property->validateValueType($value);
+            }
+        } catch (Exception\PropertyValueException $e) {
+            throw new Exception\QueryException($e->getMessage());
         }
 
         $this->conditions[] = [$property->getName(true), $operator, $value, $joiner];
@@ -50,7 +64,7 @@ abstract class Conditionable extends \UniMapper\Query
         call_user_func($callback, $query);
 
         if (count($query->conditions) === 0) {
-            throw new QueryException(
+            throw new Exception\QueryException(
                 "Nested query must contain one condition at least!"
             );
         }
