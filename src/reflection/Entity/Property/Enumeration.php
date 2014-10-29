@@ -30,8 +30,6 @@ class Enumeration
         list(, $class, $prefix) = $definition;
         if ($class === 'self') {
             $constants = $entityReflection->getConstants();
-        } elseif ($class === 'parent') {
-            $constants = $entityReflection->getParent()->getConstants(); // @todo
         } elseif (class_exists($class)) {
             $aliases = $entityReflection->getAliases();
             $reflectionClass = new \ReflectionClass($aliases->map($class));

@@ -23,9 +23,6 @@ class Entity
     private $className;
 
     /** @var string */
-    private $parentClassName;
-
-    /** @var string */
     private $fileName;
 
     /** @var string */
@@ -81,10 +78,6 @@ class Entity
 
         $this->fileName = $reflection->getFileName();
         $this->docComment = $reflection->getDocComment();
-
-        // @todo undefined method, needs some refactoring
-        $this->parentClassName = $reflection->getParentClass()->name;
-
         $this->constants = $reflection->getConstants();
 
         foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC)
@@ -174,7 +167,7 @@ class Entity
             $annotations
         );
         $properties = [];
-        foreach ($annotations[1] as $index => $definition) {
+        foreach ($annotations[1] as $definition) {
 
             $property = new Entity\Property($definition, $this);
 
@@ -214,14 +207,6 @@ class Entity
             }
 
             $this->properties[$property->getName()] = $property;
-        }
-
-        // Include inherited doc comments too
-        if (stripos($this->docComment, "{@inheritDoc}") !== false) {
-            $this->properties = array_merge(
-                $this->properties,
-                $this->getEntityProperties($this->parentClassName)
-            ); // @todo broken
         }
     }
 
