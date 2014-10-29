@@ -139,6 +139,8 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         $this->repository->registerAdapter($this->adapterMock);
 
         $entity = $this->createEntity("Simple", ["id" => 2, "text" => "foo"]);
+        $entity->manyToMany[] = new Fixtures\Entity\Remote(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote")); // Associations are ignored
+
         $this->repository->save($entity);
 
         Assert::same(2, $entity->id);
@@ -185,6 +187,8 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
         $entity = $this->createEntity("Simple", ["simplePrimaryId" => null, "text" => "foo"]);
         $entity->text = "foo";
+        $entity->manyToMany[] = new Fixtures\Entity\Remote(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote")); // Associations are ignored
+
         $this->repository->save($entity);
 
         Assert::same(1, $entity->id);
