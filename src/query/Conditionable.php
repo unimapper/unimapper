@@ -8,9 +8,9 @@ abstract class Conditionable extends \UniMapper\Query
 {
 
     /** @var array */
-    protected $conditionOperators = [
+    private $operators = [
         "=", "<", ">", "<>", ">=", "<=", "IS", "IS NOT", "!=", "LIKE",
-        "COMPARE", "IN"
+        "COMPARE", "IN", "NOT IN"
     ];
 
     /** @var array */
@@ -22,27 +22,29 @@ abstract class Conditionable extends \UniMapper\Query
             throw new Exception\QueryException("Invalid property name '" . $name . "'!");
         }
 
-        if ($operator !== null && !in_array($operator, $this->conditionOperators)) {
+        if ($operator !== null && !in_array($operator, $this->operators)) {
             throw new Exception\QueryException(
                 "Condition operator " . $operator . " not allowed! "
                 . "You can use one of the following "
-                . implode(" ", $this->conditionOperators) . "."
+                . implode(" ", $this->operators) . "."
             );
         }
 
         $property = $this->entityReflection->getProperty($name);
         if ($property->isAssociation()
             || $property->isComputed()
+            || $property->isTypeCollection()
+            || $property->isTypeEntity()
         ) {
             throw new Exception\QueryException(
-                "Condition can not be called on associations and computed "
-                . "properties!"
+                "Conditions are not allwed on associations, computed, collections or entities!"
             );
         }
 
+        // Validate value type
         try {
 
-            if (is_array($value)) {
+            if (is_array($value) && $property->getType() !== "array") {
 
                 foreach ($value as $item) {
                     $property->validateValueType($item);
@@ -54,7 +56,14 @@ abstract class Conditionable extends \UniMapper\Query
             throw new Exception\QueryException($e->getMessage());
         }
 
-        $this->conditions[] = [$property->getName(true), $operator, $value, $joiner];
+        $this->conditions[] = [
+            $property->getName(true),
+            $operator,
+            $this->adapters[$this->entityReflection->getAdapterReflection()->getName()]
+                ->getMapping()
+                ->unmapValue($property, $value),
+            $joiner
+        ];
     }
 
     protected function addNestedConditions(\Closure $callback, $joiner = 'AND')
