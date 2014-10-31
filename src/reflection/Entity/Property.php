@@ -439,9 +439,7 @@ class Property
         $expectedType = $this->type;
 
         // Enumeration
-        if ($this->enumeration !== null
-            && !$this->enumeration->isValueFromEnum($value)
-        ) {
+        if ($this->enumeration && !$this->enumeration->isValid($value)) {
             throw new Exception\PropertyValueException(
                 "Value " . $value . " is not from defined entity enumeration "
                 . "range on property " . $this->name . "!",

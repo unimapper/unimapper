@@ -60,7 +60,7 @@ class Enumeration
      *
      * @return boolean
      */
-    public function isValueFromEnum($value)
+    public function isValid($value)
     {
         return isset($this->index[$value]);
     }
