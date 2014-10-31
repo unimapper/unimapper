@@ -111,11 +111,19 @@ class QueryConditionableTest extends UniMapper\Tests\TestCase
     }
 
     /**
+     * @throws UniMapper\Exception\QueryException Value must be type array when using operator IN or NOT IN!
+     */
+    public function testInvalidIn()
+    {
+        $this->createConditionableQuery()->where("id", "IN", true);
+    }
+
+    /**
      * @throws UniMapper\Exception\QueryException Expected integer but boolean given on property id!
      */
     public function testInvalidValueType()
     {
-        $query = $this->createConditionableQuery()->where("id", "IN", true);
+        $this->createConditionableQuery()->where("id", "=", true);
     }
 
     /**
@@ -123,7 +131,7 @@ class QueryConditionableTest extends UniMapper\Tests\TestCase
      */
     public function testInvalidValueTypeInArray()
     {
-        $query = $this->createConditionableQuery()->where("id", "IN", ["test", 1]);
+        $this->createConditionableQuery()->where("id", "IN", ["test", 1]);
     }
 
 }

@@ -8,7 +8,7 @@ abstract class Conditionable extends \UniMapper\Query
 {
 
     /** @var array */
-    private $operators = [
+    protected $operators = [
         "=", "<", ">", "<>", ">=", "<=", "IS", "IS NOT", "!=", "LIKE",
         "COMPARE", "IN", "NOT IN"
     ];
@@ -37,20 +37,34 @@ abstract class Conditionable extends \UniMapper\Query
             || $property->isTypeEntity()
         ) {
             throw new Exception\QueryException(
-                "Conditions are not allwed on associations, computed, collections or entities!"
+                "Conditions are not allowed on associations, computed, collections or entities!"
             );
+        }
+
+        if (($operator === "IN" || $operator === "NOT IN") && !is_array($value)) {
+            throw new Exception\QueryException("Value must be type array when using operator IN or NOT IN!");
         }
 
         // Validate value type
         try {
 
-            if (is_array($value) && $property->getType() !== "array") {
+            if ((is_array($value) && $property->getType() !== "array")
+                && ($operator === "IN" || $operator === "NOT IN")
+            ) {
 
-                foreach ($value as $item) {
+                foreach ($value as $index => $item) {
+
                     $property->validateValueType($item);
+                    $value[$index] = $this->adapters[$this->entityReflection->getAdapterReflection()->getName()]
+                        ->getMapping()
+                        ->unmapValue($property, $item);
                 }
-            } else {
+            } elseif (!in_array($operator, ["IS", "IS NOT"]) && $value !== null) {
+
                 $property->validateValueType($value);
+                $value = $this->adapters[$this->entityReflection->getAdapterReflection()->getName()]
+                    ->getMapping()
+                    ->unmapValue($property, $value);
             }
         } catch (Exception\PropertyValueException $e) {
             throw new Exception\QueryException($e->getMessage());
@@ -59,9 +73,7 @@ abstract class Conditionable extends \UniMapper\Query
         $this->conditions[] = [
             $property->getName(true),
             $operator,
-            $this->adapters[$this->entityReflection->getAdapterReflection()->getName()]
-                ->getMapping()
-                ->unmapValue($property, $value),
+            $value,
             $joiner
         ];
     }
