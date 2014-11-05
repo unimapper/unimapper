@@ -13,7 +13,7 @@ class FindOne extends Selectable
 {
 
     /** @var mixed */
-    public $primaryValue;
+    protected $primaryValue;
 
     public function __construct(
         Reflection\Entity $entityReflection,

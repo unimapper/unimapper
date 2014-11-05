@@ -9,7 +9,7 @@ class DeleteOne extends \UniMapper\Query
 {
 
     /** @var mixed */
-    public $primaryValue;
+    protected $primaryValue;
 
     public function __construct(
         Reflection\Entity $entityReflection,
