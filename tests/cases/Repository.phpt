@@ -251,9 +251,6 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         $this->repository->delete($entity);
     }
 
-    /**
-     * @throws UniMapper\Exception\RepositoryException Entity was not successfully deleted!
-     */
     public function testDeleteFailed()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
@@ -271,7 +268,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         $this->repository->registerAdapter($this->adapterMock);
 
         $entity = $this->createEntity("Simple", ["id" => 1]);
-        $this->repository->delete($entity);
+        Assert::false($this->repository->delete($entity));
     }
 
 }

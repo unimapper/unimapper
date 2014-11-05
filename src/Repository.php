@@ -130,7 +130,7 @@ abstract class Repository
      *
      * @param \UniMapper\Entity $entity
      *
-     * @throws RepositoryException
+     * @return boolean
      */
     public function delete(Entity $entity)
     {
@@ -150,9 +150,7 @@ abstract class Repository
 
         $primaryName = $reflection->getPrimaryProperty()->getName();
 
-        if (!$this->query()->deleteOne($entity->{$primaryName})->execute()) {
-            throw new RepositoryException("Entity was not successfully deleted!");
-        }
+        return $this->query()->deleteOne($entity->{$primaryName})->execute();
     }
 
     public function count($filter = [])
