@@ -49,7 +49,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\RepositoryException Registered custom query must be instance of Unimapper\Query\Custom!
+     * @throws UniMapper\Exception\InvalidArgumentException Registered custom query must be instance of Unimapper\Query\Custom!
      */
     public function testRegisterCustomQueryFailed()
     {

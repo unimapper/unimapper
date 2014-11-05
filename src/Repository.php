@@ -2,8 +2,7 @@
 
 namespace UniMapper;
 
-use UniMapper\Exception\RepositoryException,
-    UniMapper\NamingConvention as NC,
+use UniMapper\NamingConvention as NC,
     UniMapper\Cache\ICache,
     UniMapper\Reflection;
 
@@ -18,10 +17,10 @@ abstract class Repository
     /** @var array $adapters Registered adapters */
     private $adapters = [];
 
-    /** @var \UniMapper\Logger $logger */
+    /** @var Logger $logger */
     private $logger;
 
-    /** @var \UniMapper\Cache\ICache $cache */
+    /** @var Cache\ICache $cache */
     private $cache;
 
     /** @var array $customQueries Registered custom queries */
@@ -30,22 +29,22 @@ abstract class Repository
     /**
      * Insert/update entity
      *
-     * @param \UniMapper\Entity $entity
+     * @param Entity $entity
      *
-     * @throws RepositoryException
+     * @throws Exception\RepositoryException
      */
     public function save(Entity $entity)
     {
         $requiredClass = NC::nameToClass($this->getEntityName(), NC::$entityMask);
         if (!$entity instanceof $requiredClass) {
-            throw new RepositoryException(
+            throw new Exception\RepositoryException(
                 "Entity must be instance of ". $requiredClass . "!"
             );
         }
 
         $reflection = $entity->getReflection();
         if (!$reflection->hasPrimaryProperty()) {
-            throw new RepositoryException(
+            throw new Exception\RepositoryException(
                 "Can not save entity without primary property!"
             );
         }
@@ -63,7 +62,7 @@ abstract class Repository
     /**
      * Create a new record
      *
-     * @param \UniMapper\Entity $entity
+     * @param Entity $entity
      *
      * @return mixed
      *
@@ -89,7 +88,12 @@ abstract class Repository
             }
         }
 
-        $primaryValue = $this->query()->insert($values)->execute();
+        try {
+            $primaryValue = $this->query()->insert($values)->execute();
+        } catch (Exception\QueryException $e) {
+            throw new Exception\RepositoryException($e->getMessage());
+        }
+
         $this->_saveAssociations($primaryValue, $entity);
 
         return $primaryValue;
@@ -98,8 +102,8 @@ abstract class Repository
     /**
      * Update record
      *
-     * @param \UniMapper\Entity $entity
-     * @param mixed             $primaryValue
+     * @param Entity $entity
+     * @param mixed  $primaryValue
      *
      * @throws Exception\ValidatorException
      */
@@ -111,8 +115,13 @@ abstract class Repository
 
         $values = $entity->getData();
 
-        if (!$this->query()->updateOne($primaryValue, $values)->execute()) {
-            throw new RepositoryException("Entity was not successfully updated!");
+        try {
+
+            if (!$this->query()->updateOne($primaryValue, $values)->execute()) {
+                throw new Exception\RepositoryException("Entity was not successfully updated!");
+            }
+        } catch (Exception\QueryException $e) {
+            throw new Exception\RepositoryException($e->getMessage());
         }
 
         $this->_saveAssociations($primaryValue, $entity);
@@ -128,7 +137,7 @@ abstract class Repository
     /**
      * Delete single entity
      *
-     * @param \UniMapper\Entity $entity
+     * @param Entity $entity
      *
      * @return boolean
      */
@@ -136,14 +145,14 @@ abstract class Repository
     {
         $requiredClass = NC::nameToClass($this->getEntityName(), NC::$entityMask);
         if (!$entity instanceof $requiredClass) {
-            throw new RepositoryException(
+            throw new Exception\RepositoryException(
                 "Entity must be instance of ". $requiredClass . "!"
             );
         }
 
         $reflection = $entity->getReflection();
         if (!$reflection->hasPrimaryProperty()) {
-            throw new RepositoryException(
+            throw new Exception\RepositoryException(
                 "Can not delete entity without primary property!"
             );
         }
@@ -170,7 +179,7 @@ abstract class Repository
      * @param mixed  $values Iterable value like array or stdClass object
      * @param string $name   Entity name, default is current related entity
      *
-     * @return \UniMapper\Entity
+     * @return Entity
      */
     public function createEntity($values = null, $name = null)
     {
@@ -188,7 +197,7 @@ abstract class Repository
      *
      * @param string $name Entity name, default is current related entity
      *
-     * @return \UniMapper\Entity
+     * @return Entity
      */
     public function createCollection($values = null, $name = null)
     {
@@ -252,14 +261,14 @@ abstract class Repository
      *
      * @param string $name Adapter name
      *
-     * @return \UniMapper\Adapter
+     * @return Adapter
      *
-     * @throws RepositoryException
+     * @throws Exception\InvalidArgumentException
      */
     protected function getAdapter($name)
     {
         if (!isset($this->adapters[$name])) {
-            throw new RepositoryException("Adapter '" . $name . "' not found!");
+            throw new Exception\InvalidArgumentException("Adapter '" . $name . "' not found in " . get_called_class() . "!");
         }
         return $this->adapters[$name];
     }
@@ -331,9 +340,8 @@ abstract class Repository
 
     public function registerCustomQuery($class)
     {
-        $class = (string) $class;
         if (!is_subclass_of($class, "UniMapper\Query\Custom")) {
-            throw new RepositoryException(
+            throw new Exception\InvalidArgumentException(
                 "Registered custom query must be instance of Unimapper\Query\Custom!"
             );
         }
@@ -343,7 +351,7 @@ abstract class Repository
     /**
      * Query on entity related to actual repository
      *
-     * @return \UniMapper\QueryBuilder
+     * @return QueryBuilder
      */
     public function query()
     {
@@ -355,9 +363,9 @@ abstract class Repository
      *
      * @param $name Entity name
      *
-     * @return \UniMapper\QueryBuilder
+     * @return QueryBuilder
      *
-     * @throws \UniMapper\Exception\RepositoryException
+     * @throws Exception\RepositoryException
      *
      * @todo should be private
      */
@@ -365,7 +373,7 @@ abstract class Repository
     {
         $entityClass = NC::nameToClass($name, NC::$entityMask);
         if (!is_subclass_of($entityClass, "UniMapper\Entity")) {
-            throw new RepositoryException(
+            throw new Exception\InvalidArgumentException(
                 "Entity with name '" . $name . "' and class '" . $entityClass
                 . "' not found!"
             );
