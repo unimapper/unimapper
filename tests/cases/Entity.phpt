@@ -238,7 +238,7 @@ class EntityTest extends UniMapper\Tests\TestCase
      */
     public function testImportInvalidDateTime()
     {
-        $this->entity->import(["time" => []]);
+        $this->entity->import(["time" => "1"]);
     }
 
     public function testImportSkippedAutomatically()
