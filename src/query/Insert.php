@@ -22,16 +22,9 @@ class Insert extends \UniMapper\Query
 
     protected function onExecute(\UniMapper\Adapter $adapter)
     {
-        $values = $adapter->getMapping()->unmapEntity($this->entity);
-
-        // Values can not be empty
-        if (empty($values)) {
-            throw new Exception\QueryException("Nothing to insert!");
-        }
-
         $query = $adapter->createInsert(
             $this->entityReflection->getAdapterReflection()->getResource(),
-            $values
+            $adapter->getMapping()->unmapEntity($this->entity)
         );
 
         $primaryValue = $adapter->execute($query);
@@ -40,11 +33,6 @@ class Insert extends \UniMapper\Query
 
         if ($this->entityReflection->hasPrimaryProperty()) {
 
-            if ($primaryValue === null) {
-                throw new Exception\QueryException(
-                    "Insert should return primary value but null given!"
-                );
-            }
             return $adapter->getMapping()->mapValue(
                 $this->entityReflection->getPrimaryProperty(),
                 $primaryValue

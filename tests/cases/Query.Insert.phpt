@@ -10,25 +10,28 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
     /** @var \Mockery\Mock */
     private $adapterMock;
 
+    /** @var \Mockery\Mock */
+    private $adapterQueryMock;
+
     public function setUp()
     {
         $this->adapterMock = Mockery::mock("UniMapper\Adapter");
         $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
+
+        $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $this->adapterQueryMock->shouldReceive("getRaw")->once();
     }
 
     public function testSuccess()
     {
-        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $adapterQueryMock->shouldReceive("getRaw")->once();
-
         $this->adapterMock->shouldReceive("createInsert")
             ->once()
             ->with("simple_resource", ['text'=>'foo'])
-            ->andReturn($adapterQueryMock);
+            ->andReturn($this->adapterQueryMock);
 
         $this->adapterMock->shouldReceive("execute")
             ->once()
-            ->with($adapterQueryMock)
+            ->with($this->adapterQueryMock)
             ->andReturn("1");
 
         $query = new \UniMapper\Query\Insert(
@@ -39,9 +42,6 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
         Assert::same(1, $query->execute());
     }
 
-    /**
-     * @throws Exception Nothing to insert!
-     */
     public function testNoValues()
     {
         $query = new \UniMapper\Query\Insert(
@@ -49,7 +49,18 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
             ["FooAdapter" => $this->adapterMock],
             []
         );
-        $query->execute();
+
+        $this->adapterMock->shouldReceive("createInsert")
+            ->once()
+            ->with("simple_resource", [])
+            ->andReturn($this->adapterQueryMock);
+
+        $this->adapterMock->shouldReceive("execute")
+            ->once()
+            ->with($this->adapterQueryMock)
+            ->andReturn("1");
+
+        Assert::same(1, $query->execute());
     }
 
 }
