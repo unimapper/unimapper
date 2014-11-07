@@ -113,11 +113,9 @@ abstract class Repository
             throw new Exception\ValidatorException($entity->getValidator());
         }
 
-        $values = $entity->getData();
-
         try {
 
-            if (!$this->query()->updateOne($primaryValue, $values)->execute()) {
+            if (!$this->query()->updateOne($primaryValue, $entity->getData())->execute()) {
                 throw new Exception\RepositoryException("Entity was not successfully updated!");
             }
         } catch (Exception\QueryException $e) {
