@@ -2,8 +2,6 @@
 
 namespace UniMapper;
 
-use UniMapper\Reflection;
-
 /**
  * @method \UniMapper\Query\Associate associate($primaryValue, Association $association)
  * @method \UniMapper\Query\Find      find()
@@ -18,17 +16,14 @@ use UniMapper\Reflection;
 class QueryBuilder
 {
 
-    /** @var \UniMapper\Reflection\Entity */
-    protected $entityReflection;
-
     /** @var array */
     protected $adapters = [];
 
-    /** @var \UniMapper\Logger */
-    protected $logger;
+    /** @var array $created Created queries  */
+    protected $created = [];
 
-    /** @var \UniMapper\Cache\ICache */
-    protected $cache;
+    /** @var EntityFactory */
+    protected $entityFactory;
 
     /** @var array */
     protected $queries = [
@@ -44,16 +39,10 @@ class QueryBuilder
         "updateOne" => "UniMapper\Query\UpdateOne"
     ];
 
-    public function __construct(
-        Reflection\Entity $entityReflection,
-        array $adapters,
-        Cache\ICache $cache = null,
-        Logger $logger = null
-    ) {
-        $this->entityReflection = $entityReflection;
+    public function __construct(EntityFactory $entityFactory, array $adapters)
+    {
+        $this->entityFactory = $entityFactory;
         $this->adapters = $adapters;
-        $this->cache = $cache;
-        $this->logger = $logger;
     }
 
     public function __call($name, $arguments)
@@ -64,25 +53,46 @@ class QueryBuilder
             );
         }
 
-        array_unshift($arguments, $this->entityReflection, $this->adapters);
+        if (!isset($arguments[0])) {
+            throw new Exception\InvalidArgumentException(
+                "You must pass queried entity name!"
+            );
+        }
+        $entityReflection = $this->entityFactory->getEntityReflection($arguments[0]);
+
+        unset($arguments[0]);
+        array_unshift($arguments, $entityReflection, $this->adapters);
 
         $class = new \ReflectionClass($this->queries[$name]);
         $query = $class->newInstanceArgs($arguments);
 
-        if ($this->cache) {
-            $query->setCache($this->cache);
+        if ($this->entityFactory->getCache()) {
+            $query->setCache($this->entityFactory->getCache());
         }
 
-        if ($this->logger) {
-            $this->logger->logQuery($query);
-        }
+        $this->created[] = $query;
 
         return $query;
     }
 
-    public function registerQuery($class)
+    /**
+     * Register custom query
+     *
+     * @param string $class
+     */
+    public function register($class)
     {
         $this->queries[$class::getName()] = $class;
+    }
+
+    public function getEntityFactory()
+    {
+        return $this->entityFactory;
+    }
+
+    public function getCreated()
+    {
+        return $this->created;
     }
 
 }

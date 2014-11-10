@@ -1,8 +1,7 @@
 <?php
 
 use Tester\Assert,
-    UniMapper\Tests\Fixtures,
-    UniMapper\Cache\ICache;
+    UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -17,11 +16,11 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->repository = new Fixtures\Repository\SimpleRepository;
-
         $this->adapterMock = Mockery::mock("UniMapper\Adapter");
         $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
         $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
+
+        $this->repository = $this->createRepository("Simple", ["FooAdapter" => $this->adapterMock]);
     }
 
     public function testGetName()
@@ -32,94 +31,6 @@ class RepositoryTest extends UniMapper\Tests\TestCase
     public function testGetEntityName()
     {
         Assert::same("Simple", $this->repository->getEntityName());
-    }
-
-    public function testQuery()
-    {
-        $this->repository->registerAdapter($this->adapterMock);
-        Assert::type("UniMapper\QueryBuilder", $this->repository->query());
-    }
-
-    public function testRegisterCustomQuery()
-    {
-        $this->repository->registerCustomQuery("UniMapper\Tests\Fixtures\Query\Custom");
-        $this->repository->registerAdapter($this->adapterMock);
-
-        Assert::same("foo", $this->repository->query()->custom()->execute());
-    }
-
-    /**
-     * @throws UniMapper\Exception\InvalidArgumentException Registered custom query must be instance of Unimapper\Query\Custom!
-     */
-    public function testRegisterCustomQueryFailed()
-    {
-        $this->repository->registerCustomQuery("UniMapper\Query\Find");
-    }
-
-    public function testCreateEntity()
-    {
-        // Autodetect entity
-        $entity = $this->repository->createEntity(
-            ["text" => "foo", "publicProperty" => "foo"]
-        );
-        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity);
-        Assert::same("foo", $entity->text);
-        Assert::same("foo", $entity->publicProperty);
-
-        // Force entity
-        $nestedEntity = $this->repository->createEntity(
-            ["text" => "foo"],
-            "Nested"
-        );
-        Assert::type("UniMapper\Tests\Fixtures\Entity\Nested", $nestedEntity);
-        Assert::same("foo", $nestedEntity->text);
-    }
-
-    public function testCreateEntityFromCache()
-    {
-        $simpleRef = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Simple");
-        $nestedRef = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Nested");
-        $remoteRef = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Remote");
-
-        $cacheMock = Mockery::mock("UniMapper\Tests\Fixtures\Cache\CustomCache");
-        $cacheMock->shouldReceive("load")->with("UniMapper\Tests\Fixtures\Entity\Simple")->andReturn(false);
-        $cacheMock->shouldReceive("save")->with(
-            "UniMapper\Tests\Fixtures\Entity\Simple",
-            Mockery::type("UniMapper\Reflection\Entity"),
-            [
-                ICache::FILES => [
-                    $simpleRef->getFileName(),
-                    $nestedRef->getFileName(),
-                    $remoteRef->getFileName()
-                ],
-                ICache::TAGS => [ICache::TAG_REFLECTION]
-            ]
-        );
-
-        $this->repository->setCache($cacheMock);
-        $this->repository->createEntity();
-    }
-
-    public function testCreateCollection()
-    {
-        // Autodetect entity
-        $collection = $this->repository->createCollection(
-            [["text" => "foo", "publicProperty" => "foo"]]
-        );
-        Assert::type("UniMapper\EntityCollection", $collection);
-        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $collection[0]);
-        Assert::same("foo", $collection[0]->text);
-        Assert::same("foo", $collection[0]->publicProperty);
-
-        // Force entity
-        $nestedCollection = $this->repository->createCollection(
-            [["text" => "foo"]],
-            "Nested"
-        );
-
-        Assert::type("UniMapper\EntityCollection", $nestedCollection);
-        Assert::type("UniMapper\Tests\Fixtures\Entity\Nested", $nestedCollection[0]);
-        Assert::same("foo", $nestedCollection[0]->text);
     }
 
     public function testSaveUpdate()
@@ -135,8 +46,6 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->once()
             ->with($adapterQueryMock)
             ->andReturn(true);
-
-        $this->repository->registerAdapter($this->adapterMock);
 
         $entity = $this->createEntity("Simple", ["id" => 2, "text" => "foo"]);
         $entity->manyToMany[] = new Fixtures\Entity\Remote(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote")); // Associations are ignored
@@ -163,8 +72,6 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->with($adapterQueryMock)
             ->andReturn(false);
 
-        $this->repository->registerAdapter($this->adapterMock);
-
         $entity = $this->createEntity("Simple", ["id" => 2, "text" => "foo"]);
         $this->repository->save($entity);
     }
@@ -182,8 +89,6 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->once()
             ->with($adapterQueryMock)
             ->andReturn(["id" => 1]);
-
-        $this->repository->registerAdapter($this->adapterMock);
 
         $entity = $this->createEntity("Simple", ["simplePrimaryId" => null, "text" => "foo"]);
         $entity->text = "foo";
@@ -225,8 +130,6 @@ class RepositoryTest extends UniMapper\Tests\TestCase
      */
     public function testDeleteNoPrimaryValue()
     {
-        $this->repository->registerAdapter($this->adapterMock);
-
         $entity = $this->createEntity("Simple");
         $this->repository->delete($entity);
     }
@@ -245,8 +148,6 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn(true);
 
-        $this->repository->registerAdapter($this->adapterMock);
-
         $entity = $this->createEntity("Simple", ["id" => 1]);
         $this->repository->delete($entity);
     }
@@ -264,8 +165,6 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->with($adapterQueryMock)
             ->once()
             ->andReturn(false);
-
-        $this->repository->registerAdapter($this->adapterMock);
 
         $entity = $this->createEntity("Simple", ["id" => 1]);
         Assert::false($this->repository->delete($entity));

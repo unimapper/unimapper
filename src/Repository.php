@@ -2,29 +2,18 @@
 
 namespace UniMapper;
 
-use UniMapper\NamingConvention as NC,
-    UniMapper\Cache\ICache,
-    UniMapper\Reflection;
+use UniMapper\NamingConvention as UNC;
 
-/**
- * Repository is ancestor for every new repository. It contains common
- * parameters or methods used in its descendants. Repository is intended as a
- * mediator between your application and current adapters.
- */
 abstract class Repository
 {
 
-    /** @var array $adapters Registered adapters */
-    private $adapters = [];
+    /** @var QueryBuilder */
+    private $queryBuilder;
 
-    /** @var Logger $logger */
-    private $logger;
-
-    /** @var Cache\ICache $cache */
-    private $cache;
-
-    /** @var array $customQueries Registered custom queries */
-    private $customQueries = [];
+    public function __construct(QueryBuilder $queryBuilder)
+    {
+        $this->queryBuilder = $queryBuilder;
+    }
 
     /**
      * Insert/update entity
@@ -35,7 +24,7 @@ abstract class Repository
      */
     public function save(Entity $entity)
     {
-        $requiredClass = NC::nameToClass($this->getEntityName(), NC::$entityMask);
+        $requiredClass = UNC::nameToClass($this->getEntityName(), UNC::$entityMask);
         if (!$entity instanceof $requiredClass) {
             throw new Exception\RepositoryException(
                 "Entity must be instance of ". $requiredClass . "!"
@@ -128,7 +117,7 @@ abstract class Repository
     private function _saveAssociations($primaryValue, Entity $entity)
     {
         foreach ($entity->getAssociated() as $association) {
-            $this->query()->associate($primaryValue, $association)->execute();
+            $this->query("associate", $primaryValue, $association)->execute();
         }
     }
 
@@ -141,7 +130,7 @@ abstract class Repository
      */
     public function delete(Entity $entity)
     {
-        $requiredClass = NC::nameToClass($this->getEntityName(), NC::$entityMask);
+        $requiredClass = UNC::nameToClass($this->getEntityName(), UNC::$entityMask);
         if (!$entity instanceof $requiredClass) {
             throw new Exception\RepositoryException(
                 "Entity must be instance of ". $requiredClass . "!"
@@ -169,58 +158,6 @@ abstract class Repository
         }
 
         return $query->execute();
-    }
-
-    /**
-     * Create new entity
-     *
-     * @param mixed  $values Iterable value like array or stdClass object
-     * @param string $name   Entity name, default is current related entity
-     *
-     * @return Entity
-     */
-    public function createEntity($values = null, $name = null)
-    {
-        if ($name === null) {
-            $name = $this->getName();
-        }
-
-        return $this->getEntityReflection(
-            NC::nameToClass($name, NC::$entityMask)
-        )->createEntity($values);
-    }
-
-    /**
-     * Create new entity collection
-     *
-     * @param string $name Entity name, default is current related entity
-     *
-     * @return Entity
-     */
-    public function createCollection($values = null, $name = null)
-    {
-        // Get entity class
-        if ($name === null) {
-            $name = $this->getName();
-        }
-        $class = NC::nameToClass($name, NC::$entityMask);
-
-        // Create empty collection
-        $collection = new EntityCollection($this->getEntityReflection($class));
-
-        // Add values
-        if ($values) {
-
-            foreach ($values as $item) {
-
-                if (!$item instanceof $class) {
-                    $item = $this->createEntity($item, $name);
-                }
-                $collection[] = $item;
-            }
-        }
-
-        return $collection;
     }
 
     public function find(array $filter = [], array $orderBy = [], $limit = 0,
@@ -255,23 +192,6 @@ abstract class Repository
     }
 
     /**
-     * Get registered adapter
-     *
-     * @param string $name Adapter name
-     *
-     * @return Adapter
-     *
-     * @throws Exception\InvalidArgumentException
-     */
-    protected function getAdapter($name)
-    {
-        if (!isset($this->adapters[$name])) {
-            throw new Exception\InvalidArgumentException("Adapter '" . $name . "' not found in " . get_called_class() . "!");
-        }
-        return $this->adapters[$name];
-    }
-
-    /**
      * Get related entity name
      *
      * @return string
@@ -281,121 +201,22 @@ abstract class Repository
         return $this->getName();
     }
 
-    /**
-     * Get entity reflection
-     *
-     * @param string $class
-     */
-    protected function getEntityReflection($class = null)
-    {
-        if ($class === null) {
-            $class = NC::nameToClass($this->getName(), NC::$repositoryMask);
-        }
-
-        if ($this->cache) {
-
-            $reflection = $this->cache->load($class);
-            if (!$reflection) {
-
-                $reflection = new Reflection\Entity($class);
-
-                $this->cache->save(
-                    $class,
-                    $reflection,
-                    [
-                        ICache::FILES => $reflection->getRelatedFiles(
-                            [$reflection->getFileName()]
-                        ),
-                        ICache::TAGS => [ICache::TAG_REFLECTION]
-                    ]
-                );
-            }
-            return $reflection;
-        }
-
-        return $reflection = new Reflection\Entity($class);
-    }
-
     public function getName()
     {
-        return NC::classToName(get_called_class(), NC::$repositoryMask);
-    }
-
-    public function setCache(Cache\ICache $cache)
-    {
-        $this->cache = $cache;
-    }
-
-    public function setLogger(\UniMapper\Logger $logger)
-    {
-        $this->logger = $logger;
-    }
-
-    public function registerAdapter(\UniMapper\Adapter $adapter)
-    {
-        $this->adapters[$adapter->getName()] = $adapter;
-    }
-
-    public function registerCustomQuery($class)
-    {
-        if (!is_subclass_of($class, "UniMapper\Query\Custom")) {
-            throw new Exception\InvalidArgumentException(
-                "Registered custom query must be instance of Unimapper\Query\Custom!"
-            );
-        }
-        $this->customQueries[] = $class;
+        return UNC::classToName(get_called_class(), UNC::$repositoryMask);
     }
 
     /**
      * Query on entity related to actual repository
      *
-     * @return QueryBuilder
+     * @return Query
      */
-    public function query()
+    protected function query()
     {
-        return $this->queryOn($this->getEntityName());
-    }
-
-    /**
-     * Create custom query on specific entity
-     *
-     * @param $name Entity name
-     *
-     * @return QueryBuilder
-     *
-     * @throws Exception\RepositoryException
-     *
-     * @todo should be private
-     */
-    protected function queryOn($name)
-    {
-        $entityClass = NC::nameToClass($name, NC::$entityMask);
-        if (!is_subclass_of($entityClass, "UniMapper\Entity")) {
-            throw new Exception\InvalidArgumentException(
-                "Entity with name '" . $name . "' and class '" . $entityClass
-                . "' not found!"
-            );
-        }
-
-        $entityReflection = $this->getEntityReflection($entityClass);
-
-        $queryBuilder = new QueryBuilder(
-            $entityReflection,
-            $this->adapters,
-            $this->cache,
-            $this->logger
+        return new Repository\Caller(
+            $this->queryBuilder,
+            $this->getEntityName()
         );
-
-        foreach ($this->customQueries as $class) {
-            $queryBuilder->registerQuery($class);
-        }
-
-        return $queryBuilder;
-    }
-
-    public function getLogger()
-    {
-        return $this->logger;
     }
 
 }
