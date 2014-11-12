@@ -40,7 +40,7 @@ class UpdateOne extends Conditionable
 
     protected function onExecute(\UniMapper\Adapter $adapter)
     {
-        $values = $adapter->createMapping()->unmapEntity($this->entity);
+        $values = $adapter->createMapper()->unmapEntity($this->entity);
 
         // Values can not be empty
         if (empty($values)) {

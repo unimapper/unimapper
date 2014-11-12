@@ -19,7 +19,7 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
 
     public function testSuccess()
     {
-        $this->adapters["FooAdapter"]->shouldReceive("createMapping")
+        $this->adapters["FooAdapter"]->shouldReceive("createMapper")
             ->once()
             ->andReturn(new UniMapper\Adapter\Mapper);
 

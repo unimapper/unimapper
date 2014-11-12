@@ -15,7 +15,7 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
     public function setUp()
     {
         $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
-        $this->adapters["FooAdapter"]->shouldReceive("createMapping")
+        $this->adapters["FooAdapter"]->shouldReceive("createMapper")
             ->once()
             ->andReturn(new UniMapper\Adapter\Mapper);
     }

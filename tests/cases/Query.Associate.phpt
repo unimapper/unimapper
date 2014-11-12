@@ -27,7 +27,7 @@ class QueryAssociateTest extends UniMapper\Tests\TestCase
     public function testAddManyToManyRemote()
     {
         $this->adapters["RemoteAdapter"]
-            ->shouldReceive("createMapping")
+            ->shouldReceive("createMapper")
             ->once()
             ->andReturn(new UniMapper\Adapter\Mapper);
         $this->adapters["RemoteAdapter"]
@@ -76,7 +76,7 @@ class QueryAssociateTest extends UniMapper\Tests\TestCase
         $this->adapterQueryMock->shouldReceive("setConditions")->with([["id", "=", 3, "AND"]]);
 
         $this->adapters["RemoteAdapter"]
-            ->shouldReceive("createMapping")
+            ->shouldReceive("createMapper")
             ->once()
             ->andReturn(new UniMapper\Adapter\Mapper);
         $this->adapters["RemoteAdapter"]
