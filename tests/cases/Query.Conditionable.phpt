@@ -32,7 +32,7 @@ class QueryConditionableTest extends UniMapper\Tests\TestCase
     public function testConditions()
     {
         $this->adapterMock->shouldReceive("insert")->once()->andReturn(1);
-        $this->adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
+        $this->adapterMock->shouldReceive("createMapping")->once()->andReturn(new UniMapper\Adapter\Mapper);
 
         $query = $this->createConditionableQuery();
         $expectedConditions = [];

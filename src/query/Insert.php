@@ -24,7 +24,7 @@ class Insert extends \UniMapper\Query
     {
         $query = $adapter->createInsert(
             $this->entityReflection->getAdapterReflection()->getResource(),
-            $adapter->getMapping()->unmapEntity($this->entity)
+            $adapter->createMapping()->unmapEntity($this->entity)
         );
 
         $primaryValue = $adapter->execute($query);
@@ -33,7 +33,7 @@ class Insert extends \UniMapper\Query
 
         if ($this->entityReflection->hasPrimaryProperty()) {
 
-            return $adapter->getMapping()->mapValue(
+            return $adapter->createMapping()->mapValue(
                 $this->entityReflection->getPrimaryProperty(),
                 $primaryValue
             );

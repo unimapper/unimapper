@@ -213,7 +213,7 @@ class Entity
     /**
      * Get adapter definition from annotations
      *
-     * @return \UniMapper\Reflection\Entity\Mapper|null
+     * @return \UniMapper\Reflection\Entity\Adapter|null
      */
     private function _parseAdapter()
     {

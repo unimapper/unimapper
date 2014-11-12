@@ -14,7 +14,7 @@ class QueryCountTest extends UniMapper\Tests\TestCase
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $adapterMock = Mockery::mock("UniMapper\Adapter");
-        $adapterMock->shouldReceive("getMapping")->once()->andReturn(new UniMapper\Mapping);
+        $adapterMock->shouldReceive("createMapping")->once()->andReturn(new UniMapper\Adapter\Mapper);
         $adapterMock->shouldReceive("createCount")->with("simple_resource")->once()->andReturn($adapterQueryMock);
         $adapterMock->shouldReceive("execute")->with($adapterQueryMock)->once()->andReturn("1");
 
