@@ -19,9 +19,9 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
 
     public function testSuccess()
     {
-        $this->adapters["FooAdapter"]->shouldReceive("getMapping")
+        $this->adapters["FooAdapter"]->shouldReceive("createMapper")
             ->once()
-            ->andReturn(new UniMapper\Mapping);
+            ->andReturn(new UniMapper\Adapter\Mapper);
 
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $this->adapters["FooAdapter"]->shouldReceive("createDelete")

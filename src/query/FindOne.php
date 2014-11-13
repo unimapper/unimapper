@@ -119,7 +119,7 @@ class FindOne extends Selectable
             }
         }
 
-        return $adapter->getMapping()->mapEntity(
+        return $adapter->createMapper()->mapEntity(
             $this->entityReflection,
             $result
         );

@@ -5,20 +5,20 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class MappingTest extends UniMapper\Tests\TestCase
+class AdapterMapperTest extends UniMapper\Tests\TestCase
 {
 
-    /** @var \UniMapper\Mapping */
-    private $mapping;
+    /** @var \UniMapper\Adapter\Mapper */
+    private $mapper;
 
     public function setUp()
     {
-        $this->mapping = new UniMapper\Mapping;
+        $this->mapper = new UniMapper\Adapter\Mapper;
     }
 
     public function testMapEntity()
     {
-        $entity = $this->mapping->mapEntity(
+        $entity = $this->mapper->mapEntity(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             [
                 "email_address" => "john.doe@example.com",
@@ -58,13 +58,13 @@ class MappingTest extends UniMapper\Tests\TestCase
                 "empty" => null,
                 "stored_data" => "one,two,three"
             ],
-            $this->mapping->unmapEntity($entity)
+            $this->mapper->unmapEntity($entity)
         );
     }
 
     public function testMapCollection()
     {
-        $collection = $this->mapping->mapCollection(
+        $collection = $this->mapper->mapCollection(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             [
                 [
@@ -101,11 +101,11 @@ class MappingTest extends UniMapper\Tests\TestCase
 
         Assert::same(
             [['email_address' => $entity->email, 'link' => $entity->url]],
-            $this->mapping->unmapCollection($collection)
+            $this->mapper->unmapCollection($collection)
         );
     }
 
 }
 
-$testCase = new MappingTest;
+$testCase = new AdapterMapperTest;
 $testCase->run();

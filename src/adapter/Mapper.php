@@ -1,13 +1,14 @@
 <?php
 
-namespace UniMapper;
+namespace UniMapper\Adapter;
 
-use UniMapper\Entity,
+use UniMapper\Exception,
+    UniMapper\Entity,
     UniMapper\EntityCollection,
     UniMapper\Validator,
     UniMapper\Reflection;
 
-class Mapping
+class Mapper
 {
 
     /**
@@ -70,6 +71,7 @@ class Mapping
             }
 
             if (isset($date)) {
+
                 try {
                     return new \DateTime($date);
                 } catch (\Exception $e) {
@@ -143,11 +145,11 @@ class Mapping
     /**
      * Convert entity to simple array
      *
-     *  @param \UniMapper\Entity $entity Entity
+     *  @param Entity $entity
      *
      *  @return array
      */
-    public function unmapEntity(\UniMapper\Entity $entity)
+    public function unmapEntity(Entity $entity)
     {
         $output = [];
         foreach ($entity->getData() as $propertyName => $value) {
@@ -186,7 +188,7 @@ class Mapping
     /**
      * Convert entity to simple array
      *
-     *  @param \UniMapper\EntityCollection $collection Entity collection
+     *  @param EntityCollection $collection
      *
      *  @return array
      */

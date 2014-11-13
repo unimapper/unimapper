@@ -95,7 +95,7 @@ class Find extends Selectable
 
     protected function onExecute(\UniMapper\Adapter $adapter)
     {
-        $mapping = $adapter->getMapping();
+        $mapping = $adapter->createMapper();
 
         if ($this->cached) {
 

@@ -39,10 +39,9 @@ class QueryBuilder
         "updateOne" => "UniMapper\Query\UpdateOne"
     ];
 
-    public function __construct(EntityFactory $entityFactory, array $adapters)
+    public function __construct(EntityFactory $entityFactory)
     {
         $this->entityFactory = $entityFactory;
-        $this->adapters = $adapters;
     }
 
     public function __call($name, $arguments)
@@ -80,9 +79,14 @@ class QueryBuilder
      *
      * @param string $class
      */
-    public function register($class)
+    public function registerQuery($class)
     {
         $this->queries[$class::getName()] = $class;
+    }
+
+    public function registerAdapter(Adapter $adapter)
+    {
+        $this->adapters[$adapter->getName()] = $adapter;
     }
 
     public function getEntityFactory()

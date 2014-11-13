@@ -56,14 +56,14 @@ abstract class Conditionable extends \UniMapper\Query
 
                     $property->validateValueType($item);
                     $value[$index] = $this->adapters[$this->entityReflection->getAdapterReflection()->getName()]
-                        ->getMapping()
+                        ->createMapper()
                         ->unmapValue($property, $item);
                 }
             } elseif (!in_array($operator, ["IS", "IS NOT"]) && $value !== null) {
 
                 $property->validateValueType($value);
                 $value = $this->adapters[$this->entityReflection->getAdapterReflection()->getName()]
-                    ->getMapping()
+                    ->createMapper()
                     ->unmapValue($property, $value);
             }
         } catch (Exception\PropertyValueException $e) {

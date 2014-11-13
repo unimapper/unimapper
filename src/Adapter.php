@@ -11,13 +11,13 @@ abstract class Adapter implements Adapter\IAdapter
     /** @var string */
     protected $name;
 
-    /** @var \UniMapper\Mapping */
-    protected $mapping;
+    /** @var array */
+    protected $options;
 
-    public function __construct($name, Mapping $mapping)
+    public function __construct($name, array $options)
     {
         $this->name = $name;
-        $this->mapping = $mapping;
+        $this->options = $options;
     }
 
     public function getName()
@@ -25,9 +25,9 @@ abstract class Adapter implements Adapter\IAdapter
         return $this->name;
     }
 
-    public function getMapping()
+    public function createMapper()
     {
-        return $this->mapping;
+        return new Adapter\Mapper;
     }
 
 }

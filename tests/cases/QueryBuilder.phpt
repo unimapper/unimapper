@@ -16,10 +16,10 @@ class QueryBuilderTest extends UniMapper\Tests\TestCase
     public function setUp()
     {
         $this->adapterMock = Mockery::mock("UniMapper\Adapter");
-        $this->builder = new \UniMapper\QueryBuilder(
-            new \UniMapper\EntityFactory,
-            ["FooAdapter" => $this->adapterMock]
-        );
+        $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
+
+        $this->builder = new \UniMapper\QueryBuilder(new \UniMapper\EntityFactory);
+        $this->builder->registerAdapter($this->adapterMock);
     }
 
     public function testCount()
@@ -59,7 +59,7 @@ class QueryBuilderTest extends UniMapper\Tests\TestCase
 
     public function testCustomQuery()
     {
-        $this->builder->register("UniMapper\Tests\Fixtures\Query\Custom");
+        $this->builder->registerQuery("UniMapper\Tests\Fixtures\Query\Custom");
         Assert::type("UniMapper\Tests\Fixtures\Query\Custom", $this->builder->custom("Simple"));
         Assert::same("foo", $this->builder->custom("Simple")->execute());
     }
