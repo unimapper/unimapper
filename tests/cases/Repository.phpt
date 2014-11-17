@@ -170,6 +170,19 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         Assert::false($this->repository->delete($entity));
     }
 
+    public function testCreateEntity()
+    {
+        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity = $this->repository->createEntity(["id" => 3]));
+        Assert::same(3, $entity->id);
+    }
+
+    public function testCreateCollection()
+    {
+        Assert::type("UniMapper\EntityCollection", $collection = $this->repository->createCollection([["id" => 3]]));
+        Assert::same("UniMapper\Tests\Fixtures\Entity\Simple", $collection->getEntityReflection()->getClassName());
+        Assert::same(3, $collection[0]->id);
+    }
+
 }
 
 $testCase = new RepositoryTest;

@@ -15,6 +15,22 @@ abstract class Repository
         $this->queryBuilder = $queryBuilder;
     }
 
+    public function createEntity($values = [])
+    {
+        return $this->queryBuilder->getEntityFactory()->createEntity(
+            $this->getEntityName(),
+            $values
+        );
+    }
+
+    public function createCollection($values = [])
+    {
+        return $this->queryBuilder->getEntityFactory()->createCollection(
+            $this->getEntityName(),
+            $values
+        );
+    }
+
     /**
      * Insert/update entity
      *
