@@ -21,7 +21,7 @@ abstract class Repository
 
     public function createEntity($values = [])
     {
-        return $this->queryBuilder->getEntityFactory()->createEntity(
+        return $this->entityFactory->createEntity(
             $this->getEntityName(),
             $values
         );
@@ -29,7 +29,7 @@ abstract class Repository
 
     public function createCollection($values = [])
     {
-        return $this->queryBuilder->getEntityFactory()->createCollection(
+        return $this->entityFactory->createCollection(
             $this->getEntityName(),
             $values
         );
