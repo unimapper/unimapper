@@ -38,9 +38,9 @@ class UpdateOne extends Conditionable
         $this->entity = $entityReflection->createEntity($data);
     }
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Adapter\IAdapter $adapter)
     {
-        $values = $adapter->createMapper()->unmapEntity($this->entity);
+        $values = $adapter->getMapper()->unmapEntity($this->entity);
 
         // Values can not be empty
         if (empty($values)) {

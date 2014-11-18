@@ -14,12 +14,12 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter\IAdapter");
     }
 
     public function testSuccess()
     {
-        $this->adapters["FooAdapter"]->shouldReceive("createMapper")
+        $this->adapters["FooAdapter"]->shouldReceive("getMapper")
             ->once()
             ->andReturn(new UniMapper\Adapter\Mapper);
 

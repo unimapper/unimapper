@@ -15,8 +15,8 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->adapterMock = Mockery::mock("UniMapper\Adapter");
-        $this->adapterMock->shouldReceive("createMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
+        $this->adapterMock = Mockery::mock("UniMapper\Adapter\IAdapter");
+        $this->adapterMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
 
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $this->adapterQueryMock->shouldReceive("getRaw")->once();

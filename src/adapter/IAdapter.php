@@ -28,4 +28,6 @@ interface IAdapter
 
     public function execute(IQuery $query);
 
+    public function getMapper();
+
 }

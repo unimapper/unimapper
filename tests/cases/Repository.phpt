@@ -16,9 +16,9 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->adapterMock = Mockery::mock("UniMapper\Adapter");
+        $this->adapterMock = Mockery::mock("UniMapper\Adapter\IAdapter");
         $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
-        $this->adapterMock->shouldReceive("createMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
+        $this->adapterMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
 
         $this->repository = $this->createRepository("Simple", ["FooAdapter" => $this->adapterMock]);
     }

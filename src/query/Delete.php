@@ -7,7 +7,7 @@ use UniMapper\Exception;
 class Delete extends Conditionable
 {
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Adapter\IAdapter $adapter)
     {
         if (count($this->conditions) === 0) {
             throw new Exception\QueryException(

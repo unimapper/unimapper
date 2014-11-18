@@ -18,11 +18,11 @@ class QueryFindTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
-        $this->adapters["FooAdapter"]->shouldReceive("createMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter\IAdapter");
+        $this->adapters["FooAdapter"]->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
 
-        $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter");
-        $this->adapters["RemoteAdapter"]->shouldReceive("createMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
+        $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter\IAdapter");
+        $this->adapters["RemoteAdapter"]->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
 
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $this->adapterQueryMock->shouldReceive("getRaw")->once();

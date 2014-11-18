@@ -17,8 +17,8 @@ class QueryAssociateTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
-        $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter");
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter\IAdapter");
+        $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter\IAdapter");
 
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $this->adapterQueryMock->shouldReceive("getRaw")->once();
@@ -27,7 +27,7 @@ class QueryAssociateTest extends UniMapper\Tests\TestCase
     public function testAddManyToManyRemote()
     {
         $this->adapters["RemoteAdapter"]
-            ->shouldReceive("createMapper")
+            ->shouldReceive("getMapper")
             ->once()
             ->andReturn(new UniMapper\Adapter\Mapper);
         $this->adapters["RemoteAdapter"]
@@ -76,7 +76,7 @@ class QueryAssociateTest extends UniMapper\Tests\TestCase
         $this->adapterQueryMock->shouldReceive("setConditions")->with([["id", "=", 3, "AND"]]);
 
         $this->adapters["RemoteAdapter"]
-            ->shouldReceive("createMapper")
+            ->shouldReceive("getMapper")
             ->once()
             ->andReturn(new UniMapper\Adapter\Mapper);
         $this->adapters["RemoteAdapter"]

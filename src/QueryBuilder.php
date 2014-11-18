@@ -84,9 +84,15 @@ class QueryBuilder
         $this->queries[$class::getName()] = $class;
     }
 
-    public function registerAdapter(Adapter $adapter)
+    public function registerAdapter($name, Adapter\IAdapter $adapter)
     {
-        $this->adapters[$adapter->getName()] = $adapter;
+        if (isset($this->adapters[$name])) {
+            throw new Exception\InvalidArgumentException(
+                "Adapter with name " . $name . " already registered!"
+            );
+        }
+
+        $this->adapters[$name] = $adapter;
     }
 
     public function getEntityFactory()
@@ -97,6 +103,11 @@ class QueryBuilder
     public function getCreated()
     {
         return $this->created;
+    }
+
+    public function getAdapters()
+    {
+        return $this->adapters;
     }
 
 }

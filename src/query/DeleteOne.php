@@ -35,7 +35,7 @@ class DeleteOne extends \UniMapper\Query
         $this->primaryValue = $primaryValue;
     }
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Adapter\IAdapter $adapter)
     {
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
 

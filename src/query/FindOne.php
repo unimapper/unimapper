@@ -33,7 +33,7 @@ class FindOne extends Selectable
         $this->primaryValue = $primaryValue;
     }
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Adapter\IAdapter $adapter)
     {
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
 
@@ -119,7 +119,7 @@ class FindOne extends Selectable
             }
         }
 
-        return $adapter->createMapper()->mapEntity(
+        return $adapter->getMapper()->mapEntity(
             $this->entityReflection,
             $result
         );

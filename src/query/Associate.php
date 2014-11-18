@@ -30,7 +30,7 @@ class Associate extends \UniMapper\Query
         $this->association = $association;
     }
 
-    protected function onExecute(Adapter $adapter)
+    protected function onExecute(Adapter\IAdapter $adapter)
     {
         if ($this->association instanceof Association\ManyToMany) {
             // M:N
@@ -53,7 +53,7 @@ class Associate extends \UniMapper\Query
     }
 
     private function _manyToMany(
-        Adapter $adapter,
+        Adapter\IAdapter $adapter,
         $action = Adapter\IAdapter::ASSOC_ADD
     ) {
         if ($action === Adapter\IAdapter::ASSOC_REMOVE) {

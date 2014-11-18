@@ -5,7 +5,7 @@ namespace UniMapper\Query;
 class Count extends Conditionable
 {
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Adapter\IAdapter $adapter)
     {
         $query = $adapter->createCount(
             $this->entityReflection->getAdapterReflection()->getResource()

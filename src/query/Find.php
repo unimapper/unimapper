@@ -93,9 +93,9 @@ class Find extends Selectable
         return $this;
     }
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Adapter\IAdapter $adapter)
     {
-        $mapping = $adapter->createMapper();
+        $mapping = $adapter->getMapper();
 
         if ($this->cached) {
 

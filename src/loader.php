@@ -4,7 +4,6 @@ if (version_compare(phpversion(), '5.4.0', '<')) {
     throw new Exception('UniMapper requires PHP 5.4.0 or newer!');
 }
 
-require_once __DIR__ . '/Adapter.php';
 require_once __DIR__ . '/Association.php';
 require_once __DIR__ . '/Entity.php';
 require_once __DIR__ . '/EntityCollection.php';

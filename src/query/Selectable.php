@@ -49,14 +49,14 @@ abstract class Selectable extends Conditionable
     /**
      * Process ManyToOne association
      *
-     * @param Adapter    $targetAdapter
-     * @param ManyToMany $association
-     * @param array      $primaryValues
+     * @param Adapter\IAdapter $targetAdapter
+     * @param ManyToMany       $association
+     * @param array            $primaryValues
      *
      * @return array
      */
     protected function manyToOne(
-        Adapter $targetAdapter,
+        Adapter\IAdapter $targetAdapter,
         ManyToOne $association,
         array $primaryValues
     ) {
@@ -95,10 +95,10 @@ abstract class Selectable extends Conditionable
     /**
      * Process ManyToMany association
      *
-     * @param Adapter $currentAdapter
-     * @param Adapter $targetAdapter
-     * @param ManyToMany $association
-     * @param array   $primaryValues
+     * @param Adapter\IAdapter $currentAdapter
+     * @param Adapter\IAdapter $targetAdapter
+     * @param ManyToMany       $association
+     * @param array            $primaryValues
      *
      * @return array
      *
@@ -107,8 +107,8 @@ abstract class Selectable extends Conditionable
      * @todo should be optimized with 1 query only on same adapters
      */
     protected function manyToMany(
-        Adapter $currentAdapter,
-        Adapter $targetAdapter,
+        Adapter\IAdapter $currentAdapter,
+        Adapter\IAdapter $targetAdapter,
         ManyToMany $association,
         array $primaryValues
     ) {
@@ -189,14 +189,14 @@ abstract class Selectable extends Conditionable
     /**
      * Process OneToOne association
      *
-     * @param Adapter  $targetAdapter
-     * @param OneToOne $association
-     * @param array    $primaryValues
+     * @param Adapter\IAdapter $targetAdapter
+     * @param OneToOne         $association
+     * @param array            $primaryValues
      *
      * @return array
      */
     protected function oneToOne(
-        Adapter $targetAdapter,
+        Adapter\IAdapter $targetAdapter,
         OneToOne $association,
         array $primaryValues
     ) {
@@ -233,7 +233,7 @@ abstract class Selectable extends Conditionable
     }
 
     protected function oneToMany(
-        Adapter $targetAdapter,
+        Adapter\IAdapter $targetAdapter,
         OneToMany $association,
         array $primaryValues
     ) {
