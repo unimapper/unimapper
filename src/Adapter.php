@@ -14,7 +14,7 @@ abstract class Adapter implements Adapter\IAdapter
     /** @var array */
     protected $options;
 
-    public function __construct($name, array $options)
+    public function __construct($name, array $options = [])
     {
         $this->name = $name;
         $this->options = $options;
