@@ -10,9 +10,13 @@ abstract class Repository
     /** @var QueryBuilder */
     private $queryBuilder;
 
+    /** @var \UniMapper\EntityFactory */
+    protected $entityFactory;
+
     public function __construct(QueryBuilder $queryBuilder)
     {
         $this->queryBuilder = $queryBuilder;
+        $this->entityFactory = $queryBuilder->getEntityFactory();
     }
 
     public function createEntity($values = [])
@@ -208,6 +212,18 @@ abstract class Repository
     }
 
     /**
+     * Get adapter
+     *
+     * @param string $name
+     *
+     * @return \UniMapper\Adapter\IAdapter
+     */
+    protected function getAdapter($name)
+    {
+        return $this->queryBuilder->getAdapters()[$name];
+    }
+
+    /**
      * Get related entity name
      *
      * @return string
@@ -215,6 +231,14 @@ abstract class Repository
     public function getEntityName()
     {
         return $this->getName();
+    }
+
+    /**
+     * @return \UniMapper\EntityFactory
+     */
+    public function getEntityFactory()
+    {
+        return $this->entityFactory;
     }
 
     public function getName()
