@@ -183,6 +183,46 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         Assert::same(3, $collection[0]->id);
     }
 
+    public function testFindPrimary()
+    {
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("setConditions")
+            ->once()
+            ->with([["simplePrimaryId", "IN", [1, 2], "AND"]]);
+        $adapterQueryMock->shouldReceive("getRaw")->once();
+
+        $this->adapterMock->shouldReceive("createFind")
+            ->with("simple_resource", ['simplePrimaryId', 'text', 'empty', 'link', 'email_address', 'time', 'ip', 'mark', 'entity', 'readonly', 'stored_data'], [], null, null)
+            ->once()
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("execute")
+            ->with($adapterQueryMock)
+            ->once()
+            ->andReturn([["simplePrimaryId" => 1], ["simplePrimaryId" => 2]]);
+
+        $result = $this->repository->findPrimaries([1, 2]);
+
+        Assert::type("UniMapper\EntityCollection", $result);
+        Assert::same(1, $result[0]->id);
+        Assert::same(2, $result[1]->id);
+    }
+
+    /**
+     * @throws UniMapper\Exception\InvalidArgumentException Values must be specified!
+     */
+    public function testFindPrimaryNoValues()
+    {
+        $this->repository->findPrimaries([]);
+    }
+
+    /**
+     * @throws UniMapper\Exception\RepositoryException Method can not be used because entity NoPrimary has no primary property defined!
+     */
+    public function testFindPrimaryWithNoPrimaryEntity()
+    {
+        $this->createRepository("NoPrimary")->findPrimaries([]);
+    }
+
 }
 
 $testCase = new RepositoryTest;

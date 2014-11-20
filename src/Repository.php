@@ -212,6 +212,42 @@ abstract class Repository
     }
 
     /**
+     * Find records by set if primary values
+     *
+     * @param array $primaryValues
+     *
+     * @return EntityCollection
+     */
+    public function findPrimaries(array $primaryValues)
+    {
+        $entityReflection = $this->entityFactory->getEntityReflection(
+            $this->getEntityName()
+        );
+
+        if (!$entityReflection->hasPrimaryProperty()) {
+            throw new Exception\RepositoryException(
+                "Method can not be used because entity " . $this->getEntityName()
+                . " has no primary property defined!"
+            );
+        }
+
+        if (empty($primaryValues)) {
+            throw new Exception\InvalidArgumentException(
+                "Values must be specified!"
+            );
+        }
+
+        return $this->query()
+            ->find()
+            ->where(
+                $entityReflection->getPrimaryProperty()->getName(),
+                "IN",
+                $primaryValues
+            )
+            ->execute();
+    }
+
+    /**
      * Get adapter
      *
      * @param string $name
