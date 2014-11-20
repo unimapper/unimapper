@@ -19,22 +19,6 @@ abstract class Repository
         $this->entityFactory = $queryBuilder->getEntityFactory();
     }
 
-    public function createEntity($values = [])
-    {
-        return $this->entityFactory->createEntity(
-            $this->getEntityName(),
-            $values
-        );
-    }
-
-    public function createCollection($values = [])
-    {
-        return $this->entityFactory->createCollection(
-            $this->getEntityName(),
-            $values
-        );
-    }
-
     /**
      * Insert/update entity
      *
@@ -267,14 +251,6 @@ abstract class Repository
     public function getEntityName()
     {
         return $this->getName();
-    }
-
-    /**
-     * @return \UniMapper\EntityFactory
-     */
-    public function getEntityFactory()
-    {
-        return $this->entityFactory;
     }
 
     public function getName()
