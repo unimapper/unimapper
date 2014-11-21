@@ -6,7 +6,7 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class QueryAssociateTest extends UniMapper\Tests\TestCase
+class AssociationManyToManyTest extends UniMapper\Tests\TestCase
 {
 
     /** @var array $adapters */
@@ -21,10 +21,9 @@ class QueryAssociateTest extends UniMapper\Tests\TestCase
         $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter\IAdapter");
 
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $this->adapterQueryMock->shouldReceive("getRaw")->once();
     }
 
-    public function testAddManyToManyRemote()
+    public function testModifyAdd()
     {
         $this->adapters["RemoteAdapter"]
             ->shouldReceive("getMapper")
@@ -62,26 +61,18 @@ class QueryAssociateTest extends UniMapper\Tests\TestCase
         $sourceEntity = new Fixtures\Entity\Simple(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"));
         $sourceEntity->manyToMany()->add($targetEntity);
 
-        $query = new \UniMapper\Query\Associate(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            $this->adapters,
-            1,
-            $sourceEntity->manyToMany()
-        );
-        Assert::null($query->execute());
+        Assert::null($sourceEntity->manyToMany()->modify(1, $this->adapters["FooAdapter"], $this->adapters["RemoteAdapter"]));
     }
 
-    public function testRemoveManyToManyRemote()
+    public function testModifyRemove()
     {
-        $this->adapterQueryMock->shouldReceive("setConditions")->with([["id", "=", 3, "AND"]]);
-
         $this->adapters["RemoteAdapter"]
             ->shouldReceive("getMapper")
             ->once()
             ->andReturn(new UniMapper\Adapter\Mapper);
         $this->adapters["RemoteAdapter"]
-            ->shouldReceive("createDelete")
-            ->with("remote_resource")
+            ->shouldReceive("createDeleteOne")
+            ->with("remote_resource", "id", 3)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["RemoteAdapter"]
@@ -112,43 +103,10 @@ class QueryAssociateTest extends UniMapper\Tests\TestCase
         $sourceEntity = new Fixtures\Entity\Simple(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"));
         $sourceEntity->manyToMany()->remove($targetEntity);
 
-        $query = new \UniMapper\Query\Associate(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            $this->adapters,
-            1,
-            $sourceEntity->manyToMany()
-        );
-        Assert::null($query->execute());
-    }
-
-    public function testAttachManyToOneRemote()
-    {
-        $this->adapters["FooAdapter"]
-            ->shouldReceive("createUpdateOne")
-            ->with("simple_resource", "simplePrimaryId", 1, ["remoteId" => 2])
-            ->once()
-            ->andReturn($this->adapterQueryMock);
-        $this->adapters["FooAdapter"]
-            ->shouldReceive("execute")
-            ->with($this->adapterQueryMock)
-            ->once()
-            ->andReturn(null);
-
-        $source = new Fixtures\Entity\Simple(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"));
-        $target = new Fixtures\Entity\Remote(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote"));
-        $target->id = 2;
-        $source->manyToOne()->attach($target);
-
-        $query = new \UniMapper\Query\Associate(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            $this->adapters,
-            1,
-            $source->manyToOne()
-        );
-        Assert::null($query->execute());
+        Assert::null($sourceEntity->manyToMany()->modify(1, $this->adapters["FooAdapter"], $this->adapters["RemoteAdapter"]));
     }
 
 }
 
-$testCase = new QueryAssociateTest;
+$testCase = new AssociationManyToManyTest;
 $testCase->run();

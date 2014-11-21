@@ -87,7 +87,7 @@ abstract class Repository
             throw new Exception\RepositoryException($e->getMessage());
         }
 
-        $this->_saveAssociations($primaryValue, $entity);
+        $this->_persistAssociations($primaryValue, $entity);
 
         return $primaryValue;
     }
@@ -115,13 +115,17 @@ abstract class Repository
             throw new Exception\RepositoryException($e->getMessage());
         }
 
-        $this->_saveAssociations($primaryValue, $entity);
+        $this->_persistAssociations($primaryValue, $entity);
     }
 
-    private function _saveAssociations($primaryValue, Entity $entity)
+    private function _persistAssociations($primaryValue, Entity $entity)
     {
         foreach ($entity->getAssociated() as $association) {
-            $this->query("associate", $primaryValue, $association)->execute();
+            $association->modify(
+                $primaryValue,
+                $this->queryBuilder->getAdapters()[$entity->getReflection()->getAdapterReflection()->getName()],
+                $this->queryBuilder->getAdapters()[$association->getTargetAdapterName()]
+            );
         }
     }
 

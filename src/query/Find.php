@@ -4,10 +4,7 @@ namespace UniMapper\Query;
 
 use UniMapper\Exception,
     UniMapper\Reflection,
-    UniMapper\Association\OneToMany,
-    UniMapper\Association\OneToOne,
     UniMapper\Association\ManyToOne,
-    UniMapper\Association\ManyToMany,
     UniMapper\NamingConvention as UNC,
     UniMapper\Cache\ICache;
 
@@ -123,7 +120,7 @@ class Find extends Selectable
 
         if ($this->associations["local"]) {
             $query->setAssociations($this->associations["local"]);
-        };
+        }
 
         // Execute adapter query
         $result = $adapter->execute($query);
@@ -136,22 +133,7 @@ class Find extends Selectable
 
             settype($result, "array");
 
-            $primaryPropertyName = $this->entityReflection->getPrimaryProperty()
-                ->getName(true);
-
             foreach ($this->associations["remote"] as $colName => $association) {
-
-                $refValues = [];
-                foreach ($result as $item) {
-
-                    if (is_array($item)) {
-                        $refValues[] = $item[$primaryPropertyName];
-                    } else {
-                        $refValues[] = $item->{$primaryPropertyName};
-                    }
-                }
-
-                $refKey = $association->getPrimaryKey();
 
                 if (!isset($this->adapters[$association->getTargetAdapterName()])) {
                     throw new Exception\QueryException(
@@ -160,65 +142,24 @@ class Find extends Selectable
                     );
                 }
 
-                if ($association instanceof ManyToMany) {
+                $assocKey = $association->getKey();
 
-                    $associated = $this->manyToMany(
-                        $adapter,
-                        $this->adapters[$association->getTargetAdapterName()],
-                        $association,
-                        $refValues
-                    );
-                } elseif ($association instanceof OneToOne) {
+                $assocValues = [];
+                foreach ($result as $item) {
 
-                    $refKey = $association->getForeignKey();
-
-                    $refValues = [];
-                    foreach ($result as $item) {
-
-                        if (is_array($item)) {
-                            $refValues[] = $item[$refKey];
-                        } else {
-                            $refValues[] = $item->{$refKey};
-                        }
+                    if (is_array($item)) {
+                        $assocValues[] = $item[$assocKey];
+                    } else {
+                        $assocValues[] = $item->{$assocKey};
                     }
-
-                    $associated = $this->oneToOne(
-                        $this->adapters[$association->getTargetAdapterName()],
-                        $association,
-                        $refValues
-                    );
-                } elseif ($association instanceof OneToMany) {
-
-                    $associated = $this->oneToMany(
-                        $this->adapters[$association->getTargetAdapterName()],
-                        $association,
-                        $refValues
-                    );
-                } elseif ($association instanceof ManyToOne) {
-
-                    $refKey = $association->getReferenceKey();
-
-                    $refValues = [];
-                    foreach ($result as $item) {
-
-                        if (is_array($item)) {
-                            $refValues[] = $item[$refKey];
-                        } else {
-                            $refValues[] = $item->{$refKey};
-                        }
-                    }
-                    $associated = $this->manyToOne(
-                        $this->adapters[$association->getTargetAdapterName()],
-                        $association,
-                        $refValues
-                    );
-                } else {
-
-                    throw new Exception\QueryException(
-                        "Unsupported remote association "
-                        . get_class($association) . "!"
-                    );
                 }
+
+                $associated = $association->find(
+                    $adapter,
+                    $this->adapters[$association->getTargetAdapterName()],
+                    $assocValues
+                );
+
 
                 // Merge returned associations
                 if (!empty($associated)) {
@@ -226,7 +167,7 @@ class Find extends Selectable
                     $result = $this->_mergeAssociated(
                         $result,
                         $associated,
-                        $refKey,
+                        $assocKey,
                         $colName
                     );
                 }

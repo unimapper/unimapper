@@ -36,7 +36,6 @@ require_once __DIR__ . '/exception/QueryException.php';
 require_once __DIR__ . '/exception/RepositoryException.php';
 require_once __DIR__ . '/exception/UnexpectedException.php';
 require_once __DIR__ . '/exception/ValidatorException.php';
-require_once __DIR__ . '/query/Associate.php';
 require_once __DIR__ . '/query/Count.php';
 require_once __DIR__ . '/query/Custom.php';
 require_once __DIR__ . '/query/Delete.php';

@@ -2,7 +2,8 @@
 
 namespace UniMapper\Association;
 
-use UniMapper\Reflection,
+use UniMapper\Adapter,
+    UniMapper\Reflection,
     UniMapper\Exception;
 
 class OneToMany extends Multi
@@ -27,6 +28,32 @@ class OneToMany extends Multi
     public function getForeignKey()
     {
         return $this->matches[1];
+    }
+
+    public function find(
+        Adapter\IAdapter $currentAdapter,
+        Adapter\IAdapter $targetAdapter,
+        array $primaryValues
+    ) {
+        $query = $targetAdapter->createFind($this->getTargetResource());
+        $query->setConditions(
+            [
+                [
+                    $this->getForeignKey(),
+                    "IN",
+                    array_keys($primaryValues),
+                    "AND"
+                ]
+            ]
+        );
+
+        $result = $targetAdapter->execute($query);
+
+        if (!$result) {
+            return [];
+        }
+
+        return $result;
     }
 
 }
