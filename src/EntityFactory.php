@@ -34,7 +34,7 @@ class EntityFactory
      * @param string $name
      * @param mixed  $values Iterable value like array or stdClass object
      *
-     * @return Entity
+     * @return EntityCollection
      */
     public function createCollection($name, $values = null)
     {

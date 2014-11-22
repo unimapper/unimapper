@@ -2,8 +2,7 @@
 
 namespace UniMapper\Reflection\Entity\Property;
 
-use UniMapper\Exception,
-    UniMapper\Reflection;
+use UniMapper\Exception;
 
 /**
  * Entity property enumeration object
@@ -11,7 +10,7 @@ use UniMapper\Exception,
 class Enumeration
 {
 
-    const EXPRESSION = "#m:enum\(([a-zA-Z0-9]+)::([a-zA-Z0-9_]+)\*\)#";
+    const EXPRESSION = "#m:enum\((.*)::([a-zA-Z0-9_]+)\*\)#";
 
     /** @var array $values */
     private $values = [];
@@ -19,7 +18,7 @@ class Enumeration
     /** @var array $index */
     private $index = [];
 
-    public function __construct(array $definition, Reflection\Entity $entityReflection)
+    public function __construct(array $definition, $entityClass)
     {
         if (empty($definition)) {
             throw new Exception\DefinitionException(
@@ -29,18 +28,18 @@ class Enumeration
 
         list(, $class, $prefix) = $definition;
         if ($class === 'self') {
-            $constants = $entityReflection->getConstants();
-        } elseif (class_exists($class)) {
-            $aliases = $entityReflection->getAliases();
-            $reflectionClass = new \ReflectionClass($aliases->map($class));
-            $constants = $reflectionClass->getConstants();
-        } else {
+            $class = $entityClass;
+        }
+
+        if (!class_exists($class)) {
             throw new Exception\DefinitionException(
                 "Invalid enumeration definition!"
             );
         }
 
-        foreach ($constants as $name => $value) {
+        $reflectionClass = new \ReflectionClass($class);
+
+        foreach ($reflectionClass->getConstants() as $name => $value) {
             if (substr($name, 0, strlen($prefix)) === $prefix) {
                 $this->values[$name] = $value;
                 $this->index[$value] = true;

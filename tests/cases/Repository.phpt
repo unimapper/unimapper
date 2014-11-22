@@ -179,7 +179,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $this->adapterMock->shouldReceive("createFind")
-            ->with("simple_resource", ['simplePrimaryId', 'text', 'empty', 'link', 'email_address', 'time', 'ip', 'mark', 'entity', 'readonly', 'stored_data'], [], null, null)
+            ->with("simple_resource", ['simplePrimaryId', 'text', 'empty', 'link', 'email_address', 'time', 'ip', 'mark', 'entity', 'readonly', 'stored_data', 'enumeration'], [], null, null)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("execute")

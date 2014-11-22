@@ -21,9 +21,13 @@ namespace UniMapper\Tests\Fixtures\Entity;
  * @property       Remote     $oneToOne         m:assoc(1:1=remoteId)
  * @property-read  string     $readonly
  * @property       array      $storedData       m:map(name='stored_data';filter=stringToArray|arrayToString)
+ * @property       integer    $enumeration      m:enum(self::ENUMERATION_*)
  */
 class Simple extends \UniMapper\Entity
 {
+
+    const ENUMERATION_ONE = 1,
+          ENUMERATION_TWO = 2;
 
     /** @var string */
     public $publicProperty = "defaultValue";

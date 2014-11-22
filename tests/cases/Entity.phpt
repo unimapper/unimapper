@@ -93,6 +93,7 @@ class EntityTest extends UniMapper\Tests\TestCase
                 'oneToOne' => $this->entity->oneToOne,
                 'readonly' => NULL,
                 'storedData' => NULL,
+                'enumeration' => NULL,
                 'publicProperty' => 'defaultValue',
             ),
             $this->entity->toArray()
@@ -130,6 +131,7 @@ class EntityTest extends UniMapper\Tests\TestCase
                 'oneToOne' => NULL,
                 'readonly' => NULL,
                 'storedData' => NULL,
+                'enumeration' => NULL,
                 'publicProperty' => 'defaultValue',
             ),
             $this->entity->toArray(true)
@@ -148,7 +150,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     public function testJsonSerializable()
     {
         Assert::same(
-            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"manyToMany":[],"manyToOne":null,"oneToOne":null,"readonly":null,"storedData":null,"publicProperty":"defaultValue"}',
+            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"manyToMany":[],"manyToOne":null,"oneToOne":null,"readonly":null,"storedData":null,"enumeration":null,"publicProperty":"defaultValue"}',
             json_encode($this->entity)
         );
     }
@@ -286,6 +288,7 @@ class EntityTest extends UniMapper\Tests\TestCase
             'oneToOne',
             'readonly',
             'storedData',
+            'enumeration',
             'publicProperty'
         ];
 

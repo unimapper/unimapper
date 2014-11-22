@@ -327,7 +327,7 @@ class Property
             try {
                 $this->enumeration = new Property\Enumeration(
                     $matches,
-                    $this->entityReflection
+                    $this->entityReflection->getClassName()
                 );
             } catch (Exception\DefinitionException $e) {
                 throw new Exception\PropertyException(

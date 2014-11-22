@@ -28,9 +28,6 @@ class Entity
     /** @var string */
     private $docComment;
 
-    /** @var array */
-    private $constants;
-
     /** @var string */
     private $primaryPropertyName;
 
@@ -78,7 +75,6 @@ class Entity
 
         $this->fileName = $reflection->getFileName();
         $this->docComment = $reflection->getDocComment();
-        $this->constants = $reflection->getConstants();
 
         foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC)
             as $property
@@ -105,11 +101,6 @@ class Entity
     {
         $entityClass = $this->className;
         return new $entityClass($this, $values);
-    }
-
-    public function getConstants()
-    {
-        return $this->constants;
     }
 
     public function getClassName()
