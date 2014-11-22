@@ -2,28 +2,22 @@
 
 namespace UniMapper\Exception;
 
-use UniMapper\Reflection;
-
 /**
  * Throws when wrong property definition detected.
  */
 class PropertyException extends \UniMapper\Exception
 {
 
-    /** @var \UniMapper\Reflection\Entity $entityReflection */
-    protected $entityReflection;
+    /** @var string */
+    protected $class;
 
     /** @var string $definition Property definition */
     protected $definition;
 
-    public function __construct(
-        $message,
-        Reflection\Entity $entityReflection,
-        $definition = null,
-        $code = 0
-    ) {
+    public function __construct($message, $class, $definition = null, $code = 0)
+    {
         parent::__construct($message, $code);
-        $this->entityReflection = $entityReflection;
+        $this->class = $class;
         $this->definition = $definition;
     }
 
@@ -34,7 +28,8 @@ class PropertyException extends \UniMapper\Exception
      */
     public function getEntityPath()
     {
-        return $this->entityReflection->getFileName();
+        $reflection = new \ReflectionClass($this->class);
+        return $reflection->getFileName();
     }
 
     /**

@@ -17,6 +17,9 @@ class Property
 
     const TYPE_DATETIME = "DateTime";
 
+    /** @var string */
+    private $entityClass;
+
     /** @var string $type */
     private $type;
 
@@ -66,6 +69,7 @@ class Property
     {
         $this->rawDefinition = $rawDefinition;
         $this->entityReflection = $entityReflection;
+        $this->entityClass = $entityReflection->getClassName();
 
         $arguments = preg_split('/\s+/', $rawDefinition, null, PREG_SPLIT_NO_EMPTY);
 
@@ -96,7 +100,7 @@ class Property
             throw new Exception\PropertyException(
                 "Computed property can not be combined with mapping, enumeration"
                 . " or primary!",
-                $this->entityReflection,
+                $this->entityClass,
                 $this->rawDefinition
             );
         }
@@ -107,7 +111,7 @@ class Property
             throw new Exception\PropertyException(
                 "Association can not be combined with mapping, computed or "
                 . "enumeration!",
-                $this->entityReflection,
+                $this->entityClass,
                 $this->rawDefinition
             );
         }
@@ -156,7 +160,7 @@ class Property
         if ($length === 1 || substr($definition, 0, 1) !== "$") {
             throw new Exception\PropertyException(
                 "Invalid property name definition!",
-                $this->entityReflection,
+                $this->entityClass,
                 $this->rawDefinition
             );
         }
@@ -247,7 +251,7 @@ class Property
 
         throw new Exception\PropertyException(
             "Unsupported type '" . $definition . "'!",
-            $this->entityReflection,
+            $this->entityClass,
             $this->rawDefinition
         );
     }
@@ -293,7 +297,7 @@ class Property
                 throw new Exception\PropertyException(
                     "Can not find computed method with name "
                     . $computedMethodName . "!",
-                    $this->entityReflection,
+                   $this->entityClass,
                     $this->rawDefinition
                 );
             }
@@ -304,7 +308,7 @@ class Property
             if ($this->mapping) {
                 throw new Exception\PropertyException(
                     "Mapping already defined!",
-                    $this->entityReflection,
+                   $this->entityClass,
                     $this->rawDefinition
                 );
             }
@@ -317,7 +321,7 @@ class Property
             } catch (Exception\DefinitionException $e) {
                 throw new Exception\PropertyException(
                     $e->getMessage(),
-                    $this->entityReflection,
+                   $this->entityClass,
                     $this->rawDefinition
                 );
             }
@@ -327,12 +331,12 @@ class Property
             try {
                 $this->enumeration = new Property\Enumeration(
                     $matches,
-                    $this->entityReflection->getClassName()
+                    $this->entityClass
                 );
             } catch (Exception\DefinitionException $e) {
                 throw new Exception\PropertyException(
                     $e->getMessage(),
-                    $this->entityReflection,
+                    $this->entityClass,
                     $this->rawDefinition
                 );
             }
@@ -346,9 +350,9 @@ class Property
             if (!$this->entityReflection->hasAdapter()) {
                 throw new Exception\PropertyException(
                     "Can not use associations while entity "
-                    . $this->entityReflection->getClassName()
+                    . $this->entityClass
                     . " has no adapter defined!",
-                    $this->entityReflection,
+                    $this->entityClass,
                     $this->rawDefinition
                 );
             }
@@ -362,7 +366,7 @@ class Property
                 throw new Exception\PropertyException(
                     "Property type must be collection or entity if association "
                     . "defined!",
-                    $this->entityReflection,
+                    $this->entityClass,
                     $this->rawDefinition
                 );
             }
@@ -371,7 +375,7 @@ class Property
                     "Can not use associations while target entity "
                     . $targetEntityReflection->getClassName()
                     . " has no adapter defined!",
-                    $this->entityReflection,
+                    $this->entityClass,
                     $this->rawDefinition
                 );
             }
@@ -391,7 +395,7 @@ class Property
                     if ($e->getCode() !== Exception\DefinitionException::DO_NOT_FAIL) {
                         throw new Exception\PropertyException(
                             $e->getMessage(),
-                            $this->entityReflection,
+                            $this->entityClass,
                             $this->rawDefinition
                         );
                     }
@@ -401,7 +405,7 @@ class Property
             if (!$this->association) {
                 throw new Exception\PropertyException(
                     "Unrecognized association m:assoc(" . $matches[1] . ")!",
-                    $this->entityReflection,
+                    $this->entityClass,
                     $this->rawDefinition
                 );
             }
@@ -411,7 +415,7 @@ class Property
             ) {
                 throw new Exception\PropertyException(
                     "Type must be entity collection! " . $this->name .$this->rawDefinition,
-                    $this->entityReflection,
+                    $this->entityClass,
                     $this->rawDefinition
                 );
             } elseif ($this->association instanceof Association\Single
@@ -419,7 +423,7 @@ class Property
             ) {
                 throw new Exception\PropertyException(
                     "Type must be entity!",
-                    $this->entityReflection,
+                    $this->entityClass,
                     $this->rawDefinition
                 );
             }
@@ -443,7 +447,7 @@ class Property
             throw new Exception\PropertyValueException(
                 "Value " . $value . " is not from defined entity enumeration "
                 . "range on property " . $this->name . "!",
-                $this->entityReflection,
+                $this->entityClass,
                 $this->rawDefinition,
                 Exception\PropertyValueException::ENUMERATION
             );
@@ -458,7 +462,7 @@ class Property
             throw new Exception\PropertyValueException(
                 "Expected " . $expectedType . " but " . gettype($value)
                 . " given on property " . $this->name . "!",
-                $this->entityReflection,
+                $this->entityClass,
                 $this->rawDefinition,
                 Exception\PropertyValueException::TYPE
             );
@@ -480,7 +484,7 @@ class Property
                 throw new Exception\PropertyValueException(
                     "Expected entity " . $expectedType . " but " . $givenType
                     . " given on property " . $this->name . "!",
-                    $this->entityReflection,
+                    $this->entityClass,
                     $this->rawDefinition,
                     Exception\PropertyValueException::TYPE
                 );
@@ -494,7 +498,7 @@ class Property
                 throw new Exception\PropertyValueException(
                     "Expected entity collection but " . $givenType . " given on"
                     . " property " . $this->name . "!",
-                    $this->entityReflection,
+                    $this->entityClass,
                     $this->rawDefinition,
                     Exception\PropertyValueException::TYPE
                 );
@@ -505,7 +509,7 @@ class Property
                     . " but collection of entity "
                     . $value->getEntityReflection()->getClassName()
                     . " given on property " . $this->name . "!",
-                    $this->entityReflection,
+                    $this->entityClass,
                     $this->rawDefinition,
                     Exception\PropertyValueException::TYPE
                 );
@@ -522,7 +526,7 @@ class Property
                 throw new Exception\PropertyValueException(
                     "Expected DateTime but " . $givenType . " given on"
                     . " property " . $this->name . "!",
-                    $this->entityReflection,
+                    $this->entityClass,
                     $this->rawDefinition,
                     Exception\PropertyValueException::TYPE
                 );

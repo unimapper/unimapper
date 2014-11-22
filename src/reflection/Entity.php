@@ -166,7 +166,7 @@ class Entity
             if (isset($properties[$property->getName()])) {
                 throw new Exception\PropertyException(
                     "Duplicate property with name '" . $property->getName() . "'!",
-                    $this,
+                    $this->className,
                     $definition
                 );
             }
@@ -174,7 +174,7 @@ class Entity
                 throw new Exception\PropertyException(
                     "Property '" . $property->getName()
                     . "' already defined as public property!",
-                    $this,
+                    $this->className,
                     $definition
                 );
             }
@@ -183,7 +183,7 @@ class Entity
             if ($property->isPrimary() && $this->primaryPropertyName !== null) {
                 throw new Exception\PropertyException(
                     "Primary property already defined!",
-                    $this,
+                    $this->className,
                     $annotation
                 );
             } elseif ($property->isPrimary()) {
@@ -192,7 +192,7 @@ class Entity
             if ($property->isAssociation() && $this->primaryPropertyName === null) {
                 throw new Exception\PropertyException(
                     "You must define primary property before the association!",
-                    $this,
+                    $this->className,
                     $annotation
                 );
             }
@@ -221,7 +221,7 @@ class Entity
         if (count($annotations[0]) > 1) {
             throw new Exception\PropertyException(
                 "Only one adapter definition allowed!",
-                $this,
+                $this->className,
                 $annotations[0][1]
             );
         }
@@ -231,7 +231,7 @@ class Entity
         } catch (Exception\DefinitionException $e) {
             throw new Exception\PropertyException(
                 $e->getMessage(),
-                $this,
+                $this->className,
                 $annotations[0][1]
             );
         }
