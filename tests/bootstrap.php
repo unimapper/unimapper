@@ -29,3 +29,7 @@ date_default_timezone_set('Europe/Prague');
 
 UniMapper\NamingConvention::$entityMask = "UniMapper\Tests\Fixtures\Entity\*";
 UniMapper\NamingConvention::$repositoryMask = "UniMapper\Tests\Fixtures\Repository\*Repository";
+
+function is_hhvm() {
+    return defined('HHVM_VERSION');
+}

@@ -297,8 +297,8 @@ class EntityTest extends UniMapper\Tests\TestCase
            $given[] = $name;
         }
         Assert::same($expected, $given);
-        Assert::same('publicProperty', key($this->entity));
-        Assert::same('defaultValue', current($this->entity));
+        Assert::same('publicProperty', is_hhvm() ? $this->entity->key() : key($this->entity));
+        Assert::same('defaultValue', is_hhvm() ?  $this->entity->current() : current($this->entity));
     }
 
     public function testEntityWithoutProperties()
