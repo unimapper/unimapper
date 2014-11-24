@@ -2,8 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exception,
-    UniMapper\Reflection;
+use UniMapper\Reflection;
 
 class Insert extends \UniMapper\Query
 {
