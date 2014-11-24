@@ -2,6 +2,7 @@
 
 use Tester\Assert,
     UniMapper\Query,
+    UniMapper\Cache,
     UniMapper\Association,
     UniMapper\Reflection;
 
@@ -277,6 +278,45 @@ class QueryFindTest extends UniMapper\Tests\TestCase
         Assert::same(4, $result[1]->id);
         Assert::count(1, $result[1]->manyToManyNoDominance);
         Assert::same(2, $result[1]->manyToManyNoDominance[0]->id);
+    }
+
+    public function testCached()
+    {
+        $this->adapters["FooAdapter"]->shouldReceive("createFind")
+            ->with("simple_resource", ["simplePrimaryId"], [], null, null)
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]->shouldReceive("execute")
+            ->with($this->adapterQueryMock)
+            ->once()
+            ->andReturn([["simplePrimaryId" => 3], ["simplePrimaryId" => 4]]);
+
+        $this->adapterQueryMock->shouldReceive("setConditions")
+            ->with([["simplePrimaryId", "IS", 1, "AND"]])
+            ->once();
+
+        $simpleRef = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Simple");
+        $nestedRef = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Nested");
+        $remoteRef = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Remote");;
+
+        $cacheMock = Mockery::mock("UniMapper\Tests\Fixtures\Cache\CustomCache");
+        $cacheMock->shouldReceive("load")->with(3297414715)->andReturn(false);
+        $cacheMock->shouldReceive("save")->with(
+            3297414715,
+            [["simplePrimaryId" => 3], ["simplePrimaryId" => 4]],
+            [
+                Cache\ICache::TAGS => ["myTag", Cache\ICache::TAG_QUERY],
+                Cache\ICache::FILES => [
+                    $simpleRef->getFileName(),
+                    $nestedRef->getFileName(),
+                    $remoteRef->getFileName()
+                ]
+            ]
+        );
+
+        $query = new Query\Find(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, "id");
+        $query->setCache($cacheMock);
+        $query->where("id", "IS", 1)->cached(true, [Cache\ICache::TAGS => ["myTag"]])->execute();
     }
 
 }

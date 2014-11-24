@@ -68,8 +68,11 @@ class Find extends Selectable
 
     public function cached($enable = true, array $options = [])
     {
-        $this->cached = (bool) $enable;
-        $this->cachedOptions = $options;
+        if ($this->cache) {
+
+            $this->cached = (bool) $enable;
+            $this->cachedOptions = $options;
+        }
         return $this;
     }
 
@@ -95,10 +98,6 @@ class Find extends Selectable
         $mapping = $adapter->getMapper();
 
         if ($this->cached) {
-
-            if (!$this->cache) {
-                throw new Exception\QueryException("Cache not set!");
-            }
 
             $cachedResult = $this->cache->load($this->_getQueryChecksum());
             if ($cachedResult) {
