@@ -7,7 +7,7 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class QueryFindOneTest extends UniMapper\Tests\TestCase
+class QuerySelectOneTest extends UniMapper\Tests\TestCase
 {
 
     /** @var array $adapters */
@@ -32,7 +32,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
     {
         $entity = $this->createEntity("Simple", ["id" => 1]);
 
-        $this->adapters["FooAdapter"]->shouldReceive("createFindOne")
+        $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
             ->with("simple_resource", "simplePrimaryId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
@@ -41,7 +41,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn(["id" => 1]);
 
-        $query = new Query\FindOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, $entity->id);
+        $query = new Query\SelectOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, $entity->id);
         $result = $query->execute();
 
         Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $result);
@@ -57,7 +57,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
             )
             ->once();
 
-        $this->adapters["FooAdapter"]->shouldReceive("createFindOne")
+        $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
             ->with("simple_resource", "simplePrimaryId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
@@ -66,13 +66,13 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn(false);
 
-        $query = new Query\FindOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, 1);
+        $query = new Query\SelectOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, 1);
         Assert::false($query->associate("collection")->execute());
     }
 
     public function testAssociateManyToManyRemote()
     {
-        $this->adapters["FooAdapter"]->shouldReceive("createFindOne")
+        $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
             ->with("simple_resource", "simplePrimaryId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
@@ -84,7 +84,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
         $this->adapterQueryMock->shouldReceive("setConditions")
             ->with([["simpleId", "IN", [1], "AND"]])
             ->once();
-        $this->adapters["FooAdapter"]->shouldReceive("createFind")
+        $this->adapters["FooAdapter"]->shouldReceive("createSelect")
             ->with("simple_remote", ['simpleId', 'remoteId'])
             ->once()
             ->andReturn($this->adapterQueryMock);
@@ -98,7 +98,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
                 ]
             );
 
-        $this->adapters["RemoteAdapter"]->shouldReceive("createFind")
+        $this->adapters["RemoteAdapter"]->shouldReceive("createSelect")
             ->with("remote_resource")
             ->once()
             ->andReturn($this->adapterQueryMock);
@@ -110,7 +110,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn([["id" => 2], ["id" => 3]]);
 
-        $query = new Query\FindOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, 1);
+        $query = new Query\SelectOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, 1);
         $result = $query->associate("manyToMany")->execute();
 
         Assert::same(1, $result->id);
@@ -121,7 +121,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
 
     public function testAssociateManyToOneRemote()
     {
-        $this->adapters["FooAdapter"]->shouldReceive("createFindOne")
+        $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
             ->with("simple_resource", "simplePrimaryId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
@@ -131,7 +131,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
             ->andReturn(["simplePrimaryId" => 1, "remoteId" => 2]);
 
         $this->adapterQueryMock->shouldReceive("setConditions")->with([["id", "IN", [2], "AND"]])->once();
-        $this->adapters["RemoteAdapter"]->shouldReceive("createFind")
+        $this->adapters["RemoteAdapter"]->shouldReceive("createSelect")
             ->with("remote_resource")
             ->once()
             ->andReturn($this->adapterQueryMock);
@@ -140,7 +140,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn([["id" => 2]]);
 
-        $query = new Query\FindOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, 1);
+        $query = new Query\SelectOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, 1);
         $result = $query->associate("manyToOne")->execute();
 
         Assert::same(1, $result->id);
@@ -149,7 +149,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
 
     public function testAssociateManyToManyRemoteNoDominance()
     {
-        $this->adapters["RemoteAdapter"]->shouldReceive("createFindOne")
+        $this->adapters["RemoteAdapter"]->shouldReceive("createSelectOne")
             ->with("remote_resource", "id", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
@@ -161,7 +161,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
         $this->adapterQueryMock->shouldReceive("setConditions")
             ->with([["remoteId", "IN", [1], "AND"]])
             ->once();
-        $this->adapters["FooAdapter"]->shouldReceive("createFind")
+        $this->adapters["FooAdapter"]->shouldReceive("createSelect")
             ->with(
                 "simple_remote",
                 ['remoteId', 'simpleId']
@@ -178,7 +178,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
                 ]
             );
 
-        $this->adapters["FooAdapter"]->shouldReceive("createFind")
+        $this->adapters["FooAdapter"]->shouldReceive("createSelect")
             ->with("simple_resource")
             ->once()
             ->andReturn($this->adapterQueryMock);
@@ -190,7 +190,7 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn([["simplePrimaryId" => 2], ["simplePrimaryId" => 3]]);
 
-        $query = new Query\FindOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote"), $this->adapters, 1);
+        $query = new Query\SelectOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote"), $this->adapters, 1);
         $result = $query->associate("manyToManyNoDominance")->execute();
 
         Assert::same(1, $result->id);
@@ -201,5 +201,5 @@ class QueryFindOneTest extends UniMapper\Tests\TestCase
 
 }
 
-$testCase = new QueryFindOneTest;
+$testCase = new QuerySelectOneTest;
 $testCase->run();

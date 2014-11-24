@@ -85,7 +85,7 @@ class ManyToMany extends Multi
             $currentAdapter = $targetAdapter;
         }
 
-        $joinQuery = $currentAdapter->createFind(
+        $joinQuery = $currentAdapter->createSelect(
             $this->getJoinResource(),
             [$this->getJoinKey(), $this->getReferenceKey()]
         );
@@ -107,7 +107,7 @@ class ManyToMany extends Multi
             ]
         );
 
-        $targetQuery = $targetAdapter->createFind(
+        $targetQuery = $targetAdapter->createSelect(
             $this->getTargetResource()
         );
         $targetQuery->setConditions(

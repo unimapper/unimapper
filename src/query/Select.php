@@ -8,7 +8,7 @@ use UniMapper\Exception,
     UniMapper\NamingConvention as UNC,
     UniMapper\Cache\ICache;
 
-class Find extends Selectable
+class Select extends Selectable
 {
 
     const ASC = "asc",
@@ -105,7 +105,7 @@ class Find extends Selectable
             }
         }
 
-        $query = $adapter->createFind(
+        $query = $adapter->createSelect(
             $this->entityReflection->getAdapterReflection()->getResource(),
             $this->_createSelection(),
             $this->orderBy,

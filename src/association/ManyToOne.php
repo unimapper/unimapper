@@ -40,7 +40,7 @@ class ManyToOne extends Single
         Adapter\IAdapter $targetAdapter,
         array $primaryValues
     ) {
-        $query = $targetAdapter->createFind($this->getTargetResource());
+        $query = $targetAdapter->createSelect($this->getTargetResource());
         $query->setConditions(
             [
                 [

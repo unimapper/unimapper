@@ -12,9 +12,9 @@ interface IAdapter
 
     public function createDelete($resource);
 
-    public function createFindOne($resource, $column, $primaryValue);
+    public function createSelectOne($resource, $column, $primaryValue);
 
-    public function createFind($resource, array $selection = [], array $orderBy = [], $limit = 0, $offset = 0);
+    public function createSelect($resource, array $selection = [], array $orderBy = [], $limit = 0, $offset = 0);
 
     public function createCount($resource);
 

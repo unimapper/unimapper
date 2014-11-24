@@ -23,7 +23,7 @@ class QueryConditionableTest extends UniMapper\Tests\TestCase
      */
     private function createConditionableQuery()
     {
-        return new UniMapper\Query\Find(
+        return new UniMapper\Query\Select(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["FooAdapter" => $this->adapterMock]
         );

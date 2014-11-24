@@ -4,8 +4,8 @@ namespace UniMapper;
 
 /**
  * @method \UniMapper\Query\Associate associate($primaryValue, Association $association)
- * @method \UniMapper\Query\Find      find()
- * @method \UniMapper\Query\FindOne   findOne($primaryValue)
+ * @method \UniMapper\Query\Select    select()
+ * @method \UniMapper\Query\SelectOne selectOne($primaryValue)
  * @method \UniMapper\Query\Insert    insert(array $data)
  * @method \UniMapper\Query\Update    update(array $data)
  * @method \UniMapper\Query\UpdateOne updateOne($primaryValue, array $data)
@@ -32,8 +32,8 @@ class QueryBuilder
         "raw" => "UniMapper\Query\Raw",
         "delete" => "UniMapper\Query\Delete",
         "deleteOne" => "UniMapper\Query\DeleteOne",
-        "find" => "UniMapper\Query\Find",
-        "findOne" => "UniMapper\Query\FindOne",
+        "select" => "UniMapper\Query\Select",
+        "selectOne" => "UniMapper\Query\SelectOne",
         "insert" => "UniMapper\Query\Insert",
         "update" => "UniMapper\Query\Update",
         "updateOne" => "UniMapper\Query\UpdateOne"

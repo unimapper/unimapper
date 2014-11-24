@@ -26,14 +26,14 @@ class QueryBuilderTest extends UniMapper\Tests\TestCase
         Assert::type("UniMapper\Query\Count", $this->builder->count("Simple"));
     }
 
-    public function testFind()
+    public function testSelect()
     {
-        Assert::type("UniMapper\Query\Find", $this->builder->find("Simple"));
+        Assert::type("UniMapper\Query\Select", $this->builder->select("Simple"));
     }
 
-    public function testFindOne()
+    public function testSelectOne()
     {
-        Assert::type("UniMapper\Query\FindOne", $this->builder->findOne("Simple", 1));
+        Assert::type("UniMapper\Query\SelectOne", $this->builder->selectOne("Simple", 1));
     }
 
     public function testUpdateOne()

@@ -5,7 +5,7 @@ namespace UniMapper\Query;
 use UniMapper\Exception,
     UniMapper\Reflection;
 
-class FindOne extends Selectable
+class SelectOne extends Selectable
 {
 
     /** @var mixed */
@@ -20,7 +20,7 @@ class FindOne extends Selectable
 
         if (!$entityReflection->hasPrimaryProperty()) {
             throw new Exception\QueryException(
-                "Can not use findOne() on entity without primary property!"
+                "Can not use query on entity without primary property!"
             );
         }
 
@@ -33,7 +33,7 @@ class FindOne extends Selectable
     {
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
 
-        $query = $adapter->createFindOne(
+        $query = $adapter->createSelectOne(
             $this->entityReflection->getAdapterReflection()->getResource(),
             $primaryProperty->getName(true),
             $this->primaryValue

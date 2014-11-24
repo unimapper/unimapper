@@ -13,7 +13,7 @@ class QueryTest extends UniMapper\Tests\TestCase
      */
     public function testAdapterRequired()
     {
-        new \UniMapper\Query\Find(
+        new \UniMapper\Query\Select(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             []
         );
@@ -24,7 +24,7 @@ class QueryTest extends UniMapper\Tests\TestCase
      */
     public function testNoAdapterEntity()
     {
-        new \UniMapper\Query\Find(
+        new \UniMapper\Query\Select(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoAdapter"),
             []
         );
