@@ -297,7 +297,7 @@ class Property
                 throw new Exception\PropertyException(
                     "Can not find computed method with name "
                     . $computedMethodName . "!",
-                   $this->entityClass,
+                    $this->entityClass,
                     $this->rawDefinition
                 );
             }
@@ -308,7 +308,7 @@ class Property
             if ($this->mapping) {
                 throw new Exception\PropertyException(
                     "Mapping already defined!",
-                   $this->entityClass,
+                    $this->entityClass,
                     $this->rawDefinition
                 );
             }
@@ -321,7 +321,7 @@ class Property
             } catch (Exception\DefinitionException $e) {
                 throw new Exception\PropertyException(
                     $e->getMessage(),
-                   $this->entityClass,
+                    $this->entityClass,
                     $this->rawDefinition
                 );
             }

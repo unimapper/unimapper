@@ -187,8 +187,8 @@ class ManyToMany extends Multi
             if ($action === Adapter\IAdapter::ASSOC_REMOVE) {
 
                 $targetPrimaryName = $this->getTargetReflection()
-                        ->getPrimaryProperty()
-                        ->getName(true);
+                    ->getPrimaryProperty()
+                    ->getName(true);
                 $targetAdapter->execute(
                     $targetAdapter->createDeleteOne(
                         $this->getTargetResource(),
