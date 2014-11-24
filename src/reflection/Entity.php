@@ -26,9 +26,6 @@ class Entity
     private $fileName;
 
     /** @var string */
-    private $docComment;
-
-    /** @var string */
     private $primaryPropertyName;
 
     /** @var boolean */
@@ -74,7 +71,6 @@ class Entity
         $reflection = new \ReflectionClass($this->className);
 
         $this->fileName = $reflection->getFileName();
-        $this->docComment = $reflection->getDocComment();
 
         foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC)
             as $property
@@ -82,8 +78,10 @@ class Entity
             $this->publicProperties[] =  $property->getName();
         }
 
-        $this->adapter = $this->_parseAdapter();
-        $this->_parseProperties();
+        $docComment = $reflection->getDocComment();
+        $this->adapter = $this->_parseAdapter($docComment);
+        $this->_parseProperties($docComment);
+
         $this->initialized = true;
     }
 
@@ -145,16 +143,18 @@ class Entity
     /**
      * Parse properties from annotations
      *
+     * @param string $docComment
+     *
      * @return array Collection of \UniMapper\Reflection\Entity\Property with
      *               property name as index.
      *
      * @throws Exception\PropertyException
      */
-    private function _parseProperties()
+    private function _parseProperties($docComment)
     {
         preg_match_all(
             '/\s*\*\s*@property([ -](read)*\s*.*)/',
-            $this->docComment,
+            $docComment,
             $annotations
         );
         $properties = [];
@@ -204,13 +204,15 @@ class Entity
     /**
      * Get adapter definition from annotations
      *
+     * @param string $docComment
+     *
      * @return \UniMapper\Reflection\Entity\Adapter|null
      */
-    private function _parseAdapter()
+    private function _parseAdapter($docComment)
     {
         preg_match_all(
             '#@adapter (.*?)\n#s',
-            $this->docComment,
+            $docComment,
             $annotations
         );
 
