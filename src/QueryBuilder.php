@@ -3,7 +3,6 @@
 namespace UniMapper;
 
 /**
- * @method \UniMapper\Query\Associate associate($primaryValue, Association $association)
  * @method \UniMapper\Query\Select    select()
  * @method \UniMapper\Query\SelectOne selectOne($primaryValue)
  * @method \UniMapper\Query\Insert    insert(array $data)
@@ -27,7 +26,6 @@ class QueryBuilder
 
     /** @var array */
     protected $queries = [
-        "associate" => "UniMapper\Query\Associate",
         "count" => "UniMapper\Query\Count",
         "raw" => "UniMapper\Query\Raw",
         "delete" => "UniMapper\Query\Delete",
