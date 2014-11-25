@@ -15,8 +15,8 @@ class OneToOne extends Single
     }
 
     public function find(
-        Adapter\IAdapter $currentAdapter,
-        Adapter\IAdapter $targetAdapter,
+        Adapter $currentAdapter,
+        Adapter $targetAdapter,
         array $primaryValues
     ) {
         $query = $targetAdapter->createSelect($this->getTargetResource());

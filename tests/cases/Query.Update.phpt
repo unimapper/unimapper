@@ -14,7 +14,7 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter\IAdapter");
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
         $this->adapters["FooAdapter"]->shouldReceive("getMapper")
             ->once()
             ->andReturn(new UniMapper\Adapter\Mapper);
@@ -42,7 +42,7 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
             ->with("simple_resource", ['text'=>'foo'])
             ->andReturn($adapterQueryMock);
 
-        $this->adapters["FooAdapter"]->shouldReceive("execute")
+        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
             ->once()
             ->with($adapterQueryMock)
             ->andReturn("2");

@@ -20,7 +20,7 @@ class Update extends Conditionable
         $this->entity = $entityReflection->createEntity($data);
     }
 
-    protected function onExecute(\UniMapper\Adapter\IAdapter $adapter)
+    protected function onExecute(\UniMapper\Adapter $adapter)
     {
         $values = $adapter->getMapper()->unmapEntity($this->entity);
 
@@ -39,11 +39,7 @@ class Update extends Conditionable
         );
         $query->setConditions($this->conditions);
 
-        $affectedCount = (int) $adapter->execute($query);
-
-        $this->adapterQueries[] = $query->getRaw();
-
-        return $affectedCount;
+        return (int) $adapter->execute($query);
     }
 
 }

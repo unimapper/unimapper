@@ -93,7 +93,7 @@ class Select extends Selectable
         return $this;
     }
 
-    protected function onExecute(\UniMapper\Adapter\IAdapter $adapter)
+    protected function onExecute(\UniMapper\Adapter $adapter)
     {
         $mapping = $adapter->getMapper();
 
@@ -123,9 +123,6 @@ class Select extends Selectable
 
         // Execute adapter query
         $result = $adapter->execute($query);
-
-        // Log generated adapter query
-        $this->adapterQueries[] = $query->getRaw();
 
         // Get remote associations
         if ($this->associations["remote"] && !empty($result)) {

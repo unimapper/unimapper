@@ -36,8 +36,8 @@ class ManyToOne extends Single
     }
 
     public function find(
-        Adapter\IAdapter $currentAdapter,
-        Adapter\IAdapter $targetAdapter,
+        Adapter $currentAdapter,
+        Adapter $targetAdapter,
         array $primaryValues
     ) {
         $query = $targetAdapter->createSelect($this->getTargetResource());
@@ -72,8 +72,8 @@ class ManyToOne extends Single
 
     public function modify(
         $primaryValue,
-        Adapter\IAdapter $sourceAdapter,
-        Adapter\IAdapter $targetAdapter
+        Adapter $sourceAdapter,
+        Adapter $targetAdapter
     ) {
         if ($this->getAttached()) {
 

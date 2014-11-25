@@ -13,10 +13,10 @@ class QueryCountTest extends UniMapper\Tests\TestCase
         $adapterQueryMock->shouldReceive("setConditions")->with([["simplePrimaryId", "=", 1, "AND"]])->once();
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
-        $adapterMock = Mockery::mock("UniMapper\Adapter\IAdapter");
+        $adapterMock = Mockery::mock("UniMapper\Adapter");
         $adapterMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
         $adapterMock->shouldReceive("createCount")->with("simple_resource")->once()->andReturn($adapterQueryMock);
-        $adapterMock->shouldReceive("execute")->with($adapterQueryMock)->once()->andReturn("1");
+        $adapterMock->shouldReceive("onExecute")->with($adapterQueryMock)->once()->andReturn("1");
 
         $query = new \UniMapper\Query\Count(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),

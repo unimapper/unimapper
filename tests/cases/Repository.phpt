@@ -16,7 +16,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->adapterMock = Mockery::mock("UniMapper\Adapter\IAdapter");
+        $this->adapterMock = Mockery::mock("UniMapper\Adapter");
         $this->adapterMock->shouldReceive("getName")->once()->andReturn("FooAdapter");
         $this->adapterMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
 
@@ -42,7 +42,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->once()
             ->with("simple_resource", "simplePrimaryId", 2, ["text" => "foo"])
             ->andReturn($adapterQueryMock);
-        $this->adapterMock->shouldReceive("execute")
+        $this->adapterMock->shouldReceive("onExecute")
             ->once()
             ->with($adapterQueryMock)
             ->andReturn(true);
@@ -67,7 +67,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->once()
             ->with("simple_resource", "simplePrimaryId", 2, ["text" => "foo"])
             ->andReturn($adapterQueryMock);
-        $this->adapterMock->shouldReceive("execute")
+        $this->adapterMock->shouldReceive("onExecute")
             ->once()
             ->with($adapterQueryMock)
             ->andReturn(false);
@@ -85,7 +85,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->once()
             ->with("simple_resource", ["text" => "foo"])
             ->andReturn($adapterQueryMock);
-        $this->adapterMock->shouldReceive("execute")
+        $this->adapterMock->shouldReceive("onExecute")
             ->once()
             ->with($adapterQueryMock)
             ->andReturn(["id" => 1]);
@@ -143,7 +143,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->with("simple_resource", "simplePrimaryId", 1)
             ->once()
             ->andReturn($adapterQueryMock);
-        $this->adapterMock->shouldReceive("execute")
+        $this->adapterMock->shouldReceive("onExecute")
             ->with($adapterQueryMock)
             ->once()
             ->andReturn(true);
@@ -161,7 +161,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->with("simple_resource", "simplePrimaryId", 1)
             ->once()
             ->andReturn($adapterQueryMock);
-        $this->adapterMock->shouldReceive("execute")
+        $this->adapterMock->shouldReceive("onExecute")
             ->with($adapterQueryMock)
             ->once()
             ->andReturn(false);
@@ -182,7 +182,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->with("simple_resource", ['simplePrimaryId', 'text', 'empty', 'link', 'email_address', 'time', 'ip', 'mark', 'entity', 'readonly', 'stored_data', 'enumeration'], [], null, null)
             ->once()
             ->andReturn($adapterQueryMock);
-        $this->adapterMock->shouldReceive("execute")
+        $this->adapterMock->shouldReceive("onExecute")
             ->with($adapterQueryMock)
             ->once()
             ->andReturn([["simplePrimaryId" => 1], ["simplePrimaryId" => 2]]);

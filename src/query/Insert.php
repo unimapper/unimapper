@@ -19,7 +19,7 @@ class Insert extends \UniMapper\Query
         $this->entity = $entityReflection->createEntity($data);
     }
 
-    protected function onExecute(\UniMapper\Adapter\IAdapter $adapter)
+    protected function onExecute(\UniMapper\Adapter $adapter)
     {
         $query = $adapter->createInsert(
             $this->entityReflection->getAdapterReflection()->getResource(),
@@ -27,8 +27,6 @@ class Insert extends \UniMapper\Query
         );
 
         $primaryValue = $adapter->execute($query);
-
-        $this->adapterQueries[] = $query->getRaw();
 
         if ($this->entityReflection->hasPrimaryProperty()) {
 

@@ -77,8 +77,8 @@ class ManyToMany extends Multi
      * @todo should be optimized with 1 query only on same adapters
      */
     public function find(
-        Adapter\IAdapter $currentAdapter,
-        Adapter\IAdapter $targetAdapter,
+        Adapter $currentAdapter,
+        Adapter $targetAdapter,
         array $primaryValues
     ) {
         if (!$this->isDominant()) {
@@ -152,8 +152,8 @@ class ManyToMany extends Multi
 
     public function modify(
         $primaryValue,
-        Adapter\IAdapter $sourceAdapter,
-        Adapter\IAdapter $targetAdapter
+        Adapter $sourceAdapter,
+        Adapter $targetAdapter
     ) {
         if ($this->isRemote() && !$this->isDominant()) {
             $sourceAdapter = $targetAdapter;
@@ -170,8 +170,8 @@ class ManyToMany extends Multi
 
     private function _executeModify(
         $primaryValue,
-        Adapter\IAdapter $joinAdapter,
-        Adapter\IAdapter $targetAdapter,
+        Adapter $joinAdapter,
+        Adapter $targetAdapter,
         $action = Adapter\IAdapter::ASSOC_ADD
     ) {
         if ($action === Adapter\IAdapter::ASSOC_REMOVE) {

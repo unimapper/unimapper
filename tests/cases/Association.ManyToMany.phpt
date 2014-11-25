@@ -17,8 +17,8 @@ class AssociationManyToManyTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter\IAdapter");
-        $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter\IAdapter");
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
+        $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter");
 
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
     }
@@ -35,7 +35,7 @@ class AssociationManyToManyTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["RemoteAdapter"]
-            ->shouldReceive("execute")
+            ->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(2);
@@ -50,7 +50,7 @@ class AssociationManyToManyTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]
-            ->shouldReceive("execute")
+            ->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(null);
@@ -76,7 +76,7 @@ class AssociationManyToManyTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["RemoteAdapter"]
-            ->shouldReceive("execute")
+            ->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(2);
@@ -91,7 +91,7 @@ class AssociationManyToManyTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]
-            ->shouldReceive("execute")
+            ->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(null);

@@ -8,14 +8,6 @@ use UniMapper\Reflection,
 abstract class Query
 {
 
-    protected $executed = false;
-
-    /** @var integer */
-    private $elapsed;
-
-    /** @var mixed */
-    private $result;
-
     /** @var array */
     protected $adapters = [];
 
@@ -25,8 +17,11 @@ abstract class Query
     /** @var \UniMapper\Cache\ICache */
     protected $cache;
 
-    /** @var array $adapterQueries List of queries executed on adapter */
-    protected $adapterQueries = [];
+    /** @var array */
+    private $beforeExecute = [];
+
+    /** @var array */
+    private $afterExecute = [];
 
     public function __construct(Reflection\Entity $reflection, array $adapters)
     {
@@ -58,6 +53,16 @@ abstract class Query
         $this->cache = $cache;
     }
 
+    public function beforeExecute(callable $callback)
+    {
+        $this->beforeExecute[] = $callback;
+    }
+
+    public function afterExecute(callable $callback)
+    {
+        $this->afterExecute[] = $callback;
+    }
+
     public static function getName()
     {
         $reflection = new \ReflectionClass(get_called_class());
@@ -74,11 +79,21 @@ abstract class Query
                 "Adapter with name '" . $adapterName . "' not given!"
             );
         }
-        $this->result = $this->onExecute($this->adapters[$adapterName]);
-        $this->elapsed = microtime(true) - $start;
-        $this->executed = true;
 
-        return $this->result;
+        foreach ($this->beforeExecute as $callback) {
+
+            // function(\UniMapper\Query $query)
+            $callback($this);
+        }
+
+        $result = $this->onExecute($this->adapters[$adapterName]);
+        foreach ($this->afterExecute as $callback) {
+
+            // function(\UniMapper\Query $query, mixed $result, int $elapsed)
+            $callback($this, $result, microtime(true) - $start);
+        }
+
+        return $result;
     }
 
 }

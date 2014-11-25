@@ -18,10 +18,10 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter\IAdapter");
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
         $this->adapters["FooAdapter"]->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
 
-        $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter\IAdapter");
+        $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter");
         $this->adapters["RemoteAdapter"]->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
 
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
@@ -36,7 +36,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             ->with("simple_resource", "simplePrimaryId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["FooAdapter"]->shouldReceive("execute")
+        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(["id" => 1]);
@@ -61,7 +61,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             ->with("simple_resource", "simplePrimaryId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["FooAdapter"]->shouldReceive("execute")
+        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(false);
@@ -76,7 +76,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             ->with("simple_resource", "simplePrimaryId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["FooAdapter"]->shouldReceive("execute")
+        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
              ->once()
              ->with($this->adapterQueryMock)
              ->andReturn(["simplePrimaryId" => 1]);
@@ -88,7 +88,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             ->with("simple_remote", ['simpleId', 'remoteId'])
             ->once()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["FooAdapter"]->shouldReceive("execute")
+        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(
@@ -105,7 +105,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
         $this->adapterQueryMock->shouldReceive("setConditions")
             ->with([["id", "IN", [2, 3], "AND"]])
             ->once();
-        $this->adapters["RemoteAdapter"]->shouldReceive("execute")
+        $this->adapters["RemoteAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn([["id" => 2], ["id" => 3]]);
@@ -125,7 +125,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             ->with("simple_resource", "simplePrimaryId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["FooAdapter"]->shouldReceive("execute")
+        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(["simplePrimaryId" => 1, "remoteId" => 2]);
@@ -135,7 +135,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             ->with("remote_resource")
             ->once()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["RemoteAdapter"]->shouldReceive("execute")
+        $this->adapters["RemoteAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn([["id" => 2]]);
@@ -153,7 +153,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             ->with("remote_resource", "id", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["RemoteAdapter"]->shouldReceive("execute")
+        $this->adapters["RemoteAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(["id" => 1]);
@@ -168,7 +168,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             )
             ->once()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["FooAdapter"]->shouldReceive("execute")
+        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(
@@ -185,7 +185,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
         $this->adapterQueryMock->shouldReceive("setConditions")
              ->with([["simplePrimaryId", "IN", [2, 3], "AND"]])
              ->once();
-        $this->adapters["FooAdapter"]->shouldReceive("execute")
+        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn([["simplePrimaryId" => 2], ["simplePrimaryId" => 3]]);

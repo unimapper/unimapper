@@ -14,7 +14,7 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter\IAdapter");
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
     }
 
     public function testSuccess()
@@ -34,7 +34,7 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
             ->once();
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
-        $this->adapters["FooAdapter"]->shouldReceive("execute")
+        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
             ->with($adapterQueryMock)
             ->once()
             ->andReturn("2");

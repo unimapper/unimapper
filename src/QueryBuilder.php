@@ -18,9 +18,6 @@ class QueryBuilder
     /** @var array */
     protected $adapters = [];
 
-    /** @var array $created Created queries  */
-    protected $created = [];
-
     /** @var EntityFactory */
     protected $entityFactory;
 
@@ -36,6 +33,10 @@ class QueryBuilder
         "update" => "UniMapper\Query\Update",
         "updateOne" => "UniMapper\Query\UpdateOne"
     ];
+
+    protected $beforeQuery = [];
+
+    protected $afterQuery = [];
 
     public function __construct(EntityFactory $entityFactory)
     {
@@ -67,7 +68,13 @@ class QueryBuilder
             $query->setCache($this->entityFactory->getCache());
         }
 
-        $this->created[] = $query;
+        foreach ($this->beforeQuery as $callback) {
+            $query->beforeExecute($callback);
+        }
+
+        foreach ($this->afterQuery as $callback) {
+            $query->afterExecute($callback);
+        }
 
         return $query;
     }
@@ -82,7 +89,7 @@ class QueryBuilder
         $this->queries[$class::getName()] = $class;
     }
 
-    public function registerAdapter($name, Adapter\IAdapter $adapter)
+    public function registerAdapter($name, Adapter $adapter)
     {
         if (isset($this->adapters[$name])) {
             throw new Exception\InvalidArgumentException(
@@ -98,14 +105,19 @@ class QueryBuilder
         return $this->entityFactory;
     }
 
-    public function getCreated()
-    {
-        return $this->created;
-    }
-
     public function getAdapters()
     {
         return $this->adapters;
+    }
+
+    public function afterQuery(callable $callback)
+    {
+        $this->afterQuery[] = $callback;
+    }
+
+    public function beforeQuery(callable $callback)
+    {
+        $this->beforeQuery[] = $callback;
     }
 
 }

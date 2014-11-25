@@ -38,7 +38,7 @@ class UpdateOne extends Conditionable
         $this->entity = $entityReflection->createEntity($data);
     }
 
-    protected function onExecute(\UniMapper\Adapter\IAdapter $adapter)
+    protected function onExecute(\UniMapper\Adapter $adapter)
     {
         $values = $adapter->getMapper()->unmapEntity($this->entity);
 
@@ -54,11 +54,7 @@ class UpdateOne extends Conditionable
             $values
         );
 
-        $success = (bool) $adapter->execute($query);
-
-        $this->adapterQueries[] = $query->getRaw();
-
-        return $success;
+        return (bool) $adapter->execute($query);
     }
 
 }

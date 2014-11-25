@@ -29,7 +29,7 @@ class SelectOne extends Selectable
         $this->primaryValue = $primaryValue;
     }
 
-    protected function onExecute(\UniMapper\Adapter\IAdapter $adapter)
+    protected function onExecute(\UniMapper\Adapter $adapter)
     {
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
 
@@ -44,8 +44,6 @@ class SelectOne extends Selectable
         }
 
         $result = $adapter->execute($query);
-
-        $this->adapterQueries[] = $query->getRaw();
 
         if (!$result) {
             return false;

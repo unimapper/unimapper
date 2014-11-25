@@ -240,7 +240,7 @@ abstract class Repository
      *
      * @param string $name
      *
-     * @return \UniMapper\Adapter\IAdapter
+     * @return \UniMapper\Adapter
      */
     protected function getAdapter($name)
     {
