@@ -15,7 +15,8 @@ class QueryTest extends UniMapper\Tests\TestCase
     {
         new \UniMapper\Query\Select(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            []
+            [],
+            new \UniMapper\Mapper
         );
     }
 
@@ -26,7 +27,8 @@ class QueryTest extends UniMapper\Tests\TestCase
     {
         new \UniMapper\Query\Select(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoAdapter"),
-            []
+            [],
+            new \UniMapper\Mapper
         );
     }
 

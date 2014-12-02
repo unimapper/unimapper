@@ -11,6 +11,19 @@ abstract class Adapter implements Adapter\IAdapter
     /** @var array */
     private $beforeExecute = [];
 
+    /** @var Adapter\Mapping */
+    private $mapping;
+
+    public function __construct(Adapter\Mapping $mapping = null)
+    {
+        $this->mapping = $mapping;
+    }
+
+    final public function getMapping()
+    {
+        return $this->mapping;
+    }
+
     public function beforeExecute(callable $callback)
     {
         $this->beforeExecute[] = $callback;

@@ -19,10 +19,6 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
 
     public function testSuccess()
     {
-        $this->adapters["FooAdapter"]->shouldReceive("getMapper")
-            ->once()
-            ->andReturn(new UniMapper\Adapter\Mapper);
-
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $this->adapters["FooAdapter"]->shouldReceive("createDelete")
             ->with("simple_resource")
@@ -39,7 +35,11 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn("2");
 
-        $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters);
+        $query = new Query\Delete(
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
+            $this->adapters,
+            new \UniMapper\Mapper
+        );
         $query->where("id", "=", 1);
         Assert::same(2, $query->execute());
     }
@@ -49,7 +49,11 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
      */
     public function testNoConditionGiven()
     {
-        $query = new Query\Delete(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters);
+        $query = new Query\Delete(
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
+            $this->adapters,
+            new \UniMapper\Mapper
+        );
         $query->execute();
     }
 

@@ -13,6 +13,9 @@ abstract class Repository
     /** @var \UniMapper\EntityFactory */
     protected $entityFactory;
 
+    /** @var \UniMapper\Mapper */
+    protected $mapper;
+
     public function __construct(QueryBuilder $queryBuilder)
     {
         $this->queryBuilder = $queryBuilder;
@@ -245,6 +248,32 @@ abstract class Repository
     protected function getAdapter($name)
     {
         return $this->queryBuilder->getAdapters()[$name];
+    }
+
+    protected function mapToEntity($name, $values)
+    {
+        return $this->queryBuilder->getMapper()->mapEntity(
+            $this->entityFactory->getEntityReflection($name),
+            $values
+        );
+    }
+
+    protected function mapToCollection($name, $values)
+    {
+        return $this->queryBuilder->getMapper()->mapCollection(
+            $this->entityFactory->getEntityReflection($name),
+            $values
+        );
+    }
+
+    protected function unmapFromEntity(Entity $entity)
+    {
+        return $this->queryBuilder->getMapper()->unmapEntity($entity);
+    }
+
+    protected function unmapFromCollection(EntityCollection $collection)
+    {
+        return $this->queryBuilder->getMapper()->unmapCollection($collection);
     }
 
     /**

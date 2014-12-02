@@ -18,6 +18,9 @@ class QueryBuilder
     /** @var array */
     protected $adapters = [];
 
+    /** @var Mapper */
+    protected $mapper;
+
     /** @var EntityFactory */
     protected $entityFactory;
 
@@ -38,9 +41,10 @@ class QueryBuilder
 
     protected $afterQuery = [];
 
-    public function __construct(EntityFactory $entityFactory)
+    public function __construct(EntityFactory $entityFactory, \UniMapper\Mapper $mapper)
     {
         $this->entityFactory = $entityFactory;
+        $this->mapper = $mapper;
     }
 
     public function __call($name, $arguments)
@@ -59,7 +63,7 @@ class QueryBuilder
         $entityReflection = $this->entityFactory->getEntityReflection($arguments[0]);
 
         unset($arguments[0]);
-        array_unshift($arguments, $entityReflection, $this->adapters);
+        array_unshift($arguments, $entityReflection, $this->adapters, $this->mapper);
 
         $class = new \ReflectionClass($this->queries[$name]);
         $query = $class->newInstanceArgs($arguments);
@@ -79,6 +83,20 @@ class QueryBuilder
         return $query;
     }
 
+    public function registerAdapter($name, Adapter $adapter)
+    {
+        if (isset($this->adapters[$name])) {
+            throw new Exception\InvalidArgumentException(
+                "Adapter with name " . $name . " already registered!"
+            );
+        }
+
+        $this->adapters[$name] = $adapter;
+        if ($adapter->getMapping()) {
+            $this->mapper->registerAdapterMapping($name, $adapter->getMapping());
+        }
+    }
+
     /**
      * Register custom query
      *
@@ -89,17 +107,6 @@ class QueryBuilder
         $this->queries[$class::getName()] = $class;
     }
 
-    public function registerAdapter($name, Adapter $adapter)
-    {
-        if (isset($this->adapters[$name])) {
-            throw new Exception\InvalidArgumentException(
-                "Adapter with name " . $name . " already registered!"
-            );
-        }
-
-        $this->adapters[$name] = $adapter;
-    }
-
     public function getEntityFactory()
     {
         return $this->entityFactory;
@@ -108,6 +115,11 @@ class QueryBuilder
     public function getAdapters()
     {
         return $this->adapters;
+    }
+
+    public function getMapper()
+    {
+        return $this->mapper;
     }
 
     public function afterQuery(callable $callback)

@@ -55,16 +55,12 @@ abstract class Conditionable extends \UniMapper\Query
                 foreach ($value as $index => $item) {
 
                     $property->validateValueType($item);
-                    $value[$index] = $this->adapters[$this->entityReflection->getAdapterReflection()->getName()]
-                        ->getMapper()
-                        ->unmapValue($property, $item);
+                    $value[$index] = $this->mapper->unmapValue($property, $item);
                 }
             } elseif (!in_array($operator, ["IS", "IS NOT"]) && $value !== null) {
 
                 $property->validateValueType($value);
-                $value = $this->adapters[$this->entityReflection->getAdapterReflection()->getName()]
-                    ->getMapper()
-                    ->unmapValue($property, $value);
+                $value = $this->mapper->unmapValue($property, $value);
             }
         } catch (Exception\PropertyValueException $e) {
             throw new Exception\QueryException($e->getMessage());
@@ -80,7 +76,7 @@ abstract class Conditionable extends \UniMapper\Query
 
     protected function addNestedConditions(\Closure $callback, $joiner = 'AND')
     {
-        $query = new $this($this->entityReflection, $this->adapters);
+        $query = new $this($this->entityReflection, $this->adapters, $this->mapper);
 
         call_user_func($callback, $query);
 

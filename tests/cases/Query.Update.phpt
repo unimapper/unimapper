@@ -15,9 +15,6 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
     public function setUp()
     {
         $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
-        $this->adapters["FooAdapter"]->shouldReceive("getMapper")
-            ->once()
-            ->andReturn(new UniMapper\Adapter\Mapper);
     }
 
     /**
@@ -25,7 +22,12 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
      */
     public function testNoValues()
     {
-        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, []);
+        $query = new Update(
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
+            $this->adapters,
+            new \UniMapper\Mapper,
+            []
+        );
         $query->execute();
     }
 
@@ -47,7 +49,12 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
             ->with($adapterQueryMock)
             ->andReturn("2");
 
-        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, ["text" => "foo", "oneToOne" => ["id" => 3]]);
+        $query = new Update(
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
+            $this->adapters,
+            new \UniMapper\Mapper,
+            ["text" => "foo", "oneToOne" => ["id" => 3]]
+        );
         $query->where("id", "=", 1);
         Assert::same(2, $query->execute());
     }

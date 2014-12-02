@@ -16,7 +16,6 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
     public function setUp()
     {
         $this->adapterMock = Mockery::mock("UniMapper\Adapter");
-        $this->adapterMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
 
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $this->adapterQueryMock->shouldReceive("getRaw")->once();
@@ -37,6 +36,7 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
         $query = new \UniMapper\Query\Insert(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["FooAdapter" => $this->adapterMock],
+            new \UniMapper\Mapper,
             ["text" => "foo", "oneToOne" => ["id" => 3]]
         );
         Assert::same(1, $query->execute());
@@ -47,6 +47,7 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
         $query = new \UniMapper\Query\Insert(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["FooAdapter" => $this->adapterMock],
+            new \UniMapper\Mapper,
             []
         );
 

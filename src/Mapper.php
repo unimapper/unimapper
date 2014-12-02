@@ -1,15 +1,23 @@
 <?php
 
-namespace UniMapper\Adapter;
-
-use UniMapper\Exception,
-    UniMapper\Entity,
-    UniMapper\EntityCollection,
-    UniMapper\Validator,
-    UniMapper\Reflection;
+namespace UniMapper;
 
 class Mapper
 {
+
+    /** @var array */
+    private $adapterMappings = [];
+
+    public function registerAdapterMapping($name, Adapter\Mapping $mapping)
+    {
+        if (isset($this->adapterMappings[$name])) {
+            throw new Exception\InvalidArgumentException(
+                "Mapping on adapater " . $name . " already registered!"
+            );
+        }
+
+        $this->adapterMappings[$name] = $mapping;
+    }
 
     /**
      * Convert value to defined property format
@@ -23,7 +31,20 @@ class Mapper
      */
     public function mapValue(Reflection\Entity\Property $property, $value)
     {
-        // Apply map filter first
+        // Call adapter's mapping if needed
+        $adapterReflection = $property->getEntityReflection()->getAdapterReflection();
+        if (!$adapterReflection) {
+            throw new Exception\MappingException(
+                "Entity " . $property->getEntityReflection()->getClassName()
+                . " should have adapter defined if you want to use mapping!"
+            );
+        }
+        if (isset($this->adapterMappings[$adapterReflection->getName()])) {
+            $value = $this->adapterMappings[$adapterReflection->getName()]
+                ->mapValue($property, $value);
+        }
+
+        // Call entity's umapping
         if ($property->getMapping() && $property->getMapping()->getFilterIn()) {
             $value = call_user_func($property->getMapping()->getFilterIn(), $value);
         }
@@ -171,7 +192,7 @@ class Mapper
 
     public function unmapValue(Reflection\Entity\Property $property, $value)
     {
-        // Apply map filter first
+        // Call entity's mapping
         if ($property->getMapping() && $property->getMapping()->getFilterOut()) {
             $value = call_user_func($property->getMapping()->getFilterOut(), $value);
         }
@@ -180,6 +201,20 @@ class Mapper
             return $this->unmapCollection($value);
         } elseif ($value instanceof Entity) {
             return $this->unmapEntity($value);
+        }
+
+        // Call adapter's mapping if needed
+        $adapterReflection = $property->getEntityReflection()->getAdapterReflection();
+        if (!$adapterReflection) {
+            throw new Exception\MappingException(
+                "Entity " . $property->getEntityReflection()->getClassName()
+                . " should have adapter defined if you want to use mapping!"
+            );
+        }
+
+        if (isset($this->adapterMappings[$adapterReflection->getName()])) {
+            return $this->adapterMappings[$adapterReflection->getName()]
+                ->unmapValue($property, $value);
         }
 
         return $value;
@@ -194,7 +229,7 @@ class Mapper
      */
     public function unmapCollection(EntityCollection $collection)
     {
-        $data = array();
+        $data = [];
         foreach ($collection as $index => $entity) {
             $data[$index] = $this->unmapEntity($entity);
         }
