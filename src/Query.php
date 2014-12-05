@@ -11,6 +11,9 @@ abstract class Query
     /** @var array */
     protected $adapters = [];
 
+    /** @var Mapper */
+    protected $mapper;
+
     /** @var \UniMapper\Reflection\Entity */
     protected $entityReflection;
 
@@ -23,7 +26,7 @@ abstract class Query
     /** @var array */
     private $afterExecute = [];
 
-    public function __construct(Reflection\Entity $reflection, array $adapters)
+    public function __construct(Reflection\Entity $reflection, array $adapters, Mapper $mapper)
     {
         if (!$reflection->hasAdapter()) {
             throw new QueryException(
@@ -40,6 +43,7 @@ abstract class Query
         }
 
         $this->adapters = $adapters;
+        $this->mapper = $mapper;
         $this->entityReflection = $reflection;
     }
 

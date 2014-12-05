@@ -5,15 +5,15 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class AdapterMapperTest extends UniMapper\Tests\TestCase
+class MapperTest extends UniMapper\Tests\TestCase
 {
 
-    /** @var \UniMapper\Adapter\Mapper */
+    /** @var \UniMapper\Mapper */
     private $mapper;
 
     public function setUp()
     {
-        $this->mapper = new UniMapper\Adapter\Mapper;
+        $this->mapper = new UniMapper\Mapper;
     }
 
     public function testMapEntity()
@@ -107,5 +107,5 @@ class AdapterMapperTest extends UniMapper\Tests\TestCase
 
 }
 
-$testCase = new AdapterMapperTest;
+$testCase = new MapperTest;
 $testCase->run();

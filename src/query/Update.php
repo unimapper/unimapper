@@ -3,6 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exception,
+    UniMapper\Mapper,
     UniMapper\Reflection;
 
 class Update extends Conditionable
@@ -14,15 +15,16 @@ class Update extends Conditionable
     public function __construct(
         Reflection\Entity $entityReflection,
         array $adapters,
+        Mapper $mapper,
         array $data
     ) {
-        parent::__construct($entityReflection, $adapters);
+        parent::__construct($entityReflection, $adapters, $mapper);
         $this->entity = $entityReflection->createEntity($data);
     }
 
     protected function onExecute(\UniMapper\Adapter $adapter)
     {
-        $values = $adapter->getMapper()->unmapEntity($this->entity);
+        $values = $this->mapper->unmapEntity($this->entity);
 
         // Values can not be empty
         if (empty($values)) {

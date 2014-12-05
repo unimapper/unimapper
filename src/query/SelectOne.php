@@ -3,6 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exception,
+    UniMapper\Mapper,
     UniMapper\Reflection;
 
 class SelectOne extends Selectable
@@ -14,9 +15,10 @@ class SelectOne extends Selectable
     public function __construct(
         Reflection\Entity $entityReflection,
         array $adapters,
+        Mapper $mapper,
         $primaryValue
     ) {
-        parent::__construct($entityReflection, $adapters);
+        parent::__construct($entityReflection, $adapters, $mapper);
 
         if (!$entityReflection->hasPrimaryProperty()) {
             throw new Exception\QueryException(
@@ -78,10 +80,7 @@ class SelectOne extends Selectable
             }
         }
 
-        return $adapter->getMapper()->mapEntity(
-            $this->entityReflection,
-            $result
-        );
+        return $this->mapper->mapEntity($this->entityReflection, $result);
     }
 
 }

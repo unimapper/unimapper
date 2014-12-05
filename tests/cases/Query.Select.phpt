@@ -20,10 +20,7 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
     public function setUp()
     {
         $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
-        $this->adapters["FooAdapter"]->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
-
         $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter");
-        $this->adapters["RemoteAdapter"]->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
 
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $this->adapterQueryMock->shouldReceive("getRaw")->once();
@@ -67,12 +64,14 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn([["simplePrimaryId" => 2], ["simplePrimaryId" => 3]]);
 
-        $query = new Query\Select(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, "url", "text");
-        $query->where("id", ">", 1)
+        $result = $this->createQuery()
+            ->select("url")
+            ->select("text")
+            ->where("id", ">", 1)
                 ->orWhereAre(function($query) {
                     $query->where("text", "LIKE", "%foo");
-        })->orderBy("id", "DESC");
-        $result = $query->execute();
+                })->orderBy("id", "DESC")
+            ->execute();
 
         Assert::type("Unimapper\EntityCollection", $result);
         Assert::same(2, count($result));
@@ -103,8 +102,10 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn([["id" => 3], ["id" => 4]]);
 
-        $query = new Query\Select(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, "id");
-        $result = $query->associate("manyToOne")->execute();
+        $result = $this->createQuery()
+            ->select("id")
+            ->associate("manyToOne")
+            ->execute();
 
         Assert::count(2, $result);
         Assert::same(3, $result[0]->manyToOne->id);
@@ -136,8 +137,13 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn(false);
 
-        $query = new Query\Select(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, "id");
-        Assert::count(0, $query->associate("collection")->execute());
+        Assert::count(
+            0,
+            $this->createQuery()
+                ->select("id")
+                ->associate("collection")
+                ->execute()
+        );
     }
 
     public function testAssociateManyToManyRemoteNoRecords()
@@ -163,8 +169,10 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn([]);
 
-        $query = new Query\Select(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, "id");
-        $result = $query->associate("manyToMany")->execute();
+        $result = $this->createQuery()
+            ->select("id")
+            ->associate("manyToMany")
+            ->execute();
 
         Assert::count(2, $result);
 
@@ -212,8 +220,10 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn([["id" => 3], ["id" => 4]]);
 
-        $query = new Query\Select(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, "id");
-        $result = $query->associate("manyToMany")->execute();
+        $result = $this->createQuery()
+            ->select("id")
+            ->associate("manyToMany")
+            ->execute();
 
         Assert::count(2, $result);
 
@@ -266,8 +276,10 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn([["simplePrimaryId" => 1], ["simplePrimaryId" => 2]]);
 
-        $query = new Query\Select(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote"), $this->adapters, "id");
-        $result = $query->associate("manyToManyNoDominance")->execute();
+        $result = $this->createQuery("Remote")
+            ->select("id")
+            ->associate("manyToManyNoDominance")
+            ->execute();
 
         Assert::count(2, $result);
 
@@ -314,9 +326,20 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
             ]
         );
 
-        $query = new Query\Select(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, "id");
+        $query = $this->createQuery("Simple")
+            ->select("id")
+            ->where("id", "IS", 1);
         $query->setCache($cacheMock);
-        $query->where("id", "IS", 1)->cached(true, [Cache\ICache::TAGS => ["myTag"]])->execute();
+        $query->cached(true, [Cache\ICache::TAGS => ["myTag"]])->execute();
+    }
+
+    private function createQuery($entity = "Simple")
+    {
+        return new Query\Select(
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\\" . $entity),
+            $this->adapters,
+            new \UniMapper\Mapper
+        );
     }
 
 }

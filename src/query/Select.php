@@ -6,6 +6,7 @@ use UniMapper\Exception,
     UniMapper\Reflection,
     UniMapper\Association\ManyToOne,
     UniMapper\NamingConvention as UNC,
+    UniMapper\Mapper,
     UniMapper\Cache\ICache;
 
 class Select extends Selectable
@@ -23,11 +24,12 @@ class Select extends Selectable
 
     public function __construct(
         Reflection\Entity $entityReflection,
-        array $adapters
+        array $adapters,
+        Mapper $mapper
     ) {
-        parent::__construct($entityReflection, $adapters);
+        parent::__construct($entityReflection, $adapters, $mapper);
 
-        $selection = array_slice(func_get_args(), 2);
+        $selection = array_slice(func_get_args(), 3);
         array_walk($selection, [$this, "select"]);
     }
 
@@ -95,13 +97,11 @@ class Select extends Selectable
 
     protected function onExecute(\UniMapper\Adapter $adapter)
     {
-        $mapping = $adapter->getMapper();
-
         if ($this->cached) {
 
             $cachedResult = $this->cache->load($this->_getQueryChecksum());
             if ($cachedResult) {
-                return $mapping->mapCollection($this->entityReflection, $cachedResult);
+                return $this->mapper->mapCollection($this->entityReflection, $cachedResult);
             }
         }
 
@@ -195,7 +195,7 @@ class Select extends Selectable
             );
         }
 
-        return $mapping->mapCollection(
+        return $this->mapper->mapCollection(
             $this->entityReflection,
             empty($result) ? [] : $result
         );

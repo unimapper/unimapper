@@ -25,14 +25,14 @@ class QueryConditionableTest extends UniMapper\Tests\TestCase
     {
         return new UniMapper\Query\Select(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            ["FooAdapter" => $this->adapterMock]
+            ["FooAdapter" => $this->adapterMock],
+            new \UniMapper\Mapper
         );
     }
 
     public function testConditions()
     {
         $this->adapterMock->shouldReceive("insert")->once()->andReturn(1);
-        $this->adapterMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
 
         $query = $this->createConditionableQuery();
         $expectedConditions = [];

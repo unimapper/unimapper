@@ -19,10 +19,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
     public function setUp()
     {
         $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
-        $this->adapters["FooAdapter"]->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
-
         $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter");
-        $this->adapters["RemoteAdapter"]->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
 
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $this->adapterQueryMock->shouldReceive("getRaw")->once();
@@ -41,10 +38,10 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn(["id" => 1]);
 
-        $query = new Query\SelectOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, $entity->id);
-        $result = $query->execute();
-
-        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $result);
+        Assert::type(
+            "UniMapper\Tests\Fixtures\Entity\Simple",
+            $this->createQuery($entity->id)->execute()
+        );
     }
 
     public function testAssociateManyToMany()
@@ -66,8 +63,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn(false);
 
-        $query = new Query\SelectOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, 1);
-        Assert::false($query->associate("collection")->execute());
+        Assert::false($this->createQuery(1)->associate("collection")->execute());
     }
 
     public function testAssociateManyToManyRemote()
@@ -110,8 +106,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn([["id" => 2], ["id" => 3]]);
 
-        $query = new Query\SelectOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, 1);
-        $result = $query->associate("manyToMany")->execute();
+        $result = $this->createQuery(1)->associate("manyToMany")->execute();
 
         Assert::same(1, $result->id);
         Assert::count(2, $result->manyToMany);
@@ -140,8 +135,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn([["id" => 2]]);
 
-        $query = new Query\SelectOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), $this->adapters, 1);
-        $result = $query->associate("manyToOne")->execute();
+        $result = $this->createQuery(1)->associate("manyToOne")->execute();
 
         Assert::same(1, $result->id);
         Assert::same(2, $result->manyToOne->id);
@@ -190,13 +184,24 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn([["simplePrimaryId" => 2], ["simplePrimaryId" => 3]]);
 
-        $query = new Query\SelectOne(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote"), $this->adapters, 1);
-        $result = $query->associate("manyToManyNoDominance")->execute();
+        $result = $this->createQuery(1, "Remote")
+            ->associate("manyToManyNoDominance")
+            ->execute();
 
         Assert::same(1, $result->id);
         Assert::count(2, $result->manyToManyNoDominance);
         Assert::same(2, $result->manyToManyNoDominance[0]->id);
         Assert::same(3, $result->manyToManyNoDominance[1]->id);
+    }
+
+    private function createQuery($id, $entity = "Simple")
+    {
+        return new Query\SelectOne(
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\\" . $entity),
+            $this->adapters,
+            new \UniMapper\Mapper,
+            $id
+        );
     }
 
 }

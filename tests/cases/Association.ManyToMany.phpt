@@ -26,10 +26,6 @@ class AssociationManyToManyTest extends UniMapper\Tests\TestCase
     public function testModifyAdd()
     {
         $this->adapters["RemoteAdapter"]
-            ->shouldReceive("getMapper")
-            ->once()
-            ->andReturn(new UniMapper\Adapter\Mapper);
-        $this->adapters["RemoteAdapter"]
             ->shouldReceive("createInsert")
             ->with("remote_resource", ['text' => 'foo'])
             ->once()
@@ -66,10 +62,6 @@ class AssociationManyToManyTest extends UniMapper\Tests\TestCase
 
     public function testModifyRemove()
     {
-        $this->adapters["RemoteAdapter"]
-            ->shouldReceive("getMapper")
-            ->once()
-            ->andReturn(new UniMapper\Adapter\Mapper);
         $this->adapters["RemoteAdapter"]
             ->shouldReceive("createDeleteOne")
             ->with("remote_resource", "id", 3)

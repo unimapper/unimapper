@@ -14,13 +14,13 @@ class QueryCountTest extends UniMapper\Tests\TestCase
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $adapterMock = Mockery::mock("UniMapper\Adapter");
-        $adapterMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Adapter\Mapper);
         $adapterMock->shouldReceive("createCount")->with("simple_resource")->once()->andReturn($adapterQueryMock);
         $adapterMock->shouldReceive("onExecute")->with($adapterQueryMock)->once()->andReturn("1");
 
         $query = new \UniMapper\Query\Count(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            ["FooAdapter" => $adapterMock]
+            ["FooAdapter" => $adapterMock],
+            new \UniMapper\Mapper
         );
         $query->where("id", "=", 1);
         Assert::same(1, $query->execute());
