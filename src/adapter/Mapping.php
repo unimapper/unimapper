@@ -7,12 +7,12 @@ use UniMapper\Reflection;
 abstract class Mapping
 {
 
-    public function mapValue(Reflection\Entity\Property $property, $value)
+    public function mapValue(Reflection\Property $property, $value)
     {
         return $value;
     }
 
-    public function unmapValue(Reflection\Entity\Property $property, $value)
+    public function unmapValue(Reflection\Property $property, $value)
     {
         return $value;
     }

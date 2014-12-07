@@ -2,19 +2,16 @@
 
 namespace UniMapper\Exception;
 
-/**
- * Throws when wrong property definition detected.
- */
-class PropertyException extends \UniMapper\Exception
+class EntityException extends \UniMapper\Exception
 {
 
     /** @var string */
     protected $class;
 
-    /** @var string $definition Property definition */
+    /** @var string $definition Docblock definition */
     protected $definition;
 
-    public function __construct($message, $class = null, $definition = null, $code = 0)
+    public function __construct($message, $class, $definition = null, $code = 0)
     {
         parent::__construct($message, $code);
         $this->class = $class;

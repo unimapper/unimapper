@@ -5,10 +5,6 @@ namespace UniMapper;
 use UniMapper\EntityCollection,
     UniMapper\Reflection;
 
-/**
- * Entity is ancestor for all entities and provides global methods, which
- * can be used in every new entity object.
- */
 abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 {
 
@@ -24,8 +20,8 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     /** @var \UniMapper\Validator $validator */
     protected $validator;
 
-    /** @var array $associated List of modified associations */
-    private $associated = [];
+    /** @var array $modifiers */
+    private $modifiers = [];
 
     public function __construct(Reflection\Entity $reflection, $values = [])
     {
@@ -133,7 +129,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      * @param string $name
      * @param array  $arguments
      *
-     * @return Association
+     * @return Modifier
      *
      * @throws Exception\PropertyAccessException
      */
@@ -149,18 +145,27 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         }
 
         $propertyReflection = $this->reflection->getProperty($name);
-        if (!$propertyReflection->isAssociation()) {
+        if (!$propertyReflection->hasOption(Reflection\Property::OPTION_ASSOC)) {
             throw new Exception\PropertyAccessException(
                 "Only association properties can be called as function!",
                 $this->reflection
             );
         }
 
-        if (!in_array($name, $this->associated, true)) {
-            $this->associated[$name] = $this->reflection->getProperty($name)->getAssociation();
+        if (!in_array($name, $this->modifiers, true)) {
+
+            if ($this->reflection->getProperty($name)->isTypeCollection()) {
+                $this->modifiers[$name] = new Modifier\CollectionModifier(
+                    $this->reflection->getProperty($name)->getOption(Reflection\Property::OPTION_ASSOC)
+                );
+            } elseif ($this->reflection->getProperty($name)->isTypeEntity()) {
+                $this->modifiers[$name] = new Modifier\EntityModifier(
+                    $this->reflection->getProperty($name)->getOption(Reflection\Property::OPTION_ASSOC)
+                );
+            }
         }
 
-        return $this->associated[$name];
+        return $this->modifiers[$name];
     }
 
     /**
@@ -189,9 +194,9 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         }
 
         // computed property
-        if ($properties[$name]->isComputed()) {
+        if ($properties[$name]->hasOption(Reflection\Property::OPTION_COMPUTED)) {
 
-            $computedValue = $this->{$properties[$name]->getComputedMethodName()}();
+            $computedValue = $this->{$properties[$name]->getOption(Reflection\Property::OPTION_COMPUTED)}();
             if ($computedValue === null) {
                 return null;
             }
@@ -230,18 +235,18 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 
         if (!$properties[$name]->isWritable()) {
             throw new Exception\PropertyAccessException(
-                "Property '" . $name . "' is not writable!",
+                "Property '" . $name . "' is read-only!",
                 $this->reflection,
-                $properties[$name]->getRawDefinition(),
+                null,
                 Exception\PropertyAccessException::READONLY
             );
         }
 
-        if ($properties[$name]->isComputed()) {
+        if ($properties[$name]->hasOption(Reflection\Property::OPTION_COMPUTED)) {
             throw new Exception\PropertyAccessException(
-                "Can not set computed property '" . $name . "'!",
+                "Computed property is read-only!",
                 $this->reflection,
-                $properties[$name]->getRawDefinition(),
+                null,
                 Exception\PropertyAccessException::READONLY
             );
         }
@@ -264,9 +269,9 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         unset($this->data[$name]);
     }
 
-    public function getAssociated()
+    public function getModifiers()
     {
-        return $this->associated;
+        return $this->modifiers;
     }
 
     public function getReflection()

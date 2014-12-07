@@ -25,7 +25,7 @@ class Validator
     /** @var \UniMapper\Validator $parent Parent validator */
     protected $parent = [];
 
-    /** @var \UniMapper\Reflection\Entity\Property $property */
+    /** @var \UniMapper\Reflection\Property $property */
     protected $property;
 
     /** @var \UniMapper\Entity $entity */
@@ -131,9 +131,9 @@ class Validator
         }
         $this->property = $this->entity->getReflection()->getProperty($name);
 
-        if ($this->property->isComputed()) {
+        if ($this->property->hasOption(Reflection\Property::OPTION_COMPUTED)) {
             throw new Exception\InvalidArgumentException(
-                "Validation can not be applied on computed properties!"
+                "Validation can not be set on computed property!"
             );
         }
         if ($child

@@ -2,7 +2,8 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exception;
+use UniMapper\Exception,
+    UniMapper\Reflection;
 
 abstract class Conditionable extends \UniMapper\Query
 {
@@ -31,8 +32,8 @@ abstract class Conditionable extends \UniMapper\Query
         }
 
         $property = $this->entityReflection->getProperty($name);
-        if ($property->isAssociation()
-            || $property->isComputed()
+        if ($property->hasOption(Reflection\Property::OPTION_ASSOC)
+            || $property->hasOption(Reflection\Property::OPTION_COMPUTED)
             || $property->isTypeCollection()
             || $property->isTypeEntity()
         ) {

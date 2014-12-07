@@ -30,7 +30,7 @@ class ReflectionEntityTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyException Property 'id' already defined as public property!
+     * @throws UniMapper\Exception\EntityException Property 'id' already defined as public property!
      */
     public function testDuplicatePublicProperty()
     {
@@ -43,26 +43,30 @@ class ReflectionEntityTest extends UniMapper\Tests\TestCase
         Assert::count(0, $reflection->getProperties());
     }
 
-    public function testSimple()
+    public function testGetProperties()
     {
         $reflection = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple");
-        Assert::isEqual(
-            array('FooAdapter' => new Reflection\Adapter('FooAdapter(resource)', $reflection)),
-            $reflection->getAdapterReflection()
-        );
-        Assert::isEqual(
+        Assert::same(
             array(
-                "id" => new Reflection\Entity\Property('integer $id', $reflection),
-                "text" => new Reflection\Entity\Property('string $text', $reflection),
-                "empty" => new Reflection\Entity\Property('string $empty', $reflection),
-                "entity" => new Reflection\Entity\Property('NoAdapter $entity', $reflection),
-                "collection" => new Reflection\Entity\Property('NoAdapter[] $collection', $reflection),
+                'id',
+                'text',
+                'empty',
+                'url',
+                'email',
+                'time',
+                'year',
+                'ip',
+                'mark',
+                'entity',
+                'collection',
+                'manyToMany',
+                'manyToOne',
+                'oneToOne',
+                'readonly',
+                'storedData',
+                'enumeration',
             ),
-            $reflection->getProperties()
-        );
-        Assert::isEqual(
-            new Reflection\Entity\Property('integer $id m:primary', $reflection),
-            $reflection->getPrimaryProperty()
+            array_keys($reflection->getProperties())
         );
     }
 
@@ -71,11 +75,11 @@ class ReflectionEntityTest extends UniMapper\Tests\TestCase
         $noPrimary = new Reflection\Entity(
             "UniMapper\Tests\Fixtures\Entity\NoPrimary"
         );
-        Assert::false($noPrimary->hasPrimaryProperty());
+        Assert::false($noPrimary->hasPrimary());
         $simple = new Reflection\Entity(
             "UniMapper\Tests\Fixtures\Entity\Simple"
         );
-        Assert::true($simple->hasPrimaryProperty());
+        Assert::true($simple->hasPrimary());
     }
 
     public function testGetPrimaryProperty()
@@ -89,7 +93,7 @@ class ReflectionEntityTest extends UniMapper\Tests\TestCase
     /**
      * @throws Exception Primary property not defined in UniMapper\Tests\Fixtures\Entity\NoPrimary!
      */
-    public function testGetPrimaryPropertyWithNoPrimary()
+    public function testGetPrimaryPropertyNotDefined()
     {
         $reflection = new Reflection\Entity(
             "UniMapper\Tests\Fixtures\Entity\NoPrimary"

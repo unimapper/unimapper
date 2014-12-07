@@ -1,96 +1,96 @@
 <?php
 
-namespace UniMapper\Association;
+namespace UniMapper\Modifier;
 
-use UniMapper\Adapter,
-    UniMapper\Reflection,
-    UniMapper\Exception;
+use UniMapper\Entity,
+    UniMapper\Adapter;
 
-class ManyToMany extends Multi
+class CollectionModifier extends \UniMapper\Modifier
 {
 
-    protected $expression = "M(:|>|<)N=(.*)\|(.*)\|(.*)";
+    /** @var array */
+    private $attached = [];
 
-    protected $dominant = true;
+    /** @var array */
+    private $detached = [];
 
-    public function __construct(
-        Reflection\Entity\Property $propertyReflection,
-        Reflection\Entity $targetReflection,
-        $definition
-    ) {
-        parent::__construct($propertyReflection, $targetReflection, $definition);
+    /** @var array */
+    private $added = [];
 
-        if (!$targetReflection->hasPrimaryProperty()) {
-            throw new Exception\DefinitionException(
-                "Target entity must define primary property!"
-            );
-        }
+    /** @var array */
+    private $removed = [];
 
-        if ($this->isRemote() && $this->matches[1] === "<") {
-            $this->dominant = false;
-        }
-
-        if (empty($this->matches[2])) {
-            throw new Exception\DefinitionException(
-                "You must define join key!"
-            );
-        }
-        if (empty($this->matches[3])) {
-            throw new Exception\DefinitionException(
-                "You must define join resource!"
-            );
-        }
-
-        if (empty($this->matches[4])) {
-            throw new Exception\DefinitionException(
-                "You must define reference key!!"
-            );
-        }
+    public function attach(Entity $entity)
+    {
+        $this->_manipulate($entity, "attached");
     }
 
-    public function getJoinKey()
+    public function detach(Entity $entity)
     {
-        return $this->matches[2];
+        $this->_manipulate($entity, "detached");
     }
 
-    public function getJoinResource()
+    public function add(Entity $entity)
     {
-        return $this->matches[3];
+        $this->validateEntity($entity);
+        $this->added[] = $entity;
     }
 
-    public function getReferenceKey()
+    public function remove(Entity $entity)
     {
-        return $this->matches[4];
+        $this->validateEntity($entity, true);
+        $this->removed[] = $entity;
     }
 
-    public function getForeignKey()
+    public function getAttached()
     {
-        return $this->targetReflection->getPrimaryProperty()->getName(true);
+        return $this->attached;
     }
 
-    public function isDominant()
+    public function getDetached()
     {
-        return $this->dominant;
+        return $this->detached;
+    }
+
+    public function getAdded()
+    {
+        return $this->added;
+    }
+
+    public function getRemoved()
+    {
+        return $this->removed;
+    }
+
+    private function _manipulate($entity, $action)
+    {
+        $this->validateEntity($entity, true);
+
+        $primary = $entity->{$entity->getReflection()->getPrimaryProperty()->getName()};
+
+        if (!in_array($primary, $this->{$action}, true)) {
+            array_push($this->{$action}, $primary);
+        }
     }
 
     /**
      * @todo should be optimized with 1 query only on same adapters
      */
-    public function find(
+    protected function findManyToMany(
         Adapter $currentAdapter,
         Adapter $targetAdapter,
         array $primaryValues
     ) {
-        if (!$this->isDominant()) {
+        if (!$this->associationReflection->isDominant()) {
             $currentAdapter = $targetAdapter;
         }
 
         $joinQuery = $currentAdapter->createSelect(
-            $this->getJoinResource(),
-            [$this->getJoinKey(), $this->getReferenceKey()]
+            $this->associationReflection->getJoinResource(),
+            [$this->associationReflection->getJoinKey(), $this->associationReflection->getReferenceKey()]
         );
         $joinQuery->setConditions(
-            [[$this->getJoinKey(), "IN", $primaryValues, "AND"]]
+            [[$this->associationReflection->getJoinKey(), "IN", $primaryValues, "AND"]]
         );
 
         $joinResult = $currentAdapter->execute($joinQuery);
@@ -102,18 +102,18 @@ class ManyToMany extends Multi
         $joinResult = $this->groupResult(
             $joinResult,
             [
-                $this->getReferenceKey(),
-                $this->getJoinKey()
+                $this->associationReflection->getReferenceKey(),
+                $this->associationReflection->getJoinKey()
             ]
         );
 
         $targetQuery = $targetAdapter->createSelect(
-            $this->getTargetResource()
+            $this->associationReflection->getTargetResource()
         );
         $targetQuery->setConditions(
             [
                 [
-                    $this->getForeignKey(),
+                    $this->associationReflection->getForeignKey(),
                     "IN",
                     array_keys($joinResult),
                     "AND"
@@ -128,7 +128,7 @@ class ManyToMany extends Multi
 
         $targetResult = $this->groupResult(
             $targetResult,
-            [$this->getForeignKey()]
+            [$this->associationReflection->getForeignKey()]
         );
 
         $result = [];
@@ -139,7 +139,7 @@ class ManyToMany extends Multi
                     throw new Exception\UnexpectedException(
                         "Can not merge associated result key '" . $targetKey
                         . "' not found in result from '"
-                        . $this->getTargetResource()
+                        . $this->associationReflection->getTargetResource()
                         . "'! Maybe wrong value in join table/resource."
                     );
                 }
@@ -150,25 +150,33 @@ class ManyToMany extends Multi
         return $result;
     }
 
-    public function modify(
-        $primaryValue,
-        Adapter $sourceAdapter,
-        Adapter $targetAdapter
+    protected function findOneToMany(
+        Adapter $currentAdapter,
+        Adapter $targetAdapter,
+        array $primaryValues
     ) {
-        if ($this->isRemote() && !$this->isDominant()) {
-            $sourceAdapter = $targetAdapter;
+        $query = $targetAdapter->createSelect($this->associationReflection->getTargetResource());
+        $query->setConditions(
+            [
+                [
+                    $this->associationReflection->getForeignKey(),
+                    "IN",
+                    array_keys($primaryValues),
+                    "AND"
+                ]
+            ]
+        );
+
+        $result = $targetAdapter->execute($query);
+
+        if (!$result) {
+            return [];
         }
 
-        $this->_executeModify($primaryValue, $sourceAdapter, $targetAdapter);
-        $this->_executeModify(
-            $primaryValue,
-            $sourceAdapter,
-            $targetAdapter,
-            Adapter\IAdapter::ASSOC_REMOVE
-        );
+        return $result;
     }
 
-    private function _executeModify(
+    protected function saveManyToMany(
         $primaryValue,
         Adapter $joinAdapter,
         Adapter $targetAdapter,
@@ -186,12 +194,12 @@ class ManyToMany extends Multi
 
             if ($action === Adapter\IAdapter::ASSOC_REMOVE) {
 
-                $targetPrimaryName = $this->getTargetReflection()
+                $targetPrimaryName = $this->associationReflection->getTargetReflection()
                     ->getPrimaryProperty()
                     ->getName(true);
                 $targetAdapter->execute(
                     $targetAdapter->createDeleteOne(
-                        $this->getTargetResource(),
+                        $this->associationReflection->getTargetResource(),
                         $targetPrimaryName,
                         $entity->{$targetPrimaryName}
                     )
@@ -199,7 +207,7 @@ class ManyToMany extends Multi
                 $assocKeys[] = $entity->{$targetPrimaryName};
             } else {
                 $assocKeys[] = $targetAdapter->execute(
-                    $targetAdapter->createInsert($this->getTargetResource(), $entity->getData())
+                    $targetAdapter->createInsert($this->associationReflection->getTargetResource(), $entity->getData())
                 );
             }
         }

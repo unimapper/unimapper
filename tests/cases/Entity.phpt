@@ -31,7 +31,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws Exception Property 'readonly' is not writable!
+     * @throws Exception Property 'readonly' is read-only!
      */
     public function testReadnonly()
     {
@@ -262,7 +262,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyException Can not set computed property 'year'!
+     * @throws UniMapper\Exception\PropertyException Computed property is read-only!
      */
     public function testComputedSet()
     {
@@ -309,9 +309,11 @@ class EntityTest extends UniMapper\Tests\TestCase
         );
     }
 
-    public function testAssociation()
+    public function testModifiers()
     {
-        Assert::type("UniMapper\Association\ManyToMany", $this->entity->manyToMany());
+        Assert::type("UniMapper\Modifier\CollectionModifier", $this->entity->manyToMany());
+        Assert::type("UniMapper\Modifier\EntityModifier", $this->entity->manyToOne());
+        Assert::type("UniMapper\Modifier\EntityModifier", $this->entity->oneToOne());
     }
 
     /**

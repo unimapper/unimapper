@@ -24,13 +24,13 @@ class Insert extends \UniMapper\Query
     protected function onExecute(\UniMapper\Adapter $adapter)
     {
         $query = $adapter->createInsert(
-            $this->entityReflection->getAdapterReflection()->getResource(),
+            $this->entityReflection->getAdapterResource(),
             $this->mapper->unmapEntity($this->entity)
         );
 
         $primaryValue = $adapter->execute($query);
 
-        if ($this->entityReflection->hasPrimaryProperty()) {
+        if ($this->entityReflection->hasPrimary()) {
 
             return $this->mapper->mapValue(
                 $this->entityReflection->getPrimaryProperty(),

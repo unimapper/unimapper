@@ -2,7 +2,8 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exception;
+use UniMapper\Exception,
+    UniMapper\Reflection;
 
 abstract class Selectable extends Conditionable
 {
@@ -24,13 +25,13 @@ abstract class Selectable extends Conditionable
             }
 
             $property = $this->entityReflection->getProperties()[$name];
-            if (!$property->isAssociation()) {
+            if (!$property->hasOption(Reflection\Property::OPTION_ASSOC)) {
                 throw new Exception\QueryException(
                     "Property '" . $name . "' is not defined as association!"
                 );
             }
 
-            $association = $property->getAssociation();
+            $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
             if ($association->isRemote()) {
                 $this->associations["remote"][$name] = $association;
             } else {

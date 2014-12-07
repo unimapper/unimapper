@@ -35,9 +35,9 @@ abstract class Query
             );
         }
 
-        if (!isset($adapters[$reflection->getAdapterReflection()->getName()])) {
+        if (!isset($adapters[$reflection->getAdapterName()])) {
             throw new QueryException(
-                "Adapter '" . $reflection->getAdapterReflection()->getName()
+                "Adapter '" . $reflection->getAdapterName()
                 . "' not given!"
             );
         }
@@ -77,7 +77,7 @@ abstract class Query
     {
         $start = microtime(true);
 
-        $adapterName = $this->entityReflection->getAdapterReflection()->getName();
+        $adapterName = $this->entityReflection->getAdapterName();
         if (!isset($this->adapters[$adapterName])) {
             throw new QueryException(
                 "Adapter with name '" . $adapterName . "' not given!"

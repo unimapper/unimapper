@@ -22,31 +22,30 @@ class Mapper
     /**
      * Convert value to defined property format
      *
-     * @param \UniMapper\Reflection\Entity\Property $property
+     * @param \UniMapper\Reflection\Property $property
      * @param mixed                                 $value
      *
      * @return mixed
      *
      * @throws Exception\MappingException
      */
-    public function mapValue(Reflection\Entity\Property $property, $value)
+    public function mapValue(Reflection\Property $property, $value)
     {
         // Call adapter's mapping if needed
-        $adapterReflection = $property->getEntityReflection()->getAdapterReflection();
-        if (!$adapterReflection) {
+        if (!$property->getEntityReflection()->hasAdapter()) {
             throw new Exception\MappingException(
                 "Entity " . $property->getEntityReflection()->getClassName()
                 . " should have adapter defined if you want to use mapping!"
             );
         }
-        if (isset($this->adapterMappings[$adapterReflection->getName()])) {
-            $value = $this->adapterMappings[$adapterReflection->getName()]
+        if (isset($this->adapterMappings[$property->getEntityReflection()->getAdapterName()])) {
+            $value = $this->adapterMappings[$property->getEntityReflection()->getAdapterName()]
                 ->mapValue($property, $value);
         }
 
-        // Call entity's umapping
-        if ($property->getMapping() && $property->getMapping()->getFilterIn()) {
-            $value = call_user_func($property->getMapping()->getFilterIn(), $value);
+        // Call map filter from property option
+        if ($property->hasOption(Reflection\Property::OPTION_MAP_FILTER)) {
+            $value = call_user_func($property->getOption(Reflection\Property::OPTION_MAP_FILTER)[0], $value);
         }
 
         $type = $property->getType();
@@ -78,7 +77,7 @@ class Mapper
             // Entity
 
             return $this->mapEntity($type, $value);
-        } elseif ($type === Reflection\Entity\Property::TYPE_DATETIME) {
+        } elseif ($type === Reflection\Property::TYPE_DATETIME) {
             // DateTime
 
             if ($value instanceof \DateTime) {
@@ -178,7 +177,7 @@ class Mapper
             $property = $entity->getReflection()->getProperties()[$propertyName];
 
             // Skip associations
-            if ($property->isAssociation()) {
+            if ($property->hasOption(Reflection\Property::OPTION_ASSOC)) {
                 continue;
             }
 
@@ -190,11 +189,11 @@ class Mapper
         return $output;
     }
 
-    public function unmapValue(Reflection\Entity\Property $property, $value)
+    public function unmapValue(Reflection\Property $property, $value)
     {
-        // Call entity's mapping
-        if ($property->getMapping() && $property->getMapping()->getFilterOut()) {
-            $value = call_user_func($property->getMapping()->getFilterOut(), $value);
+        // Call map filter from property option
+        if ($property->hasOption(Reflection\Property::OPTION_MAP_FILTER)) {
+            $value = call_user_func($property->getOption(Reflection\Property::OPTION_MAP_FILTER)[1], $value);
         }
 
         if ($value instanceof EntityCollection) {
@@ -204,16 +203,15 @@ class Mapper
         }
 
         // Call adapter's mapping if needed
-        $adapterReflection = $property->getEntityReflection()->getAdapterReflection();
-        if (!$adapterReflection) {
+        if (!$property->getEntityReflection()->hasAdapter()) {
             throw new Exception\MappingException(
                 "Entity " . $property->getEntityReflection()->getClassName()
                 . " should have adapter defined if you want to use mapping!"
             );
         }
 
-        if (isset($this->adapterMappings[$adapterReflection->getName()])) {
-            return $this->adapterMappings[$adapterReflection->getName()]
+        if (isset($this->adapterMappings[$property->getEntityReflection()->getAdapterName()])) {
+            return $this->adapterMappings[$property->getEntityReflection()->getAdapterName()]
                 ->unmapValue($property, $value);
         }
 

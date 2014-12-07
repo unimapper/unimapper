@@ -28,7 +28,7 @@ class Rule
         Entity $entity,
         callable $validation,
         $message,
-        Reflection\Entity\Property $property = null,
+        Reflection\Property $property = null,
         $severity = self::ERROR,
         $child = null
     ) {
