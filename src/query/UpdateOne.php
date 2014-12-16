@@ -27,7 +27,7 @@ class UpdateOne extends Conditionable
         $this->primaryValue = $primaryValue;
 
         // Primary value update is not allowed
-        if (!$entityReflection->hasPrimaryProperty()) {
+        if (!$entityReflection->hasPrimary()) {
             throw new Exception\QueryException(
                 "Entity '" . $entityReflection->getClassName() . "' has no "
                 . "primary property!"
@@ -50,7 +50,7 @@ class UpdateOne extends Conditionable
         }
 
         $query = $adapter->createUpdateOne(
-            $this->entityReflection->getAdapterReflection()->getResource(),
+            $this->entityReflection->getAdapterResource(),
             $this->entityReflection->getPrimaryProperty()->getName(true),
             $this->primaryValue,
             $values

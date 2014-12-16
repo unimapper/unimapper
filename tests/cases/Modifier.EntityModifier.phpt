@@ -6,7 +6,7 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class AssociationManyToOneTest extends UniMapper\Tests\TestCase
+class ModifierEntityModifierTest extends UniMapper\Tests\TestCase
 {
 
     /** @var array $adapters */
@@ -23,7 +23,7 @@ class AssociationManyToOneTest extends UniMapper\Tests\TestCase
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
     }
 
-    public function testModifyAttach()
+    public function testManyToOneAttach()
     {
         $this->adapters["FooAdapter"]
             ->shouldReceive("createUpdateOne")
@@ -41,10 +41,10 @@ class AssociationManyToOneTest extends UniMapper\Tests\TestCase
         $target->id = 2;
         $source->manyToOne()->attach($target);
 
-        Assert::null($source->manyToOne()->modify(1, $this->adapters["FooAdapter"], $this->adapters["RemoteAdapter"]));
+        Assert::null($source->manyToOne()->save($this->adapters["FooAdapter"], $this->adapters["RemoteAdapter"], 1));
     }
 
 }
 
-$testCase = new AssociationManyToOneTest;
+$testCase = new ModifierEntityModifierTest;
 $testCase->run();

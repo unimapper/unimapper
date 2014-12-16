@@ -6,7 +6,7 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
-class AssociationManyToManyTest extends UniMapper\Tests\TestCase
+class ModifierCollectionModifierTest extends UniMapper\Tests\TestCase
 {
 
     /** @var array $adapters */
@@ -23,7 +23,7 @@ class AssociationManyToManyTest extends UniMapper\Tests\TestCase
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
     }
 
-    public function testModifyAdd()
+    public function testManyToManyAdd()
     {
         $this->adapters["RemoteAdapter"]
             ->shouldReceive("createInsert")
@@ -57,10 +57,10 @@ class AssociationManyToManyTest extends UniMapper\Tests\TestCase
         $sourceEntity = new Fixtures\Entity\Simple(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"));
         $sourceEntity->manyToMany()->add($targetEntity);
 
-        Assert::null($sourceEntity->manyToMany()->modify(1, $this->adapters["FooAdapter"], $this->adapters["RemoteAdapter"]));
+        Assert::null($sourceEntity->manyToMany()->save($this->adapters["FooAdapter"], $this->adapters["RemoteAdapter"], 1));
     }
 
-    public function testModifyRemove()
+    public function testManyToManyRemove()
     {
         $this->adapters["RemoteAdapter"]
             ->shouldReceive("createDeleteOne")
@@ -95,10 +95,10 @@ class AssociationManyToManyTest extends UniMapper\Tests\TestCase
         $sourceEntity = new Fixtures\Entity\Simple(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"));
         $sourceEntity->manyToMany()->remove($targetEntity);
 
-        Assert::null($sourceEntity->manyToMany()->modify(1, $this->adapters["FooAdapter"], $this->adapters["RemoteAdapter"]));
+        Assert::null($sourceEntity->manyToMany()->save($this->adapters["FooAdapter"], $this->adapters["RemoteAdapter"], 1));
     }
 
 }
 
-$testCase = new AssociationManyToManyTest;
+$testCase = new ModifierCollectionModifierTest;
 $testCase->run();

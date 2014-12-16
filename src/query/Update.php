@@ -36,7 +36,7 @@ class Update extends Conditionable
         }
 
         $query = $adapter->createUpdate(
-            $this->entityReflection->getAdapterReflection()->getResource(),
+            $this->entityReflection->getAdapterResource(),
             $values
         );
         $query->setConditions($this->conditions);

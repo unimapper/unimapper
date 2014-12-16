@@ -4,6 +4,7 @@ namespace UniMapper\Query;
 
 use UniMapper\Exception,
     UniMapper\Mapper,
+    UniMapper\Modifier,
     UniMapper\Reflection;
 
 class SelectOne extends Selectable
@@ -20,7 +21,7 @@ class SelectOne extends Selectable
     ) {
         parent::__construct($entityReflection, $adapters, $mapper);
 
-        if (!$entityReflection->hasPrimaryProperty()) {
+        if (!$entityReflection->hasPrimary()) {
             throw new Exception\QueryException(
                 "Can not use query on entity without primary property!"
             );
@@ -36,7 +37,7 @@ class SelectOne extends Selectable
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
 
         $query = $adapter->createSelectOne(
-            $this->entityReflection->getAdapterReflection()->getResource(),
+            $this->entityReflection->getAdapterResource(),
             $primaryProperty->getName(true),
             $this->primaryValue
         );
@@ -67,7 +68,13 @@ class SelectOne extends Selectable
 
                 $assocValue = $result[$association->getKey()];
 
-                $associated = $association->find(
+                if ($association->isCollection()) {
+                    $modififer = new Modifier\CollectionModifier($association);
+                } else {
+                    $modififer = new Modifier\EntityModifier($association);
+                }
+
+                $associated = $modififer->load(
                     $adapter,
                     $this->adapters[$association->getTargetAdapterName()],
                     [$assocValue]

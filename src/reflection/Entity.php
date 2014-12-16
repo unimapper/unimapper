@@ -4,14 +4,14 @@ namespace UniMapper\Reflection;
 
 use UniMapper\Exception;
 
-/**
- * Entity reflection
- */
 class Entity
 {
 
-    /** @var \UniMapper\Reflection\Adapter */
-    private $adapter;
+    /** @var string */
+    private $adapterName;
+
+    /** @var string */
+    private $adapterResource;
 
     /** @var array */
     private $properties = [];
@@ -26,7 +26,7 @@ class Entity
     private $fileName;
 
     /** @var string */
-    private $primaryPropertyName;
+    private $primaryName;
 
     /** @var boolean */
     private $initialized = false;
@@ -79,7 +79,23 @@ class Entity
         }
 
         $docComment = $reflection->getDocComment();
-        $this->adapter = $this->_parseAdapter($docComment);
+
+        // Parse adapter
+        try {
+
+            $adapter = AnnotationParser::parseAdapter($docComment);
+            if ($adapter) {
+                list($this->adapterName, $this->adapterResource) = $adapter;
+            }
+        } catch (Exception\AnnotationException $e) {
+            throw new Exception\EntityException(
+                $e->getMessage(),
+                $this->className,
+                $e->getDefinition()
+            );
+        }
+
+        // Parse properties
         $this->_parseProperties($docComment);
 
         $this->initialized = true;
@@ -145,55 +161,64 @@ class Entity
      *
      * @param string $docComment
      *
-     * @return array Collection of \UniMapper\Reflection\Entity\Property with
-     *               property name as index.
-     *
-     * @throws Exception\PropertyException
+     * @throws Exception\EntityException
      */
     private function _parseProperties($docComment)
     {
-        preg_match_all(
-            '/\s*\*\s*@property([ -](read)*\s*.*)/',
-            $docComment,
-            $annotations
-        );
         $properties = [];
-        foreach ($annotations[1] as $definition) {
+        foreach (AnnotationParser::parseProperties($docComment) as $definition) {
 
-            $property = new Entity\Property($definition, $this);
+            try {
+                $property = new Property(
+                    $definition[2],
+                    $definition[3],
+                    $this,
+                    !$definition[1],
+                    $definition[4]
+                );
+            } catch (Exception\PropertyException $e) {
+                throw new Exception\EntityException(
+                    $e->getMessage(),
+                    $this->className,
+                    $definition[0]
+                );
+            }
 
             // Prevent duplications
             if (isset($properties[$property->getName()])) {
-                throw new Exception\PropertyException(
+                throw new Exception\EntityException(
                     "Duplicate property with name '" . $property->getName() . "'!",
                     $this->className,
-                    $definition
+                    $definition[0]
                 );
             }
             if (in_array($property->getName(), $this->publicProperties)) {
-                throw new Exception\PropertyException(
+                throw new Exception\EntityException(
                     "Property '" . $property->getName()
                     . "' already defined as public property!",
                     $this->className,
-                    $definition
+                    $definition[0]
                 );
             }
 
             // Primary property
-            if ($property->isPrimary() && $this->primaryPropertyName !== null) {
-                throw new Exception\PropertyException(
-                    "Primary property already defined!",
-                    $this->className,
-                    $annotation
-                );
-            } elseif ($property->isPrimary()) {
-                $this->primaryPropertyName = $property->getName();
+            if ($property->hasOption(Property::OPTION_PRIMARY)) {
+
+                if ($this->hasPrimary()) {
+                    throw new Exception\EntityException(
+                        "Primary already defined!",
+                        $this->className,
+                        $definition[0]
+                    );
+                }
+                $this->primaryName = $property->getName();
             }
-            if ($property->isAssociation() && $this->primaryPropertyName === null) {
-                throw new Exception\PropertyException(
+
+            if ($property->hasOption(Property::OPTION_ASSOC) && $this->primaryName === null) {
+                throw new Exception\EntityException(
                     "You must define primary property before the association!",
                     $this->className,
-                    $annotation
+                    $definition[0]
                 );
             }
 
@@ -201,52 +226,19 @@ class Entity
         }
     }
 
-    /**
-     * Get adapter definition from annotations
-     *
-     * @param string $docComment
-     *
-     * @return \UniMapper\Reflection\Entity\Adapter|null
-     */
-    private function _parseAdapter($docComment)
+    public function getAdapterName()
     {
-        preg_match_all(
-            '#@adapter (.*?)\n#s',
-            $docComment,
-            $annotations
-        );
+        return $this->adapterName;
+    }
 
-        if (empty($annotations[0])) {
-            return;
-        }
-
-        if (count($annotations[0]) > 1) {
-            throw new Exception\PropertyException(
-                "Only one adapter definition allowed!",
-                $this->className,
-                $annotations[0][1]
-            );
-        }
-
-        try {
-            return new Adapter(substr($annotations[0][0], 8), $this);
-        } catch (Exception\DefinitionException $e) {
-            throw new Exception\PropertyException(
-                $e->getMessage(),
-                $this->className,
-                $annotations[0][1]
-            );
-        }
+    public function getAdapterResource()
+    {
+        return $this->adapterResource;
     }
 
     public function hasAdapter()
     {
-        return $this->adapter instanceof Adapter;
-    }
-
-    public function getAdapterReflection()
-    {
-        return $this->adapter;
+        return !empty($this->adapterName);
     }
 
     public function hasProperty($name)
@@ -259,7 +251,7 @@ class Entity
      *
      * @param string $name
      *
-     * @return \UniMapper\Reflection\Entity\Property
+     * @return \UniMapper\Reflection\Property
      *
      * @throws Exception\InvalidArgumentException
      */
@@ -283,26 +275,26 @@ class Entity
         return $this->publicProperties;
     }
 
-    public function hasPrimaryProperty()
+    public function hasPrimary()
     {
-        return $this->primaryPropertyName !== null;
+        return $this->primaryName !== null;
     }
 
     /**
      * Get primary property reflection
      *
-     * @return \UniMapper\Reflection\Entity\Property
+     * @return \UniMapper\Reflection\Property
      *
      * @throws Exception\UnexpectedException
      */
     public function getPrimaryProperty()
     {
-        if (!$this->hasPrimaryProperty()) {
+        if (!$this->hasPrimary()) {
             throw new Exception\UnexpectedException(
                 "Primary property not defined in " . $this->className . "!"
             );
         }
-        return $this->properties[$this->primaryPropertyName];
+        return $this->properties[$this->primaryName];
     }
 
 }

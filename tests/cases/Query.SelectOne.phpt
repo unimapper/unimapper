@@ -2,7 +2,6 @@
 
 use Tester\Assert,
     UniMapper\Query,
-    UniMapper\Association,
     UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
@@ -49,7 +48,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
         $this->adapterQueryMock->shouldReceive("setAssociations")
             ->with(
                 Mockery::on(function($arg) {
-                    return $arg["collection"] instanceof Association\ManyToMany;
+                    return $arg["collection"] instanceof Reflection\Association\ManyToMany;
                 })
             )
             ->once();

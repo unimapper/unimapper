@@ -174,7 +174,7 @@ class ValidatorTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws Exception Validation can not be applied on computed properties!
+     * @throws Exception Validation can not be set on computed property!
      */
     public function testOnComputed()
     {

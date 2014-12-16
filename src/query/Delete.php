@@ -16,7 +16,7 @@ class Delete extends Conditionable
         }
 
         $query = $adapter->createDelete(
-            $this->entityReflection->getAdapterReflection()->getResource()
+            $this->entityReflection->getAdapterResource()
         );
         $query->setConditions($this->conditions);
 

@@ -3,7 +3,7 @@
 use Tester\Assert,
     UniMapper\Query,
     UniMapper\Cache,
-    UniMapper\Association,
+    UniMapper\Mapper,
     UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
@@ -117,7 +117,7 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
         $this->adapterQueryMock->shouldReceive("setAssociations")
             ->with(
                 Mockery::on(function($arg) {
-                    return $arg["collection"] instanceof Association\ManyToMany;
+                    return $arg["collection"] instanceof Reflection\Association\ManyToMany;
                 })
             )
             ->once();
@@ -312,19 +312,22 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
         $remoteRef = new ReflectionClass("UniMapper\Tests\Fixtures\Entity\Remote");;
 
         $cacheMock = Mockery::mock("UniMapper\Tests\Fixtures\Cache\CustomCache");
-        $cacheMock->shouldReceive("load")->with(3533489016)->andReturn(false);
-        $cacheMock->shouldReceive("save")->with(
-            3533489016,
-            [["simplePrimaryId" => 3], ["simplePrimaryId" => 4]],
-            [
-                Cache\ICache::TAGS => ["myTag", Cache\ICache::TAG_QUERY],
-                Cache\ICache::FILES => [
-                    $simpleRef->getFileName(),
-                    $nestedRef->getFileName(),
-                    $remoteRef->getFileName()
+        $cacheMock->shouldReceive("load")
+            ->with("2184d949c54f44268355da2ec0ad9b0e")
+            ->andReturn(false);
+        $cacheMock->shouldReceive("save")
+            ->with(
+                "2184d949c54f44268355da2ec0ad9b0e",
+                [["simplePrimaryId" => 3], ["simplePrimaryId" => 4]],
+                [
+                    Cache\ICache::TAGS => ["myTag", Cache\ICache::TAG_QUERY],
+                    Cache\ICache::FILES => [
+                        $simpleRef->getFileName(),
+                        $nestedRef->getFileName(),
+                        $remoteRef->getFileName()
+                    ]
                 ]
-            ]
-        );
+            );
 
         $query = $this->createQuery("Simple")
             ->select("id")
@@ -338,7 +341,7 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
         return new Query\Select(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\\" . $entity),
             $this->adapters,
-            new \UniMapper\Mapper
+            new Mapper
         );
     }
 

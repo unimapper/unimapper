@@ -4,9 +4,10 @@ namespace UniMapper\Query;
 
 use UniMapper\Exception,
     UniMapper\Reflection,
-    UniMapper\Association\ManyToOne,
+    UniMapper\Reflection\Association\ManyToOne,
     UniMapper\NamingConvention as UNC,
     UniMapper\Mapper,
+    UniMapper\Modifier,
     UniMapper\Cache\ICache;
 
 class Select extends Selectable
@@ -43,7 +44,7 @@ class Select extends Selectable
         }
 
         $property = $this->entityReflection->getProperty($name);
-        if ($property->isAssociation() || $property->isComputed()) {
+        if ($property->hasOption(Reflection\Property::OPTION_ASSOC) || $property->hasOption(Reflection\Property::OPTION_COMPUTED)) {
             throw new Exception\QueryException(
                 "Associations and computed properties can not be selected!"
             );
@@ -106,7 +107,7 @@ class Select extends Selectable
         }
 
         $query = $adapter->createSelect(
-            $this->entityReflection->getAdapterReflection()->getResource(),
+            $this->entityReflection->getAdapterResource(),
             $this->_createSelection(),
             $this->orderBy,
             $this->limit,
@@ -150,7 +151,13 @@ class Select extends Selectable
                     }
                 }
 
-                $associated = $association->find(
+                if ($association->isCollection()) {
+                    $modififer = new Modifier\CollectionModifier($association);
+                } else {
+                    $modififer = new Modifier\EntityModifier($association);
+                }
+
+                $associated = $modififer->load(
                     $adapter,
                     $this->adapters[$association->getTargetAdapterName()],
                     $assocValues
@@ -231,7 +238,7 @@ class Select extends Selectable
             $selection = [];
             foreach ($this->entityReflection->getProperties() as $property) {
 
-                if (!$property->isAssociation() && !$property->isComputed()) {
+                if (!$property->hasOption(Reflection\Property::OPTION_ASSOC) && !$property->hasOption(Reflection\Property::OPTION_COMPUTED)) {
                     $selection[] = $property->getName(true);
                 }
             }
@@ -305,7 +312,7 @@ class Select extends Selectable
      */
     private function _getQueryChecksum()
     {
-        return crc32(
+        return md5(
             serialize(
                 [
                     "name" => $this->getName(),

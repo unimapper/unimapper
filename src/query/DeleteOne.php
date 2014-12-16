@@ -20,7 +20,7 @@ class DeleteOne extends \UniMapper\Query
     ) {
         parent::__construct($entityReflection, $adapters, $mapper);
 
-        if (!$entityReflection->hasPrimaryProperty()) {
+        if (!$entityReflection->hasPrimary()) {
             throw new Exception\QueryException(
                 "Can not use deleteOne() on entity without primary property!"
             );
@@ -42,7 +42,7 @@ class DeleteOne extends \UniMapper\Query
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
 
         $query = $adapter->createDeleteOne(
-            $this->entityReflection->getAdapterReflection()->getResource(),
+            $this->entityReflection->getAdapterResource(),
             $primaryProperty->getName(true),
             $this->primaryValue
         );

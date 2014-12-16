@@ -39,7 +39,7 @@ abstract class Repository
         }
 
         $reflection = $entity->getReflection();
-        if (!$reflection->hasPrimaryProperty()) {
+        if (!$reflection->hasPrimary()) {
             throw new Exception\RepositoryException(
                 "Can not save entity without primary property!"
             );
@@ -73,7 +73,7 @@ abstract class Repository
         $values = $entity->getData();
 
         // Prevent to force empty primary property
-        if ($entity->getReflection()->hasPrimaryProperty()) {
+        if ($entity->getReflection()->hasPrimary()) {
 
             $primaryName = $entity->getReflection()
                 ->getPrimaryProperty()
@@ -123,11 +123,11 @@ abstract class Repository
 
     private function _persistAssociations($primaryValue, Entity $entity)
     {
-        foreach ($entity->getAssociated() as $association) {
-            $association->modify(
-                $primaryValue,
-                $this->queryBuilder->getAdapters()[$entity->getReflection()->getAdapterReflection()->getName()],
-                $this->queryBuilder->getAdapters()[$association->getTargetAdapterName()]
+        foreach ($entity->getModifiers() as $modifier) {
+            $modifier->save(
+                $this->queryBuilder->getAdapters()[$entity->getReflection()->getAdapterName()],
+                $this->queryBuilder->getAdapters()[$modifier->getAssociation()->getTargetAdapterName()],
+                $primaryValue
             );
         }
     }
@@ -149,7 +149,7 @@ abstract class Repository
         }
 
         $reflection = $entity->getReflection();
-        if (!$reflection->hasPrimaryProperty()) {
+        if (!$reflection->hasPrimary()) {
             throw new Exception\RepositoryException(
                 "Can not delete entity without primary property!"
             );
@@ -215,7 +215,7 @@ abstract class Repository
             $this->getEntityName()
         );
 
-        if (!$entityReflection->hasPrimaryProperty()) {
+        if (!$entityReflection->hasPrimary()) {
             throw new Exception\RepositoryException(
                 "Method can not be used because entity " . $this->getEntityName()
                 . " has no primary property defined!"
