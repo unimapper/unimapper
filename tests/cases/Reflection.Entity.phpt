@@ -5,6 +5,9 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
+/**
+ * @testCase
+ */
 class ReflectionEntityTest extends UniMapper\Tests\TestCase
 {
 

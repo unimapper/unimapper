@@ -8,6 +8,9 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
+/**
+ * @testCase
+ */
 class QuerySelectTest extends UniMapper\Tests\TestCase
 {
 

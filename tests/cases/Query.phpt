@@ -1,10 +1,12 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Reflection;
+use UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
+/**
+ * @testCase
+ */
 class QueryTest extends UniMapper\Tests\TestCase
 {
 

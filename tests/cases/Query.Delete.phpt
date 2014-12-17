@@ -6,6 +6,9 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
+/**
+ * @testCase
+ */
 class QueryDeleteTest extends UniMapper\Tests\TestCase
 {
 

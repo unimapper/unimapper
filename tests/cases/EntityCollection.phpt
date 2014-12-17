@@ -4,6 +4,9 @@ use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
+/**
+ * @testCase
+ */
 class EntityCollectionTest extends UniMapper\Tests\TestCase
 {
 

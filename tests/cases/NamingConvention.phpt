@@ -5,6 +5,9 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
+/**
+ * @testCase
+ */
 class NamingConventionTest extends UniMapper\Tests\TestCase
 {
 

@@ -6,6 +6,9 @@ use Tester\Assert,
 
 require __DIR__ . '/../bootstrap.php';
 
+/**
+ * @testCase
+ */
 class ModifierEntityModifierTest extends UniMapper\Tests\TestCase
 {
 
