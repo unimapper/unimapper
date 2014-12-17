@@ -73,7 +73,7 @@ class ReflectionEntityTest extends UniMapper\Tests\TestCase
         );
     }
 
-    public function testHasPrimaryProperty()
+    public function testHasPrimary()
     {
         $noPrimary = new Reflection\Entity(
             "UniMapper\Tests\Fixtures\Entity\NoPrimary"

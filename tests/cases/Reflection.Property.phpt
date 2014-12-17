@@ -218,7 +218,38 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
     {
         $property = $this->_createReflection('Simple', 'oneToOne', 'm:assoc(1:1) m:assoc-by(targetId)');
         Assert::true($property->hasOption("assoc"));
-        Assert::type("UniMapper\Reflection\Association\OneToOne", $property->getOption(Reflection\Property::OPTION_ASSOC));
+        $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
+        Assert::type("UniMapper\Reflection\Association\OneToOne", $association);
+        Assert::same("simplePrimaryId", $association->getTargetPrimaryKey());
+        Assert::same("targetId", $association->getForeignKey());
+        Assert::same("targetId", $association->getKey());
+    }
+
+    /**
+     * @throws UniMapper\Exception\PropertyException Target entity must have defined primary when 1:1 relation used!
+     */
+    public function testOptionAssocOneToOneTargetNoPrimary()
+    {
+        $this->_createReflection('NoPrimary', 'oneToOne', 'm:assoc(1:1) m:assoc-by(targetId)');
+    }
+
+    public function testOptionAssocManyToOne()
+    {
+        $property = $this->_createReflection('Simple', 'manyToOne', 'm:assoc(N:1) m:assoc-by(targetId)');
+        Assert::true($property->hasOption("assoc"));
+        $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
+        Assert::type("UniMapper\Reflection\Association\ManyToOne", $association);
+        Assert::same("simplePrimaryId", $association->getTargetPrimaryKey());
+        Assert::same("targetId", $association->getReferenceKey());
+        Assert::same("targetId", $association->getKey());
+    }
+
+    /**
+     * @throws UniMapper\Exception\PropertyException Target entity must have defined primary when N:1 relation used!
+     */
+    public function testOptionAssocManyToOneTargetNoPrimary()
+    {
+        $this->_createReflection('NoPrimary', 'manyToOne', 'm:assoc(N:1) m:assoc-by(remoteId)');
     }
 
     public function testOptionMap()

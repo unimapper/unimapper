@@ -22,6 +22,12 @@ class ManyToOne extends \UniMapper\Reflection\Association
             );
         }
 
+        if (!$targetReflection->hasPrimary()) {
+            throw new Exception\DefinitionException(
+                "Target entity must have defined primary when N:1 relation used!"
+            );
+        }
+
         parent::__construct($propertyReflection, $targetReflection, $arguments, true);
     }
 
@@ -33,6 +39,11 @@ class ManyToOne extends \UniMapper\Reflection\Association
     public function getReferenceKey()
     {
         return $this->arguments[0];
+    }
+
+    public function getTargetPrimaryKey()
+    {
+        return $this->targetReflection->getPrimaryProperty()->getName(true);
     }
 
 }

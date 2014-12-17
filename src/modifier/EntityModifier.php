@@ -47,9 +47,7 @@ class EntityModifier extends \UniMapper\Modifier
         $query->setConditions(
             [
                 [
-                    $this->associationReflection->getTargetReflection()
-                        ->getPrimaryProperty()
-                        ->getName(true),
+                    $this->associationReflection->getTargetPrimaryKey(),
                     "IN",
                     $primaryValues,
                     "AND"
@@ -65,11 +63,7 @@ class EntityModifier extends \UniMapper\Modifier
 
         return $this->groupResult(
             $result,
-            [
-                $this->associationReflection->getTargetReflection()
-                    ->getPrimaryProperty()
-                    ->getName(true)
-            ]
+            [$this->associationReflection->getTargetPrimaryKey()]
         );
     }
 
@@ -82,9 +76,7 @@ class EntityModifier extends \UniMapper\Modifier
         $query->setConditions(
             [
                 [
-                    $this->associationReflection->getTargetReflection()
-                        ->getPrimaryProperty()
-                        ->getName(true),
+                    $this->associationReflection->getTargetPrimaryKey(),
                     "IN",
                     $primaryValues,
                     "AND"
@@ -100,11 +92,7 @@ class EntityModifier extends \UniMapper\Modifier
 
         return $this->groupResult(
             $result,
-            [
-                $this->associationReflection->getTargetReflection()
-                    ->getPrimaryProperty()
-                    ->getName(true)
-            ]
+            [$this->associationReflection->getTargetPrimaryKey()]
         );
     }
 
