@@ -9,8 +9,8 @@ require __DIR__ . '/../bootstrap.php';
 class ReflectionPropertyTest extends UniMapper\Tests\TestCase
 {
 
-    const TYPE1 = 1,
-          TYPE2 = 2;
+    const ENUM1 = 1,
+          ENUM2 = 2;
 
     private function _createReflection(
         $type,
@@ -48,6 +48,20 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
                     new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoAdapter")
                 )
             );
+
+        // Enumeration
+        $this->_createReflection('integer', "enum", "m:enum(" . get_class() . "::ENUM*)")
+            ->validateValueType(1);
+    }
+
+    /**
+     * @throws UniMapper\Exception\PropertyValueException Value 3 is not from defined entity enumeration range on property enum!
+     */
+    public function testValidateValueTypeInvalidEnum()
+    {
+        // Enumeration
+        $this->_createReflection('integer', "enum", "m:enum(" . get_class() . "::ENUM*)")
+            ->validateValueType(3);
     }
 
     public function testConvertValue()
@@ -236,8 +250,8 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
         Assert::true($self->isValid(1));
         Assert::false($self->isValid(3));
 
-        $class = $this->_createReflection('string', 'name', 'm:enum(' . get_class() . '::TYPE*' . ')')->getOption(Reflection\Property::OPTION_ENUM);
-        Assert::same(['TYPE1' => 1, 'TYPE2' => 2], $class->getValues());
+        $class = $this->_createReflection('string', 'name', 'm:enum(' . get_class() . '::ENUM*' . ')')->getOption(Reflection\Property::OPTION_ENUM);
+        Assert::same(['ENUM1' => 1, 'ENUM2' => 2], $class->getValues());
         Assert::true($class->isValid(1));
         Assert::false($class->isValid(3));
     }

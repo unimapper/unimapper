@@ -352,7 +352,7 @@ class Property
         $expectedType = $this->type;
 
         // Enumeration
-        if ($this->hasOption(self::OPTION_ENUM) && !$this->hasOption(self::OPTION_ENUM)->isValid($value)) {
+        if ($this->hasOption(self::OPTION_ENUM) && !$this->getOption(self::OPTION_ENUM)->isValid($value)) {
             throw new Exception\PropertyValueException(
                 "Value " . $value . " is not from defined entity enumeration "
                 . "range on property " . $this->name . "!",
