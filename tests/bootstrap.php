@@ -24,6 +24,7 @@ require __DIR__ . "/fixtures/repository/NoPrimaryRepository.php";
 require __DIR__ . "/fixtures/query/Custom.php";
 
 Tester\Environment::setup();
+Tester\Environment::$checkAssertions = false;
 
 date_default_timezone_set('Europe/Prague');
 
