@@ -201,7 +201,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
         return new Query\SelectOne(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\\" . $entity),
             $this->adapters,
-            new \UniMapper\Mapper,
+            new \UniMapper\Mapper(new UniMapper\EntityFactory),
             $id
         );
     }

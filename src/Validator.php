@@ -137,8 +137,8 @@ class Validator
             );
         }
         if ($child
-            && (!$this->property->isTypeEntity()
-            && !$this->property->isTypeCollection())
+            && (!$this->property->getType() === Reflection\Property::TYPE_ENTITY
+            && !$this->property->getType() === Reflection\Property::TYPE_COLLECTION)
         ) {
             throw new Exception\InvalidArgumentException(
                 "Child validation can be used only on entities and collections!"
@@ -305,7 +305,7 @@ class Validator
             if ($rule->getSeverity() <= $minSeverity) {
 
                 if ($rule->getProperty() !== null
-                    && $rule->getProperty()->isTypeCollection()
+                    && $rule->getProperty()->getType() === Reflection\Property::TYPE_COLLECTION
                 ) {
                     foreach ($rule->getFailedChildIndexes() as $index) {
 

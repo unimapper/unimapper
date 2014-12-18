@@ -8,6 +8,19 @@ class Mapper
     /** @var array */
     private $adapterMappings = [];
 
+    /** @var EntityFactory */
+    protected $entityFactory;
+
+    public function __construct(EntityFactory $entityFactory)
+    {
+        $this->entityFactory = $entityFactory;
+    }
+
+    public function getEntityFactory()
+    {
+        return $this->entityFactory;
+    }
+
     public function registerAdapterMapping($name, Adapter\Mapping $mapping)
     {
         if (isset($this->adapterMappings[$name])) {
@@ -48,36 +61,34 @@ class Mapper
             $value = call_user_func($property->getOption(Reflection\Property::OPTION_MAP_FILTER)[0], $value);
         }
 
-        $type = $property->getType();
-
         if ($value === null || $value === "") {
             return null;
         }
 
-        if ($property->isTypeBasic()) {
+        if ($property->getType() === Reflection\Property::TYPE_BASIC) {
             // Basic type
 
-            if ($type === "boolean" && $value === "false") {
+            if ($property->getTypeOption() === "boolean" && $value === "false") {
                 return false;
             }
 
-            if ($type === "boolean" && $value === "true") {
+            if ($property->getTypeOption() === "boolean" && $value === "true") {
                 return true;
             }
 
-            if (settype($value, $type)) {
+            if (settype($value, $property->getTypeOption())) {
                 return $value;
             }
 
-        } elseif ($type instanceof EntityCollection) {
+        } elseif ($property->getType() === Reflection\Property::TYPE_COLLECTION) {
             // Collection
 
-            return $this->mapCollection($type->getEntityReflection(), $value);
-        } elseif ($type instanceof Reflection\Entity) {
+            return $this->mapCollection($property->getTypeOption()->getName(), $value);
+        } elseif ($property->getType() === Reflection\Property::TYPE_ENTITY) {
             // Entity
 
-            return $this->mapEntity($type, $value);
-        } elseif ($type === Reflection\Property::TYPE_DATETIME) {
+            return $this->mapEntity($property->getTypeOption()->getName(), $value);
+        } elseif ($property->getType() === Reflection\Property::TYPE_DATETIME) {
             // DateTime
 
             if ($value instanceof \DateTime) {
@@ -106,12 +117,12 @@ class Mapper
         // Unexpected value type
         throw new Exception\MappingException(
             "Unexpected value type given. Can not convert value to entity "
-            . "@property $" . $property->getName() . ". Expected " . $type
-            . " but " . gettype($value) . " given!"
+            . "@property $" . $property->getName() . ". Expected "
+            . $property->getType() . " but " . gettype($value) . " given!"
         );
     }
 
-    public function mapCollection(Reflection\Entity $entityReflection, $data)
+    public function mapCollection($name, $data)
     {
         if (!Validator::isTraversable($data)) {
             throw new Exception\InvalidArgumentException(
@@ -119,18 +130,20 @@ class Mapper
             );
         }
 
-        $collection = new EntityCollection($entityReflection);
+        $collection = $this->entityFactory->createCollection($name);
         foreach ($data as $value) {
-            $collection[] = $this->mapEntity($entityReflection, $value);
+            $collection[] = $this->mapEntity($name, $value);
         }
         return $collection;
     }
 
-    public function mapEntity(Reflection\Entity $entityReflection, $data)
+    public function mapEntity($name, $data)
     {
         if (!Validator::isTraversable($data)) {
             throw new Exception\MappingException("Input data must be traversable!");
         }
+
+        $entityReflection = $this->getEntityFactory()->getEntityReflection($name);
 
         $values = [];
         foreach ($data as $index => $value) {

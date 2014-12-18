@@ -39,7 +39,7 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
         $query = new \UniMapper\Query\Insert(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["FooAdapter" => $this->adapterMock],
-            new \UniMapper\Mapper,
+            new \UniMapper\Mapper(new UniMapper\EntityFactory),
             ["text" => "foo", "oneToOne" => ["id" => 3]]
         );
         Assert::same(1, $query->execute());
@@ -50,7 +50,7 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
         $query = new \UniMapper\Query\Insert(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["FooAdapter" => $this->adapterMock],
-            new \UniMapper\Mapper,
+            new \UniMapper\Mapper(new UniMapper\EntityFactory),
             []
         );
 

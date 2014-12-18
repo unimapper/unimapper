@@ -25,7 +25,26 @@ class EntityTest extends UniMapper\Tests\TestCase
         );
     }
 
-    public function testPublicProperties()
+    public function testGetProperty()
+    {
+        Assert::same("test", $this->entity->text);
+        Assert::same(1, $this->entity->id);
+        Assert::same("", $this->entity->empty);
+        Assert::type("UniMapper\EntityCollection", $this->entity->manyToMany);
+        Assert::count(0, $this->entity->manyToMany);
+        Assert::null($this->entity->year); // Computed
+    }
+
+    /**
+     * @throws UniMapper\Exception\PropertyAccessException Undefined property 'undefined'!
+     */
+    public function testGetUndefinedProperty()
+    {
+
+        $this->entity->undefined;
+    }
+
+    public function testGetPublicProperty()
     {
         Assert::same("defaultValue", $this->entity->publicProperty);
 
@@ -36,7 +55,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     /**
      * @throws Exception Property 'readonly' is read-only!
      */
-    public function testReadnonly()
+    public function testSetReadnonlyProperty()
     {
         $this->entity->readonly = "trytowrite";
     }
@@ -61,46 +80,35 @@ class EntityTest extends UniMapper\Tests\TestCase
         Assert::null($this->entity->id);
     }
 
-    public function testValidProperty()
+    public function testSetProperty()
     {
         $this->entity->id = 1;
         Assert::equal(1, $this->entity->id);
+        $this->entity->collection[] = $this->createEntity("Nested", ["text" => "foo"]);
+        Assert::same("foo", $this->entity->collection[0]->text);
     }
 
     public function testToArray()
     {
-        $nestedEntity = $this->createEntity("Nested", ["text" => "foo"]);
-
-        $this->entity->collection[] = $nestedEntity;
-        $this->entity->manyToMany[] = $this->createEntity(
-            "Remote",
-            ["id" => 1]
-        );
+        $this->entity->collection[] = $this->createEntity("Nested", ["text" => "foo"]);
+        $this->entity->manyToMany[] = $this->createEntity("Remote", ["id" => 1]);
         $this->entity->entity = $this->createEntity("Nested");
 
-        Assert::same(
-            array(
-                'id' => 1,
-                'text' => 'test',
-                'empty' => '',
-                'url' => NULL,
-                'email' => NULL,
-                'time' => NULL,
-                'year' => NULL,
-                'ip' => NULL,
-                'mark' => NULL,
-                'entity' => $this->entity->entity,
-                'collection' => $this->entity->collection,
-                'manyToMany' => $this->entity->manyToMany,
-                'manyToOne' => $this->entity->manyToOne,
-                'oneToOne' => $this->entity->oneToOne,
-                'readonly' => NULL,
-                'storedData' => NULL,
-                'enumeration' => NULL,
-                'publicProperty' => 'defaultValue',
-            ),
-            $this->entity->toArray()
-        );
+        Assert::type("array", $this->entity->toArray());
+        Assert::count(18, $this->entity->toArray());
+        Assert::same("test", $this->entity->toArray()["text"]);
+        Assert::same("", $this->entity->toArray()["empty"]);
+        Assert::same($this->entity->collection, $this->entity->toArray()["collection"]);
+        Assert::same($this->entity->entity, $this->entity->toArray()["entity"]);
+        Assert::same("defaultValue", $this->entity->toArray()["publicProperty"]);
+        Assert::same($this->entity->manyToMany, $this->entity->toArray()["manyToMany"]);
+    }
+
+    public function testToArrayRecursive()
+    {
+        $this->entity->collection[] = $this->createEntity("Nested", ["text" => "foo"]);
+        $this->entity->manyToMany[] = $this->createEntity("Remote", ["id" => 1]);
+        $this->entity->entity = $this->createEntity("Nested");
 
         Assert::same(
             array(
@@ -161,18 +169,9 @@ class EntityTest extends UniMapper\Tests\TestCase
     /**
      * @throws UniMapper\Exception\PropertyValueException Expected integer but string given on property id!
      */
-    public function testInvalidPropertyType()
+    public function testSetPropertyWithInvalidType()
     {
         $this->entity->id = "invalidType";
-    }
-
-    /**
-     * @throws UniMapper\Exception\PropertyAccessException Undefined property 'undefined'!
-     */
-    public function testUndefinedProperty()
-    {
-
-        $this->entity->undefined;
     }
 
     public function testSerializable()
@@ -257,7 +256,7 @@ class EntityTest extends UniMapper\Tests\TestCase
         Assert::null($this->entity->year);
     }
 
-    public function testComputed()
+    public function testGetComputedProperty()
     {
         Assert::null($this->entity->year);
         $this->entity->time = new DateTime;
@@ -267,7 +266,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     /**
      * @throws UniMapper\Exception\PropertyException Computed property is read-only!
      */
-    public function testComputedSet()
+    public function testSetComputedProperty()
     {
         $this->entity->year = 1999;
     }
@@ -304,15 +303,7 @@ class EntityTest extends UniMapper\Tests\TestCase
         Assert::same('defaultValue', current($this->entity));
     }
 
-    public function testEntityWithoutProperties()
-    {
-        Assert::count(
-            0,
-            $this->createEntity("NoProperty")->getReflection()->getProperties()
-        );
-    }
-
-    public function testModifiers()
+    public function testCallModifier()
     {
         Assert::type("UniMapper\Modifier\CollectionModifier", $this->entity->manyToMany());
         Assert::type("UniMapper\Modifier\EntityModifier", $this->entity->manyToOne());
@@ -322,7 +313,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     /**
      * @throws UniMapper\Exception\PropertyAccessException Undefined property 'undefined'!
      */
-    public function testAssociationUndefined()
+    public function testCallModifierUndefined()
     {
         $this->entity->undefined();
     }
@@ -330,7 +321,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     /**
      * @throws UniMapper\Exception\PropertyAccessException Only association properties can be called as function!
      */
-    public function testAssociationNotAllowed()
+    public function testCallModifierNotAllowed()
     {
         $this->entity->id();
     }

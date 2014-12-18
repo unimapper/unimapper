@@ -21,9 +21,6 @@ class QueryBuilder
     /** @var Mapper */
     protected $mapper;
 
-    /** @var EntityFactory */
-    protected $entityFactory;
-
     /** @var array */
     protected $queries = [
         "count" => "UniMapper\Query\Count",
@@ -41,9 +38,8 @@ class QueryBuilder
 
     protected $afterQuery = [];
 
-    public function __construct(EntityFactory $entityFactory, \UniMapper\Mapper $mapper)
+    public function __construct(\UniMapper\Mapper $mapper)
     {
-        $this->entityFactory = $entityFactory;
         $this->mapper = $mapper;
     }
 
@@ -60,7 +56,7 @@ class QueryBuilder
                 "You must pass queried entity name!"
             );
         }
-        $entityReflection = $this->entityFactory->getEntityReflection($arguments[0]);
+        $entityReflection = $this->mapper->getEntityFactory()->getEntityReflection($arguments[0]);
 
         unset($arguments[0]);
         array_unshift($arguments, $entityReflection, $this->adapters, $this->mapper);
@@ -68,8 +64,8 @@ class QueryBuilder
         $class = new \ReflectionClass($this->queries[$name]);
         $query = $class->newInstanceArgs($arguments);
 
-        if ($this->entityFactory->getCache()) {
-            $query->setCache($this->entityFactory->getCache());
+        if ($this->mapper->getEntityFactory()->getCache()) {
+            $query->setCache($this->mapper->getEntityFactory()->getCache());
         }
 
         foreach ($this->beforeQuery as $callback) {
@@ -105,11 +101,6 @@ class QueryBuilder
     public function registerQuery($class)
     {
         $this->queries[$class::getName()] = $class;
-    }
-
-    public function getEntityFactory()
-    {
-        return $this->entityFactory;
     }
 
     public function getAdapters()

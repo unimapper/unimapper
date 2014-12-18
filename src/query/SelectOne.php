@@ -87,7 +87,7 @@ class SelectOne extends Selectable
             }
         }
 
-        return $this->mapper->mapEntity($this->entityReflection, $result);
+        return $this->mapper->mapEntity($this->entityReflection->getName(), $result);
     }
 
 }

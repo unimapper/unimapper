@@ -10,6 +10,9 @@ class EntityFactory
     /** @var Cache\ICache $cache */
     private $cache;
 
+    /** @var array */
+    private $reflections = [];
+
     public function __construct(Cache\ICache $cache = null)
     {
         $this->cache = $cache;
@@ -66,13 +69,16 @@ class EntityFactory
     {
         $class = UNC::nameToClass($name, UNC::$entityMask);
 
+        if (isset($this->reflections[$name])) {
+            return $this->reflections[$name];
+        }
+
         if ($this->cache) {
 
             $reflection = $this->cache->load($class);
             if (!$reflection) {
 
                 $reflection = new Reflection\Entity($class);
-
                 $this->cache->save(
                     $class,
                     $reflection,
@@ -85,9 +91,11 @@ class EntityFactory
                 );
             }
             return $reflection;
+        } else {
+            $reflection = new Reflection\Entity($class);
         }
 
-        return $reflection = new Reflection\Entity($class);
+        return $this->reflections[$name] = $reflection;
     }
 
     public function getCache()

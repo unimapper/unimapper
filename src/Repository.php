@@ -19,7 +19,7 @@ abstract class Repository
     public function __construct(QueryBuilder $queryBuilder)
     {
         $this->queryBuilder = $queryBuilder;
-        $this->entityFactory = $queryBuilder->getEntityFactory();
+        $this->entityFactory = $queryBuilder->getMapper()->getEntityFactory();
     }
 
     /**
@@ -252,18 +252,12 @@ abstract class Repository
 
     protected function mapToEntity($name, $values)
     {
-        return $this->queryBuilder->getMapper()->mapEntity(
-            $this->entityFactory->getEntityReflection($name),
-            $values
-        );
+        return $this->queryBuilder->getMapper()->mapEntity($name, $values);
     }
 
     protected function mapToCollection($name, $values)
     {
-        return $this->queryBuilder->getMapper()->mapCollection(
-            $this->entityFactory->getEntityReflection($name),
-            $values
-        );
+        return $this->queryBuilder->getMapper()->mapCollection($name, $values);
     }
 
     protected function unmapFromEntity(Entity $entity)

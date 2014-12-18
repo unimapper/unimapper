@@ -17,8 +17,7 @@ class TestCase extends \Tester\TestCase
     protected function createRepository($name, array $adapters = [])
     {
         $queryBuilder = new \UniMapper\QueryBuilder(
-            new \UniMapper\EntityFactory,
-            new \UniMapper\Mapper
+            new \UniMapper\Mapper(new \UniMapper\EntityFactory)
         );
         foreach ($adapters as $adapterName => $adapter) {
             $queryBuilder->registerAdapter($adapterName, $adapter);
