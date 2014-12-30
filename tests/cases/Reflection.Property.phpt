@@ -172,13 +172,14 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
 
     public function testTypeEntity()
     {
-        Assert::true(
+        Assert::same(
+            Reflection\Property::TYPE_ENTITY,
             $this->_createReflection(
                 'Simple', 'entity'
-            )->isTypeEntity()
+            )->getType()
         );
         Assert::false(
-            $this->_createReflection('integer', 'id', 'm:primary')->isTypeEntity()
+            $this->_createReflection('integer', 'id', 'm:primary')->getType() === Reflection\Property::TYPE_ENTITY
         );
     }
 

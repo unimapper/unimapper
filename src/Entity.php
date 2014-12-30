@@ -154,11 +154,11 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 
         if (!in_array($name, $this->modifiers, true)) {
 
-            if ($this->reflection->getProperty($name)->isTypeCollection()) {
+            if ($this->reflection->getProperty($name)->getType() === Reflection\Property::TYPE_COLLECTION) {
                 $this->modifiers[$name] = new Modifier\CollectionModifier(
                     $this->reflection->getProperty($name)->getOption(Reflection\Property::OPTION_ASSOC)
                 );
-            } elseif ($this->reflection->getProperty($name)->isTypeEntity()) {
+            } elseif ($this->reflection->getProperty($name)->getType() === Reflection\Property::TYPE_ENTITY) {
                 $this->modifiers[$name] = new Modifier\EntityModifier(
                     $this->reflection->getProperty($name)->getOption(Reflection\Property::OPTION_ASSOC)
                 );
@@ -205,9 +205,8 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         }
 
         // empty collection
-        $type = $properties[$name]->getType();
-        if ($type instanceof EntityCollection) {
-            return $type;
+        if ($properties[$name]->getType() === Reflection\Property::TYPE_COLLECTION) {
+            return $this->data[$name] = new EntityCollection($properties[$name]->getTypeOption());
         }
 
         return null;

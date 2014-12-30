@@ -34,8 +34,8 @@ abstract class Conditionable extends \UniMapper\Query
         $property = $this->entityReflection->getProperty($name);
         if ($property->hasOption(Reflection\Property::OPTION_ASSOC)
             || $property->hasOption(Reflection\Property::OPTION_COMPUTED)
-            || $property->isTypeCollection()
-            || $property->isTypeEntity()
+            || $property->getType() === Reflection\Property::TYPE_COLLECTION
+            || $property->getType() === Reflection\Property::TYPE_ENTITY
         ) {
             throw new Exception\QueryException(
                 "Conditions are not allowed on associations, computed, collections or entities!"
@@ -49,7 +49,7 @@ abstract class Conditionable extends \UniMapper\Query
         // Validate value type
         try {
 
-            if ((is_array($value) && $property->getType() !== "array")
+            if ((is_array($value) && $property->getTypeOption() !== "array")
                 && ($operator === "IN" || $operator === "NOT IN")
             ) {
 

@@ -2,7 +2,8 @@
 
 namespace UniMapper\Reflection;
 
-use UniMapper\Exception;
+use UniMapper\Exception,
+    UniMapper\NamingConvention as UNC;
 
 class Entity
 {
@@ -125,6 +126,11 @@ class Entity
     public function getFileName()
     {
         return $this->fileName;
+    }
+
+    public function getName()
+    {
+        return UNC::classToName($this->className, UNC::$entityMask);
     }
 
     public function getRelated()

@@ -344,7 +344,7 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
         return new Query\Select(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\\" . $entity),
             $this->adapters,
-            new Mapper
+            new Mapper(new \UniMapper\EntityFactory)
         );
     }
 

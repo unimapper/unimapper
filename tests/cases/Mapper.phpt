@@ -16,13 +16,13 @@ class MapperTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->mapper = new UniMapper\Mapper;
+        $this->mapper = new UniMapper\Mapper(new UniMapper\EntityFactory);
     }
 
     public function testMapEntity()
     {
         $entity = $this->mapper->mapEntity(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
+            "Simple",
             [
                 "email_address" => "john.doe@example.com",
                 "publicProperty" => "foo",
@@ -68,7 +68,7 @@ class MapperTest extends UniMapper\Tests\TestCase
     public function testMapCollection()
     {
         $collection = $this->mapper->mapCollection(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
+            "Simple",
             [
                 [
                     "email_address" => "john.doe@example.com",

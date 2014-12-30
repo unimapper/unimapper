@@ -10,7 +10,11 @@ use UniMapper\EntityCollection,
 class Property
 {
 
-    const TYPE_DATETIME = "DateTime";
+    const TYPE_DATETIME = "datetime",
+          TYPE_COLLECTION = "collection",
+          TYPE_ENTITY = "entity",
+          TYPE_BASIC = "basic";
+
     const OPTION_ASSOC = "assoc",
           OPTION_ASSOC_BY = "assoc-by",
           OPTION_COMPUTED = "computed",
@@ -22,6 +26,9 @@ class Property
 
     /** @var string $type */
     private $type;
+
+    /** @var mixed $typeOption */
+    private $typeOption;
 
     /** @var string $name */
     private $name;
@@ -63,11 +70,11 @@ class Property
         $options = null
     ) {
         $this->entityReflection = $entityReflection;
-        $this->type = $this->_detectType($type);
         $this->name = $name;
         $this->options = AnnotationParser::parseOptions($options);
         $this->readonly = (bool) $readonly;
 
+        $this->_initType($type);
         $this->_initComputed();
         $this->_initMapping();
         $this->_initEnumeration();
@@ -124,8 +131,13 @@ class Property
         return $this->type;
     }
 
+    public function getTypeOption()
+    {
+        return $this->typeOption;
+    }
+
     /**
-     * Detect property type from string definition
+     * Initialize property type
      *
      * @param string $definition
      *
@@ -133,25 +145,28 @@ class Property
      *
      * @throws Exception\PropertyException
      */
-    private function _detectType($definition)
+    private function _initType($definition)
     {
         if (in_array($definition, $this->basicTypes)) {
             // Basic
 
-            return $definition;
-        } elseif ($definition === self::TYPE_DATETIME) {
+            $this->type = self::TYPE_BASIC;
+            $this->typeOption = $definition;
+        } elseif (strtolower($definition) === self::TYPE_DATETIME) {
             // DateTime
 
-            return $definition;
+            $this->type = self::TYPE_DATETIME;
         } elseif (class_exists(UNC::nameToClass($definition, UNC::$entityMask))) {
             // Entity
 
-            return $this->_loadEntityReflection(
+            $this->type = self::TYPE_ENTITY;
+            $this->typeOption = $this->_loadEntityReflection(
                 UNC::nameToClass($definition, UNC::$entityMask)
             );
         } elseif (substr($definition, -2) === "[]") {
             // Collection
 
+            $this->type = self::TYPE_COLLECTION;
             try {
                 $entityReflection = $this->_loadEntityReflection(
                     UNC::nameToClass(rtrim($definition, "[]"), UNC::$entityMask)
@@ -159,12 +174,12 @@ class Property
             } catch (Exception\InvalidArgumentException $exception) {
 
             }
-            return new EntityCollection($entityReflection);
+            $this->typeOption = $entityReflection;
+        } else {
+            throw new Exception\PropertyException(
+                "Unsupported type '" . $definition . "'!"
+            );
         }
-
-        throw new Exception\PropertyException(
-            "Unsupported type '" . $definition . "'!"
-        );
     }
 
     /**
@@ -258,6 +273,15 @@ class Property
                 );
             }
 
+            if ($this->type !== self::TYPE_COLLECTION
+                && $this->type !== self::TYPE_ENTITY
+            ) {
+                throw new Exception\PropertyException(
+                    "Property type must be collection or entity if association "
+                    . "defined!"
+                );
+            }
+
             if (!$this->entityReflection->hasAdapter()) {
                 throw new Exception\PropertyException(
                     "Can not use associations while entity "
@@ -266,21 +290,10 @@ class Property
                 );
             }
 
-            // Get target entity class
-            if ($this->type instanceof EntityCollection) {
-                $targetEntityReflection = $this->type->getEntityReflection();
-            } elseif ($this->type instanceof Entity) {
-                $targetEntityReflection = $this->type;
-            } else {
-                throw new Exception\PropertyException(
-                    "Property type must be collection or entity if association "
-                    . "defined!"
-                );
-            }
-            if (!$targetEntityReflection->hasAdapter()) {
+            if (!$this->typeOption->hasAdapter()) {
                 throw new Exception\PropertyException(
                     "Can not use associations while target entity "
-                    . $targetEntityReflection->getClassName()
+                    . $this->typeOption->getClassName()
                     . " has no adapter defined!"
                 );
             }
@@ -304,7 +317,7 @@ class Property
 
                 $this->options[self::OPTION_ASSOC] = new $class(
                     $this,
-                    $targetEntityReflection,
+                    $this->typeOption,
                     explode("|", $this->getOption(self::OPTION_ASSOC_BY)),
                     $this->getOption(self::OPTION_ASSOC) === "M<N" ? false : true
                 );
@@ -349,7 +362,7 @@ class Property
      */
     public function validateValueType($value)
     {
-        $expectedType = $this->type;
+        $expectedType = $this->typeOption;
 
         // Enumeration
         if ($this->hasOption(self::OPTION_ENUM) && !$this->getOption(self::OPTION_ENUM)->isValid($value)) {
@@ -363,7 +376,7 @@ class Property
         }
 
         // Basic type
-        if ($this->isTypeBasic()) {
+        if ($this->type === self::TYPE_BASIC) {
 
             if (gettype($value) === $expectedType) {
                 return;
@@ -383,7 +396,7 @@ class Property
             $givenType = get_class($value);
         }
 
-        if ($expectedType instanceof Entity) {
+        if ($this->type === self::TYPE_ENTITY) {
             // Entity
 
             $expectedType = $expectedType->getClassName();
@@ -399,7 +412,7 @@ class Property
                 );
             }
 
-        } elseif ($expectedType instanceof EntityCollection) {
+        } elseif ($this->type === self::TYPE_COLLECTION) {
             // Collection
 
             if (!$value instanceof EntityCollection) {
@@ -411,10 +424,10 @@ class Property
                     null,
                     Exception\PropertyValueException::TYPE
                 );
-            } elseif ($value->getEntityReflection()->getClassName() !== $expectedType->getEntityReflection()->getClassName()) {
+            } elseif ($value->getEntityReflection()->getClassName() !== $expectedType->getClassName()) {
                 throw new Exception\PropertyValueException(
                     "Expected collection of entity "
-                    . $expectedType->getEntityReflection()->getClassName()
+                    . $expectedType->getClassName()
                     . " but collection of entity "
                     . $value->getEntityReflection()->getClassName()
                     . " given on property " . $this->name . "!",
@@ -426,7 +439,7 @@ class Property
                 return;
             }
 
-        } elseif ($expectedType === self::TYPE_DATETIME) {
+        } elseif ($this->type === self::TYPE_DATETIME) {
             // DateTime
 
             if ($value instanceof \DateTime) {
@@ -443,7 +456,7 @@ class Property
         }
 
         throw new Exception\UnexpectedException(
-            "Expected " . $expectedType . " but " . $givenType . " given on "
+            "Expected " . $this->type . " but " . $givenType . " given on "
             . "property " . $this->name . ". It could be an internal ORM error!"
         );
     }
@@ -459,14 +472,14 @@ class Property
      */
     public function convertValue($value)
     {
-        if ($this->isTypeBasic()) {
+        if ($this->type === self::TYPE_BASIC) {
             // Basic
 
-            if ($this->type === "boolean" && strtolower($value) === "false") {
+            if ($this->typeOption === "boolean" && strtolower($value) === "false") {
                 return false;
             }
 
-            if (settype($value, $this->type)) {
+            if (settype($value, $this->typeOption)) {
                 return $value;
             }
         } elseif ($this->type === self::TYPE_DATETIME) {
@@ -489,45 +502,28 @@ class Property
 
                 }
             }
-        } elseif ($this->type instanceof EntityCollection
+        } elseif ($this->type === self::TYPE_COLLECTION
             && Validator::isTraversable($value)
         ) {
             // Collection
 
-            $collection = clone $this->type;
+            $collection = new EntityCollection($this->typeOption);
             foreach ($value as $index => $data) {
-
-                $collection[$index] = $this->type->getEntityReflection()
-                    ->createEntity($data);
+                $collection[$index] = $this->typeOption->createEntity($data);
             }
             return $collection;
-        } elseif ($this->type instanceof Entity
+        } elseif ($this->type === self::TYPE_ENTITY
             && Validator::isTraversable($value)
         ) {
             // Entity
 
-            return $this->type->createEntity($value);
+            return $this->typeOption->createEntity($value);
         }
 
         throw new Exception\InvalidArgumentException(
             "Can not convert value on property '" . $this->name
             . "' automatically!"
         );
-    }
-
-    public function isTypeBasic()
-    {
-        return in_array($this->type, $this->getBasicTypes());
-    }
-
-    public function isTypeEntity()
-    {
-        return $this->type instanceof Entity;
-    }
-
-    public function isTypeCollection()
-    {
-        return $this->type instanceof EntityCollection;
     }
 
     private function _createCallback($class, $method)

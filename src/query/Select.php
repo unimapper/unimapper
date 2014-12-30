@@ -102,7 +102,10 @@ class Select extends Selectable
 
             $cachedResult = $this->cache->load($this->_getQueryChecksum());
             if ($cachedResult) {
-                return $this->mapper->mapCollection($this->entityReflection, $cachedResult);
+                return $this->mapper->mapCollection(
+                    $this->entityReflection->getName(),
+                    $cachedResult
+                );
             }
         }
 
@@ -203,7 +206,7 @@ class Select extends Selectable
         }
 
         return $this->mapper->mapCollection(
-            $this->entityReflection,
+            $this->entityReflection->getName(),
             empty($result) ? [] : $result
         );
     }
