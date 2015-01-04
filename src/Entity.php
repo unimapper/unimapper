@@ -18,7 +18,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     private $iteration;
 
     /** @var \UniMapper\Validator $validator */
-    protected $validator;
+    private $validator;
 
     /** @var array $modifiers */
     private $modifiers = [];
@@ -26,7 +26,6 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     public function __construct($values = [])
     {
         $this->reflection = Reflection\Loader::load(get_called_class());
-        $this->validator = new Validator($this);
 
         if ($values) {
             $this->_setValues($values, true);
@@ -288,6 +287,9 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     public function getValidator()
     {
+        if (!$this->validator) {
+            $this->validator = new Validator($this);
+        }
         return $this->validator->onEntity();
     }
 
