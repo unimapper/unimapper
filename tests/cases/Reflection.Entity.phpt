@@ -104,34 +104,6 @@ class ReflectionEntityTest extends UniMapper\Tests\TestCase
         $reflection->getPrimaryProperty();
     }
 
-    public function testGetRelatedFiles()
-    {
-        $simpleRef = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple");
-        $nestedRef = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Nested");
-        $remoteRef = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote");
-
-        Assert::same(
-            [
-                $nestedRef->getFileName(),
-                $simpleRef->getFileName(),
-                $remoteRef->getFileName()
-            ],
-            $simpleRef->getRelatedFiles()
-        );
-
-        Assert::same(
-            [
-                $simpleRef->getFileName(),
-                $remoteRef->getFileName(),
-                $nestedRef->getFileName()
-            ],
-            $remoteRef->getRelatedFiles()
-        );
-
-        $noAdapterRef = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoAdapter");
-        Assert::same([], $noAdapterRef->getRelatedFiles());
-    }
-
 }
 
 $testCase = new ReflectionEntityTest;

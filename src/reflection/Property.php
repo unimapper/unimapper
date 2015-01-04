@@ -160,52 +160,17 @@ class Property
             // Entity
 
             $this->type = self::TYPE_ENTITY;
-            $this->typeOption = $this->_loadEntityReflection(
-                UNC::nameToClass($definition, UNC::$entityMask)
-            );
+            $this->typeOption = $definition;
         } elseif (substr($definition, -2) === "[]") {
             // Collection
 
             $this->type = self::TYPE_COLLECTION;
-            try {
-                $entityReflection = $this->_loadEntityReflection(
-                    UNC::nameToClass(rtrim($definition, "[]"), UNC::$entityMask)
-                );
-            } catch (Exception\InvalidArgumentException $exception) {
-
-            }
-            $this->typeOption = $entityReflection;
+            $this->typeOption = rtrim($definition, "[]");
         } else {
             throw new Exception\PropertyException(
                 "Unsupported type '" . $definition . "'!"
             );
         }
-    }
-
-    /**
-     * Load lazy entity reflection
-     *
-     * @param string $entityClass
-     *
-     * @return Entity
-     */
-    private function _loadEntityReflection($entityClass)
-    {
-        if ($this->entityReflection->getClassName() === $entityClass) {
-            return $this->entityReflection;
-        } elseif (isset($this->entityReflection->getRelated()[$entityClass])) {
-            return $this->entityReflection->getRelated()[$entityClass];
-        }
-
-        $related = $this->entityReflection->getRelated();
-        $related[$this->entityReflection->getClassName()]
-            = $this->entityReflection;
-
-        $reflection = new Entity($entityClass, $related);
-
-        $this->entityReflection->addRelated($reflection);
-
-        return $reflection;
     }
 
     private function _initMapping()
@@ -282,22 +247,6 @@ class Property
                 );
             }
 
-            if (!$this->entityReflection->hasAdapter()) {
-                throw new Exception\PropertyException(
-                    "Can not use associations while entity "
-                    . $this->entityReflection->getClassName()
-                    . " has no adapter defined!"
-                );
-            }
-
-            if (!$this->typeOption->hasAdapter()) {
-                throw new Exception\PropertyException(
-                    "Can not use associations while target entity "
-                    . $this->typeOption->getClassName()
-                    . " has no adapter defined!"
-                );
-            }
-
             if (!$this->hasOption(self::OPTION_ASSOC)) {
                 throw new Exception\PropertyException(
                     "You must define association type!"
@@ -316,8 +265,9 @@ class Property
             try {
 
                 $this->options[self::OPTION_ASSOC] = new $class(
-                    $this,
-                    $this->typeOption,
+                    $this->name,
+                    $this->entityReflection,
+                    Loader::load($this->typeOption),
                     explode("|", $this->getOption(self::OPTION_ASSOC_BY)),
                     $this->getOption(self::OPTION_ASSOC) === "M<N" ? false : true
                 );
@@ -344,8 +294,8 @@ class Property
             $method = "compute" . ucfirst($this->name);
             if (!method_exists($this->entityReflection->getClassName(), $method)) {
                 throw new Exception\PropertyException(
-                    "Computed method " . $this->entityReflection->getClassName()
-                    . "->" . $method . " not found!"
+                    "Computed method " . $method . " not found in "
+                    . $this->entityReflection->getClassName() . "!"
                 );
             }
             $this->options[self::OPTION_COMPUTED] = $method;
@@ -358,7 +308,7 @@ class Property
      * @param mixed $value Given value
      *
      * @throws Exception\PropertyValueException
-     * @throws \Exception
+     * @throws Exception\UnexpectedException
      */
     public function validateValueType($value)
     {
@@ -399,7 +349,7 @@ class Property
         if ($this->type === self::TYPE_ENTITY) {
             // Entity
 
-            $expectedType = $expectedType->getClassName();
+            $expectedType = UNC::nameToClass($expectedType, UNC::$entityMask);
             if ($value instanceof $expectedType) {
                 return;
             } else {
@@ -415,6 +365,7 @@ class Property
         } elseif ($this->type === self::TYPE_COLLECTION) {
             // Collection
 
+            $expectedType = UNC::nameToClass($expectedType, UNC::$entityMask);
             if (!$value instanceof EntityCollection) {
 
                 throw new Exception\PropertyValueException(
@@ -424,10 +375,10 @@ class Property
                     null,
                     Exception\PropertyValueException::TYPE
                 );
-            } elseif ($value->getEntityReflection()->getClassName() !== $expectedType->getClassName()) {
+            } elseif ($value->getEntityReflection()->getClassName() !== $expectedType) {
                 throw new Exception\PropertyValueException(
                     "Expected collection of entity "
-                    . $expectedType->getClassName()
+                    . $expectedType
                     . " but collection of entity "
                     . $value->getEntityReflection()->getClassName()
                     . " given on property " . $this->name . "!",
@@ -507,17 +458,13 @@ class Property
         ) {
             // Collection
 
-            $collection = new EntityCollection($this->typeOption);
-            foreach ($value as $index => $data) {
-                $collection[$index] = $this->typeOption->createEntity($data);
-            }
-            return $collection;
+            return new EntityCollection($this->typeOption, $value);
         } elseif ($this->type === self::TYPE_ENTITY
             && Validator::isTraversable($value)
         ) {
             // Entity
 
-            return $this->typeOption->createEntity($value);
+            return Loader::load($this->typeOption)->createEntity($value);
         }
 
         throw new Exception\InvalidArgumentException(

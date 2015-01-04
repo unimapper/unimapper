@@ -47,9 +47,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
         // Collection
         $this->_createReflection('NoAdapter[]', 'collection')
             ->validateValueType(
-                new EntityCollection(
-                    new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoAdapter")
-                )
+                new EntityCollection("NoAdapter")
             );
 
         // Enumeration

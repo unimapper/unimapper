@@ -2,21 +2,8 @@
 
 namespace UniMapper;
 
-use UniMapper\NamingConvention as UNC;
-
 class EntityFactory
 {
-
-    /** @var Cache\ICache $cache */
-    private $cache;
-
-    /** @var array */
-    private $reflections = [];
-
-    public function __construct(Cache\ICache $cache = null)
-    {
-        $this->cache = $cache;
-    }
 
     /**
      * Create entity
@@ -28,7 +15,7 @@ class EntityFactory
      */
     public function createEntity($name, $values = null)
     {
-        return $this->getEntityReflection($name)->createEntity($values);
+        return Reflection\Loader::load($name)->createEntity($values);
     }
 
     /**
@@ -42,7 +29,7 @@ class EntityFactory
     public function createCollection($name, $values = null)
     {
         // Create empty collection
-        $collection = new EntityCollection($this->getEntityReflection($name));
+        $collection = new EntityCollection($name);
 
         // Add values
         if ($values) {
@@ -58,49 +45,6 @@ class EntityFactory
         }
 
         return $collection;
-    }
-
-    /**
-     * Get entity reflection
-     *
-     * @param string $name Entity name
-     */
-    public function getEntityReflection($name)
-    {
-        $class = UNC::nameToClass($name, UNC::$entityMask);
-
-        if (isset($this->reflections[$name])) {
-            return $this->reflections[$name];
-        }
-
-        if ($this->cache) {
-
-            $reflection = $this->cache->load($class);
-            if (!$reflection) {
-
-                $reflection = new Reflection\Entity($class);
-                $this->cache->save(
-                    $class,
-                    $reflection,
-                    [
-                        Cache\ICache::FILES => $reflection->getRelatedFiles(
-                            [$reflection->getFileName()]
-                        ),
-                        Cache\ICache::TAGS => [Cache\ICache::TAG_REFLECTION]
-                    ]
-                );
-            }
-            return $reflection;
-        } else {
-            $reflection = new Reflection\Entity($class);
-        }
-
-        return $this->reflections[$name] = $reflection;
-    }
-
-    public function getCache()
-    {
-        return $this->cache;
     }
 
 }

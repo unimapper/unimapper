@@ -41,7 +41,7 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
         $query = new Query\Delete(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             $this->adapters,
-            new \UniMapper\Mapper(new UniMapper\EntityFactory)
+            new \UniMapper\Mapper
         );
         $query->where("id", "=", 1);
         Assert::same(2, $query->execute());
@@ -55,7 +55,7 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
         $query = new Query\Delete(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             $this->adapters,
-            new \UniMapper\Mapper(new UniMapper\EntityFactory)
+            new \UniMapper\Mapper
         );
         $query->execute();
     }

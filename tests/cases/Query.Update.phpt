@@ -28,7 +28,7 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
         $query = new Update(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             $this->adapters,
-            new \UniMapper\Mapper(new UniMapper\EntityFactory),
+            new \UniMapper\Mapper,
             []
         );
         $query->execute();
@@ -55,7 +55,7 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
         $query = new Update(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             $this->adapters,
-            new \UniMapper\Mapper(new UniMapper\EntityFactory),
+            new \UniMapper\Mapper,
             ["text" => "foo", "oneToOne" => ["id" => 3]]
         );
         $query->where("id", "=", 1);

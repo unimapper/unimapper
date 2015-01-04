@@ -16,7 +16,7 @@ class MapperTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->mapper = new UniMapper\Mapper(new UniMapper\EntityFactory);
+        $this->mapper = new UniMapper\Mapper;
     }
 
     public function testMapEntity()
@@ -97,9 +97,7 @@ class MapperTest extends UniMapper\Tests\TestCase
             ]
         );
 
-        $collection = new \UniMapper\EntityCollection(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
-        );
+        $collection = new \UniMapper\EntityCollection("Simple");
         $collection[] = $entity;
 
         Assert::same(

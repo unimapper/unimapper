@@ -56,7 +56,7 @@ class QueryBuilder
                 "You must pass queried entity name!"
             );
         }
-        $entityReflection = $this->mapper->getEntityFactory()->getEntityReflection($arguments[0]);
+        $entityReflection = Reflection\Loader::load($arguments[0]);
 
         unset($arguments[0]);
         array_unshift($arguments, $entityReflection, $this->adapters, $this->mapper);
@@ -64,8 +64,8 @@ class QueryBuilder
         $class = new \ReflectionClass($this->queries[$name]);
         $query = $class->newInstanceArgs($arguments);
 
-        if ($this->mapper->getEntityFactory()->getCache()) {
-            $query->setCache($this->mapper->getEntityFactory()->getCache());
+        if (Reflection\Loader::getCache()) {
+            $query->setCache(Reflection\Loader::getCache());
         }
 
         foreach ($this->beforeQuery as $callback) {

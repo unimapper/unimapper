@@ -5,22 +5,24 @@ namespace UniMapper\Reflection\Association;
 use UniMapper\Reflection,
     UniMapper\Exception;
 
-class ManyToOne extends \UniMapper\Reflection\Association
+class ManyToOne extends Reflection\Association
 {
 
     /** @var bool */
     protected $collection = false;
 
     public function __construct(
-        Reflection\Property $propertyReflection,
+        $propertyName,
+        Reflection\Entity $sourceReflection,
         Reflection\Entity $targetReflection,
         array $arguments
     ) {
-        if (!isset($arguments[0])) {
-            throw new Exception\DefinitionException(
-                "You must define a reference key!"
-            );
-        }
+        parent::__construct(
+            $propertyName,
+            $sourceReflection,
+            $targetReflection,
+            $arguments
+        );
 
         if (!$targetReflection->hasPrimary()) {
             throw new Exception\DefinitionException(
@@ -28,7 +30,11 @@ class ManyToOne extends \UniMapper\Reflection\Association
             );
         }
 
-        parent::__construct($propertyReflection, $targetReflection, $arguments, true);
+        if (!isset($arguments[0])) {
+            throw new Exception\DefinitionException(
+                "You must define a reference key!"
+            );
+        }
     }
 
     public function getKey()

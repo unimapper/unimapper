@@ -8,19 +8,6 @@ class Mapper
     /** @var array */
     private $adapterMappings = [];
 
-    /** @var EntityFactory */
-    protected $entityFactory;
-
-    public function __construct(EntityFactory $entityFactory)
-    {
-        $this->entityFactory = $entityFactory;
-    }
-
-    public function getEntityFactory()
-    {
-        return $this->entityFactory;
-    }
-
     public function registerAdapterMapping($name, Adapter\Mapping $mapping)
     {
         if (isset($this->adapterMappings[$name])) {
@@ -83,11 +70,11 @@ class Mapper
         } elseif ($property->getType() === Reflection\Property::TYPE_COLLECTION) {
             // Collection
 
-            return $this->mapCollection($property->getTypeOption()->getName(), $value);
+            return $this->mapCollection($property->getTypeOption(), $value);
         } elseif ($property->getType() === Reflection\Property::TYPE_ENTITY) {
             // Entity
 
-            return $this->mapEntity($property->getTypeOption()->getName(), $value);
+            return $this->mapEntity($property->getTypeOption(), $value);
         } elseif ($property->getType() === Reflection\Property::TYPE_DATETIME) {
             // DateTime
 
@@ -130,7 +117,7 @@ class Mapper
             );
         }
 
-        $collection = $this->entityFactory->createCollection($name);
+        $collection = new EntityCollection($name);
         foreach ($data as $value) {
             $collection[] = $this->mapEntity($name, $value);
         }
@@ -143,7 +130,7 @@ class Mapper
             throw new Exception\MappingException("Input data must be traversable!");
         }
 
-        $entityReflection = $this->getEntityFactory()->getEntityReflection($name);
+        $entityReflection = Reflection\Loader::load($name);
 
         $values = [];
         foreach ($data as $index => $value) {

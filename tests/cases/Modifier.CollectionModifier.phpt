@@ -54,10 +54,10 @@ class ModifierCollectionModifierTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn(null);
 
-        $targetEntity = new Fixtures\Entity\Remote(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote"));
+        $targetEntity = new Fixtures\Entity\Remote;
         $targetEntity->text = "foo";
 
-        $sourceEntity = new Fixtures\Entity\Simple(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"));
+        $sourceEntity = new Fixtures\Entity\Simple;
         $sourceEntity->manyToMany()->add($targetEntity);
 
         Assert::null($sourceEntity->manyToMany()->save($this->adapters["FooAdapter"], $this->adapters["RemoteAdapter"], 1));
@@ -91,11 +91,11 @@ class ModifierCollectionModifierTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn(null);
 
-        $targetEntity = new Fixtures\Entity\Remote(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote"));
+        $targetEntity = new Fixtures\Entity\Remote;
         $targetEntity->id = 3;
         $targetEntity->text = "foo";
 
-        $sourceEntity = new Fixtures\Entity\Simple(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"));
+        $sourceEntity = new Fixtures\Entity\Simple;
         $sourceEntity->manyToMany()->remove($targetEntity);
 
         Assert::null($sourceEntity->manyToMany()->save($this->adapters["FooAdapter"], $this->adapters["RemoteAdapter"], 1));

@@ -29,39 +29,16 @@ class Entity
     /** @var string */
     private $primaryName;
 
-    /** @var boolean */
-    private $initialized = false;
-
-    /** @var array $related List of related entity reflections */
-    private $related = [];
-
     /**
      * @param string $class   Entity class name
-     * @param array  $related Related reflections
      *
-     * @throws \Exception
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\EntityException
      */
-    public function __construct($class, array $related = [])
+    public function __construct($class)
     {
         $this->className = (string) $class;
 
-        foreach ($related as $reflection) {
-
-            if (!$reflection instanceof Entity) {
-                throw new Exception\InvalidArgumentException(
-                    "Related reflection must be entity reflection instance!"
-                );
-            }
-            $this->related[$reflection->getClassName()] = $reflection;
-        }
-
-        if (!$this->initialized) {
-            $this->_initialize();
-        }
-    }
-
-    private function _initialize()
-    {
         if (!is_subclass_of($this->className, "UniMapper\Entity")) {
             throw new Exception\InvalidArgumentException(
                 "Class must be subclass of UniMapper\Entity but "
@@ -77,6 +54,11 @@ class Entity
             as $property
         ) {
             $this->publicProperties[] =  $property->getName();
+        }
+
+        // Register reflection to loader if needed
+        if (!Loader::get($this->className)) {
+            Loader::register($this);
         }
 
         $docComment = $reflection->getDocComment();
@@ -98,24 +80,12 @@ class Entity
 
         // Parse properties
         $this->_parseProperties($docComment);
-
-        $this->initialized = true;
-    }
-
-    /**
-     * Add related entity reflection
-     *
-     * @param \UniMapper\Reflection\Entity $reflection
-     */
-    public function addRelated(Entity $reflection)
-    {
-        $this->related[$reflection->getClassName()] = $reflection;
     }
 
     public function createEntity($values = [])
     {
         $entityClass = $this->className;
-        return new $entityClass($this, $values);
+        return new $entityClass($values);
     }
 
     public function getClassName()
@@ -131,35 +101,6 @@ class Entity
     public function getName()
     {
         return UNC::classToName($this->className, UNC::$entityMask);
-    }
-
-    public function getRelated()
-    {
-        return $this->related;
-    }
-
-    /**
-     * Get related entity class files
-     *
-     * @param array $files
-     *
-     * @return array
-     */
-    public function getRelatedFiles(array $files = [])
-    {
-        foreach ($this->related as $childReflection) {
-
-            $fileName = $childReflection->getFileName();
-            if (!array_search($fileName, $files, true)) {
-
-                $files[] = $fileName;
-                if ($childReflection->getRelated()) {
-                    $files = array_merge($files, $childReflection->getRelatedFiles($files));
-                }
-            }
-        }
-
-        return array_values(array_unique($files));
     }
 
     /**

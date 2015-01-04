@@ -2,13 +2,11 @@
 
 namespace UniMapper\Reflection;
 
-use UniMapper\Exception;
-
 abstract class Association
 {
 
-    /** @var Property */
-    protected $propertyReflection;
+    /** @var Entity */
+    protected $sourceReflection;
 
     /** @var Entity */
     protected $targetReflection;
@@ -22,16 +20,36 @@ abstract class Association
     /** @var bool */
     protected $collection = true;
 
+    /** @var string */
+    protected $propertyName;
+
     public function __construct(
-        Property $propertyReflection,
+        $propertyName,
+        Entity $sourceReflection,
         Entity $targetReflection,
         array $arguments,
         $dominant = true
     ) {
-        $this->propertyReflection = $propertyReflection;
+        $this->propertyName = $propertyName;
+        $this->sourceReflection = $sourceReflection;
         $this->targetReflection = $targetReflection;
         $this->dominant = (bool) $dominant;
         $this->arguments = $arguments;
+
+        if (!$this->sourceReflection->hasAdapter()) {
+            throw new Exception\DefinitionException(
+                "Can not use associations while source entity "
+                . $sourceReflection->getName()
+                . " has no adapter defined!"
+            );
+        }
+
+        if (!$this->targetReflection->hasAdapter()) {
+            throw new Exception\DefinitionException(
+                "Can not use associations while target entity "
+                . $targetReflection->getName() . " has no adapter defined!"
+            );
+        }
     }
 
     /**
@@ -46,9 +64,7 @@ abstract class Association
 
     public function getPrimaryKey()
     {
-        return $this->propertyReflection->getEntityReflection()
-            ->getPrimaryProperty()
-            ->getName(true);
+        return $this->sourceReflection->getPrimaryProperty()->getName(true);
     }
 
     public function getKey()
@@ -68,7 +84,7 @@ abstract class Association
 
     public function getSourceResource()
     {
-        return $this->propertyReflection->getEntityReflection()->getAdapterResource();
+        return $this->sourceReflection->getAdapterResource();
     }
 
     public function getTargetAdapterName()
@@ -78,13 +94,13 @@ abstract class Association
 
     public function isRemote()
     {
-        return $this->propertyReflection->getEntityReflection()->getAdapterName()
+        return $this->sourceReflection->getAdapterName()
             !== $this->targetReflection->getAdapterName();
     }
 
     public function getPropertyName()
     {
-        return $this->propertyReflection->getName();
+        return $this->propertyName;
     }
 
 }
