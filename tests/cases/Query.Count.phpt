@@ -23,7 +23,7 @@ class QueryCountTest extends UniMapper\Tests\TestCase
         $query = new \UniMapper\Query\Count(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["FooAdapter" => $adapterMock],
-            new \UniMapper\Mapper(new UniMapper\EntityFactory)
+            new \UniMapper\Mapper
         );
         $query->where("id", "=", 1);
         Assert::same(1, $query->execute());

@@ -20,9 +20,7 @@ class QueryBuilderTest extends UniMapper\Tests\TestCase
     {
         $this->adapterMock = Mockery::mock("UniMapper\Adapter");
 
-        $this->builder = new \UniMapper\QueryBuilder(
-            new \UniMapper\Mapper(new \UniMapper\EntityFactory)
-        );
+        $this->builder = new \UniMapper\QueryBuilder(new \UniMapper\Mapper);
         $this->builder->registerAdapter("FooAdapter", $this->adapterMock);
     }
 

@@ -39,8 +39,8 @@ class ModifierEntityModifierTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn(null);
 
-        $source = new Fixtures\Entity\Simple(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"));
-        $target = new Fixtures\Entity\Remote(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote"));
+        $source = new Fixtures\Entity\Simple;
+        $target = new Fixtures\Entity\Remote;
         $target->id = 2;
         $source->manyToOne()->attach($target);
 

@@ -9,11 +9,26 @@ class ManyToMany extends Reflection\Association
 {
 
     public function __construct(
-        Reflection\Property $propertyReflection,
+        $propertyName,
+        Reflection\Entity $sourceReflection,
         Reflection\Entity $targetReflection,
         array $arguments,
         $dominant = true
     ) {
+        parent::__construct(
+            $propertyName,
+            $sourceReflection,
+            $targetReflection,
+            $arguments,
+            $dominant
+        );
+
+        if (!$targetReflection->hasPrimary()) {
+            throw new Exception\DefinitionException(
+                "Target entity must have defined primary when M:N relation used!"
+            );
+        }
+
         if (!isset($arguments[0])) {
             throw new Exception\DefinitionException(
                 "You must define join key!"
@@ -31,8 +46,6 @@ class ManyToMany extends Reflection\Association
                 "You must define reference key!!"
             );
         }
-
-        parent::__construct($propertyReflection, $targetReflection, $arguments, $dominant);
     }
 
     public function getJoinKey()

@@ -34,7 +34,7 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
         $entity1 = $this->createEntity("Simple", ["id" => 2]);
         $entity2 = $this->createEntity("Simple", ["id" => 3]);
 
-        $collection = new UniMapper\EntityCollection($entity1->getReflection());
+        $collection = new UniMapper\EntityCollection("Simple");
         $collection[] = $entity1;
         $collection[] = $entity2;
 
@@ -344,7 +344,7 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
         return new Query\Select(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\\" . $entity),
             $this->adapters,
-            new Mapper(new \UniMapper\EntityFactory)
+            new Mapper
         );
     }
 

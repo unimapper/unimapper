@@ -193,9 +193,9 @@ class Select extends Selectable
 
             // Cache invalidation should depend on entity changes
             if (isset($cachedOptions[ICache::FILES])) {
-                $cachedOptions[ICache::FILES] += $this->entityReflection->getRelatedFiles([$this->entityReflection->getFileName()]);
+                $cachedOptions[ICache::FILES] += Reflection\Loader::getRelatedFiles($this->entityReflection->getName());
             } else {
-                $cachedOptions[ICache::FILES] = $this->entityReflection->getRelatedFiles([$this->entityReflection->getFileName()]);
+                $cachedOptions[ICache::FILES] = Reflection\Loader::getRelatedFiles($this->entityReflection->getName());
             }
 
             $this->cache->save(

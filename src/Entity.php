@@ -23,16 +23,9 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     /** @var array $modifiers */
     private $modifiers = [];
 
-    public function __construct(Reflection\Entity $reflection, $values = [])
+    public function __construct($values = [])
     {
-        if ($reflection->getClassName() !== get_called_class()) {
-            throw new Exception\InvalidArgumentException(
-                "Expected reflection of class '" . get_called_class()
-                . "' but reflection of '" . $reflection->getClassName()
-                . "' given!"
-            );
-        }
-        $this->reflection = $reflection;
+        $this->reflection = Reflection\Loader::load(get_called_class());
         $this->validator = new Validator($this);
 
         if ($values) {
@@ -84,7 +77,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     private function _resetIterator()
     {
         if (!$this->reflection) {
-            $this->reflection = new Reflection\Entity(get_called_class());
+            $this->reflection = Reflection\Loader::load(get_called_class());
         }
 
         $this->iteration = array_merge(

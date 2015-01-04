@@ -14,7 +14,7 @@ class EntityCollectionTest extends UniMapper\Tests\TestCase
     {
         $entity = $this->createEntity("Simple", ["text" => "test"]);
 
-        $collection = new UniMapper\EntityCollection($entity->getReflection());
+        $collection = new UniMapper\EntityCollection("Simple");
 
         $collection[] = $entity;
         Assert::same("test", $collection[0]->text);

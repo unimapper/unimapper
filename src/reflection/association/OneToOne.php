@@ -2,8 +2,8 @@
 
 namespace UniMapper\Reflection\Association;
 
-use UniMapper\Reflection,
-    UniMapper\Exception;
+use UniMapper\Exception;
+use UniMapper\Reflection;
 
 class OneToOne extends OneToMany
 {
@@ -12,11 +12,17 @@ class OneToOne extends OneToMany
     protected $collection = false;
 
     public function __construct(
-        Reflection\Property $propertyReflection,
+        $propertyName,
+        Reflection\Entity $sourceReflection,
         Reflection\Entity $targetReflection,
         array $arguments
     ) {
-        parent::__construct($propertyReflection, $targetReflection, $arguments, true);
+        parent::__construct(
+            $propertyName,
+            $sourceReflection,
+            $targetReflection,
+            $arguments
+        );
 
         if (!$targetReflection->hasPrimary()) {
             throw new Exception\DefinitionException(

@@ -16,10 +16,10 @@ abstract class Repository
     /** @var \UniMapper\Mapper */
     protected $mapper;
 
-    public function __construct(QueryBuilder $queryBuilder)
+    public function __construct(QueryBuilder $queryBuilder, \UniMapper\EntityFactory $entityFactory)
     {
         $this->queryBuilder = $queryBuilder;
-        $this->entityFactory = $queryBuilder->getMapper()->getEntityFactory();
+        $this->entityFactory = $entityFactory;
     }
 
     /**
@@ -211,7 +211,7 @@ abstract class Repository
      */
     public function findPrimaries(array $primaryValues)
     {
-        $entityReflection = $this->entityFactory->getEntityReflection(
+        $entityReflection = Reflection\Loader::load(
             $this->getEntityName()
         );
 

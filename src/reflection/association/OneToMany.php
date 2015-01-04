@@ -9,17 +9,23 @@ class OneToMany extends Reflection\Association
 {
 
     public function __construct(
-        Reflection\Property $propertyReflection,
+        $propertyName,
+        Reflection\Entity $sourceReflection,
         Reflection\Entity $targetReflection,
         array $arguments
     ) {
+        parent::__construct(
+            $propertyName,
+            $sourceReflection,
+            $targetReflection,
+            $arguments
+        );
+
         if (!isset($arguments[0])) {
             throw new Exception\DefinitionException(
                 "You must define a foreign key!"
             );
         }
-
-        parent::__construct($propertyReflection, $targetReflection, $arguments, true);
     }
 
     public function getForeignKey()
