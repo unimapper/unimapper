@@ -18,6 +18,9 @@ class QueryBuilder
     /** @var array */
     protected $adapters = [];
 
+    /** @var Cache\ICache */
+    protected $cache;
+
     /** @var Mapper */
     protected $mapper;
 
@@ -38,9 +41,10 @@ class QueryBuilder
 
     protected $afterQuery = [];
 
-    public function __construct(\UniMapper\Mapper $mapper)
+    public function __construct(Mapper $mapper, Cache\ICache $cache = null)
     {
         $this->mapper = $mapper;
+        $this->cache = $cache;
     }
 
     public function __call($name, $arguments)
@@ -64,8 +68,8 @@ class QueryBuilder
         $class = new \ReflectionClass($this->queries[$name]);
         $query = $class->newInstanceArgs($arguments);
 
-        if (Reflection\Loader::getCache()) {
-            $query->setCache(Reflection\Loader::getCache());
+        if ($this->cache) {
+            $query->setCache($this->cache);
         }
 
         foreach ($this->beforeQuery as $callback) {

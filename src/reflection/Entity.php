@@ -222,6 +222,28 @@ class Entity
         return $this->publicProperties;
     }
 
+    /**
+     * Get entity's related files
+     *
+     * @param array  $files
+     *
+     * @return array
+     */
+    public function getRelatedFiles(array $files = [])
+    {
+        if (in_array($this->fileName, $files)) {
+            return $files;
+        }
+
+        $files[] = $this->fileName;
+        foreach ($this->properties as $property) {
+            if (in_array($property->getType(), [Property::TYPE_COLLECTION, Property::TYPE_ENTITY])) {
+                $files += Loader::load($property->getTypeOption())->getRelatedFiles($files);
+            }
+        }
+        return $files;
+    }
+
     public function hasPrimary()
     {
         return $this->primaryName !== null;

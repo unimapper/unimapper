@@ -132,6 +132,18 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
         $this->_createReflection('Simple[]', 'collection')->convertValue("foo");
     }
 
+    public function testGetRelatedFiles()
+    {
+        Assert::same(
+            array(
+                Reflection\Loader::load("Simple")->getFileName(),
+                Reflection\Loader::load("Nested")->getFileName(),
+                Reflection\Loader::load("Remote")->getFileName()
+            ),
+            Reflection\Loader::load("Simple")->getRelatedFiles()
+        );
+    }
+
     /**
      * @throws UniMapper\Exception\PropertyValueException Expected string but integer given on property test!
      */
@@ -255,7 +267,6 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
     {
         $reflection = $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter(stringToArray|arrayToString)');
         Assert::same("foo", $reflection->getName(true));
-        var_dump($reflection->getOption(Reflection\Property::OPTION_MAP_FILTER)[0]);
         Assert::true(is_callable($reflection->getOption(Reflection\Property::OPTION_MAP_FILTER)[0]));
         Assert::true(is_callable($reflection->getOption(Reflection\Property::OPTION_MAP_FILTER)[1]));
     }
