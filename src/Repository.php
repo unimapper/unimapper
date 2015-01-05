@@ -10,16 +10,12 @@ abstract class Repository
     /** @var QueryBuilder */
     private $queryBuilder;
 
-    /** @var \UniMapper\EntityFactory */
-    protected $entityFactory;
-
     /** @var \UniMapper\Mapper */
     protected $mapper;
 
-    public function __construct(QueryBuilder $queryBuilder, \UniMapper\EntityFactory $entityFactory)
+    public function __construct(QueryBuilder $queryBuilder)
     {
         $this->queryBuilder = $queryBuilder;
-        $this->entityFactory = $entityFactory;
     }
 
     /**

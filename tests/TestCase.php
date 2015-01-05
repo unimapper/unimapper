@@ -21,7 +21,7 @@ class TestCase extends \Tester\TestCase
         }
 
         $class = UNC::nameToClass($name, UNC::$repositoryMask);
-        return new $class($queryBuilder, new \UniMapper\EntityFactory);
+        return new $class($queryBuilder);
     }
 
 }

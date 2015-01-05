@@ -7,7 +7,6 @@ if (version_compare(phpversion(), '5.4.0', '<')) {
 require_once __DIR__ . '/Adapter.php';
 require_once __DIR__ . '/Entity.php';
 require_once __DIR__ . '/EntityCollection.php';
-require_once __DIR__ . '/EntityFactory.php';
 require_once __DIR__ . '/Exception.php';
 require_once __DIR__ . '/Mapper.php';
 require_once __DIR__ . '/Modifier.php';
