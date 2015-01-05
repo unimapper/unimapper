@@ -82,7 +82,7 @@ class Entity
         $this->_parseProperties($docComment);
     }
 
-    public function createEntity($values = [])
+    public function createEntity($values = null)
     {
         $entityClass = $this->className;
         return new $entityClass($values);

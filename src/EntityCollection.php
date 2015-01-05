@@ -19,18 +19,21 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
      * @param string $name   Entity name
      * @param mixed  $values
      */
-    public function __construct($name, $values = [])
+    public function __construct($name, $values = null)
     {
         $this->entityReflection = Reflection\Loader::load($name);
 
-        if (Validator::isTraversable($values)) {
-            foreach ($values as $index => $value) {
-                $this->data[$index] = $this->entityReflection->createEntity($value);
+        if ($values) {
+
+            if (Validator::isTraversable($values)) {
+                foreach ($values as $index => $value) {
+                    $this->data[$index] = $this->entityReflection->createEntity($value);
+                }
+            } else {
+                throw new Exception\InvalidArgumentException(
+                    "Values must be traversable data!"
+                );
             }
-        } else {
-            throw new Exception\InvalidArgumentException(
-                "Values must be traversable data!"
-            );
         }
     }
 

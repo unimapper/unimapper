@@ -23,7 +23,10 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     /** @var array $modifiers */
     private $modifiers = [];
 
-    public function __construct($values = [])
+    /**
+     * @param mixed $values
+     */
+    public function __construct($values = null)
     {
         $this->reflection = Reflection\Loader::load(get_called_class());
 
