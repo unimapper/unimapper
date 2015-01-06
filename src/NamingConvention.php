@@ -31,13 +31,13 @@ class NamingConvention
         if (!class_exists($class)) {
             throw new InvalidArgumentException("Class '" . $class . "' not found!");
         }
-        $class = self::trimNamespace($class);
+        $class = self::_trimNamespace($class);
 
         if (!isset(self::$masks[$type])) {
             throw new InvalidArgumentException("Invalid mask type " . $type . "!");
         }
 
-        $mask = self::trimNamespace(self::$masks[$type]);
+        $mask = self::_trimNamespace(self::$masks[$type]);
 
         if ($mask === "*") {
             return $class;
@@ -65,17 +65,17 @@ class NamingConvention
         return str_replace("*", $name, self::$masks[$type]);
     }
 
-    private static function isValidMask($mask)
+    private static function _isValidMask($mask)
     {
         if (substr_count($mask, "*") <> 1) {
             return false;
         }
-        $mask = self::trimNamespace($mask);
-        return $mask === "*" || self::startsWith($mask, "*")
-            || self::endsWith($mask, "*");
+        $mask = self::_trimNamespace($mask);
+        return $mask === "*" || self::_startsWith($mask, "*")
+            || self::_endsWith($mask, "*");
     }
 
-    private static function trimNamespace($class)
+    private static function _trimNamespace($class)
     {
         $parts = explode("\\", $class);
         return end($parts);
@@ -94,18 +94,18 @@ class NamingConvention
         if (!isset(self::$masks[$type])) {
             throw new InvalidArgumentException("Invalid mask type " . $type . "!");
         }
-        if (!self::isValidMask($mask)) {
+        if (!self::_isValidMask($mask)) {
             throw new InvalidArgumentException("Invalid mask '" . $mask . "'!");
         }
         self::$masks[$type] = $mask;
     }
 
-    private static function startsWith($haystack, $needle)
+    private static function _startsWith($haystack, $needle)
     {
         return $needle === "" || strpos($haystack, $needle) === 0;
     }
 
-    private static function endsWith($haystack, $needle)
+    private static function _endsWith($haystack, $needle)
     {
         return $needle === "" || substr($haystack, -strlen($needle)) === $needle;
     }
