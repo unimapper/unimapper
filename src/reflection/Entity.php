@@ -100,7 +100,7 @@ class Entity
 
     public function getName()
     {
-        return UNC::classToName($this->className, UNC::$entityMask);
+        return UNC::classToName($this->className, UNC::ENTITY_MASK);
     }
 
     /**

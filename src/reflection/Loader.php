@@ -43,7 +43,7 @@ class Loader
         }
 
         if (!is_subclass_of($class, "UniMapper\Entity")) {
-            $class = UNC::nameToClass($entity, UNC::$entityMask);
+            $class = UNC::nameToClass($entity, UNC::ENTITY_MASK);
         }
 
         if (!class_exists($class)) {

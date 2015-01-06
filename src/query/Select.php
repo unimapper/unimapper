@@ -320,7 +320,7 @@ class Select extends Selectable
                 [
                     "name" => $this->getName(),
                     "entity" => UNC::classToName(
-                        $this->entityReflection->getClassName(), UNC::$entityMask
+                        $this->entityReflection->getClassName(), UNC::ENTITY_MASK
                     ),
                     "limit" => $this->limit,
                     "offset" => $this->offset,

@@ -7,23 +7,37 @@ use UniMapper\Exception\InvalidArgumentException;
 class NamingConvention
 {
 
-    /** @var string */
-    public static $entityMask = "Model\Entity\*";
+    const ENTITY_MASK = 1;
+    const REPOSITORY_MASK = 2;
 
     /** @var string */
-    public static $repositoryMask = "Model\Repository\*Repository";
+    private static $masks = [
+        self::ENTITY_MASK => "Model\Entity\*",
+        self::REPOSITORY_MASK => "Model\Repository\*Repository"
+    ];
 
-    public static function classToName($class, $mask)
+    /**
+     * Converts class to name
+     *
+     * @param string  $class
+     * @param integer $type  Mask type
+     *
+     * @return string
+     *
+     * @throws InvalidArgumentException
+     */
+    public static function classToName($class, $type)
     {
-        if (!self::isValidMask($mask)) {
-            throw new InvalidArgumentException("Invalid mask '" . $mask . "'!");
-        }
         if (!class_exists($class)) {
             throw new InvalidArgumentException("Class '" . $class . "' not found!");
         }
-
         $class = self::trimNamespace($class);
-        $mask = self::trimNamespace($mask);
+
+        if (!isset(self::$masks[$type])) {
+            throw new InvalidArgumentException("Invalid mask type " . $type . "!");
+        }
+
+        $mask = self::trimNamespace(self::$masks[$type]);
 
         if ($mask === "*") {
             return $class;
@@ -33,15 +47,25 @@ class NamingConvention
         return $match[1];
     }
 
-    public static function nameToClass($name, $mask)
+    /**
+     * Converts name to class
+     *
+     * @param string  $name
+     * @param integer $type
+     *
+     * @return string
+     *
+     * @throws InvalidArgumentException
+     */
+    public static function nameToClass($name, $type)
     {
-        if (!self::isValidMask($mask)) {
-            throw new InvalidArgumentException("Invalid mask '" . $mask . "'!");
+        if (!isset(self::$masks[$type])) {
+            throw new InvalidArgumentException("Invalid mask type " . $type . "!");
         }
-        return str_replace("*", $name, $mask);
+        return str_replace("*", $name, self::$masks[$type]);
     }
 
-    public static function isValidMask($mask)
+    private static function isValidMask($mask)
     {
         if (substr_count($mask, "*") <> 1) {
             return false;
@@ -51,18 +75,37 @@ class NamingConvention
             || self::endsWith($mask, "*");
     }
 
-    public static function trimNamespace($class)
+    private static function trimNamespace($class)
     {
         $parts = explode("\\", $class);
         return end($parts);
     }
 
-    public static function startsWith($haystack, $needle)
+    public static function getMask($type)
+    {
+        if (!isset(self::$masks[$type])) {
+            throw new InvalidArgumentException("Invalid mask type " . $type . "!");
+        }
+        return self::$masks[$type];
+    }
+
+    public static function setMask($mask, $type)
+    {
+        if (!isset(self::$masks[$type])) {
+            throw new InvalidArgumentException("Invalid mask type " . $type . "!");
+        }
+        if (!self::isValidMask($mask)) {
+            throw new InvalidArgumentException("Invalid mask '" . $mask . "'!");
+        }
+        self::$masks[$type] = $mask;
+    }
+
+    private static function startsWith($haystack, $needle)
     {
         return $needle === "" || strpos($haystack, $needle) === 0;
     }
 
-    public static function endsWith($haystack, $needle)
+    private static function endsWith($haystack, $needle)
     {
         return $needle === "" || substr($haystack, -strlen($needle)) === $needle;
     }

@@ -1,5 +1,7 @@
 <?php
 
+use UniMapper\NamingConvention as UNC;
+
 $loader = @include __DIR__ . '/../vendor/autoload.php';
 if (!$loader) {
     echo 'Install Nette Tester using `composer update --dev`';
@@ -28,5 +30,5 @@ Tester\Environment::$checkAssertions = false;
 
 date_default_timezone_set('Europe/Prague');
 
-UniMapper\NamingConvention::$entityMask = "UniMapper\Tests\Fixtures\Entity\*";
-UniMapper\NamingConvention::$repositoryMask = "UniMapper\Tests\Fixtures\Repository\*Repository";
+UNC::setMask("UniMapper\Tests\Fixtures\Entity\*", UNC::ENTITY_MASK);
+UNC::setMask("UniMapper\Tests\Fixtures\Repository\*Repository", UNC::REPOSITORY_MASK);

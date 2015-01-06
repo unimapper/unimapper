@@ -9,7 +9,7 @@ class TestCase extends \Tester\TestCase
 
     protected function createEntity($name, $values = [])
     {
-        $class = UNC::nameToClass($name, UNC::$entityMask);
+        $class = UNC::nameToClass($name, UNC::ENTITY_MASK);
         return new $class($values);
     }
 
@@ -20,7 +20,7 @@ class TestCase extends \Tester\TestCase
             $queryBuilder->registerAdapter($adapterName, $adapter);
         }
 
-        $class = UNC::nameToClass($name, UNC::$repositoryMask);
+        $class = UNC::nameToClass($name, UNC::REPOSITORY_MASK);
         return new $class($queryBuilder);
     }
 

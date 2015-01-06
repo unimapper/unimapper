@@ -27,7 +27,7 @@ abstract class Repository
      */
     public function save(Entity $entity)
     {
-        $requiredClass = UNC::nameToClass($this->getEntityName(), UNC::$entityMask);
+        $requiredClass = UNC::nameToClass($this->getEntityName(), UNC::ENTITY_MASK);
         if (!$entity instanceof $requiredClass) {
             throw new Exception\RepositoryException(
                 "Entity must be instance of ". $requiredClass . "!"
@@ -137,7 +137,7 @@ abstract class Repository
      */
     public function delete(Entity $entity)
     {
-        $requiredClass = UNC::nameToClass($this->getEntityName(), UNC::$entityMask);
+        $requiredClass = UNC::nameToClass($this->getEntityName(), UNC::ENTITY_MASK);
         if (!$entity instanceof $requiredClass) {
             throw new Exception\RepositoryException(
                 "Entity must be instance of ". $requiredClass . "!"
@@ -278,7 +278,7 @@ abstract class Repository
 
     public function getName()
     {
-        return UNC::classToName(get_called_class(), UNC::$repositoryMask);
+        return UNC::classToName(get_called_class(), UNC::REPOSITORY_MASK);
     }
 
     /**

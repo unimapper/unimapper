@@ -156,7 +156,7 @@ class Property
             // DateTime
 
             $this->type = self::TYPE_DATETIME;
-        } elseif (class_exists(UNC::nameToClass($definition, UNC::$entityMask))) {
+        } elseif (class_exists(UNC::nameToClass($definition, UNC::ENTITY_MASK))) {
             // Entity
 
             $this->type = self::TYPE_ENTITY;
@@ -349,7 +349,7 @@ class Property
         if ($this->type === self::TYPE_ENTITY) {
             // Entity
 
-            $expectedType = UNC::nameToClass($expectedType, UNC::$entityMask);
+            $expectedType = UNC::nameToClass($expectedType, UNC::ENTITY_MASK);
             if ($value instanceof $expectedType) {
                 return;
             } else {
@@ -365,7 +365,7 @@ class Property
         } elseif ($this->type === self::TYPE_COLLECTION) {
             // Collection
 
-            $expectedType = UNC::nameToClass($expectedType, UNC::$entityMask);
+            $expectedType = UNC::nameToClass($expectedType, UNC::ENTITY_MASK);
             if (!$value instanceof EntityCollection) {
 
                 throw new Exception\PropertyValueException(
