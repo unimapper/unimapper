@@ -3,7 +3,6 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exception,
-    UniMapper\Mapper,
     UniMapper\Reflection;
 
 class Update extends Conditionable
@@ -14,32 +13,35 @@ class Update extends Conditionable
 
     public function __construct(
         Reflection\Entity $entityReflection,
-        array $adapters,
-        Mapper $mapper,
         array $data
     ) {
-        parent::__construct($entityReflection, $adapters, $mapper);
+        parent::__construct($entityReflection);
         $this->entity = $entityReflection->createEntity($data);
     }
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Connection $connection)
     {
-        $values = $this->mapper->unmapEntity($this->entity);
+        $mapper = $connection->getMapper();
+        $values = $mapper->unmapEntity($this->entity);
 
         // Values can not be empty
         if (empty($values)) {
             throw new Exception\QueryException("Nothing to update!");
         }
 
-        if (count($this->conditions) === 0) {
+        if (empty($this->conditions)) {
             throw new Exception\QueryException("At least one condition must be set!");
         }
+
+        $adapter = $this->getAdapter($connection);
 
         $query = $adapter->createUpdate(
             $this->entityReflection->getAdapterResource(),
             $values
         );
-        $query->setConditions($this->conditions);
+        if ($this->conditions) {
+            $query->setConditions($this->unmapConditions($mapper, $this->conditions));
+        }
 
         return (int) $adapter->execute($query);
     }

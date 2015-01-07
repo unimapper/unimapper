@@ -16,16 +16,7 @@ class QueryBuilder
 {
 
     /** @var array */
-    protected $adapters = [];
-
-    /** @var Cache\ICache */
-    protected $cache;
-
-    /** @var Mapper */
-    protected $mapper;
-
-    /** @var array */
-    protected $queries = [
+    private static $queries = [
         "count" => "UniMapper\Query\Count",
         "raw" => "UniMapper\Query\Raw",
         "delete" => "UniMapper\Query\Delete",
@@ -37,64 +28,55 @@ class QueryBuilder
         "updateOne" => "UniMapper\Query\UpdateOne"
     ];
 
-    protected $beforeQuery = [];
+    /** @var array */
+    private static $afterRun = [];
 
-    protected $afterQuery = [];
+    /** @var array */
+    private static $beforeRun = [];
 
-    public function __construct(Mapper $mapper, Cache\ICache $cache = null)
+    /** @var Reflection\Entity $entityReflection */
+    private $entityReflection;
+
+    /**
+     * @param mixed $entity Entity object, class or name
+     */
+    public function __construct($entity)
     {
-        $this->mapper = $mapper;
-        $this->cache = $cache;
+        $this->entityReflection = Reflection\Loader::load($entity);
     }
 
     public function __call($name, $arguments)
     {
-        if (!isset($this->queries[$name])) {
+        if (!isset(self::$queries[$name])) {
             throw new Exception\InvalidArgumentException(
                 "Query with name " . $name . " does not exist!"
             );
         }
 
-        if (!isset($arguments[0])) {
-            throw new Exception\InvalidArgumentException(
-                "You must pass queried entity name!"
-            );
-        }
-        $entityReflection = Reflection\Loader::load($arguments[0]);
+        array_unshift($arguments, $this->entityReflection);
 
-        unset($arguments[0]);
-        array_unshift($arguments, $entityReflection, $this->adapters, $this->mapper);
-
-        $class = new \ReflectionClass($this->queries[$name]);
-        $query = $class->newInstanceArgs($arguments);
-
-        if ($this->cache) {
-            $query->setCache($this->cache);
-        }
-
-        foreach ($this->beforeQuery as $callback) {
-            $query->beforeExecute($callback);
-        }
-
-        foreach ($this->afterQuery as $callback) {
-            $query->afterExecute($callback);
-        }
-
-        return $query;
+        $class = new \ReflectionClass(self::$queries[$name]);
+        return $class->newInstanceArgs($arguments);
     }
 
-    public function registerAdapter($name, Adapter $adapter)
+    public static function beforeRun(callable $callback)
     {
-        if (isset($this->adapters[$name])) {
-            throw new Exception\InvalidArgumentException(
-                "Adapter with name " . $name . " already registered!"
-            );
-        }
+        self::$beforeRun[] = $callback;
+    }
 
-        $this->adapters[$name] = $adapter;
-        if ($adapter->getMapping()) {
-            $this->mapper->registerAdapterMapping($name, $adapter->getMapping());
-        }
+    public static function afterRun(callable $callback)
+    {
+        self::$afterRun[] = $callback;
+    }
+
+    public static function getBeforeRun()
+    {
+        return self::$beforeRun;
+    }
+
+    public static function getAfterRun()
+    {
+        return self::$afterRun;
     }
 
     /**
@@ -102,29 +84,9 @@ class QueryBuilder
      *
      * @param string $class
      */
-    public function registerQuery($class)
+    public static function registerQuery($class)
     {
-        $this->queries[$class::getName()] = $class;
-    }
-
-    public function getAdapters()
-    {
-        return $this->adapters;
-    }
-
-    public function getMapper()
-    {
-        return $this->mapper;
-    }
-
-    public function afterQuery(callable $callback)
-    {
-        $this->afterQuery[] = $callback;
-    }
-
-    public function beforeQuery(callable $callback)
-    {
-        $this->beforeQuery[] = $callback;
+        self::$queries[$class::getName()] = $class;
     }
 
 }

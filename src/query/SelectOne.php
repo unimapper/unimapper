@@ -3,7 +3,6 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exception,
-    UniMapper\Mapper,
     UniMapper\Modifier,
     UniMapper\Reflection;
 
@@ -15,11 +14,9 @@ class SelectOne extends Selectable
 
     public function __construct(
         Reflection\Entity $entityReflection,
-        array $adapters,
-        Mapper $mapper,
         $primaryValue
     ) {
-        parent::__construct($entityReflection, $adapters, $mapper);
+        parent::__construct($entityReflection);
 
         if (!$entityReflection->hasPrimary()) {
             throw new Exception\QueryException(
@@ -32,8 +29,10 @@ class SelectOne extends Selectable
         $this->primaryValue = $primaryValue;
     }
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Connection $connection)
     {
+        $adapter = $this->getAdapter($connection);
+
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
 
         $query = $adapter->createSelectOne(
@@ -59,13 +58,6 @@ class SelectOne extends Selectable
 
             foreach ($this->associations["remote"] as $colName => $association) {
 
-                if (!isset($this->adapters[$association->getTargetAdapterName()])) {
-                    throw new Exception\QueryException(
-                        "Adapter with name '"
-                        . $association->getTargetAdapterName() . "' not set!"
-                    );
-                }
-
                 $assocValue = $result[$association->getKey()];
 
                 if ($association->isCollection()) {
@@ -76,7 +68,7 @@ class SelectOne extends Selectable
 
                 $associated = $modififer->load(
                     $adapter,
-                    $this->adapters[$association->getTargetAdapterName()],
+                    $this->getAdapter($connection, $association->getTargetAdapterName()),
                     [$assocValue]
                 );
 
@@ -87,7 +79,7 @@ class SelectOne extends Selectable
             }
         }
 
-        return $this->mapper->mapEntity($this->entityReflection->getName(), $result);
+        return $connection->getMapper()->mapEntity($this->entityReflection->getName(), $result);
     }
 
 }

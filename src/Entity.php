@@ -297,6 +297,16 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     }
 
     /**
+     * Query on entity
+     *
+     * @return QueryBuilder
+     */
+    public static function query()
+    {
+        return new QueryBuilder(get_called_class());
+    }
+
+    /**
      * Get entity values as array
      *
      * @param boolean $nesting Convert nested entities and collections too

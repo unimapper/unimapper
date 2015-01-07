@@ -20,7 +20,7 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
         $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
     }
 
-    public function testSuccess()
+    public function testRun()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $this->adapters["FooAdapter"]->shouldReceive("createDelete")
@@ -38,13 +38,15 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn("2");
 
+        $connectionMock = Mockery::mock("UniMapper\Connection");
+        $connectionMock->shouldReceive("getAdapters")->once()->andReturn($this->adapters);
+        $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
+
         $query = new Query\Delete(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            $this->adapters,
-            new \UniMapper\Mapper
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
         );
         $query->where("id", "=", 1);
-        Assert::same(2, $query->execute());
+        Assert::same(2, $query->run($connectionMock));
     }
 
     /**
@@ -52,12 +54,12 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
      */
     public function testNoConditionGiven()
     {
+        $connectionMock = Mockery::mock("UniMapper\Connection");
+
         $query = new Query\Delete(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            $this->adapters,
-            new \UniMapper\Mapper
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
         );
-        $query->execute();
+        $query->run($connectionMock);
     }
 
 }

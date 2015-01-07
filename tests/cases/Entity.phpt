@@ -1,6 +1,7 @@
 <?php
 
 use Tester\Assert;
+use UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -172,6 +173,11 @@ class EntityTest extends UniMapper\Tests\TestCase
     public function testSetPropertyWithInvalidType()
     {
         $this->entity->id = "invalidType";
+    }
+
+    public function testQuery()
+    {
+        Assert::type("UniMapper\Query\Select", Fixtures\Entity\Simple::query()->select());
     }
 
     public function testSerializable()

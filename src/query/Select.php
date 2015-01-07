@@ -6,7 +6,6 @@ use UniMapper\Exception,
     UniMapper\Reflection,
     UniMapper\Reflection\Association\ManyToOne,
     UniMapper\NamingConvention as UNC,
-    UniMapper\Mapper,
     UniMapper\Modifier,
     UniMapper\Cache\ICache;
 
@@ -23,12 +22,9 @@ class Select extends Selectable
     protected $cached = false;
     protected $cachedOptions = [];
 
-    public function __construct(
-        Reflection\Entity $entityReflection,
-        array $adapters,
-        Mapper $mapper
-    ) {
-        parent::__construct($entityReflection, $adapters, $mapper);
+    public function __construct(Reflection\Entity $entityReflection)
+    {
+        parent::__construct($entityReflection);
 
         $selection = array_slice(func_get_args(), 3);
         array_walk($selection, [$this, "select"]);
@@ -44,14 +40,16 @@ class Select extends Selectable
         }
 
         $property = $this->entityReflection->getProperty($name);
-        if ($property->hasOption(Reflection\Property::OPTION_ASSOC) || $property->hasOption(Reflection\Property::OPTION_COMPUTED)) {
+        if ($property->hasOption(Reflection\Property::OPTION_ASSOC)
+            || $property->hasOption(Reflection\Property::OPTION_COMPUTED)
+        ) {
             throw new Exception\QueryException(
                 "Associations and computed properties can not be selected!"
             );
         }
 
         if (!array_search($name, $this->selection)) {
-            $this->selection[] = $property->getName(true);
+            $this->selection[] = $name;
         }
 
         return $this;
@@ -71,11 +69,8 @@ class Select extends Selectable
 
     public function cached($enable = true, array $options = [])
     {
-        if ($this->cache) {
-
-            $this->cached = (bool) $enable;
-            $this->cachedOptions = $options;
-        }
+        $this->cached = (bool) $enable;
+        $this->cachedOptions = $options;
         return $this;
     }
 
@@ -96,13 +91,21 @@ class Select extends Selectable
         return $this;
     }
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Connection $connection)
     {
-        if ($this->cached) {
+        $adapter = $this->getAdapter($connection);
+        $mapper = $connection->getMapper();
+        $cache = null;
 
-            $cachedResult = $this->cache->load($this->_getQueryChecksum());
+        if ($this->cached) {
+            $cache = $connection->getCache();
+        }
+
+        if ($cache) {
+
+            $cachedResult = $cache->load($this->_getQueryChecksum());
             if ($cachedResult) {
-                return $this->mapper->mapCollection(
+                return $mapper->mapCollection(
                     $this->entityReflection->getName(),
                     $cachedResult
                 );
@@ -111,14 +114,14 @@ class Select extends Selectable
 
         $query = $adapter->createSelect(
             $this->entityReflection->getAdapterResource(),
-            $this->_createSelection(),
+            $this->createSelection(),
             $this->orderBy,
             $this->limit,
             $this->offset
         );
 
         if ($this->conditions) {
-            $query->setConditions($this->conditions);
+            $query->setConditions($this->unmapConditions($mapper, $this->conditions));
         }
 
         if ($this->associations["local"]) {
@@ -134,13 +137,6 @@ class Select extends Selectable
             settype($result, "array");
 
             foreach ($this->associations["remote"] as $colName => $association) {
-
-                if (!isset($this->adapters[$association->getTargetAdapterName()])) {
-                    throw new Exception\QueryException(
-                        "Adapter with name '"
-                        . $association->getTargetAdapterName() . "' not set!"
-                    );
-                }
 
                 $assocKey = $association->getKey();
 
@@ -162,7 +158,7 @@ class Select extends Selectable
 
                 $associated = $modififer->load(
                     $adapter,
-                    $this->adapters[$association->getTargetAdapterName()],
+                    $this->getAdapter($connection, $association->getTargetAdapterName()),
                     $assocValues
                 );
 
@@ -180,7 +176,7 @@ class Select extends Selectable
             }
         }
 
-        if ($this->cached) {
+        if ($cache) {
 
             $cachedOptions = $this->cachedOptions;
 
@@ -198,29 +194,26 @@ class Select extends Selectable
                 $cachedOptions[ICache::FILES] = $this->entityReflection->getRelatedFiles();
             }
 
-            $this->cache->save(
+            $cache->save(
                 $this->_getQueryChecksum(),
                 $result,
                 $cachedOptions
             );
         }
 
-        return $this->mapper->mapCollection(
+        return $mapper->mapCollection(
             $this->entityReflection->getName(),
             empty($result) ? [] : $result
         );
     }
 
-    protected function addCondition($propertyName, $operator, $value,
-        $joiner = 'AND'
-    ) {
-        parent::addCondition($propertyName, $operator, $value, $joiner);
+    protected function addCondition($name, $operator, $value, $joiner = 'AND')
+    {
+        parent::addCondition($name, $operator, $value, $joiner);
 
         // Add properties from conditions
-        $mappedName = $this->entityReflection->getProperty($propertyName)->getName(true);
-        if ($this->selection && !in_array($mappedName, $this->selection)
-        ) {
-            $this->selection[] = $mappedName;
+        if ($this->selection && !in_array($name, $this->selection)) {
+            $this->selection[] = $name;
         }
     }
 
@@ -234,27 +227,38 @@ class Select extends Selectable
         );
     }
 
-    private function _createSelection()
+    protected function createSelection()
     {
         if (empty($this->selection)) {
 
             $selection = [];
             foreach ($this->entityReflection->getProperties() as $property) {
 
-                if (!$property->hasOption(Reflection\Property::OPTION_ASSOC) && !$property->hasOption(Reflection\Property::OPTION_COMPUTED)) {
+                // Exclude associations & computed properties
+                if (!$property->hasOption(Reflection\Property::OPTION_ASSOC)
+                    && !$property->hasOption(Reflection\Property::OPTION_COMPUTED)
+                ) {
                     $selection[] = $property->getName(true);
                 }
             }
         } else {
 
-            $primaryName = $this->entityReflection
-                ->getPrimaryProperty()
-                ->getName(true);
+            // Include primary automatically if not provided
+            if ($this->entityReflection->hasPrimary()) {
 
-            // Add primary property automatically
-            $selection = $this->selection;
-            if (!in_array($primaryName, $selection)) {
-                $selection[] = $primaryName;
+                $primaryName = $this->entityReflection
+                    ->getPrimaryProperty()
+                    ->getName();
+
+                $selection = $this->selection;
+                if (!in_array($primaryName, $selection)) {
+                    $selection[] = $primaryName;
+                }
+            }
+
+            // Unmap all names
+            foreach ($selection as $index => $name) {
+                $selection[$index] = $this->entityReflection->getProperty($name)->getName(true);
             }
         }
 

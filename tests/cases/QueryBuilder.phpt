@@ -10,60 +10,50 @@ require __DIR__ . '/../bootstrap.php';
 class QueryBuilderTest extends UniMapper\Tests\TestCase
 {
 
-    /** @var \UniMapper\QueryBuilder $builder */
-    private $builder;
-
-    /** @var \Mockery\Mock $adapterMock */
-    private $adapterMock;
-
-    public function setUp()
+    private function createBuilder($entity = "Simple")
     {
-        $this->adapterMock = Mockery::mock("UniMapper\Adapter");
-
-        $this->builder = new \UniMapper\QueryBuilder(new \UniMapper\Mapper);
-        $this->builder->registerAdapter("FooAdapter", $this->adapterMock);
+        return new UniMapper\QueryBuilder($entity);
     }
 
     public function testCount()
     {
-        Assert::type("UniMapper\Query\Count", $this->builder->count("Simple"));
+        Assert::type("UniMapper\Query\Count", $this->createBuilder()->count());
     }
 
     public function testSelect()
     {
-        Assert::type("UniMapper\Query\Select", $this->builder->select("Simple"));
+        Assert::type("UniMapper\Query\Select", $this->createBuilder()->select());
     }
 
     public function testSelectOne()
     {
-        Assert::type("UniMapper\Query\SelectOne", $this->builder->selectOne("Simple", 1));
+        Assert::type("UniMapper\Query\SelectOne", $this->createBuilder()->selectOne(1));
     }
 
     public function testUpdateOne()
     {
-        Assert::type("UniMapper\Query\UpdateOne", $this->builder->updateOne("Simple", 1, ["text" => "foo"]));
+        Assert::type("UniMapper\Query\UpdateOne", $this->createBuilder()->updateOne(1, ["text" => "foo"]));
     }
 
     public function testUpdate()
     {
-        Assert::type("UniMapper\Query\Update", $this->builder->update("Simple", ["text" => "foo"]));
+        Assert::type("UniMapper\Query\Update", $this->createBuilder()->update(["text" => "foo"]));
     }
 
     public function testInsert()
     {
-        Assert::type("UniMapper\Query\Insert", $this->builder->insert("Simple", ["text" => "foo"]));
+        Assert::type("UniMapper\Query\Insert", $this->createBuilder()->insert(["text" => "foo"]));
     }
 
     public function testDelete()
     {
-        Assert::type("UniMapper\Query\Delete", $this->builder->delete("Simple"));
+        Assert::type("UniMapper\Query\Delete", $this->createBuilder()->delete());
     }
 
     public function testCustomQuery()
     {
-        $this->builder->registerQuery("UniMapper\Tests\Fixtures\Query\Custom");
-        Assert::type("UniMapper\Tests\Fixtures\Query\Custom", $this->builder->custom("Simple"));
-        Assert::same("foo", $this->builder->custom("Simple")->execute());
+        \UniMapper\QueryBuilder::registerQuery("UniMapper\Tests\Fixtures\Query\Custom");
+        Assert::type("UniMapper\Tests\Fixtures\Query\Custom", $this->createBuilder()->custom());
     }
 
     /**
@@ -71,7 +61,7 @@ class QueryBuilderTest extends UniMapper\Tests\TestCase
      */
     public function testUnknownQuery()
     {
-        $this->builder->unknown();
+        $this->createBuilder()->unknown();
     }
 
 }

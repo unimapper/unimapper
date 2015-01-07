@@ -7,15 +7,12 @@ use UniMapper\NamingConvention as UNC;
 abstract class Repository
 {
 
-    /** @var QueryBuilder */
-    private $queryBuilder;
+    /** @var Connection */
+    protected $connection;
 
-    /** @var \UniMapper\Mapper */
-    protected $mapper;
-
-    public function __construct(QueryBuilder $queryBuilder)
+    public function __construct(Connection $connection)
     {
-        $this->queryBuilder = $queryBuilder;
+        $this->connection = $connection;
     }
 
     /**
@@ -81,7 +78,7 @@ abstract class Repository
         }
 
         try {
-            $primaryValue = $this->query()->insert($values)->execute();
+            $primaryValue = $this->query()->insert($values)->run($this->connection);
         } catch (Exception\QueryException $e) {
             throw new Exception\RepositoryException($e->getMessage());
         }
@@ -107,7 +104,7 @@ abstract class Repository
 
         try {
 
-            if (!$this->query()->updateOne($primaryValue, $entity->getData())->execute()) {
+            if (!$this->query()->updateOne($primaryValue, $entity->getData())->run($this->connection)) {
                 throw new Exception\RepositoryException("Entity was not successfully updated!");
             }
         } catch (Exception\QueryException $e) {
@@ -121,8 +118,8 @@ abstract class Repository
     {
         foreach ($entity->getModifiers() as $modifier) {
             $modifier->save(
-                $this->queryBuilder->getAdapters()[$entity->getReflection()->getAdapterName()],
-                $this->queryBuilder->getAdapters()[$modifier->getAssociation()->getTargetAdapterName()],
+                $this->connection->getAdapters()[$entity->getReflection()->getAdapterName()],
+                $this->connection->getAdapters()[$modifier->getAssociation()->getTargetAdapterName()],
                 $primaryValue
             );
         }
@@ -153,7 +150,7 @@ abstract class Repository
 
         $primaryName = $reflection->getPrimaryProperty()->getName();
 
-        return $this->query()->deleteOne($entity->{$primaryName})->execute();
+        return $this->query()->deleteOne($entity->{$primaryName})->run($this->connection);
     }
 
     public function count($filter = [])
@@ -164,7 +161,7 @@ abstract class Repository
             $query->where($rule[0], $rule[1], $rule[2]);
         }
 
-        return $query->execute();
+        return $query->run($this->connection);
     }
 
     public function find(array $filter = [], array $orderBy = [], $limit = 0,
@@ -184,7 +181,7 @@ abstract class Repository
             call_user_func_array([$query, "associate"], $associate);
         }
 
-        return $query->limit($limit)->offset($offset)->execute();
+        return $query->limit($limit)->offset($offset)->run($this->connection);
     }
 
     public function findOne($primaryValue, array $associate = [])
@@ -195,7 +192,7 @@ abstract class Repository
             call_user_func_array([$query, "associate"], $associate);
         }
 
-        return $query->execute();
+        return $query->run($this->connection);
     }
 
     /**
@@ -231,7 +228,7 @@ abstract class Repository
                 "IN",
                 $primaryValues
             )
-            ->execute();
+            ->run($this->connection);
     }
 
     /**
@@ -243,27 +240,27 @@ abstract class Repository
      */
     protected function getAdapter($name)
     {
-        return $this->queryBuilder->getAdapters()[$name];
+        return $this->connection->getAdapters()[$name];
     }
 
     protected function mapToEntity($name, $values)
     {
-        return $this->queryBuilder->getMapper()->mapEntity($name, $values);
+        return $this->connection->getMapper()->mapEntity($name, $values);
     }
 
     protected function mapToCollection($name, $values)
     {
-        return $this->queryBuilder->getMapper()->mapCollection($name, $values);
+        return $this->connection->getMapper()->mapCollection($name, $values);
     }
 
     protected function unmapFromEntity(Entity $entity)
     {
-        return $this->queryBuilder->getMapper()->unmapEntity($entity);
+        return $this->connection->getMapper()->unmapEntity($entity);
     }
 
     protected function unmapFromCollection(EntityCollection $collection)
     {
-        return $this->queryBuilder->getMapper()->unmapCollection($collection);
+        return $this->connection->getMapper()->unmapCollection($collection);
     }
 
     /**
@@ -282,16 +279,14 @@ abstract class Repository
     }
 
     /**
-     * Query on entity related to actual repository
+     * Create query
      *
-     * @return Query
+     * @return QueryBuilder
      */
     protected function query()
     {
-        return new Repository\Caller(
-            $this->queryBuilder,
-            $this->getEntityName()
-        );
+        $class = UNC::nameToClass($this->getEntityName(), UNC::ENTITY_MASK);
+        return $class::query();
     }
 
 }

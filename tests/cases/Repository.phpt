@@ -1,7 +1,8 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Tests\Fixtures;
+use Tester\Assert;
+use UniMapper\Tests\Fixtures;
+use UniMapper\NamingConvention as UNC;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -21,6 +22,17 @@ class RepositoryTest extends UniMapper\Tests\TestCase
     {
         $this->adapterMock = Mockery::mock("UniMapper\Adapter");
         $this->repository = $this->createRepository("Simple", ["FooAdapter" => $this->adapterMock]);
+    }
+
+    private function createRepository($name, array $adapters = [])
+    {
+        $connection = new \UniMapper\Connection(new \UniMapper\Mapper);
+        foreach ($adapters as $adapterName => $adapter) {
+            $connection->registerAdapter($adapterName, $adapter);
+        }
+
+        $class = UNC::nameToClass($name, UNC::REPOSITORY_MASK);
+        return new $class($connection);
     }
 
     public function testGetName()
