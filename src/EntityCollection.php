@@ -9,11 +9,19 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     \JsonSerializable
 {
 
-    /** @var \UniMapper\Reflection\Entity $entityReflection Entity reflection */
+    /** @var Reflection\Entity $entityReflection */
     private $entityReflection;
 
     /** @var array $data Data container */
     private $data = [];
+
+    /** @var array */
+    private $changes = [
+        Entity::CHANGE_ATTACH => [],
+        Entity::CHANGE_DETACH => [],
+        Entity::CHANGE_ADD => [],
+        Entity::CHANGE_REMOVE => []
+    ];
 
     /**
      * @param string $name   Entity name
@@ -41,6 +49,67 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
                 );
             }
         }
+    }
+
+    private function _validateEntity($entity, $primaryRequired = false)
+    {
+        $entityClass = $this->entityReflection->getClassName();
+        if (!$entity instanceof $entityClass) {
+            throw new Exception\InvalidArgumentException(
+                "Expected instance of entity " . $entityClass . "!"
+            );
+        }
+
+        if ($primaryRequired) {
+
+            $primaryName = $entity->getReflection()->getPrimaryProperty()->getName();
+            if (empty($entity->{$primaryName})) {
+                throw new Exception\InvalidArgumentExceptio(
+                    "Primary value is required!"
+                );
+            }
+        }
+    }
+
+    public function attach(Entity $entity)
+    {
+        $this->_validateEntity($entity, true);
+
+        $primary = $entity->{$entity->getReflection()->getPrimaryProperty()->getName()};
+        if (!in_array($primary, $this->changes[Entity::CHANGE_ATTACH], true)) {
+            array_push($this->changes{Entity::CHANGE_ATTACH}, $primary);
+        }
+    }
+
+    public function detach(Entity $entity)
+    {
+        $this->_validateEntity($entity, true);
+
+        $primary = $entity->{$entity->getReflection()->getPrimaryProperty()->getName()};
+        if (!in_array($primary, $this->changes[Entity::CHANGE_DETACH], true)) {
+            array_push($this->changes{Entity::CHANGE_DETACH}, $primary);
+        }
+    }
+
+    public function add(Entity $entity)
+    {
+        $this->_validateEntity($entity);
+        $this->changes[Entity::CHANGE_ADD][] = $entity;
+    }
+
+    public function remove(Entity $entity)
+    {
+        $this->_validateEntity($entity, true);
+
+        $primary = $entity->{$entity->getReflection()->getPrimaryProperty()->getName()};
+        if (!in_array($primary, $this->changes[Entity::CHANGE_REMOVE], true)) {
+            array_push($this->changes{Entity::CHANGE_REMOVE}, $primary);
+        }
+    }
+
+    public function getChanges()
+    {
+        return $this->changes;
     }
 
     /**
@@ -95,13 +164,8 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
      */
     public function offsetSet($offset, $value)
     {
-        $entityClass = $this->entityReflection->getClassName();
+        $this->_validateEntity($value);
 
-        if (!$value instanceof $entityClass) {
-            throw new Exception\InvalidArgumentException(
-                "Expected instance of entity " . $entityClass . "!"
-            );
-        }
         if (is_null($offset)) {
             $this->data[] = $value;
         } else {

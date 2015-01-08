@@ -15,7 +15,7 @@ class Delete extends Conditionable
             );
         }
 
-        $adapter = $this->getAdapter($connection);
+        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
 
         $query = $adapter->createDelete(
             $this->entityReflection->getAdapterResource()

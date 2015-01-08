@@ -1,15 +1,13 @@
 <?php
 
-namespace UniMapper\Reflection\Association;
+namespace UniMapper\Association;
 
+use UniMapper\Connection;
 use UniMapper\Exception;
 use UniMapper\Reflection;
 
 class OneToOne extends OneToMany
 {
-
-    /** @var bool */
-    protected $collection = false;
 
     public function __construct(
         $propertyName,
@@ -39,6 +37,31 @@ class OneToOne extends OneToMany
     public function getTargetPrimaryKey()
     {
         return $this->targetReflection->getPrimaryProperty()->getName(true);
+    }
+
+    public function load(Connection $connection, array $primaryValues)
+    {
+        $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
+
+        $query = $targetAdapter->createSelect($this->getTargetResource());
+        $query->setConditions(
+            [
+                [
+                    $this->getTargetPrimaryKey(),
+                    "IN",
+                    $primaryValues,
+                    "AND"
+                ]
+            ]
+        );
+
+        $result = $targetAdapter->execute($query);
+
+        if (empty($result)) {
+            return [];
+        }
+
+        return $this->groupResult($result, [$this->getTargetPrimaryKey()]);
     }
 
 }

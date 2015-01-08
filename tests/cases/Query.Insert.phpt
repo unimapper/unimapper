@@ -37,7 +37,7 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
             ->andReturn("1");
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
-        $connectionMock->shouldReceive("getAdapters")->once()->andReturn($this->adapters);
+        $connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
         $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
 
         $query = new \UniMapper\Query\Insert(
@@ -65,7 +65,7 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
             ->andReturn("1");
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
-        $connectionMock->shouldReceive("getAdapters")->once()->andReturn($this->adapters);
+        $connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
         $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
 
         Assert::same(1, $query->run($connectionMock));

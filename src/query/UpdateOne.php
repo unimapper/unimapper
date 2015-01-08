@@ -39,7 +39,7 @@ class UpdateOne extends Conditionable
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
-        $adapter = $this->getAdapter($connection);
+        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
         $mapper = $connection->getMapper();
 
         $values = $mapper->unmapEntity($this->entity);

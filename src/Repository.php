@@ -83,7 +83,7 @@ abstract class Repository
             throw new Exception\RepositoryException($e->getMessage());
         }
 
-        $this->_persistAssociations($primaryValue, $entity);
+        $this->_saveAssociated($primaryValue, $entity);
 
         return $primaryValue;
     }
@@ -111,16 +111,16 @@ abstract class Repository
             throw new Exception\RepositoryException($e->getMessage());
         }
 
-        $this->_persistAssociations($primaryValue, $entity);
+        $this->_saveAssociated($primaryValue, $entity);
     }
 
-    private function _persistAssociations($primaryValue, Entity $entity)
+    private function _saveAssociated($primaryValue, Entity $entity)
     {
-        foreach ($entity->getModifiers() as $modifier) {
-            $modifier->save(
-                $this->connection->getAdapters()[$entity->getReflection()->getAdapterName()],
-                $this->connection->getAdapters()[$modifier->getAssociation()->getTargetAdapterName()],
-                $primaryValue
+        foreach ($entity->getChanges() as $name => $associated) {
+            $entity->getReflection()->getProperty($name)->getOption(Reflection\Property::OPTION_ASSOC)->save(
+                $primaryValue,
+                $this->connection,
+                $associated
             );
         }
     }

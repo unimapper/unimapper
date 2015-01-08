@@ -35,29 +35,6 @@ abstract class Query
     }
 
     /**
-     * Get adapter
-     *
-     * @param \UniMapper\Connection $connection
-     *
-     * @return Adapter
-     *
-     * @throws QueryException
-     */
-    protected function getAdapter(Connection $connection, $name = null)
-    {
-        if ($name === null) {
-            $name = $this->entityReflection->getAdapterName();
-        }
-
-        if (!isset($connection->getAdapters()[$name])) {
-            throw new \UniMapper\Exception\QueryException(
-                "Adapter " . $name . " not registered on connection!"
-            );
-        }
-        return $connection->getAdapters()[$name];
-    }
-
-    /**
      * Executes query
      *
      * @param \UniMapper\Connection $connection

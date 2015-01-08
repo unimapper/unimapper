@@ -1,8 +1,9 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Query,
-    UniMapper\Reflection;
+use Tester\Assert;
+use UniMapper\Association;
+use UniMapper\Query;
+use UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -35,7 +36,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
     public function testRun()
     {
         $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $this->connectionMock->shouldReceive("getAdapters")->once()->andReturn($this->adapters);
+        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
 
         $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
             ->with("simple_resource", "simplePrimaryId", 1)
@@ -55,12 +56,12 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
     public function testAssociateManyToMany()
     {
         $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $this->connectionMock->shouldReceive("getAdapters")->once()->andReturn($this->adapters);
+        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
 
         $this->adapterQueryMock->shouldReceive("setAssociations")
             ->with(
                 Mockery::on(function($arg) {
-                    return $arg["collection"] instanceof Reflection\Association\ManyToMany;
+                    return $arg["collection"] instanceof Association\ManyToMany;
                 })
             )
             ->once();
@@ -80,7 +81,8 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
     public function testAssociateManyToManyRemote()
     {
         $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $this->connectionMock->shouldReceive("getAdapters")->once()->andReturn($this->adapters);
+        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getAdapter")->once()->with("RemoteAdapter")->andReturn($this->adapters["RemoteAdapter"]);
 
         $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
             ->with("simple_resource", "simplePrimaryId", 1)
@@ -131,7 +133,8 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
     public function testAssociateManyToOneRemote()
     {
         $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $this->connectionMock->shouldReceive("getAdapters")->once()->andReturn($this->adapters);
+        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getAdapter")->once()->with("RemoteAdapter")->andReturn($this->adapters["RemoteAdapter"]);
 
         $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
             ->with("simple_resource", "simplePrimaryId", 1)
@@ -161,7 +164,8 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
     public function testAssociateManyToManyRemoteNoDominance()
     {
         $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $this->connectionMock->shouldReceive("getAdapters")->once()->andReturn($this->adapters);
+        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getAdapter")->once()->with("RemoteAdapter")->andReturn($this->adapters["RemoteAdapter"]);
 
         $this->adapters["RemoteAdapter"]->shouldReceive("createSelectOne")
             ->with("remote_resource", "id", 1)

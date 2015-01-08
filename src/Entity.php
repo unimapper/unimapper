@@ -8,6 +8,11 @@ use UniMapper\EntityCollection,
 abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 {
 
+    const CHANGE_ATTACH = 1;
+    const CHANGE_DETACH = 2;
+    const CHANGE_ADD = 3;
+    const CHANGE_REMOVE = 4;
+
     /** @var \UniMapper\Reflection\Entity $reflection */
     private $reflection;
 
@@ -20,8 +25,11 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     /** @var \UniMapper\Validator $validator */
     private $validator;
 
-    /** @var array $modifiers */
-    private $modifiers = [];
+    /** @var array $changes Properties with changes */
+    private $changes = [];
+
+    /** @var integer $change */
+    private $changeType;
 
     /**
      * @param mixed $values
@@ -89,6 +97,46 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         $this->rewind();
     }
 
+    private function _validateChangeType()
+    {
+        if (!$this->reflection->hasPrimary()) {
+            throw new Exception\InvalidArgumentException(
+                "Only entity with primary can define changes!"
+            );
+        }
+
+        $primaryName = $this->reflection->getPrimaryProperty()->getName();
+        if (empty($this->{$primaryName})) {
+            throw new Exception\InvalidArgumentExceptio(
+                "Primary value is required!"
+            );
+        }
+    }
+
+    public function attach()
+    {
+        $this->_validateChangeType();
+        $this->changeType = self::CHANGE_ATTACH;
+    }
+
+    public function detach()
+    {
+        $this->_validateChangeType();
+        $this->changeType = self::CHANGE_DETACH;
+    }
+
+    public function add()
+    {
+        $this->_validateChangeType();
+        $this->changeType = self::CHANGE_ADD;
+    }
+
+    public function remove()
+    {
+        $this->_validateChangeType();
+        $this->changeType = self::CHANGE_REMOVE;
+    }
+
     /**
      * Serialize entity data and public properties
      *
@@ -121,10 +169,12 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     }
 
     /**
+     * Manage entity and collection changes on target property
+     *
      * @param string $name
      * @param array  $arguments
      *
-     * @return Modifier
+     * @return Entity|EntityCollection
      *
      * @throws Exception\PropertyAccessException
      */
@@ -140,27 +190,48 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         }
 
         $propertyReflection = $this->reflection->getProperty($name);
-        if (!$propertyReflection->hasOption(Reflection\Property::OPTION_ASSOC)) {
+
+        if ($propertyReflection->getType() !== Reflection\Property::TYPE_ENTITY
+            && $propertyReflection->getType() !== Reflection\Property::TYPE_COLLECTION
+        ) {
             throw new Exception\PropertyAccessException(
-                "Only association properties can be called as function!",
+                "Only properties with type entity or collection can call changes!",
                 $this->reflection
             );
         }
 
-        if (!in_array($name, $this->modifiers, true)) {
+        if (isset($arguments[0])) {
 
-            if ($this->reflection->getProperty($name)->getType() === Reflection\Property::TYPE_COLLECTION) {
-                $this->modifiers[$name] = new Modifier\CollectionModifier(
-                    $this->reflection->getProperty($name)->getOption(Reflection\Property::OPTION_ASSOC)
-                );
-            } elseif ($this->reflection->getProperty($name)->getType() === Reflection\Property::TYPE_ENTITY) {
-                $this->modifiers[$name] = new Modifier\EntityModifier(
-                    $this->reflection->getProperty($name)->getOption(Reflection\Property::OPTION_ASSOC)
-                );
+            if ($arguments[0] === null) {
+                unset($this->changes[$name]);
+            } else {
+
+                if (!$arguments[0] instanceof EntityCollection
+                    && $propertyReflection->getType() === Reflection\Property::TYPE_COLLECTION
+                ) {
+                    throw new Exception\InvalidArgumentException("You must pass instance of entity collection!");
+                }
+
+                if (!$arguments[0] instanceof Entity
+                    && $propertyReflection->getType() === Reflection\Property::TYPE_ENTITY
+                ) {
+                    throw new Exception\InvalidArgumentException("You must pass instance of entity!");
+                }
+
+                $this->changes[$name] = $arguments[0];
             }
         }
 
-        return $this->modifiers[$name];
+        if (!in_array($name, $this->changes, true)) {
+
+            if ($propertyReflection->getType() === Reflection\Property::TYPE_COLLECTION) {
+                $this->changes[$name] = new EntityCollection($propertyReflection->getTypeOption());
+            } else {
+                $this->changes[$name] = Reflection\Loader::load($propertyReflection->getTypeOption())->createEntity();
+            }
+        }
+
+        return $this->changes[$name];
     }
 
     /**
@@ -263,9 +334,14 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         unset($this->data[$name]);
     }
 
-    public function getModifiers()
+    public function getChangeType()
     {
-        return $this->modifiers;
+        return $this->changeType;
+    }
+
+    public function getChanges()
+    {
+        return $this->changes;
     }
 
     public function getReflection()
@@ -274,8 +350,6 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     }
 
     /**
-     * Get changed data only
-     *
      * @return array
      */
     public function getData()

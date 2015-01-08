@@ -259,7 +259,7 @@ class Property
                 );
             }
 
-            $class = __NAMESPACE__ . "\Association\\"
+            $class = "UniMapper\Association\\"
                 . $this->assocTypes[$this->getOption(self::OPTION_ASSOC)];
 
             try {
