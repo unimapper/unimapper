@@ -133,6 +133,31 @@ class QueryConditionableTest extends UniMapper\Tests\TestCase
         $this->createConditionableQuery()->where("id", "IN", ["test", 1]);
     }
 
+    public function testValueEmptyString()
+    {
+        Assert::same([["text", "=", "", "AND"]], $this->createConditionableQuery()->where("text", "=", "")->conditions);
+    }
+
+    public function testOperatorIs()
+    {
+        Assert::same([["text", "IS", "", "AND"]], $this->createConditionableQuery()->where("text", "IS", "")->conditions);
+        Assert::same([["text", "IS", null, "AND"]], $this->createConditionableQuery()->where("text", "IS", null)->conditions);
+    }
+
+    public function testOperatorIsNot()
+    {
+        Assert::same([["text", "IS NOT", "", "AND"]], $this->createConditionableQuery()->where("text", "IS NOT", "")->conditions);
+        Assert::same([["text", "IS NOT", null, "AND"]], $this->createConditionableQuery()->where("text", "IS NOT", null)->conditions);
+    }
+
+    /**
+     * @throws UniMapper\Exception\QueryException Null value can be combined only with IS and IS NOT!
+     */
+    public function testValueNullAndNotAllowedOperator()
+    {
+        $this->createConditionableQuery()->where("id", "=", null);
+    }
+
 }
 
 $testCase = new QueryConditionableTest;

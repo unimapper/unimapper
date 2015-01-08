@@ -46,6 +46,10 @@ abstract class Conditionable extends \UniMapper\Query
             throw new Exception\QueryException("Value must be type array when using operator IN or NOT IN!");
         }
 
+        if ($operator !== "IS" && $operator !== "IS NOT" && $value === null) {
+            throw new Exception\QueryException("Null value can be combined only with IS and IS NOT!");
+        }
+
         // Validate value type
         try {
 
