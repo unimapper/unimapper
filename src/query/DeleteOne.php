@@ -3,7 +3,6 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exception,
-    UniMapper\Mapper,
     UniMapper\Reflection;
 
 class DeleteOne extends \UniMapper\Query
@@ -14,11 +13,9 @@ class DeleteOne extends \UniMapper\Query
 
     public function __construct(
         Reflection\Entity $entityReflection,
-        array $adapters,
-        Mapper $mapper,
         $primaryValue
     ) {
-        parent::__construct($entityReflection, $adapters, $mapper);
+        parent::__construct($entityReflection);
 
         if (!$entityReflection->hasPrimary()) {
             throw new Exception\QueryException(
@@ -37,8 +34,10 @@ class DeleteOne extends \UniMapper\Query
         $this->primaryValue = $primaryValue;
     }
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Connection $connection)
     {
+        $adapter = $this->getAdapter($connection);
+
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
 
         $query = $adapter->createDeleteOne(

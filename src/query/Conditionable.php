@@ -56,19 +56,18 @@ abstract class Conditionable extends \UniMapper\Query
                 foreach ($value as $index => $item) {
 
                     $property->validateValueType($item);
-                    $value[$index] = $this->mapper->unmapValue($property, $item);
+                    $value[$index] = $item;
                 }
             } elseif (!in_array($operator, ["IS", "IS NOT"]) && $value !== null) {
 
                 $property->validateValueType($value);
-                $value = $this->mapper->unmapValue($property, $value);
             }
         } catch (Exception\PropertyValueException $e) {
             throw new Exception\QueryException($e->getMessage());
         }
 
         $this->conditions[] = [
-            $property->getName(true),
+            $property->getName(),
             $operator,
             $value,
             $joiner
@@ -77,7 +76,7 @@ abstract class Conditionable extends \UniMapper\Query
 
     protected function addNestedConditions(\Closure $callback, $joiner = 'AND')
     {
-        $query = new $this($this->entityReflection, $this->adapters, $this->mapper);
+        $query = new $this($this->entityReflection);
 
         call_user_func($callback, $query);
 
@@ -114,6 +113,33 @@ abstract class Conditionable extends \UniMapper\Query
     {
         $this->addCondition($propertyName, $operator, $value, "OR");
         return $this;
+    }
+
+    protected function unmapConditions(\UniMapper\Mapper $mapper, array $conditions)
+    {
+        foreach ($conditions as $index => $condition) {
+
+            if (is_array($condition[0])) {
+                // Nested condition
+
+                $conditions[$index][0] = $this->unmapConditions($mapper, $condition[0]);
+            } else {
+                // Simple condition
+
+                $property = $this->entityReflection->getProperty($condition[0]);
+
+                // Unmap value
+                $conditions[$index][2] = $mapper->unmapValue(
+                    $property,
+                    $condition[2]
+                );
+
+                // Unmap name
+                $conditions[$index][0] = $property->getName(true);
+            }
+        }
+
+        return $conditions;
     }
 
 }

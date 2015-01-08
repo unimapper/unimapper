@@ -7,13 +7,12 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class QueryCountTest extends UniMapper\Tests\TestCase
+class ProfilerTest extends UniMapper\Tests\TestCase
 {
 
-    public function testRun()
+    public function testLog()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $adapterQueryMock->shouldReceive("setConditions")->with([["simplePrimaryId", "=", 1, "AND"]])->once();
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $adapterMock = Mockery::mock("UniMapper\Adapter");
@@ -27,11 +26,16 @@ class QueryCountTest extends UniMapper\Tests\TestCase
         $query = new UniMapper\Query\Count(
             new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
         );
-        $query->where("id", "=", 1);
-        Assert::same(1, $query->run($connectionMock));
+
+        UniMapper\Profiler::startQuery($query);
+        UniMapper\Profiler::endQuery($query->run($connectionMock), 1);
+
+        Assert::type("UniMapper\Profiler\Result", UniMapper\Profiler::getResults()[0]);
+        Assert::same($query, UniMapper\Profiler::getResults()[0]->query);
+        Assert::same(1, UniMapper\Profiler::getResults()[0]->elapsed);
     }
 
 }
 
-$testCase = new QueryCountTest;
+$testCase = new ProfilerTest;
 $testCase->run();

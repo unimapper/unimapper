@@ -5,6 +5,7 @@ if (version_compare(phpversion(), '5.4.0', '<')) {
 }
 
 require_once __DIR__ . '/Adapter.php';
+require_once __DIR__ . '/Connection.php';
 require_once __DIR__ . '/Entity.php';
 require_once __DIR__ . '/EntityCollection.php';
 require_once __DIR__ . '/Exception.php';
@@ -35,7 +36,6 @@ require_once __DIR__ . '/exception/RepositoryException.php';
 require_once __DIR__ . '/exception/UnexpectedException.php';
 require_once __DIR__ . '/exception/ValidatorException.php';
 require_once __DIR__ . '/query/Count.php';
-require_once __DIR__ . '/query/Custom.php';
 require_once __DIR__ . '/query/Delete.php';
 require_once __DIR__ . '/query/DeleteOne.php';
 require_once __DIR__ . '/query/Select.php';
@@ -54,7 +54,6 @@ require_once __DIR__ . '/reflection/Entity.php';
 require_once __DIR__ . '/reflection/Enumeration.php';
 require_once __DIR__ . '/reflection/Loader.php';
 require_once __DIR__ . '/reflection/Property.php';
-require_once __DIR__ . '/repository/Caller.php';
 require_once __DIR__ . '/validator/Condition.php';
 require_once __DIR__ . '/validator/Message.php';
 require_once __DIR__ . '/validator/Rule.php';

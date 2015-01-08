@@ -8,42 +8,18 @@ use UniMapper\Reflection,
 abstract class Query
 {
 
-    /** @var array */
-    protected $adapters = [];
-
-    /** @var Mapper */
-    protected $mapper;
-
     /** @var \UniMapper\Reflection\Entity */
     protected $entityReflection;
 
-    /** @var \UniMapper\Cache\ICache */
-    protected $cache;
-
-    /** @var array */
-    private $beforeExecute = [];
-
-    /** @var array */
-    private $afterExecute = [];
-
-    public function __construct(Reflection\Entity $reflection, array $adapters, Mapper $mapper)
+    public function __construct(Reflection\Entity $reflection)
     {
         if (!$reflection->hasAdapter()) {
             throw new QueryException(
-                "Entity '" . $reflection->getClassName()
-                . "' has no adapter defined!"
+                "Can not create query because entity "
+                . $reflection->getClassName() . " has no adapter defined!"
             );
         }
 
-        if (!isset($adapters[$reflection->getAdapterName()])) {
-            throw new QueryException(
-                "Adapter '" . $reflection->getAdapterName()
-                . "' not given!"
-            );
-        }
-
-        $this->adapters = $adapters;
-        $this->mapper = $mapper;
         $this->entityReflection = $reflection;
     }
 
@@ -52,46 +28,54 @@ abstract class Query
         return $this->{$name};
     }
 
-    public function setCache(\UniMapper\Cache\ICache $cache)
-    {
-        $this->cache = $cache;
-    }
-
-    public function beforeExecute(callable $callback)
-    {
-        $this->beforeExecute[] = $callback;
-    }
-
-    public function afterExecute(callable $callback)
-    {
-        $this->afterExecute[] = $callback;
-    }
-
     public static function getName()
     {
         $reflection = new \ReflectionClass(get_called_class());
         return lcfirst($reflection->getShortName());
     }
 
-    final public function execute()
+    /**
+     * Get adapter
+     *
+     * @param \UniMapper\Connection $connection
+     *
+     * @return Adapter
+     *
+     * @throws QueryException
+     */
+    protected function getAdapter(Connection $connection, $name = null)
+    {
+        if ($name === null) {
+            $name = $this->entityReflection->getAdapterName();
+        }
+
+        if (!isset($connection->getAdapters()[$name])) {
+            throw new \UniMapper\Exception\QueryException(
+                "Adapter " . $name . " not registered on connection!"
+            );
+        }
+        return $connection->getAdapters()[$name];
+    }
+
+    /**
+     * Executes query
+     *
+     * @param \UniMapper\Connection $connection
+     *
+     * @return mixed
+     */
+    final public function run(Connection $connection)
     {
         $start = microtime(true);
 
-        $adapterName = $this->entityReflection->getAdapterName();
-        if (!isset($this->adapters[$adapterName])) {
-            throw new QueryException(
-                "Adapter with name '" . $adapterName . "' not given!"
-            );
-        }
-
-        foreach ($this->beforeExecute as $callback) {
+        foreach (QueryBuilder::getBeforeRun() as $callback) {
 
             // function(\UniMapper\Query $query)
             $callback($this);
         }
 
-        $result = $this->onExecute($this->adapters[$adapterName]);
-        foreach ($this->afterExecute as $callback) {
+        $result = $this->onExecute($connection);
+        foreach (QueryBuilder::getAfterRun() as $callback) {
 
             // function(\UniMapper\Query $query, mixed $result, int $elapsed)
             $callback($this, $result, microtime(true) - $start);

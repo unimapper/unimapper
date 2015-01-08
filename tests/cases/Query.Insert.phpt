@@ -10,15 +10,15 @@ require __DIR__ . '/../bootstrap.php';
 class QueryInsertTest extends UniMapper\Tests\TestCase
 {
 
-    /** @var \Mockery\Mock */
-    private $adapterMock;
+    /** @var array $adapters */
+    private $adapters = [];
 
     /** @var \Mockery\Mock */
     private $adapterQueryMock;
 
     public function setUp()
     {
-        $this->adapterMock = Mockery::mock("UniMapper\Adapter");
+        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
 
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $this->adapterQueryMock->shouldReceive("getRaw")->once();
@@ -26,45 +26,49 @@ class QueryInsertTest extends UniMapper\Tests\TestCase
 
     public function testSuccess()
     {
-        $this->adapterMock->shouldReceive("createInsert")
+        $this->adapters["FooAdapter"]->shouldReceive("createInsert")
             ->once()
             ->with("simple_resource", ['text'=>'foo'])
             ->andReturn($this->adapterQueryMock);
 
-        $this->adapterMock->shouldReceive("onExecute")
+        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
             ->once()
             ->with($this->adapterQueryMock)
             ->andReturn("1");
 
+        $connectionMock = Mockery::mock("UniMapper\Connection");
+        $connectionMock->shouldReceive("getAdapters")->once()->andReturn($this->adapters);
+        $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
+
         $query = new \UniMapper\Query\Insert(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            ["FooAdapter" => $this->adapterMock],
-            new \UniMapper\Mapper,
             ["text" => "foo", "oneToOne" => ["id" => 3]]
         );
-        Assert::same(1, $query->execute());
+        Assert::same(1, $query->run($connectionMock));
     }
 
     public function testNoValues()
     {
         $query = new \UniMapper\Query\Insert(
             new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            ["FooAdapter" => $this->adapterMock],
-            new \UniMapper\Mapper,
             []
         );
 
-        $this->adapterMock->shouldReceive("createInsert")
+        $this->adapters["FooAdapter"]->shouldReceive("createInsert")
             ->once()
             ->with("simple_resource", [])
             ->andReturn($this->adapterQueryMock);
 
-        $this->adapterMock->shouldReceive("onExecute")
+        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
             ->once()
             ->with($this->adapterQueryMock)
             ->andReturn("1");
 
-        Assert::same(1, $query->execute());
+        $connectionMock = Mockery::mock("UniMapper\Connection");
+        $connectionMock->shouldReceive("getAdapters")->once()->andReturn($this->adapters);
+        $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
+
+        Assert::same(1, $query->run($connectionMock));
     }
 
 }

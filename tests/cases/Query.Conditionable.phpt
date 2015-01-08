@@ -27,22 +27,18 @@ class QueryConditionableTest extends UniMapper\Tests\TestCase
     private function createConditionableQuery()
     {
         return new UniMapper\Query\Select(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
-            ["FooAdapter" => $this->adapterMock],
-            new \UniMapper\Mapper
+            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
         );
     }
 
-    public function testConditions()
+    public function testNestedConditions()
     {
-        $this->adapterMock->shouldReceive("insert")->once()->andReturn(1);
-
         $query = $this->createConditionableQuery();
         $expectedConditions = [];
 
         // where()
         $query->where("id", ">", 1);
-        $expectedConditions[] = ["simplePrimaryId", ">", 1, "AND"];
+        $expectedConditions[] = ["id", ">", 1, "AND"];
         Assert::same($expectedConditions, $query->conditions);
 
         // orWhere()
@@ -57,7 +53,7 @@ class QueryConditionableTest extends UniMapper\Tests\TestCase
         });
         $expectedConditions[] = [
             [
-                ['simplePrimaryId', '<', 2, 'AND'],
+                ['id', '<', 2, 'AND'],
                 ['text', 'LIKE', 'anotherFoo', 'OR']
             ],
             'AND'
@@ -71,7 +67,7 @@ class QueryConditionableTest extends UniMapper\Tests\TestCase
         });
         $expectedConditions[] = [
             [
-                ['simplePrimaryId', '<', 5, 'AND'],
+                ['id', '<', 5, 'AND'],
                 ['text', 'LIKE', 'yetAnotherFoo', 'OR'],
             ],
             'OR'
@@ -92,7 +88,7 @@ class QueryConditionableTest extends UniMapper\Tests\TestCase
         });
         $expectedConditions[] = [
             [
-                ['simplePrimaryId', '=', 4, 'AND'],
+                ['id', '=', 4, 'AND'],
                 [
                     [
                         ['text', 'LIKE', 'yetAnotherFoo2', 'AND'],

@@ -2,8 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Reflection,
-    UniMapper\Mapper;
+use UniMapper\Reflection;
 
 class Insert extends \UniMapper\Query
 {
@@ -13,26 +12,27 @@ class Insert extends \UniMapper\Query
 
     public function __construct(
         Reflection\Entity $entityReflection,
-        array $adapters,
-        Mapper $mapper,
         array $data
     ) {
-        parent::__construct($entityReflection, $adapters, $mapper);
+        parent::__construct($entityReflection);
         $this->entity = $entityReflection->createEntity($data);
     }
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Connection $connection)
     {
+        $adapter = $this->getAdapter($connection);
+        $mapper = $connection->getMapper();
+
         $query = $adapter->createInsert(
             $this->entityReflection->getAdapterResource(),
-            $this->mapper->unmapEntity($this->entity)
+            $mapper->unmapEntity($this->entity)
         );
 
         $primaryValue = $adapter->execute($query);
 
         if ($this->entityReflection->hasPrimary()) {
 
-            return $this->mapper->mapValue(
+            return $mapper->mapValue(
                 $this->entityReflection->getPrimaryProperty(),
                 $primaryValue
             );

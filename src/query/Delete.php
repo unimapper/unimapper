@@ -7,7 +7,7 @@ use UniMapper\Exception;
 class Delete extends Conditionable
 {
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Connection $connection)
     {
         if (count($this->conditions) === 0) {
             throw new Exception\QueryException(
@@ -15,10 +15,14 @@ class Delete extends Conditionable
             );
         }
 
+        $adapter = $this->getAdapter($connection);
+
         $query = $adapter->createDelete(
             $this->entityReflection->getAdapterResource()
         );
-        $query->setConditions($this->conditions);
+        if ($this->conditions) {
+            $query->setConditions($this->unmapConditions($connection->getMapper(), $this->conditions));
+        }
 
         return (int) $adapter->execute($query);
     }

@@ -2,10 +2,10 @@
 
 namespace UniMapper\Tests\Fixtures\Query;
 
-class Custom extends \UniMapper\Query\Custom
+class Custom extends \UniMapper\Query
 {
 
-    public function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Connection $connection)
     {
         return "foo";
     }

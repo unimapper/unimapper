@@ -5,12 +5,15 @@ namespace UniMapper\Query;
 class Count extends Conditionable
 {
 
-    protected function onExecute(\UniMapper\Adapter $adapter)
+    protected function onExecute(\UniMapper\Connection $connection)
     {
+        $adapter = $this->getAdapter($connection);
         $query = $adapter->createCount(
             $this->entityReflection->getAdapterResource()
         );
-        $query->setConditions($this->conditions);
+        if ($this->conditions) {
+            $query->setConditions($this->unmapConditions($connection->getMapper(), $this->conditions));
+        }
         return (int) $adapter->execute($query);
     }
 
