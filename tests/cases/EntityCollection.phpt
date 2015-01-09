@@ -28,6 +28,22 @@ class EntityCollectionTest extends UniMapper\Tests\TestCase
         }
     }
 
+    /**
+     * @throws UniMapper\Exception\InvalidArgumentException Values must be traversable data!
+     */
+    public function testValuesNotTraversable()
+    {
+        new UniMapper\EntityCollection("Simple", "foo");
+    }
+
+    /**
+     * @throws UniMapper\Exception\InvalidArgumentException Expected instance of entity UniMapper\Tests\Fixtures\Entity\Simple!
+     */
+    public function testInvalidEntity()
+    {
+        new UniMapper\EntityCollection("Simple", [new UniMapper\Tests\Fixtures\Entity\Remote]);
+    }
+
 }
 
 $testCase = new EntityCollectionTest;

@@ -26,8 +26,14 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
         if ($values) {
 
             if (Validator::isTraversable($values)) {
+
                 foreach ($values as $index => $value) {
-                    $this->data[$index] = $this->entityReflection->createEntity($value);
+
+                    if ($value instanceof Entity) {
+                        $this->offsetSet($index, $value);
+                    } else {
+                        $this->data[$index] = $this->entityReflection->createEntity($value);
+                    }
                 }
             } else {
                 throw new Exception\InvalidArgumentException(
@@ -93,8 +99,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
 
         if (!$value instanceof $entityClass) {
             throw new Exception\InvalidArgumentException(
-                "Expected entity " . $entityClass . " but "
-                . gettype($value) . " given!"
+                "Expected instance of entity " . $entityClass . "!"
             );
         }
         if (is_null($offset)) {
