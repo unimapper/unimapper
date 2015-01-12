@@ -3,7 +3,6 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exception,
-    UniMapper\Modifier,
     UniMapper\Reflection;
 
 class SelectOne extends Selectable
@@ -31,7 +30,7 @@ class SelectOne extends Selectable
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
-        $adapter = $this->getAdapter($connection);
+        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
 
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
 
@@ -60,17 +59,7 @@ class SelectOne extends Selectable
 
                 $assocValue = $result[$association->getKey()];
 
-                if ($association->isCollection()) {
-                    $modififer = new Modifier\CollectionModifier($association);
-                } else {
-                    $modififer = new Modifier\EntityModifier($association);
-                }
-
-                $associated = $modififer->load(
-                    $adapter,
-                    $this->getAdapter($connection, $association->getTargetAdapterName()),
-                    [$assocValue]
-                );
+                $associated = $association->load($connection, [$assocValue]);
 
                 // Merge returned associations
                 if (isset($associated[$assocValue])) {

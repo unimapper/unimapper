@@ -4,9 +4,8 @@ namespace UniMapper\Query;
 
 use UniMapper\Exception,
     UniMapper\Reflection,
-    UniMapper\Reflection\Association\ManyToOne,
+    UniMapper\Association\ManyToOne,
     UniMapper\NamingConvention as UNC,
-    UniMapper\Modifier,
     UniMapper\Cache\ICache;
 
 class Select extends Selectable
@@ -93,7 +92,7 @@ class Select extends Selectable
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
-        $adapter = $this->getAdapter($connection);
+        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
         $mapper = $connection->getMapper();
         $cache = null;
 
@@ -150,18 +149,7 @@ class Select extends Selectable
                     }
                 }
 
-                if ($association->isCollection()) {
-                    $modififer = new Modifier\CollectionModifier($association);
-                } else {
-                    $modififer = new Modifier\EntityModifier($association);
-                }
-
-                $associated = $modififer->load(
-                    $adapter,
-                    $this->getAdapter($connection, $association->getTargetAdapterName()),
-                    $assocValues
-                );
-
+                $associated = $association->load($connection, $assocValues);
 
                 // Merge returned associations
                 if (!empty($associated)) {

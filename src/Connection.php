@@ -43,6 +43,26 @@ class Connection
         return $this->adapters;
     }
 
+    /**
+     * Get adapter
+     *
+     * @param string $name
+     *
+     * @return Adapter
+     *
+     * @throws Exception\ConnectionException
+     */
+    public function getAdapter($name)
+    {
+        if (!isset($this->adapters[$name])) {
+            throw new Exception\ConnectionException(
+                "Adapter " . $name . " not registered on connection!"
+            );
+        }
+
+        return $this->adapters[$name];
+    }
+
     public function getCache()
     {
         return $this->cache;

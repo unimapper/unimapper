@@ -36,7 +36,7 @@ class DeleteOne extends \UniMapper\Query
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
-        $adapter = $this->getAdapter($connection);
+        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
 
         $primaryProperty = $this->entityReflection->getPrimaryProperty();
 

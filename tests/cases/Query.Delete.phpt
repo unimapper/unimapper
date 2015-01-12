@@ -39,7 +39,7 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
             ->andReturn("2");
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
-        $connectionMock->shouldReceive("getAdapters")->once()->andReturn($this->adapters);
+        $connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
         $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
 
         $query = new Query\Delete(

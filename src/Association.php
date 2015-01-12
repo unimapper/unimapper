@@ -1,14 +1,14 @@
 <?php
 
-namespace UniMapper\Reflection;
+namespace UniMapper;
 
 abstract class Association
 {
 
-    /** @var Entity */
+    /** @var Reflection\Entity */
     protected $sourceReflection;
 
-    /** @var Entity */
+    /** @var Reflection\Entity */
     protected $targetReflection;
 
     /** @var bool */
@@ -17,16 +17,13 @@ abstract class Association
     /** @var array */
     protected $arguments = [];
 
-    /** @var bool */
-    protected $collection = true;
-
     /** @var string */
     protected $propertyName;
 
     public function __construct(
         $propertyName,
-        Entity $sourceReflection,
-        Entity $targetReflection,
+        Reflection\Entity $sourceReflection,
+        Reflection\Entity $targetReflection,
         array $arguments,
         $dominant = true
     ) {
@@ -50,16 +47,6 @@ abstract class Association
                 . $targetReflection->getName() . " has no adapter defined!"
             );
         }
-    }
-
-    /**
-     * Is target result entity collection
-     *
-     * @return bool
-     */
-    public function isCollection()
-    {
-        return (bool) $this->collection;
     }
 
     public function getPrimaryKey()
@@ -101,6 +88,64 @@ abstract class Association
     public function getPropertyName()
     {
         return $this->propertyName;
+    }
+
+    /**
+     * Group associative array
+     *
+     * @param array $original
+     * @param array $keys
+     * @param int   $level
+     *
+     * @return array
+     *
+     * @link http://tigrou.nl/2012/11/26/group-a-php-array-to-a-tree-structure/
+     *
+     * @throws Exception\UnexpectedException
+     */
+    protected function groupResult(array $original, array $keys, $level = 0)
+    {
+        $converted = [];
+        $key = $keys[$level];
+        $isDeepest = sizeof($keys) - 1 == $level;
+
+        $level++;
+
+        $filtered = [];
+        foreach ($original as $k => $subArray) {
+
+            $subArray = (array) $subArray;
+            if (!isset($subArray[$key])) {
+                throw new Exception\UnexpectedException(
+                    "Index '" . $key . "' not found on level '" . $level . "'!"
+                );
+            }
+
+            $thisLevel = $subArray[$key];
+
+            if (is_object($thisLevel)) {
+                $thisLevel = (string) $thisLevel;
+            }
+
+            if ($isDeepest) {
+                $converted[$thisLevel] = $subArray;
+            } else {
+                $converted[$thisLevel] = [];
+            }
+            $filtered[$thisLevel][] = $subArray;
+        }
+
+        if (!$isDeepest) {
+            foreach (array_keys($converted) as $value) {
+                $converted[$value] = $this->groupResult(
+                    $filtered[$value],
+                    $keys,
+                    $level
+                );
+            }
+        }
+
+        return $converted;
     }
 
 }

@@ -7,7 +7,7 @@ class Count extends Conditionable
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
-        $adapter = $this->getAdapter($connection);
+        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
         $query = $adapter->createCount(
             $this->entityReflection->getAdapterResource()
         );

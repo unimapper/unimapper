@@ -33,7 +33,7 @@ class Update extends Conditionable
             throw new Exception\QueryException("At least one condition must be set!");
         }
 
-        $adapter = $this->getAdapter($connection);
+        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
 
         $query = $adapter->createUpdate(
             $this->entityReflection->getAdapterResource(),

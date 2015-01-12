@@ -20,7 +20,7 @@ class Insert extends \UniMapper\Query
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
-        $adapter = $this->getAdapter($connection);
+        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
         $mapper = $connection->getMapper();
 
         $query = $adapter->createInsert(

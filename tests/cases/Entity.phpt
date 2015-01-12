@@ -309,25 +309,32 @@ class EntityTest extends UniMapper\Tests\TestCase
         Assert::same('defaultValue', current($this->entity));
     }
 
-    public function testCallModifier()
+    public function testCall()
     {
-        Assert::type("UniMapper\Modifier\CollectionModifier", $this->entity->manyToMany());
-        Assert::type("UniMapper\Modifier\EntityModifier", $this->entity->manyToOne());
-        Assert::type("UniMapper\Modifier\EntityModifier", $this->entity->oneToOne());
+        Assert::type("UniMapper\EntityCollection", $this->entity->manyToMany());
+        Assert::same("Remote", $this->entity->manyToMany()->getEntityReflection()->getName());
+        Assert::type("UniMapper\Tests\Fixtures\Entity\Remote", $this->entity->manyToOne());
+        Assert::type("UniMapper\Tests\Fixtures\Entity\Remote", $this->entity->oneToOne());
+    }
+
+    public function testAttach()
+    {
+        $this->entity->attach();
+        Assert::same(Fixtures\Entity\Simple::CHANGE_ATTACH, $this->entity->getChangeType());
     }
 
     /**
      * @throws UniMapper\Exception\PropertyAccessException Undefined property 'undefined'!
      */
-    public function testCallModifierUndefined()
+    public function testCallUndefinedProperty()
     {
         $this->entity->undefined();
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyAccessException Only association properties can be called as function!
+     * @throws UniMapper\Exception\PropertyAccessException Only properties with type entity or collection can call changes!
      */
-    public function testCallModifierNotAllowed()
+    public function testCallInvalidPropertyType()
     {
         $this->entity->id();
     }

@@ -197,7 +197,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
     {
         // Local
         $local = $this->_createReflection('Simple[]', 'manyToMany', 'm:assoc(M:N) m:assoc-by(sourceId|source_target|targetId)');
-        Assert::type("UniMapper\Reflection\Association\ManyToMany", $local->getOption(Reflection\Property::OPTION_ASSOC));
+        Assert::type("UniMapper\Association\ManyToMany", $local->getOption(Reflection\Property::OPTION_ASSOC));
         Assert::true($local->hasOption(Reflection\Property::OPTION_ASSOC));
         Assert::false($local->getOption(Reflection\Property::OPTION_ASSOC)->isRemote());
         Assert::same("FooAdapter", $local->getOption(Reflection\Property::OPTION_ASSOC)->getTargetAdapterName());
@@ -222,7 +222,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
     {
         $property = $this->_createReflection('Simple[]', 'oneToMany', 'm:assoc(1:N) m:assoc-by(sourceId)');
         Assert::true($property->hasOption("assoc"));
-        Assert::type("UniMapper\Reflection\Association\OneToMany", $property->getOption(Reflection\Property::OPTION_ASSOC));
+        Assert::type("UniMapper\Association\OneToMany", $property->getOption(Reflection\Property::OPTION_ASSOC));
     }
 
     public function testOptionAssocOneToOne()
@@ -230,7 +230,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
         $property = $this->_createReflection('Simple', 'oneToOne', 'm:assoc(1:1) m:assoc-by(targetId)');
         Assert::true($property->hasOption("assoc"));
         $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
-        Assert::type("UniMapper\Reflection\Association\OneToOne", $association);
+        Assert::type("UniMapper\Association\OneToOne", $association);
         Assert::same("simplePrimaryId", $association->getTargetPrimaryKey());
         Assert::same("targetId", $association->getForeignKey());
         Assert::same("targetId", $association->getKey());
@@ -249,7 +249,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
         $property = $this->_createReflection('Simple', 'manyToOne', 'm:assoc(N:1) m:assoc-by(targetId)');
         Assert::true($property->hasOption("assoc"));
         $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
-        Assert::type("UniMapper\Reflection\Association\ManyToOne", $association);
+        Assert::type("UniMapper\Association\ManyToOne", $association);
         Assert::same("simplePrimaryId", $association->getTargetPrimaryKey());
         Assert::same("targetId", $association->getReferenceKey());
         Assert::same("targetId", $association->getKey());

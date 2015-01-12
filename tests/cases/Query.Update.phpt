@@ -52,7 +52,7 @@ class QueryUpdateTest extends UniMapper\Tests\TestCase
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
         $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $connectionMock->shouldReceive("getAdapters")->once()->andReturn($this->adapters);
+        $connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
 
         $query = new Update(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),

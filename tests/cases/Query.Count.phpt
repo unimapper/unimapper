@@ -21,7 +21,7 @@ class QueryCountTest extends UniMapper\Tests\TestCase
         $adapterMock->shouldReceive("onExecute")->with($adapterQueryMock)->once()->andReturn("1");
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
-        $connectionMock->shouldReceive("getAdapters")->once()->andReturn(["FooAdapter" => $adapterMock]);
+        $connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($adapterMock);
         $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
 
         $query = new UniMapper\Query\Count(

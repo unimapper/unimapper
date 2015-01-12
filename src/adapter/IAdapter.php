@@ -2,7 +2,7 @@
 
 namespace UniMapper\Adapter;
 
-use UniMapper\Reflection\Association\ManyToMany;
+use UniMapper\Association\ManyToMany;
 
 interface IAdapter
 {

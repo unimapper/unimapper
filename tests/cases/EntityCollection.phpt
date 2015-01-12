@@ -1,6 +1,9 @@
 <?php
 
 use Tester\Assert;
+use UniMapper\Tests\Fixtures;
+use UniMapper\Entity;
+use UniMapper\EntityCollection;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -14,7 +17,7 @@ class EntityCollectionTest extends UniMapper\Tests\TestCase
     {
         $entity = $this->createEntity("Simple", ["text" => "test"]);
 
-        $collection = new UniMapper\EntityCollection("Simple");
+        $collection = new EntityCollection("Simple");
 
         $collection[] = $entity;
         Assert::same("test", $collection[0]->text);
@@ -33,7 +36,7 @@ class EntityCollectionTest extends UniMapper\Tests\TestCase
      */
     public function testValuesNotTraversable()
     {
-        new UniMapper\EntityCollection("Simple", "foo");
+        new EntityCollection("Simple", "foo");
     }
 
     /**
@@ -41,7 +44,47 @@ class EntityCollectionTest extends UniMapper\Tests\TestCase
      */
     public function testInvalidEntity()
     {
-        new UniMapper\EntityCollection("Simple", [new UniMapper\Tests\Fixtures\Entity\Remote]);
+        new EntityCollection("Simple", [new Fixtures\Entity\Remote]);
+    }
+
+    public function testAdd()
+    {
+        $entity = new Fixtures\Entity\Simple(["id" => 1]);
+
+        $collection = new EntityCollection("Simple");
+        $collection->add($entity);
+
+        Assert::same([$entity], $collection->getChanges()[Entity::CHANGE_ADD]);
+    }
+
+    public function testAttach()
+    {
+        $entity = new Fixtures\Entity\Simple(["id" => 1]);
+
+        $collection = new EntityCollection("Simple");
+        $collection->attach($entity);
+
+        Assert::same([1], $collection->getChanges()[Entity::CHANGE_ATTACH]);
+    }
+
+    public function testDetach()
+    {
+        $entity = new Fixtures\Entity\Simple(["id" => 1]);
+
+        $collection = new EntityCollection("Simple");
+        $collection->detach($entity);
+
+        Assert::same([1], $collection->getChanges()[Entity::CHANGE_DETACH]);
+    }
+
+    public function testRemove()
+    {
+        $entity = new Fixtures\Entity\Simple(["id" => 1]);
+
+        $collection = new EntityCollection("Simple");
+        $collection->remove($entity);
+
+        Assert::same([1], $collection->getChanges()[Entity::CHANGE_REMOVE]);
     }
 
 }
