@@ -47,7 +47,7 @@ class ManyToMany extends \UniMapper\Association
 
         if (!isset($arguments[2])) {
             throw new Exception\DefinitionException(
-                "You must define reference key!!"
+                "You must define referencing key!!"
             );
         }
     }
@@ -62,12 +62,12 @@ class ManyToMany extends \UniMapper\Association
         return$this->arguments[1];
     }
 
-    public function getReferenceKey()
+    public function getReferencingKey()
     {
         return $this->arguments[2];
     }
 
-    public function getForeignKey()
+    public function getTargetPrimaryKey()
     {
         return $this->targetReflection->getPrimaryProperty()->getName(true);
     }
@@ -91,7 +91,7 @@ class ManyToMany extends \UniMapper\Association
 
         $joinQuery = $currentAdapter->createSelect(
             $this->getJoinResource(),
-            [$this->getJoinKey(), $this->getReferenceKey()]
+            [$this->getJoinKey(), $this->getReferencingKey()]
         );
         $joinQuery->setConditions(
             [[$this->getJoinKey(), "IN", $primaryValues, "AND"]]
@@ -106,7 +106,7 @@ class ManyToMany extends \UniMapper\Association
         $joinResult = $this->groupResult(
             $joinResult,
             [
-                $this->getReferenceKey(),
+                $this->getReferencingKey(),
                 $this->getJoinKey()
             ]
         );
@@ -117,7 +117,7 @@ class ManyToMany extends \UniMapper\Association
         $targetQuery->setConditions(
             [
                 [
-                    $this->getForeignKey(),
+                    $this->getTargetPrimaryKey(),
                     "IN",
                     array_keys($joinResult),
                     "AND"
@@ -132,7 +132,7 @@ class ManyToMany extends \UniMapper\Association
 
         $targetResult = $this->groupResult(
             $targetResult,
-            [$this->getForeignKey()]
+            [$this->getTargetPrimaryKey()]
         );
 
         $result = [];

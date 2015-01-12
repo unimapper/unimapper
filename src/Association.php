@@ -54,6 +54,11 @@ abstract class Association
         return $this->sourceReflection->getPrimaryProperty()->getName(true);
     }
 
+    /**
+     * Key name that refers target results to source entity
+     *
+     * @return type
+     */
     public function getKey()
     {
         return $this->getPrimaryKey();

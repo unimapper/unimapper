@@ -4,7 +4,7 @@ namespace UniMapper\Query;
 
 use UniMapper\Exception,
     UniMapper\Reflection,
-    UniMapper\Association\ManyToOne,
+    UniMapper\Association,
     UniMapper\NamingConvention as UNC,
     UniMapper\Cache\ICache;
 
@@ -253,11 +253,10 @@ class Select extends Selectable
         // Add required keys from remote associations
         foreach ($this->associations["remote"] as $association) {
 
-            $refKey = $association->getReferenceKey();
-            if ($association instanceof ManyToOne
-                && !in_array($refKey, $selection, true)
+            if (($association instanceof Association\ManyToOne || $association instanceof Association\OneToOne)
+                && !in_array($association->getReferencingKey(), $selection, true)
             ) {
-                $selection[] = $refKey;
+                $selection[] = $association->getReferencingKey();
             }
         }
 

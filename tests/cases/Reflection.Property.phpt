@@ -209,8 +209,8 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
         Assert::same("RemoteAdapter", $remote->getTargetAdapterName());
         Assert::same("localId", $remote->getJoinKey());
         Assert::same("local_remote", $remote->getJoinResource());
-        Assert::same("remoteId", $remote->getReferenceKey());
-        Assert::same("id", $remote->getForeignKey());
+        Assert::same("remoteId", $remote->getReferencingKey());
+        Assert::same("id", $remote->getTargetPrimaryKey());
 
         // Remote - not dominant
         $remoteNotDominant = $this->_createReflection('Remote[]', 'manyToMany', 'm:assoc(M<N) m:assoc-by(localId|local_remote|remoteId)');
@@ -232,7 +232,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
         $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
         Assert::type("UniMapper\Association\OneToOne", $association);
         Assert::same("simplePrimaryId", $association->getTargetPrimaryKey());
-        Assert::same("targetId", $association->getForeignKey());
+        Assert::same("targetId", $association->getReferencingKey());
         Assert::same("targetId", $association->getKey());
     }
 
@@ -251,7 +251,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
         $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
         Assert::type("UniMapper\Association\ManyToOne", $association);
         Assert::same("simplePrimaryId", $association->getTargetPrimaryKey());
-        Assert::same("targetId", $association->getReferenceKey());
+        Assert::same("targetId", $association->getReferencingKey());
         Assert::same("targetId", $association->getKey());
     }
 

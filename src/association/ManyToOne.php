@@ -38,10 +38,10 @@ class ManyToOne extends \UniMapper\Association
 
     public function getKey()
     {
-        return $this->getReferenceKey();
+        return $this->getReferencingKey();
     }
 
-    public function getReferenceKey()
+    public function getReferencingKey()
     {
         return $this->arguments[0];
     }
@@ -96,7 +96,7 @@ class ManyToOne extends \UniMapper\Association
                 $this->getSourceResource(),
                 $this->getPrimaryKey(),
                 $primaryValue,
-                [$this->getReferenceKey() => $entity->{$primaryName}]
+                [$this->getReferencingKey() => $entity->{$primaryName}]
             );
             $sourceAdapter->execute($adapterQuery);
             break;

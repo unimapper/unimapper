@@ -6,7 +6,7 @@ use UniMapper\Connection;
 use UniMapper\Exception;
 use UniMapper\Reflection;
 
-class OneToOne extends OneToMany
+class OneToOne extends \UniMapper\Association
 {
 
     public function __construct(
@@ -22,6 +22,12 @@ class OneToOne extends OneToMany
             $arguments
         );
 
+        if (!isset($arguments[0])) {
+            throw new Exception\DefinitionException(
+                "You must define referencing key!"
+            );
+        }
+
         if (!$targetReflection->hasPrimary()) {
             throw new Exception\DefinitionException(
                 "Target entity must have defined primary when 1:1 relation used!"
@@ -29,9 +35,14 @@ class OneToOne extends OneToMany
         }
     }
 
+    public function getReferencingKey()
+    {
+        return $this->arguments[0];
+    }
+
     public function getKey()
     {
-        return $this->getForeignKey();
+        return $this->getReferencingKey();
     }
 
     public function getTargetPrimaryKey()

@@ -24,12 +24,12 @@ class OneToMany extends \UniMapper\Association
 
         if (!isset($arguments[0])) {
             throw new Exception\DefinitionException(
-                "You must define a foreign key!"
+                "You must define referenced key!"
             );
         }
     }
 
-    public function getForeignKey()
+    public function getReferencedKey()
     {
         return $this->arguments[0];
     }
@@ -42,7 +42,7 @@ class OneToMany extends \UniMapper\Association
         $query->setConditions(
             [
                 [
-                    $this->getForeignKey(),
+                    $this->getReferencedKey(),
                     "IN",
                     array_keys($primaryValues),
                     "AND"
