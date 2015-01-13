@@ -27,15 +27,15 @@ class Mapper
      *
      * @return mixed
      *
-     * @throws Exception\MappingException
+     * @throws Exception\InvalidArgumentException
      */
     public function mapValue(Reflection\Property $property, $value)
     {
         // Call adapter's mapping if needed
         if (!$property->getEntityReflection()->hasAdapter()) {
-            throw new Exception\MappingException(
+            throw new Exception\InvalidArgumentException(
                 "Entity " . $property->getEntityReflection()->getClassName()
-                . " should have adapter defined if you want to use mapping!"
+                . " has no adapter defined!"
             );
         }
         if (isset($this->adapterMappings[$property->getEntityReflection()->getAdapterName()])) {
@@ -93,19 +93,19 @@ class Mapper
                 try {
                     return new \DateTime($date);
                 } catch (\Exception $e) {
-                    throw new Exception\MappingException(
+                    throw new Exception\InvalidArgumentException(
                         "Can not map value to DateTime automatically! "
-                        . $e->getMessage()
+                        . $e->getMessage(),
+                        $value
                     );
                 }
             }
         }
 
         // Unexpected value type
-        throw new Exception\MappingException(
-            "Unexpected value type given. Can not convert value to entity "
-            . "@property $" . $property->getName() . ". Expected "
-            . $property->getType() . " but " . gettype($value) . " given!"
+        throw new Exception\InvalidArgumentException(
+            "Value can not be mapped automatically!",
+            $value
         );
     }
 
@@ -113,7 +113,8 @@ class Mapper
     {
         if (!Validator::isTraversable($data)) {
             throw new Exception\InvalidArgumentException(
-                "Input data must be traversable!"
+                "Input data must be traversable!",
+                $data
             );
         }
 
@@ -127,7 +128,10 @@ class Mapper
     public function mapEntity($name, $data)
     {
         if (!Validator::isTraversable($data)) {
-            throw new Exception\MappingException("Input data must be traversable!");
+            throw new Exception\InvalidArgumentException(
+                "Input data must be traversable!",
+                $data
+            );
         }
 
         $entityReflection = Reflection\Loader::load($name);
@@ -204,9 +208,9 @@ class Mapper
 
         // Call adapter's mapping if needed
         if (!$property->getEntityReflection()->hasAdapter()) {
-            throw new Exception\MappingException(
+            throw new Exception\InvalidArgumentException(
                 "Entity " . $property->getEntityReflection()->getClassName()
-                . " should have adapter defined if you want to use mapping!"
+                . " has no adapter defined!"
             );
         }
 

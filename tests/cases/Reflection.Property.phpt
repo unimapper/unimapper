@@ -56,7 +56,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyValueException Value 3 is not from defined entity enumeration range on property enum!
+     * @throws UniMapper\Exception\InvalidArgumentException Value 3 is not from defined entity enumeration range on property enum!
      */
     public function testValidateValueTypeInvalidEnum()
     {
@@ -125,7 +125,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws Exception Can not convert value on property 'collection' automatically!
+     * @throws UniMapper\Exception\InvalidArgumentException Can not convert value on property 'collection' automatically!
      */
     public function testConvertValueFailed()
     {
@@ -145,7 +145,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyValueException Expected string but integer given on property test!
+     * @throws UniMapper\Exception\InvalidArgumentException Expected string but integer given on property test!
      */
     public function testValidateValueTypeInvalidString()
     {
@@ -153,7 +153,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyValueException Expected DateTime but string given on property time!
+     * @throws UniMapper\Exception\InvalidArgumentException Expected DateTime but string given on property time!
      */
     public function testValidateValueTypeInvalidDateTime()
     {
@@ -161,7 +161,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyValueException Expected integer but string given on property id!
+     * @throws UniMapper\Exception\InvalidArgumentException Expected integer but string given on property id!
      */
     public function testValidateValueTypeInvalidInteger()
     {

@@ -23,7 +23,7 @@ class OneToMany extends \UniMapper\Association
         );
 
         if (!isset($arguments[0])) {
-            throw new Exception\DefinitionException(
+            throw new Exception\AssociationException(
                 "You must define referenced key!"
             );
         }

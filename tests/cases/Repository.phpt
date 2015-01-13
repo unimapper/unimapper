@@ -207,7 +207,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\InvalidArgumentException Values must be specified!
+     * @throws UniMapper\Exception\InvalidArgumentException Values can not be empty!
      */
     public function testFindPrimaryNoValues()
     {

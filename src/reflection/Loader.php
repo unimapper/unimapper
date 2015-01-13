@@ -33,13 +33,20 @@ class Loader
      * Load entity reflection
      *
      * @param mixed $entity Entity object, class or name
+     *
+     * @throws Exception\InvalidArgumentException
      */
     public static function load($entity)
     {
         if (is_object($entity)) {
             $class = get_class($entity);
+        } elseif (is_string($entity)) {
+            $class = $entity;
         } else {
-            $class = (string) $entity;
+            throw new Exception\InvalidArgumentException(
+                "Entity identifier must be object, class or name!",
+                $entity
+            );
         }
 
         if (!is_subclass_of($class, "UniMapper\Entity")) {

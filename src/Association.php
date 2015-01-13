@@ -34,7 +34,7 @@ abstract class Association
         $this->arguments = $arguments;
 
         if (!$this->sourceReflection->hasAdapter()) {
-            throw new Exception\DefinitionException(
+            throw new Exception\AssociationException(
                 "Can not use associations while source entity "
                 . $sourceReflection->getName()
                 . " has no adapter defined!"
@@ -42,7 +42,7 @@ abstract class Association
         }
 
         if (!$this->targetReflection->hasAdapter()) {
-            throw new Exception\DefinitionException(
+            throw new Exception\AssociationException(
                 "Can not use associations while target entity "
                 . $targetReflection->getName() . " has no adapter defined!"
             );
@@ -106,7 +106,7 @@ abstract class Association
      *
      * @link http://tigrou.nl/2012/11/26/group-a-php-array-to-a-tree-structure/
      *
-     * @throws Exception\UnexpectedException
+     * @throws \Exception
      */
     protected function groupResult(array $original, array $keys, $level = 0)
     {
@@ -121,7 +121,7 @@ abstract class Association
 
             $subArray = (array) $subArray;
             if (!isset($subArray[$key])) {
-                throw new Exception\UnexpectedException(
+                throw new \Exception(
                     "Index '" . $key . "' not found on level '" . $level . "'!"
                 );
             }
