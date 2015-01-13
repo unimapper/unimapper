@@ -10,8 +10,8 @@ abstract class Conditionable extends \UniMapper\Query
 
     /** @var array */
     protected $operators = [
-        "=", "<", ">", "<>", ">=", "<=", "IS", "IS NOT", "!=", "LIKE",
-        "COMPARE", "IN", "NOT IN"
+        "=", "<", ">", "<>", ">=", "<=", "IS", "IS NOT", "!=", "LIKE", "IN",
+        "NOT IN"
     ];
 
     /** @var array */
