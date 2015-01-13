@@ -42,7 +42,7 @@ abstract class Repository
         $primaryValue = $entity->{$primaryName};
 
         if ($primaryValue === null) {
-            $entity->{$primaryName} = $this->insert($entity);
+            $entity->{$primaryName} = $this->create($entity);
         } else {
             $this->update($entity, $primaryValue);
         }
@@ -57,7 +57,7 @@ abstract class Repository
      *
      * @throws Exception\ValidatorException
      */
-    public function insert(Entity $entity)
+    public function create(Entity $entity)
     {
         if (!$entity->getValidator()->validate()) {
             throw new Exception\ValidatorException($entity->getValidator());
@@ -132,7 +132,7 @@ abstract class Repository
      *
      * @return boolean
      */
-    public function delete(Entity $entity)
+    public function destroy(Entity $entity)
     {
         $requiredClass = UNC::nameToClass($this->getEntityName(), UNC::ENTITY_MASK);
         if (!$entity instanceof $requiredClass) {
@@ -241,26 +241,6 @@ abstract class Repository
     protected function getAdapter($name)
     {
         return $this->connection->getAdapters()[$name];
-    }
-
-    protected function mapToEntity($name, $values)
-    {
-        return $this->connection->getMapper()->mapEntity($name, $values);
-    }
-
-    protected function mapToCollection($name, $values)
-    {
-        return $this->connection->getMapper()->mapCollection($name, $values);
-    }
-
-    protected function unmapFromEntity(Entity $entity)
-    {
-        return $this->connection->getMapper()->unmapEntity($entity);
-    }
-
-    protected function unmapFromCollection(EntityCollection $collection)
-    {
-        return $this->connection->getMapper()->unmapCollection($collection);
     }
 
     /**

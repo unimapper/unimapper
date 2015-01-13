@@ -143,7 +143,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
     public function testDeleteNoPrimaryValue()
     {
         $entity = $this->createEntity("Simple");
-        $this->repository->delete($entity);
+        $this->repository->destroy($entity);
     }
 
     public function testDelete()
@@ -161,7 +161,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->andReturn(true);
 
         $entity = $this->createEntity("Simple", ["id" => 1]);
-        $this->repository->delete($entity);
+        $this->repository->destroy($entity);
     }
 
     public function testDeleteFailed()
@@ -179,7 +179,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->andReturn(false);
 
         $entity = $this->createEntity("Simple", ["id" => 1]);
-        Assert::false($this->repository->delete($entity));
+        Assert::false($this->repository->destroy($entity));
     }
 
     public function testFindPrimary()
