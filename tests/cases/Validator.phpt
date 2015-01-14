@@ -159,7 +159,7 @@ class ValidatorTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws Exception Condition must be called only on properties!
+     * @throws UniMapper\Exception\InvalidArgumentException Condition can be called only on properties!
      */
     public function testConditionMustBeOnProperty()
     {
@@ -168,7 +168,7 @@ class ValidatorTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws Exception Unknown property 'undefined'!
+     * @throws UniMapper\Exception\InvalidArgumentException Unknown property 'undefined'!
      */
     public function testOnUndefined()
     {
@@ -177,7 +177,7 @@ class ValidatorTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws Exception Validation can not be set on computed property!
+     * @throws UniMapper\Exception\InvalidArgumentException Validation can not be used on computed property!
      */
     public function testOnComputed()
     {

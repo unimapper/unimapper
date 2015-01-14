@@ -29,12 +29,16 @@ class NamingConvention
     public static function classToName($class, $type)
     {
         if (!class_exists($class)) {
-            throw new InvalidArgumentException("Class '" . $class . "' not found!");
+            throw new InvalidArgumentException(
+                "Class '" . $class . "' not found!"
+            );
         }
         $class = self::_trimNamespace($class);
 
         if (!isset(self::$masks[$type])) {
-            throw new InvalidArgumentException("Invalid mask type " . $type . "!");
+            throw new InvalidArgumentException(
+                "Invalid mask type " . $type . "!"
+            );
         }
 
         $mask = self::_trimNamespace(self::$masks[$type]);
@@ -60,7 +64,9 @@ class NamingConvention
     public static function nameToClass($name, $type)
     {
         if (!isset(self::$masks[$type])) {
-            throw new InvalidArgumentException("Invalid mask type " . $type . "!");
+            throw new InvalidArgumentException(
+                "Invalid mask type " . $type . "!"
+            );
         }
         return str_replace("*", $name, self::$masks[$type]);
     }
@@ -84,7 +90,9 @@ class NamingConvention
     public static function getMask($type)
     {
         if (!isset(self::$masks[$type])) {
-            throw new InvalidArgumentException("Invalid mask type " . $type . "!");
+            throw new InvalidArgumentException(
+                "Invalid mask type " . $type . "!"
+            );
         }
         return self::$masks[$type];
     }
@@ -92,10 +100,14 @@ class NamingConvention
     public static function setMask($mask, $type)
     {
         if (!isset(self::$masks[$type])) {
-            throw new InvalidArgumentException("Invalid mask type " . $type . "!");
+            throw new InvalidArgumentException(
+                "Invalid mask type " . $type . "!"
+            );
         }
         if (!self::_isValidMask($mask)) {
-            throw new InvalidArgumentException("Invalid mask '" . $mask . "'!");
+            throw new InvalidArgumentException(
+                "Invalid mask '" . $mask . "'!"
+            );
         }
         self::$masks[$type] = $mask;
     }

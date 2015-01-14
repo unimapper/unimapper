@@ -66,7 +66,7 @@ class Validator
     {
         if (!$this->property) {
             throw new Exception\InvalidArgumentException(
-                "Condition must be called only on properties!"
+                "Condition can be called only on properties!"
             );
         }
         $condition = new Validator\Condition(
@@ -133,7 +133,7 @@ class Validator
 
         if ($this->property->hasOption(Reflection\Property::OPTION_COMPUTED)) {
             throw new Exception\InvalidArgumentException(
-                "Validation can not be set on computed property!"
+                "Validation can not be used on computed property!"
             );
         }
         if ($child

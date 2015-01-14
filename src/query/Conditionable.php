@@ -66,7 +66,7 @@ abstract class Conditionable extends \UniMapper\Query
 
                 $property->validateValueType($value);
             }
-        } catch (Exception\PropertyValueException $e) {
+        } catch (Exception\InvalidArgumentException $e) {
             throw new Exception\QueryException($e->getMessage());
         }
 

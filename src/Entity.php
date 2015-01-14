@@ -39,45 +39,86 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         $this->reflection = Reflection\Loader::load(get_called_class());
 
         if ($values) {
-            $this->_setValues($values, true);
+            $this->_setProperties($values, true, true, true, true);
         }
 
         $this->_resetIterator();
     }
 
-    private function _setValues($values, $readonlyToo = false)
-    {
+    private function _setProperties(
+        $values,
+        $autoConvert = true,
+        $skipUndefined = false,
+        $setReadonly = false,
+        $skipUnwritable = false
+    ) {
         if (!Validator::isTraversable($values)) {
             throw new Exception\InvalidArgumentException(
-                "Values must be traversable data!"
+                "Values must be traversable data!",
+                $values
             );
         }
 
         foreach ($values as $name => $value) {
 
-            try {
+            // Public
+            if (in_array($name, $this->reflection->getPublicProperties())) {
                 $this->{$name} = $value;
-            } catch (Exception\PropertyException $e) {
+                continue;
+            }
 
-                if ($e instanceof Exception\PropertyValueException
-                    && $e->getCode() === Exception\PropertyValueException::TYPE
-                ) {
-                    // Try to convert automatically
+            // Undefined
+            if (!$this->reflection->hasProperty($name)) {
 
-                    $this->{$name} = $this->reflection->getProperties()[$name]
-                        ->convertValue($value);
+                if ($skipUndefined) {
+                    continue;
+                }
 
-                } elseif ($e instanceof Exception\PropertyAccessException
-                    && $e->getCode() === Exception\PropertyAccessException::READONLY
-                    && $readonlyToo
-                ) {
-                    // Set and convert readonly property automatically
+                throw new Exception\InvalidArgumentException(
+                    "Undefined property '" . $name . "'!"
+                );
+            }
 
-                    $this->data[$name] = $this->reflection->getProperties()[$name]
-                        ->convertValue($value);
+            $property = $this->reflection->getProperty($name);
+
+            // Computed
+            if ($property->hasOption(Reflection\Property::OPTION_COMPUTED)) {
+
+                if ($skipUnwritable) {
+                    continue;
+                }
+
+                throw new Exception\InvalidArgumentException(
+                    "Computed property is read-only!"
+                );
+            }
+
+            // Readonly
+            if (!$property->isWritable() && !$setReadonly) {
+
+                if ($skipUnwritable) {
+                    continue;
+                }
+
+                throw new Exception\InvalidArgumentException(
+                    "Property '" . $name . "' is read-only!"
+                );
+            }
+
+            // Validate type
+            try {
+                $property->validateValueType($value);
+            } catch (Exception\InvalidArgumentException $e) {
+
+                if ($autoConvert) {
+                    $value = $property->convertValue($value);
+                } else {
+                    throw $e;
                 }
             }
 
+            // Set value
+            $this->data[$name] = $value;
         }
     }
 
@@ -107,8 +148,8 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 
         $primaryName = $this->reflection->getPrimaryProperty()->getName();
         if (empty($this->{$primaryName})) {
-            throw new Exception\InvalidArgumentExceptio(
-                "Primary value is required!"
+            throw new Exception\InvalidArgumentException(
+                "Primary value can not be empty!"
             );
         }
     }
@@ -165,7 +206,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     public function import($values)
     {
-        $this->_setValues($values);
+        $this->_setProperties($values, true, true, false, true);
     }
 
     /**
@@ -176,16 +217,13 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      *
      * @return Entity|EntityCollection
      *
-     * @throws Exception\PropertyAccessException
+     * @throws Exception\InvalidArgumentException
      */
     public function __call($name, $arguments)
     {
         if (!$this->reflection->hasProperty($name)) {
-            throw new Exception\PropertyAccessException(
-                "Undefined property '" . $name . "'!",
-                $this->reflection,
-                null,
-                Exception\PropertyAccessException::UNDEFINED
+            throw new Exception\InvalidArgumentException(
+                "Undefined property '" . $name . "'!"
             );
         }
 
@@ -194,9 +232,8 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         if ($propertyReflection->getType() !== Reflection\Property::TYPE_ENTITY
             && $propertyReflection->getType() !== Reflection\Property::TYPE_COLLECTION
         ) {
-            throw new Exception\PropertyAccessException(
-                "Only properties with type entity or collection can call changes!",
-                $this->reflection
+            throw new Exception\InvalidArgumentException(
+                "Only properties with type entity or collection can call changes!"
             );
         }
 
@@ -209,13 +246,19 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
                 if (!$arguments[0] instanceof EntityCollection
                     && $propertyReflection->getType() === Reflection\Property::TYPE_COLLECTION
                 ) {
-                    throw new Exception\InvalidArgumentException("You must pass instance of entity collection!");
+                    throw new Exception\InvalidArgumentException(
+                        "You must pass instance of entity collection!",
+                        $arguments[0]
+                    );
                 }
 
                 if (!$arguments[0] instanceof Entity
                     && $propertyReflection->getType() === Reflection\Property::TYPE_ENTITY
                 ) {
-                    throw new Exception\InvalidArgumentException("You must pass instance of entity!");
+                    throw new Exception\InvalidArgumentException(
+                        "You must pass instance of entity!",
+                        $arguments[0]
+                    );
                 }
 
                 $this->changes[$name] = $arguments[0];
@@ -241,7 +284,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      *
      * @return mixed
      *
-     * @throws Exception\PropertyAccessException
+     * @throws Exception\InvalidArgumentException
      */
     public function __get($name)
     {
@@ -249,30 +292,28 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             return $this->data[$name];
         }
 
-        $properties = $this->reflection->getProperties();
-        if (!isset($properties[$name])) {
-            throw new Exception\PropertyAccessException(
-                "Undefined property '" . $name . "'!",
-                $this->reflection,
-                null,
-                Exception\PropertyAccessException::UNDEFINED
+        if (!$this->reflection->hasProperty($name)) {
+            throw new Exception\InvalidArgumentException(
+                "Undefined property '" . $name . "'!"
             );
         }
 
-        // computed property
-        if ($properties[$name]->hasOption(Reflection\Property::OPTION_COMPUTED)) {
+        $property = $this->reflection->getProperty($name);
 
-            $computedValue = $this->{$properties[$name]->getOption(Reflection\Property::OPTION_COMPUTED)}();
+        // computed property
+        if ($property->hasOption(Reflection\Property::OPTION_COMPUTED)) {
+
+            $computedValue = $this->{$property->getOption(Reflection\Property::OPTION_COMPUTED)}();
             if ($computedValue === null) {
                 return null;
             }
-            $properties[$name]->validateValueType($computedValue);
+            $property->validateValueType($computedValue);
             return $computedValue;
         }
 
         // empty collection
-        if ($properties[$name]->getType() === Reflection\Property::TYPE_COLLECTION) {
-            return $this->data[$name] = new EntityCollection($properties[$name]->getTypeOption());
+        if ($property->getType() === Reflection\Property::TYPE_COLLECTION) {
+            return $this->data[$name] = new EntityCollection($property->getTypeOption());
         }
 
         return null;
@@ -283,45 +324,10 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      *
      * @param string $name
      * @param mixed  $value
-     *
-     * @throws Exception\PropertyAccessException
      */
     public function __set($name, $value)
     {
-        $properties = $this->reflection->getProperties();
-        if (!isset($properties[$name])) {
-            throw new Exception\PropertyAccessException(
-                "Undefined property '" . $name . "'!",
-                $this->reflection,
-                null,
-                Exception\PropertyAccessException::UNDEFINED
-            );
-        }
-
-        if (!$properties[$name]->isWritable()) {
-            throw new Exception\PropertyAccessException(
-                "Property '" . $name . "' is read-only!",
-                $this->reflection,
-                null,
-                Exception\PropertyAccessException::READONLY
-            );
-        }
-
-        if ($properties[$name]->hasOption(Reflection\Property::OPTION_COMPUTED)) {
-            throw new Exception\PropertyAccessException(
-                "Computed property is read-only!",
-                $this->reflection,
-                null,
-                Exception\PropertyAccessException::READONLY
-            );
-        }
-
-        if ($value !== null) {
-            $properties[$name]->validateValueType($value);
-        }
-
-        // Set value
-        $this->data[$name] = $value;
+        $this->_setProperties([$name => $value], false);
     }
 
     public function __isset($name)

@@ -45,7 +45,8 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
                 }
             } else {
                 throw new Exception\InvalidArgumentException(
-                    "Values must be traversable data!"
+                    "Values must be traversable data!",
+                    $values
                 );
             }
         }
@@ -56,7 +57,8 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
         $entityClass = $this->entityReflection->getClassName();
         if (!$entity instanceof $entityClass) {
             throw new Exception\InvalidArgumentException(
-                "Expected instance of entity " . $entityClass . "!"
+                "Expected instance of entity " . $entityClass . "!",
+                $entity
             );
         }
 
@@ -64,8 +66,8 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
 
             $primaryName = $entity->getReflection()->getPrimaryProperty()->getName();
             if (empty($entity->{$primaryName})) {
-                throw new Exception\InvalidArgumentExceptio(
-                    "Primary value is required!"
+                throw new Exception\InvalidArgumentException(
+                    "Primary value can not be empty!"
                 );
             }
         }
@@ -157,10 +159,6 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
      *
      * @param integer           $offset Index
      * @param \UniMapper\Entity $value  Value
-     *
-     * @return void
-     *
-     * @throws Exception\InvalidArgumentException
      */
     public function offsetSet($offset, $value)
     {
@@ -204,8 +202,6 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
      * Removes the element at the specified position in this data.
      *
      * @param integer $offset Offset
-     *
-     * @return void
      */
     public function offsetUnset($offset)
     {

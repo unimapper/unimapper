@@ -23,13 +23,13 @@ class OneToOne extends \UniMapper\Association
         );
 
         if (!isset($arguments[0])) {
-            throw new Exception\DefinitionException(
+            throw new Exception\AssociationException(
                 "You must define referencing key!"
             );
         }
 
         if (!$targetReflection->hasPrimary()) {
-            throw new Exception\DefinitionException(
+            throw new Exception\AssociationException(
                 "Target entity must have defined primary when 1:1 relation used!"
             );
         }

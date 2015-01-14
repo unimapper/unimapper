@@ -42,7 +42,8 @@ class Entity
         if (!is_subclass_of($this->className, "UniMapper\Entity")) {
             throw new Exception\InvalidArgumentException(
                 "Class must be subclass of UniMapper\Entity but "
-                . $this->className . " given!"
+                . $this->className . " given!",
+                $this->className
             );
         }
 
@@ -252,14 +253,14 @@ class Entity
     /**
      * Get primary property reflection
      *
-     * @return \UniMapper\Reflection\Property
+     * @return Property
      *
-     * @throws Exception\UnexpectedException
+     * @throws \Exception
      */
     public function getPrimaryProperty()
     {
         if (!$this->hasPrimary()) {
-            throw new Exception\UnexpectedException(
+            throw new \Exception(
                 "Primary property not defined in " . $this->className . "!"
             );
         }

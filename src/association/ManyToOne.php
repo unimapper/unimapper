@@ -24,13 +24,13 @@ class ManyToOne extends \UniMapper\Association
         );
 
         if (!$targetReflection->hasPrimary()) {
-            throw new Exception\DefinitionException(
+            throw new Exception\AssociationException(
                 "Target entity must have defined primary when N:1 relation used!"
             );
         }
 
         if (!isset($arguments[0])) {
-            throw new Exception\DefinitionException(
+            throw new Exception\AssociationException(
                 "You must define a reference key!"
             );
         }
@@ -82,7 +82,9 @@ class ManyToOne extends \UniMapper\Association
     public function saveChanges($primaryValue, Connection $connection, Entity $entity)
     {
         if (!$entity->getReflection()->hasPrimary()) {
-            throw new Exception\InvalidArgumentException("Only entity with primary can save changes!");
+            throw new Exception\InvalidArgumentException(
+                "Only entity with primary can save changes!"
+            );
         }
 
         $sourceAdapter = $connection->getAdapter($this->sourceReflection->getAdapterName());

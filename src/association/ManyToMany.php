@@ -28,25 +28,25 @@ class ManyToMany extends \UniMapper\Association
         );
 
         if (!$targetReflection->hasPrimary()) {
-            throw new Exception\DefinitionException(
+            throw new Exception\AssociationException(
                 "Target entity must have defined primary when M:N relation used!"
             );
         }
 
         if (!isset($arguments[0])) {
-            throw new Exception\DefinitionException(
+            throw new Exception\AssociationException(
                 "You must define join key!"
             );
         }
 
         if (!isset($arguments[1])) {
-            throw new Exception\DefinitionException(
+            throw new Exception\AssociationException(
                 "You must define join resource!"
             );
         }
 
         if (!isset($arguments[2])) {
-            throw new Exception\DefinitionException(
+            throw new Exception\AssociationException(
                 "You must define referencing key!!"
             );
         }
@@ -140,11 +140,11 @@ class ManyToMany extends \UniMapper\Association
 
             foreach ($join as $originKey => $data) {
                 if (!isset($targetResult[$targetKey])) {
-                    throw new Exception\UnexpectedException(
+                    throw new \Exception(
                         "Can not merge associated result key '" . $targetKey
                         . "' not found in result from '"
                         . $this->getTargetResource()
-                        . "'! Maybe wrong value in join table/resource."
+                        . "'! Maybe wrong value in join resource."
                     );
                 }
                 $result[$originKey][] = $targetResult[$targetKey];

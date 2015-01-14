@@ -26,6 +26,33 @@ class EntityTest extends UniMapper\Tests\TestCase
         );
     }
 
+    public function testConstruct()
+    {
+        $entity = $this->createEntity(
+            "Simple",
+            [
+                "year" => "foo", // Skip comuted
+                "readonly" => "foo", // Set readonly
+                "undefined" => "foo", // Skip undefined,
+                "id" => "1", // Convert type automatically,
+                "publicProperty" => "foo" // Set public property
+            ]
+        );
+
+        Assert::null($entity->year);
+        Assert::same("foo", $entity->readonly);
+        Assert::same(1, $entity->id);
+        Assert::same("foo", $entity->publicProperty);
+    }
+
+    /**
+     * @throws UniMapper\Exception\InvalidArgumentException Only scalar variables can be converted to basic type!
+     */
+    public function testConstructNotAbleToConvertType()
+    {
+        $this->createEntity("Simple", ["id" => new DateTime]);
+    }
+
     public function testGetProperty()
     {
         Assert::same("test", $this->entity->text);
@@ -37,7 +64,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyAccessException Undefined property 'undefined'!
+     * @throws UniMapper\Exception\InvalidArgumentException Undefined property 'undefined'!
      */
     public function testGetUndefinedProperty()
     {
@@ -54,7 +81,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws Exception Property 'readonly' is read-only!
+     * @throws UniMapper\Exception\InvalidArgumentException Property 'readonly' is read-only!
      */
     public function testSetReadnonlyProperty()
     {
@@ -168,7 +195,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyValueException Expected integer but string given on property id!
+     * @throws UniMapper\Exception\InvalidArgumentException Expected integer but string given on property id!
      */
     public function testSetPropertyWithInvalidType()
     {
@@ -206,7 +233,10 @@ class EntityTest extends UniMapper\Tests\TestCase
                 "publicProperty" => "foo",
                 "empty" => null,
                 "entity" => $entityObject,
-                "collection" => [$entityObject]
+                "collection" => [$entityObject],
+                "readonly" => "foo",
+                "undefined" => "foo",
+                "year" => 2000
             ]
         );
         Assert::same(2, $this->entity->id);
@@ -220,6 +250,8 @@ class EntityTest extends UniMapper\Tests\TestCase
         Assert::same("foo", $this->entity->collection[0]->publicProperty);
         Assert::same("foo", $this->entity->collection[0]->text);
         Assert::same(1, count($this->entity->collection));
+        Assert::same(1999, $this->entity->year);
+        Assert::null($this->entity->readonly);
 
         $this->entity->import(["time" => ["date" => "1999-02-12"]]);
         Assert::same("1999-02-12", $this->entity->time->format("Y-m-d"));
@@ -228,38 +260,25 @@ class EntityTest extends UniMapper\Tests\TestCase
     /**
      * @throws UniMapper\Exception\InvalidArgumentException Values must be traversable data!
      */
-    public function testImportInvalidArgument()
+    public function testImportInvalidArgumentNotTraversable()
     {
         $this->entity->import(null);
     }
 
     /**
-     * @throws Exception Can not convert value on property 'collection' automatically!
+     * @throws UniMapper\Exception\InvalidArgumentException Can not convert value on property 'collection' automatically!
      */
-    public function testImportInvalidCollection()
+    public function testImportInvalidArgumentCollection()
     {
         $this->entity->import(["collection" => "foo"]);
     }
 
     /**
-     * @throws Exception Can not convert value on property 'time' automatically!
+     * @throws UniMapper\Exception\InvalidArgumentException Can not convert value on property 'time' automatically!
      */
-    public function testImportInvalidDateTime()
+    public function testImportInvalidArgumentDateTime()
     {
         $this->entity->import(["time" => []]);
-    }
-
-    public function testImportSkippedAutomatically()
-    {
-        $this->entity->import(
-            [
-                "readonly" => "foo",
-                "undefined" => "foo",
-                "year" => 1999
-            ]
-        );
-        Assert::null($this->entity->readonly);
-        Assert::null($this->entity->year);
     }
 
     public function testGetComputedProperty()
@@ -270,7 +289,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyException Computed property is read-only!
+     * @throws UniMapper\Exception\InvalidArgumentException Computed property is read-only!
      */
     public function testSetComputedProperty()
     {
@@ -324,7 +343,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyAccessException Undefined property 'undefined'!
+     * @throws UniMapper\Exception\InvalidArgumentException Undefined property 'undefined'!
      */
     public function testCallUndefinedProperty()
     {
@@ -332,7 +351,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyAccessException Only properties with type entity or collection can call changes!
+     * @throws UniMapper\Exception\InvalidArgumentException Only properties with type entity or collection can call changes!
      */
     public function testCallInvalidPropertyType()
     {

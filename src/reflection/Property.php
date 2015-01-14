@@ -271,7 +271,7 @@ class Property
                     explode("|", $this->getOption(self::OPTION_ASSOC_BY)),
                     $this->getOption(self::OPTION_ASSOC) === "M<N" ? false : true
                 );
-            } catch (Exception\DefinitionException $e) {
+            } catch (Exception\AssociationException $e) {
                 throw new Exception\PropertyException($e->getMessage());
             }
         }
@@ -307,21 +307,23 @@ class Property
      *
      * @param mixed $value Given value
      *
-     * @throws Exception\PropertyValueException
-     * @throws Exception\UnexpectedException
+     * @throws Exception\InvalidArgumentException
+     * @throws \Exception
      */
     public function validateValueType($value)
     {
+        if ($value === null) {
+            return;
+        }
+
         $expectedType = $this->typeOption;
 
         // Enumeration
         if ($this->hasOption(self::OPTION_ENUM) && !$this->getOption(self::OPTION_ENUM)->isValid($value)) {
-            throw new Exception\PropertyValueException(
+            throw new Exception\InvalidArgumentException(
                 "Value " . $value . " is not from defined entity enumeration "
                 . "range on property " . $this->name . "!",
-                $this->entityReflection->getClassName(),
-                null,
-                Exception\PropertyValueException::ENUMERATION
+                $value
             );
         }
 
@@ -331,12 +333,10 @@ class Property
             if (gettype($value) === $expectedType) {
                 return;
             }
-            throw new Exception\PropertyValueException(
+            throw new Exception\InvalidArgumentException(
                 "Expected " . $expectedType . " but " . gettype($value)
                 . " given on property " . $this->name . "!",
-                $this->entityReflection->getClassName(),
-                null,
-                Exception\PropertyValueException::TYPE
+                $value
             );
         }
 
@@ -353,12 +353,10 @@ class Property
             if ($value instanceof $expectedType) {
                 return;
             } else {
-                throw new Exception\PropertyValueException(
+                throw new Exception\InvalidArgumentException(
                     "Expected entity " . $expectedType . " but " . $givenType
                     . " given on property " . $this->name . "!",
-                    $this->entityReflection->getClassName(),
-                    null,
-                    Exception\PropertyValueException::TYPE
+                    $value
                 );
             }
 
@@ -368,23 +366,19 @@ class Property
             $expectedType = UNC::nameToClass($expectedType, UNC::ENTITY_MASK);
             if (!$value instanceof EntityCollection) {
 
-                throw new Exception\PropertyValueException(
+                throw new Exception\InvalidArgumentException(
                     "Expected entity collection but " . $givenType . " given on"
                     . " property " . $this->name . "!",
-                    $this->entityReflection->getClassName(),
-                    null,
-                    Exception\PropertyValueException::TYPE
+                    $value
                 );
             } elseif ($value->getEntityReflection()->getClassName() !== $expectedType) {
-                throw new Exception\PropertyValueException(
+                throw new Exception\InvalidArgumentException(
                     "Expected collection of entity "
                     . $expectedType
                     . " but collection of entity "
                     . $value->getEntityReflection()->getClassName()
                     . " given on property " . $this->name . "!",
-                    $this->entityReflection->getClassName(),
-                    null,
-                    Exception\PropertyValueException::TYPE
+                    $value
                 );
             } else {
                 return;
@@ -396,20 +390,17 @@ class Property
             if ($value instanceof \DateTime) {
                 return;
             } else {
-                throw new Exception\PropertyValueException(
+                throw new Exception\InvalidArgumentException(
                     "Expected DateTime but " . $givenType . " given on"
                     . " property " . $this->name . "!",
-                    $this->entityReflection->getClassName(),
-                    null,
-                    Exception\PropertyValueException::TYPE
+                    $value
                 );
             }
-        }
+        } else {
+            // Unexpected
 
-        throw new Exception\UnexpectedException(
-            "Expected " . $this->type . " but " . $givenType . " given on "
-            . "property " . $this->name . ". It could be an internal ORM error!"
-        );
+            throw new \Exception("Unsupported type " . $this->type . "!");
+        }
     }
 
     /**
@@ -428,6 +419,13 @@ class Property
 
             if ($this->typeOption === "boolean" && strtolower($value) === "false") {
                 return false;
+            }
+
+            if (!is_scalar($value) && $this->typeOption !== "array") {
+                throw new Exception\InvalidArgumentException(
+                    "Only scalar variables can be converted to basic type!",
+                    $value
+                );
             }
 
             if (settype($value, $this->typeOption)) {
@@ -469,7 +467,8 @@ class Property
 
         throw new Exception\InvalidArgumentException(
             "Can not convert value on property '" . $this->name
-            . "' automatically!"
+            . "' automatically!",
+            $value
         );
     }
 

@@ -217,7 +217,7 @@ abstract class Repository
 
         if (empty($primaryValues)) {
             throw new Exception\InvalidArgumentException(
-                "Values must be specified!"
+                "Values can not be empty!"
             );
         }
 
