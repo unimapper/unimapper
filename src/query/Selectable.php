@@ -18,13 +18,13 @@ abstract class Selectable extends Conditionable
     {
         foreach (func_get_args() as $name) {
 
-            if (!isset($this->entityReflection->getProperties()[$name])) {
+            if (!$this->entityReflection->hasProperty($name)) {
                 throw new Exception\QueryException(
                     "Property '" . $name . "' not defined!"
                 );
             }
 
-            $property = $this->entityReflection->getProperties()[$name];
+            $property = $this->entityReflection->getProperty($name);
             if (!$property->hasOption(Reflection\Property::OPTION_ASSOC)) {
                 throw new Exception\QueryException(
                     "Property '" . $name . "' is not defined as association!"
