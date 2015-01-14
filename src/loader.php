@@ -33,6 +33,7 @@ require_once __DIR__ . '/exception/PropertyException.php';
 require_once __DIR__ . '/exception/QueryException.php';
 require_once __DIR__ . '/exception/RepositoryException.php';
 require_once __DIR__ . '/exception/ValidatorException.php';
+require_once __DIR__ . '/query/Conditionable.php';
 require_once __DIR__ . '/query/Count.php';
 require_once __DIR__ . '/query/Delete.php';
 require_once __DIR__ . '/query/DeleteOne.php';
