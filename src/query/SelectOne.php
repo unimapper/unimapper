@@ -5,8 +5,10 @@ namespace UniMapper\Query;
 use UniMapper\Exception,
     UniMapper\Reflection;
 
-class SelectOne extends Selectable
+class SelectOne extends \UniMapper\Query
 {
+
+    use Selectable;
 
     /** @var mixed */
     protected $primaryValue;

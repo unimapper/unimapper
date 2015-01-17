@@ -2,10 +2,10 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Exception,
-    UniMapper\Reflection;
+use UniMapper\Reflection;
+use UniMapper\Exception;
 
-abstract class Selectable extends Conditionable
+trait Selectable
 {
 
     /** @var array */

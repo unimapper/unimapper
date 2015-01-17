@@ -6,6 +6,7 @@ if (version_compare(phpversion(), '5.4.0', '<')) {
 
 require_once __DIR__ . '/Adapter.php';
 require_once __DIR__ . '/Association.php';
+require_once __DIR__ . '/Condition.php';
 require_once __DIR__ . '/Connection.php';
 require_once __DIR__ . '/Entity.php';
 require_once __DIR__ . '/EntityCollection.php';
@@ -26,6 +27,7 @@ require_once __DIR__ . '/cache/ICache.php';
 require_once __DIR__ . '/exception/AdapterException.php';
 require_once __DIR__ . '/exception/AnnotationException.php';
 require_once __DIR__ . '/exception/AssociationException.php';
+require_once __DIR__ . '/exception/ConditionException.php';
 require_once __DIR__ . '/exception/ConnectionException.php';
 require_once __DIR__ . '/exception/EntityException.php';
 require_once __DIR__ . '/exception/InvalidArgumentException';
@@ -37,10 +39,10 @@ require_once __DIR__ . '/query/Conditionable.php';
 require_once __DIR__ . '/query/Count.php';
 require_once __DIR__ . '/query/Delete.php';
 require_once __DIR__ . '/query/DeleteOne.php';
-require_once __DIR__ . '/query/Select.php';
-require_once __DIR__ . '/query/SelectOne.php';
 require_once __DIR__ . '/query/Insert.php';
+require_once __DIR__ . '/query/Select.php';
 require_once __DIR__ . '/query/Selectable.php';
+require_once __DIR__ . '/query/SelectOne.php';
 require_once __DIR__ . '/query/Update.php';
 require_once __DIR__ . '/query/UpdateOne.php';
 require_once __DIR__ . '/reflection/AnnotationParser.php';

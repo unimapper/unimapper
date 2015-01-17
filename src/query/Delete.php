@@ -4,12 +4,14 @@ namespace UniMapper\Query;
 
 use UniMapper\Exception;
 
-class Delete extends Conditionable
+class Delete extends \UniMapper\Query
 {
+
+    use Conditionable;
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
-        if (count($this->conditions) === 0) {
+        if (!$this->conditions) {
             throw new Exception\QueryException(
                 "At least one condition must be set!"
             );
@@ -20,9 +22,7 @@ class Delete extends Conditionable
         $query = $adapter->createDelete(
             $this->entityReflection->getAdapterResource()
         );
-        if ($this->conditions) {
-            $query->setConditions($this->unmapConditions($connection->getMapper(), $this->conditions));
-        }
+        $query->setConditions($this->unmapConditions($connection->getMapper(), $this->conditions));
 
         return (int) $adapter->execute($query);
     }
