@@ -427,6 +427,21 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
         Assert::same(4, $result[1]->id);
     }
 
+    public function testSelect()
+    {
+        Assert::same(["id"], $this->createQuery()->select("id")->selection);
+        Assert::same(["id", "text"], $this->createQuery()->select(["id", "text"])->selection);
+        Assert::same(["id", "text"], $this->createQuery()->select("id", "text")->selection);
+    }
+
+    /**
+     * @throws UniMapper\Exception\QueryException Property 'undefined' is not defined on entity UniMapper\Tests\Fixtures\Entity\Simple!
+     */
+    public function testSelectUndefinedProperty()
+    {
+        $this->createQuery()->select("undefined");
+    }
+
     private function createQuery($entity = "Simple")
     {
         return new Query\Select(

@@ -5,8 +5,10 @@ namespace UniMapper\Query;
 use UniMapper\Exception,
     UniMapper\Reflection;
 
-class Update extends Conditionable
+class Update extends \UniMapper\Query
 {
+
+    use Conditionable;
 
     /** @var \UniMapper\Entity */
     protected $entity;
@@ -29,7 +31,7 @@ class Update extends Conditionable
             throw new Exception\QueryException("Nothing to update!");
         }
 
-        if (empty($this->conditions)) {
+        if (!$this->conditions) {
             throw new Exception\QueryException("At least one condition must be set!");
         }
 

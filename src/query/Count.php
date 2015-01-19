@@ -2,8 +2,10 @@
 
 namespace UniMapper\Query;
 
-class Count extends Conditionable
+class Count extends \UniMapper\Query
 {
+
+    use Conditionable;
 
     protected function onExecute(\UniMapper\Connection $connection)
     {

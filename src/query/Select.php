@@ -8,8 +8,11 @@ use UniMapper\Exception,
     UniMapper\NamingConvention as UNC,
     UniMapper\Cache\ICache;
 
-class Select extends Selectable
+class Select extends \UniMapper\Query
 {
+
+    use Conditionable;
+    use Selectable;
 
     const ASC = "asc",
           DESC = "desc";
@@ -24,31 +27,39 @@ class Select extends Selectable
     public function __construct(Reflection\Entity $entityReflection)
     {
         parent::__construct($entityReflection);
-
-        $selection = array_slice(func_get_args(), 3);
-        array_walk($selection, [$this, "select"]);
+        $this->select(array_slice(func_get_args(), 3));
     }
 
-    public function select($name)
+    public function select($args)
     {
-        if (!$this->entityReflection->hasProperty($name)) {
-            throw new Exception\QueryException(
-                "Property " . $name . " is not defined on entity "
-                . $this->entityReflection->getClassName() . "!"
-            );
-        }
+        foreach (func_get_args() as $arg) {
 
-        $property = $this->entityReflection->getProperty($name);
-        if ($property->hasOption(Reflection\Property::OPTION_ASSOC)
-            || $property->hasOption(Reflection\Property::OPTION_COMPUTED)
-        ) {
-            throw new Exception\QueryException(
-                "Associations and computed properties can not be selected!"
-            );
-        }
+            if (!is_array($arg)) {
+                $arg = [$arg];
+            }
 
-        if (!array_search($name, $this->selection)) {
-            $this->selection[] = $name;
+            foreach ($arg as $name) {
+
+                if (!$this->entityReflection->hasProperty($name)) {
+                    throw new Exception\QueryException(
+                        "Property '" . $name . "' is not defined on entity "
+                        . $this->entityReflection->getClassName() . "!"
+                    );
+                }
+
+                $property = $this->entityReflection->getProperty($name);
+                if ($property->hasOption(Reflection\Property::OPTION_ASSOC)
+                    || $property->hasOption(Reflection\Property::OPTION_COMPUTED)
+                ) {
+                    throw new Exception\QueryException(
+                        "Associations and computed properties can not be selected!"
+                    );
+                }
+
+                if (!array_search($name, $this->selection)) {
+                    $this->selection[] = $name;
+                }
+            }
         }
 
         return $this;
@@ -195,26 +206,6 @@ class Select extends Selectable
         );
     }
 
-    protected function addCondition($name, $operator, $value, $joiner = 'AND')
-    {
-        parent::addCondition($name, $operator, $value, $joiner);
-
-        // Add properties from conditions
-        if ($this->selection && !in_array($name, $this->selection)) {
-            $this->selection[] = $name;
-        }
-    }
-
-    protected function addNestedConditions(\Closure $callback, $joiner = 'AND')
-    {
-        $query = parent::addNestedConditions($callback, $joiner);
-
-        // Add properties from conditions
-        $this->selection = array_unique(
-            array_merge($this->selection, $query->selection)
-        );
-    }
-
     protected function createSelection()
     {
         if (empty($this->selection)) {
@@ -231,6 +222,25 @@ class Select extends Selectable
             }
         } else {
 
+            $selection = $this->selection;
+
+            // Add properties from conditions
+            $callback = function ($conditions) use (& $callback, $selection) {
+
+                if (is_array($conditions[0])) {
+                    // Group
+
+                    array_walk_recursive($conditions[0], $callback);
+                } else {
+                    // Condition
+
+                    if (!in_array($conditions[0], $selection)) {
+                        $selection[] = $conditions[0];
+                    }
+                }
+            };
+            array_walk_recursive($this->conditions, $callback);
+
             // Include primary automatically if not provided
             if ($this->entityReflection->hasPrimary()) {
 
@@ -238,7 +248,6 @@ class Select extends Selectable
                     ->getPrimaryProperty()
                     ->getName();
 
-                $selection = $this->selection;
                 if (!in_array($primaryName, $selection)) {
                     $selection[] = $primaryName;
                 }
