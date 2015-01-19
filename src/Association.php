@@ -15,7 +15,7 @@ abstract class Association
     protected $dominant = true;
 
     /** @var array */
-    protected $arguments = [];
+    protected $mapBy = [];
 
     /** @var string */
     protected $propertyName;
@@ -24,14 +24,14 @@ abstract class Association
         $propertyName,
         Reflection\Entity $sourceReflection,
         Reflection\Entity $targetReflection,
-        array $arguments,
+        array $mapBy,
         $dominant = true
     ) {
         $this->propertyName = $propertyName;
         $this->sourceReflection = $sourceReflection;
         $this->targetReflection = $targetReflection;
         $this->dominant = (bool) $dominant;
-        $this->arguments = $arguments;
+        $this->mapBy = $mapBy;
 
         if (!$this->sourceReflection->hasAdapter()) {
             throw new Exception\AssociationException(

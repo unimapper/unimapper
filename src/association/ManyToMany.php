@@ -16,14 +16,14 @@ class ManyToMany extends \UniMapper\Association
         $propertyName,
         Reflection\Entity $sourceReflection,
         Reflection\Entity $targetReflection,
-        array $arguments,
+        array $mapBy,
         $dominant = true
     ) {
         parent::__construct(
             $propertyName,
             $sourceReflection,
             $targetReflection,
-            $arguments,
+            $mapBy,
             $dominant
         );
 
@@ -33,19 +33,19 @@ class ManyToMany extends \UniMapper\Association
             );
         }
 
-        if (!isset($arguments[0])) {
+        if (!isset($mapBy[0])) {
             throw new Exception\AssociationException(
                 "You must define join key!"
             );
         }
 
-        if (!isset($arguments[1])) {
+        if (!isset($mapBy[1])) {
             throw new Exception\AssociationException(
                 "You must define join resource!"
             );
         }
 
-        if (!isset($arguments[2])) {
+        if (!isset($mapBy[2])) {
             throw new Exception\AssociationException(
                 "You must define referencing key!!"
             );
@@ -54,17 +54,17 @@ class ManyToMany extends \UniMapper\Association
 
     public function getJoinKey()
     {
-        return $this->arguments[0];
+        return $this->mapBy[0];
     }
 
     public function getJoinResource()
     {
-        return$this->arguments[1];
+        return$this->mapBy[1];
     }
 
     public function getReferencingKey()
     {
-        return $this->arguments[2];
+        return $this->mapBy[2];
     }
 
     public function getTargetPrimaryKey()

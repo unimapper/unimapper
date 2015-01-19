@@ -13,16 +13,16 @@ class OneToOne extends \UniMapper\Association
         $propertyName,
         Reflection\Entity $sourceReflection,
         Reflection\Entity $targetReflection,
-        array $arguments
+        array $mapBy
     ) {
         parent::__construct(
             $propertyName,
             $sourceReflection,
             $targetReflection,
-            $arguments
+            $mapBy
         );
 
-        if (!isset($arguments[0])) {
+        if (!isset($mapBy[0])) {
             throw new Exception\AssociationException(
                 "You must define referencing key!"
             );
@@ -37,7 +37,7 @@ class OneToOne extends \UniMapper\Association
 
     public function getReferencingKey()
     {
-        return $this->arguments[0];
+        return $this->mapBy[0];
     }
 
     public function getKey()
