@@ -27,31 +27,39 @@ class Select extends \UniMapper\Query
     public function __construct(Reflection\Entity $entityReflection)
     {
         parent::__construct($entityReflection);
-
-        $selection = array_slice(func_get_args(), 3);
-        array_walk($selection, [$this, "select"]);
+        $this->select(array_slice(func_get_args(), 3));
     }
 
-    public function select($name)
+    public function select($args)
     {
-        if (!$this->entityReflection->hasProperty($name)) {
-            throw new Exception\QueryException(
-                "Property " . $name . " is not defined on entity "
-                . $this->entityReflection->getClassName() . "!"
-            );
-        }
+        foreach (func_get_args() as $arg) {
 
-        $property = $this->entityReflection->getProperty($name);
-        if ($property->hasOption(Reflection\Property::OPTION_ASSOC)
-            || $property->hasOption(Reflection\Property::OPTION_COMPUTED)
-        ) {
-            throw new Exception\QueryException(
-                "Associations and computed properties can not be selected!"
-            );
-        }
+            if (!is_array($arg)) {
+                $arg = [$arg];
+            }
 
-        if (!array_search($name, $this->selection)) {
-            $this->selection[] = $name;
+            foreach ($arg as $name) {
+
+                if (!$this->entityReflection->hasProperty($name)) {
+                    throw new Exception\QueryException(
+                        "Property '" . $name . "' is not defined on entity "
+                        . $this->entityReflection->getClassName() . "!"
+                    );
+                }
+
+                $property = $this->entityReflection->getProperty($name);
+                if ($property->hasOption(Reflection\Property::OPTION_ASSOC)
+                    || $property->hasOption(Reflection\Property::OPTION_COMPUTED)
+                ) {
+                    throw new Exception\QueryException(
+                        "Associations and computed properties can not be selected!"
+                    );
+                }
+
+                if (!array_search($name, $this->selection)) {
+                    $this->selection[] = $name;
+                }
+            }
         }
 
         return $this;

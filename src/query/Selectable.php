@@ -14,28 +14,38 @@ trait Selectable
         "remote" => []
     ];
 
-    public function associate($propertyName)
+    public function associate($args)
     {
-        foreach (func_get_args() as $name) {
+        foreach (func_get_args() as $arg) {
 
-            if (!$this->entityReflection->hasProperty($name)) {
-                throw new Exception\QueryException(
-                    "Property '" . $name . "' not defined!"
-                );
+            if (!is_array($arg)) {
+                $arg = [$arg];
             }
 
-            $property = $this->entityReflection->getProperty($name);
-            if (!$property->hasOption(Reflection\Property::OPTION_ASSOC)) {
-                throw new Exception\QueryException(
-                    "Property '" . $name . "' is not defined as association!"
-                );
-            }
+            foreach ($arg as $name) {
 
-            $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
-            if ($association->isRemote()) {
-                $this->associations["remote"][$name] = $association;
-            } else {
-                $this->associations["local"][$name] = $association;
+                if (!$this->entityReflection->hasProperty($name)) {
+                    throw new Exception\QueryException(
+                        "Property '" . $name . "' is not defined on entity "
+                        . $this->entityReflection->getClassName() . "!"
+                    );
+                }
+
+                $property = $this->entityReflection->getProperty($name);
+                if (!$property->hasOption(Reflection\Property::OPTION_ASSOC)) {
+                    throw new Exception\QueryException(
+                        "Property '" . $name . "' is not defined as association"
+                        . " on entity " . $this->entityReflection->getClassName()
+                        . "!"
+                    );
+                }
+
+                $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
+                if ($association->isRemote()) {
+                    $this->associations["remote"][$name] = $association;
+                } else {
+                    $this->associations["local"][$name] = $association;
+                }
             }
         }
 
