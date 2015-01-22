@@ -123,7 +123,7 @@ class EntityTest extends UniMapper\Tests\TestCase
         $this->entity->entity = $this->createEntity("Nested");
 
         Assert::type("array", $this->entity->toArray());
-        Assert::count(18, $this->entity->toArray());
+        Assert::count(20, $this->entity->toArray());
         Assert::same("test", $this->entity->toArray()["text"]);
         Assert::same("", $this->entity->toArray()["empty"]);
         Assert::same($this->entity->collection, $this->entity->toArray()["collection"]);
@@ -166,8 +166,10 @@ class EntityTest extends UniMapper\Tests\TestCase
                     ),
                 ),
                 'manyToMany' => array(array('id' => 1, 'manyToManyNoDominance' => array(), 'text' => NULL)),
+                'mmFilter' => array(),
                 'manyToOne' => NULL,
                 'oneToOne' => NULL,
+                'ooFilter' => NULL,
                 'readonly' => NULL,
                 'storedData' => NULL,
                 'enumeration' => NULL,
@@ -189,7 +191,7 @@ class EntityTest extends UniMapper\Tests\TestCase
     public function testJsonSerializable()
     {
         Assert::same(
-            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"manyToMany":[],"manyToOne":null,"oneToOne":null,"readonly":null,"storedData":null,"enumeration":null,"publicProperty":"defaultValue"}',
+            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"manyToMany":[],"mmFilter":[],"manyToOne":null,"oneToOne":null,"ooFilter":null,"readonly":null,"storedData":null,"enumeration":null,"publicProperty":"defaultValue"}',
             json_encode($this->entity)
         );
     }
@@ -298,7 +300,7 @@ class EntityTest extends UniMapper\Tests\TestCase
 
     public function testIterate()
     {
-        $expected = [
+        $expected = array(
             'id',
             'text',
             'empty',
@@ -311,13 +313,15 @@ class EntityTest extends UniMapper\Tests\TestCase
             'entity',
             'collection',
             'manyToMany',
+            'mmFilter',
             'manyToOne',
             'oneToOne',
+            'ooFilter',
             'readonly',
             'storedData',
             'enumeration',
-            'publicProperty'
-        ];
+            'publicProperty',
+        );
 
         $given = [];
         foreach ($this->entity as $name => $value) {

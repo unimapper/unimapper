@@ -9,6 +9,7 @@ class Update extends \UniMapper\Query
 {
 
     use Conditionable;
+    use Limit;
 
     /** @var \UniMapper\Entity */
     protected $entity;

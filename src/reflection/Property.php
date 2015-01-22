@@ -55,6 +55,9 @@ class Property
     /** @var array */
     private $options = [];
 
+    /** @var array */
+    private static $assocFilters = [];
+
     /**
      * @param string $type
      * @param string $name
@@ -79,6 +82,11 @@ class Property
         $this->_initMapping();
         $this->_initEnumeration();
         $this->_initAssociation();
+    }
+
+    public function registerAssocFilter($name, callable $callback)
+    {
+        self::$assocFilters[$name] = $callback;
     }
 
     public function isWritable()
@@ -264,7 +272,7 @@ class Property
 
             try {
 
-                $this->options[self::OPTION_ASSOC] = new $class(
+                $association = new $class(
                     $this->name,
                     $this->entityReflection,
                     Loader::load($this->typeOption),
@@ -274,6 +282,33 @@ class Property
             } catch (Exception\AssociationException $e) {
                 throw new Exception\PropertyException($e->getMessage());
             }
+
+            // Get filter
+            $filters = preg_grep("/" . self::OPTION_ASSOC . "-filter-[aA-zZ]*/", $this->options);
+            if ($filters) {
+
+                if (count($filters) > 1) {
+                    throw new Exception\PropertyException(
+                        "Only one association filter can be set!"
+                    );
+                }
+
+                $name = end(explode("-", key($filters)));
+                if (isset(self::$assocFilters[$name])) {
+
+                    $args = current($filters);
+                    array_unshift($args, $association);
+
+                    // Apply filter on association
+                    call_user_func_array(self::$assocFilters[$name], $args);
+                } else {
+                    throw new Exception\PropertyException(
+                        "Association filter " . $name . " not is registered!"
+                    );
+                }
+            }
+
+            $this->options[self::OPTION_ASSOC] = $association;
         }
     }
 

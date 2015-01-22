@@ -8,6 +8,7 @@ class Delete extends \UniMapper\Query
 {
 
     use Conditionable;
+    use Limit;
 
     protected function onExecute(\UniMapper\Connection $connection)
     {

@@ -111,7 +111,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             );
 
         $this->adapters["RemoteAdapter"]->shouldReceive("createSelect")
-            ->with("remote_resource")
+            ->with("remote_resource", [], [], null, null)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapterQueryMock->shouldReceive("setConditions")
@@ -197,7 +197,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
             );
 
         $this->adapters["FooAdapter"]->shouldReceive("createSelect")
-            ->with("simple_resource")
+            ->with("simple_resource", [], [], null, null)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapterQueryMock->shouldReceive("setConditions")
