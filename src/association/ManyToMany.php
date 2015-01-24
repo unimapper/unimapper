@@ -9,7 +9,7 @@ use UniMapper\EntityCollection;
 use UniMapper\Exception;
 use UniMapper\Reflection;
 
-class ManyToMany extends \UniMapper\Association
+class ManyToMany extends Multi
 {
 
     public function __construct(
@@ -82,7 +82,7 @@ class ManyToMany extends \UniMapper\Association
      */
     public function load(Connection $connection, array $primaryValues)
     {
-        $currentAdapter = $connection->getAdapter($this->sourceReflection->getAdapterName());
+        $currentAdapter = $connection->getAdapter($this->entityReflection->getAdapterName());
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
 
         if (!$this->isDominant()) {
@@ -112,18 +112,22 @@ class ManyToMany extends \UniMapper\Association
         );
 
         $targetQuery = $targetAdapter->createSelect(
-            $this->getTargetResource()
+            $this->getTargetResource(),
+            [],
+            $this->orderBy,
+            $this->limit,
+            $this->offset
         );
-        $targetQuery->setConditions(
-            [
-                [
-                    $this->getTargetPrimaryKey(),
-                    "IN",
-                    array_keys($joinResult),
-                    "AND"
-                ]
-            ]
-        );
+
+        // Set target conditions
+        $conditions = $this->conditions;
+        $conditions[] = [
+            $this->getTargetPrimaryKey(),
+            "IN",
+            array_keys($joinResult),
+            "AND"
+        ];
+        $targetQuery->setConditions($conditions);
 
         $targetResult = $targetAdapter->execute($targetQuery);
         if (!$targetResult) {
@@ -163,7 +167,7 @@ class ManyToMany extends \UniMapper\Association
      */
     public function saveChanges($primaryValue, Connection $connection, EntityCollection $collection)
     {
-        $sourceAdapter = $connection->getAdapter($this->sourceReflection->getAdapterName());
+        $sourceAdapter = $connection->getAdapter($this->entityReflection->getAdapterName());
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
 
         if ($this->isRemote() && !$this->isDominant()) {

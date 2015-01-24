@@ -6,7 +6,7 @@ use UniMapper\Connection;
 use UniMapper\Exception;
 use UniMapper\Reflection;
 
-class OneToMany extends \UniMapper\Association
+class OneToMany extends Multi
 {
 
     public function __construct(
@@ -38,17 +38,23 @@ class OneToMany extends \UniMapper\Association
     {
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
 
-        $query = $targetAdapter->createSelect($this->getTargetResource());
-        $query->setConditions(
-            [
-                [
-                    $this->getReferencedKey(),
-                    "IN",
-                    array_keys($primaryValues),
-                    "AND"
-                ]
-            ]
+        $query = $targetAdapter->createSelect(
+            $this->getTargetResource(),
+            [],
+            $this->orderBy,
+            $this->limit,
+            $this->offse
         );
+
+        // Set target conditions
+        $conditions = $this->conditions;
+        $conditions[] = [
+            $this->getReferencedKey(),
+            "IN",
+            array_keys($primaryValues),
+            "AND"
+        ];
+        $query->setConditions($conditions);
 
         $result = $targetAdapter->execute($query);
 

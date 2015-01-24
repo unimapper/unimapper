@@ -6,7 +6,7 @@ use UniMapper\Connection;
 use UniMapper\Exception;
 use UniMapper\Reflection;
 
-class OneToOne extends \UniMapper\Association
+class OneToOne extends Single
 {
 
     public function __construct(
@@ -55,16 +55,15 @@ class OneToOne extends \UniMapper\Association
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
 
         $query = $targetAdapter->createSelect($this->getTargetResource());
-        $query->setConditions(
-            [
-                [
-                    $this->getTargetPrimaryKey(),
-                    "IN",
-                    $primaryValues,
-                    "AND"
-                ]
-            ]
-        );
+
+        $conditions = $this->conditions;
+        $conditions[] = [
+            $this->getTargetPrimaryKey(),
+            "IN",
+            $primaryValues,
+            "AND"
+        ];
+        $query->setConditions($conditions);
 
         $result = $targetAdapter->execute($query);
 

@@ -266,7 +266,7 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
             ->with([["id", "IN", [3, 4], "AND"]])
             ->once();
         $this->adapters["RemoteAdapter"]->shouldReceive("createSelect")
-            ->with("remote_resource")
+            ->with("remote_resource", [], [], null, null)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["RemoteAdapter"]->shouldReceive("onExecute")
@@ -326,7 +326,7 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
             ->with([["simplePrimaryId", "IN", [1, 2], "AND"]])
             ->once();
         $this->adapters["FooAdapter"]->shouldReceive("createSelect")
-            ->with("simple_resource")
+            ->with("simple_resource", [], [], null, null)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")

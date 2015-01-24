@@ -6,7 +6,7 @@ abstract class Association
 {
 
     /** @var Reflection\Entity */
-    protected $sourceReflection;
+    protected $entityReflection;
 
     /** @var Reflection\Entity */
     protected $targetReflection;
@@ -28,12 +28,12 @@ abstract class Association
         $dominant = true
     ) {
         $this->propertyName = $propertyName;
-        $this->sourceReflection = $sourceReflection;
+        $this->entityReflection = $sourceReflection;
         $this->targetReflection = $targetReflection;
         $this->dominant = (bool) $dominant;
         $this->mapBy = $mapBy;
 
-        if (!$this->sourceReflection->hasAdapter()) {
+        if (!$this->entityReflection->hasAdapter()) {
             throw new Exception\AssociationException(
                 "Can not use associations while source entity "
                 . $sourceReflection->getName()
@@ -51,7 +51,7 @@ abstract class Association
 
     public function getPrimaryKey()
     {
-        return $this->sourceReflection->getPrimaryProperty()->getName(true);
+        return $this->entityReflection->getPrimaryProperty()->getName(true);
     }
 
     /**
@@ -76,7 +76,7 @@ abstract class Association
 
     public function getSourceResource()
     {
-        return $this->sourceReflection->getAdapterResource();
+        return $this->entityReflection->getAdapterResource();
     }
 
     public function getTargetAdapterName()
@@ -86,7 +86,7 @@ abstract class Association
 
     public function isRemote()
     {
-        return $this->sourceReflection->getAdapterName()
+        return $this->entityReflection->getAdapterName()
             !== $this->targetReflection->getAdapterName();
     }
 

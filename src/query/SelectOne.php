@@ -19,15 +19,17 @@ class SelectOne extends \UniMapper\Query
     ) {
         parent::__construct($entityReflection);
 
+        // Primary
         if (!$entityReflection->hasPrimary()) {
             throw new Exception\QueryException(
                 "Can not use query on entity without primary property!"
             );
         }
-
         $entityReflection->getPrimaryProperty()->validateValueType($primaryValue);
-
         $this->primaryValue = $primaryValue;
+
+        // Selection
+        $this->select(array_slice(func_get_args(), 3));
     }
 
     protected function onExecute(\UniMapper\Connection $connection)
