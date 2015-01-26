@@ -41,7 +41,10 @@ class SelectOne extends \UniMapper\Query
         $query = $adapter->createSelectOne(
             $this->entityReflection->getAdapterResource(),
             $primaryProperty->getName(true),
-            $this->primaryValue
+            $connection->getMapper()->unmapValue(
+                $primaryProperty,
+                $this->primaryValue
+            )
         );
 
         if ($this->associations["local"]) {
