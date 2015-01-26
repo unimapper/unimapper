@@ -231,7 +231,11 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
      */
     public function jsonSerialize()
     {
-        return $this->toArray();
+        $output = [];
+        foreach ($this->data as $index => $entity) {
+            $output[$index] = $entity->jsonSerialize();
+        }
+        return $output;
     }
 
     /**

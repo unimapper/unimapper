@@ -87,6 +87,18 @@ class EntityCollectionTest extends UniMapper\Tests\TestCase
         Assert::same([1], $collection->getChanges()[Entity::CHANGE_REMOVE]);
     }
 
+    public function testJsonSerialize()
+    {
+        $collection = new EntityCollection("Simple");
+        Assert::same("[]", json_encode($collection));
+
+        $collection[] = new Fixtures\Entity\Simple(["id" => 1]);
+        Assert::same(
+            '[{"id":1,"text":null,"empty":null,"url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"manyToMany":[],"mmFilter":[],"manyToOne":null,"oneToOne":null,"ooFilter":null,"readonly":null,"storedData":null,"enumeration":null,"publicProperty":"defaultValue"}]',
+            json_encode($collection)
+        );
+    }
+
 }
 
 $testCase = new EntityCollectionTest;
