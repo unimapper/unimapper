@@ -182,6 +182,41 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         Assert::false($this->repository->destroy($entity));
     }
 
+    public function testFindOne()
+    {
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+
+        $this->adapterMock->shouldReceive("createSelectOne")
+            ->with("simple_resource", "simplePrimaryId", 1)
+            ->once()
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("onExecute")
+            ->with($adapterQueryMock)
+            ->once()
+            ->andReturn(["simplePrimaryId" => 1]);
+
+        $result = $this->repository->findOne(1);
+
+        Assert::type("UniMapper\Entity", $result);
+        Assert::same(1, $result->id);
+    }
+
+    public function testFindOneNotFound()
+    {
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+
+        $this->adapterMock->shouldReceive("createSelectOne")
+            ->with("simple_resource", "simplePrimaryId", 1)
+            ->once()
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("onExecute")
+            ->with($adapterQueryMock)
+            ->once()
+            ->andReturn(null);
+
+        Assert::false($this->repository->findOne(1));
+    }
+
     public function testFindPrimary()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");

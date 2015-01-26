@@ -182,7 +182,7 @@ abstract class Repository
 
     public function findOne($primaryValue, array $associate = [])
     {
-        $this->query()->selectOne($primaryValue)
+        return $this->query()->selectOne($primaryValue)
             ->associate($associate)
             ->run($this->connection);
     }
