@@ -35,7 +35,7 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
         $this->connectionMock = Mockery::mock("UniMapper\Connection");
     }
 
-    public function testRun()
+    public function testOnExecute()
     {
         $entity1 = $this->createEntity("Simple", ["id" => 2]);
         $entity2 = $this->createEntity("Simple", ["id" => 3]);
@@ -91,7 +91,7 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
         Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $result[1]);
     }
 
-    public function testRunEntityWithoutPrimary()
+    public function testOnExecuteWithoutPrimary()
     {
         $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new Mapper);
         $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);

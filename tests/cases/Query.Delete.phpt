@@ -15,51 +15,59 @@ class QueryDeleteTest extends UniMapper\Tests\TestCase
     /** @var array $adapters */
     private $adapters = [];
 
+    private $connectionMock;
+
+    private $adapterQueryMock;
+
     public function setUp()
     {
         $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
+
+        $this->connectionMock = Mockery::mock("UniMapper\Connection");
+        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
+        $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
     }
 
-    public function testRun()
+    public function testOnExecute()
     {
-        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $this->adapters["FooAdapter"]->shouldReceive("createDelete")
             ->with("simple_resource")
             ->once()
-            ->andReturn($adapterQueryMock);
+            ->andReturn($this->adapterQueryMock);
 
-        $adapterQueryMock->shouldReceive("setConditions")
+        $this->adapterQueryMock->shouldReceive("setConditions")
             ->with([["simplePrimaryId", "=", 1, "AND"]])
             ->once();
-        $adapterQueryMock->shouldReceive("getRaw")->once();
+        $this->adapterQueryMock->shouldReceive("getRaw")->once();
 
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
-            ->with($adapterQueryMock)
+            ->with($this->adapterQueryMock)
             ->once()
             ->andReturn("2");
-
-        $connectionMock = Mockery::mock("UniMapper\Connection");
-        $connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
-        $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
 
         $query = new Query\Delete(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
         );
         $query->where("id", "=", 1);
-        Assert::same(2, $query->run($connectionMock));
+        Assert::same(2, $query->run($this->connectionMock));
     }
 
-    /**
-     * @throws UniMapper\Exception\QueryException At least one condition must be set!
-     */
-    public function testNoConditionGiven()
+    public function testOnExecuteNoConditions()
     {
-        $connectionMock = Mockery::mock("UniMapper\Connection");
+        $this->adapters["FooAdapter"]->shouldReceive("createDelete")
+            ->with("simple_resource")
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
+            ->with($this->adapterQueryMock)
+            ->once()
+            ->andReturn("2");
 
         $query = new Query\Delete(
             new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
         );
-        $query->run($connectionMock);
+        $query->run($this->connectionMock);
     }
 
 }

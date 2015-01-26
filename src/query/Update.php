@@ -32,10 +32,6 @@ class Update extends \UniMapper\Query
             throw new Exception\QueryException("Nothing to update!");
         }
 
-        if (!$this->conditions) {
-            throw new Exception\QueryException("At least one condition must be set!");
-        }
-
         $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
 
         $query = $adapter->createUpdate(

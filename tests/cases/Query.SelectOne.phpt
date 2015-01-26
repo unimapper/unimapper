@@ -33,7 +33,7 @@ class QuerySelectOneTest extends UniMapper\Tests\TestCase
         $this->connectionMock = Mockery::mock("UniMapper\Connection");
     }
 
-    public function testRun()
+    public function testOnExecute()
     {
         $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
         $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);

@@ -10,7 +10,7 @@ require __DIR__ . '/../bootstrap.php';
 class QueryCountTest extends UniMapper\Tests\TestCase
 {
 
-    public function testRun()
+    public function testOnExecute()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $adapterQueryMock->shouldReceive("setConditions")->with([["simplePrimaryId", "=", 1, "AND"]])->once();
