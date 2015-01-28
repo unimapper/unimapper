@@ -290,6 +290,30 @@ class EntityTest extends UniMapper\Tests\TestCase
         Assert::same((int) date("Y"), $this->entity->year);
     }
 
+    public function testGetChanges()
+    {
+        $entity = new Fixtures\Entity\Remote(["id" => 1]);
+
+        $this->entity->manyToMany()->attach($entity);
+        $this->entity->manyToMany()->add($entity);
+        $this->entity->manyToMany()->detach($entity);
+
+        $this->entity->manyToOne()->id = 2;
+        $this->entity->manyToOne()->attach();
+
+        $this->entity->oneToOne()->id = 3;
+        $this->entity->oneToOne()->detach();
+
+        Assert::same(
+            [
+                "manyToMany" => $this->entity->manyToMany(),
+                "manyToOne" => $this->entity->manyToOne(),
+                "oneToOne" => $this->entity->oneToOne()
+            ],
+            $this->entity->getChanges()
+        );
+    }
+
     /**
      * @throws UniMapper\Exception\InvalidArgumentException Computed property is read-only!
      */
@@ -332,18 +356,48 @@ class EntityTest extends UniMapper\Tests\TestCase
         Assert::same('defaultValue', current($this->entity));
     }
 
-    public function testCall()
+    public function testCallOnCollection()
     {
-        Assert::type("UniMapper\EntityCollection", $this->entity->manyToMany());
-        Assert::same("Remote", $this->entity->manyToMany()->getEntityReflection()->getName());
-        Assert::type("UniMapper\Tests\Fixtures\Entity\Remote", $this->entity->manyToOne());
-        Assert::type("UniMapper\Tests\Fixtures\Entity\Remote", $this->entity->oneToOne());
+        $collection = new UniMapper\EntityCollection("Remote");
+
+        Assert::same($collection, $this->entity->manyToMany($collection));
+        Assert::same($collection, $this->entity->manyToMany());
+        Assert::same($collection, $this->entity->manyToMany(null));
+        Assert::notSame($collection, $this->entity->manyToMany(false));
+    }
+
+    public function testCallOnEntity()
+    {
+        $entity = new Fixtures\Entity\Remote;
+
+        Assert::same($entity, $this->entity->manyToOne($entity));
+        Assert::same($entity, $this->entity->manyToOne());
+        Assert::same($entity, $this->entity->manyToOne(null));
+        Assert::notSame($entity, $this->entity->manyToOne(false));
     }
 
     public function testAttach()
     {
         $this->entity->attach();
         Assert::same(Fixtures\Entity\Simple::CHANGE_ATTACH, $this->entity->getChangeType());
+    }
+
+    public function testAdd()
+    {
+        $this->entity->add();
+        Assert::same(Fixtures\Entity\Simple::CHANGE_ADD, $this->entity->getChangeType());
+    }
+
+    public function testDetach()
+    {
+        $this->entity->detach();
+        Assert::same(Fixtures\Entity\Simple::CHANGE_DETACH, $this->entity->getChangeType());
+    }
+
+    public function testRemove()
+    {
+        $this->entity->remove();
+        Assert::same(Fixtures\Entity\Simple::CHANGE_REMOVE, $this->entity->getChangeType());
     }
 
     /**
@@ -360,6 +414,14 @@ class EntityTest extends UniMapper\Tests\TestCase
     public function testCallInvalidPropertyType()
     {
         $this->entity->id();
+    }
+
+    /**
+     * @throws UniMapper\Exception\InvalidArgumentException You must pass instance of entity collection!
+     */
+    public function testCallInvalidArgumentType()
+    {
+        $this->entity->manyToMany("");
     }
 
 }

@@ -239,7 +239,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 
         if (isset($arguments[0])) {
 
-            if ($arguments[0] === null) {
+            if ($arguments[0] === false) {
                 unset($this->changes[$name]);
             } else {
 
@@ -265,7 +265,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             }
         }
 
-        if (!in_array($name, $this->changes, true)) {
+        if (!isset($this->changes[$name])) {
 
             if ($propertyReflection->getType() === Reflection\Property::TYPE_COLLECTION) {
                 $this->changes[$name] = new EntityCollection($propertyReflection->getTypeOption());
