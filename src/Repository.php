@@ -117,7 +117,7 @@ abstract class Repository
     private function _saveAssociated($primaryValue, Entity $entity)
     {
         foreach ($entity->getChanges() as $name => $associated) {
-            $entity->getReflection()->getProperty($name)->getOption(Reflection\Property::OPTION_ASSOC)->save(
+            $entity->getReflection()->getProperty($name)->getOption(Reflection\Property::OPTION_ASSOC)->saveChanges(
                 $primaryValue,
                 $this->connection,
                 $associated
