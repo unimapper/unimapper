@@ -17,7 +17,7 @@ class Delete extends \UniMapper\Query
         );
 
         if ($this->conditions) {
-            $query->setConditions($this->unmapConditions($this->conditions));
+            $query->setConditions($this->unmapConditions($connection->getMapper(), $this->conditions));
         }
 
         return (int) $adapter->execute($query);

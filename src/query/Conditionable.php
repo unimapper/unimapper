@@ -123,18 +123,24 @@ trait Conditionable
         return $this;
     }
 
-    protected function unmapConditions(array $conditions)
+    protected function unmapConditions(\UniMapper\Mapper $mapper, array $conditions)
     {
         foreach ($conditions as $index => $condition) {
 
             if (is_array($condition[0])) {
                 // Group
 
-                $conditions[$index][0] = $this->unmapConditions($condition[0]);
+                $conditions[$index][0] = $this->unmapConditions($mapper, $condition[0]);
             } else {
                 // Condition
 
                 $property = $this->entityReflection->getProperty($condition[0]);
+
+                // Unmap value
+                $conditions[$index][2] = $mapper->unmapValue(
+                    $property,
+                    $condition[2]
+                );
 
                 // Unmap name
                 $conditions[$index][0] = $property->getName(true);
