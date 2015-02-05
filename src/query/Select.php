@@ -63,7 +63,7 @@ class Select extends \UniMapper\Query
         );
 
         if ($this->conditions) {
-            $query->setConditions($this->unmapConditions($mapper, $this->conditions));
+            $query->setConditions($this->unmapConditions($this->conditions));
         }
 
         if ($this->associations["local"]) {

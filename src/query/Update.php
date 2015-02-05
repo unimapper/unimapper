@@ -39,7 +39,7 @@ class Update extends \UniMapper\Query
             $values
         );
         if ($this->conditions) {
-            $query->setConditions($this->unmapConditions($mapper, $this->conditions));
+            $query->setConditions($this->unmapConditions($this->conditions));
         }
 
         return (int) $adapter->execute($query);

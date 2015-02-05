@@ -14,7 +14,7 @@ class Count extends \UniMapper\Query
             $this->entityReflection->getAdapterResource()
         );
         if ($this->conditions) {
-            $query->setConditions($this->unmapConditions($connection->getMapper(), $this->conditions));
+            $query->setConditions($this->unmapConditions($this->conditions));
         }
         return (int) $adapter->execute($query);
     }
