@@ -5,11 +5,6 @@
 
     <exclude-pattern>*/vendor/*</exclude-pattern>
 
-    <rule ref="PEAR">
-        <exclude name="PEAR.Commenting" />
-        <exclude name="PEAR.NamingConventions.ValidVariableName" />
-    </rule>
-
     <rule ref="Generic.PHP.LowerCaseConstant" />
 
     <!-- No more whitespace -->
