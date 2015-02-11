@@ -69,6 +69,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
     {
         // string -> integer
         Assert::same(1, $this->_createReflection('integer',  'id', 'm:primary')->convertValue("1"));
+        Assert::null($this->_createReflection('integer', 'id')->convertValue(""));
 
         // integer -> string
         Assert::same("1", $this->_createReflection('string', 'test')->convertValue(1));
@@ -80,6 +81,7 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
                 ->convertValue("2012-02-01")
                 ->format("m. d. Y")
         );
+        Assert::null($this->_createReflection('DateTime', 'time')->convertValue(""));
 
         // array -> datetime
         Assert::type(
@@ -104,6 +106,9 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
         Assert::false(
             $this->_createReflection('boolean', 'false')->convertValue("false")
         );
+        Assert::null(
+            $this->_createReflection('boolean', 'false')->convertValue("")
+        );
 
         // array -> collection
         $data = [
@@ -122,6 +127,17 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
             ->convertValue(["id" => "8"]);
         Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity);
         Assert::same(8, $entity->id);
+    }
+
+    public function testConvertValueNull()
+    {
+        Assert::null($this->_createReflection('string', 'id')->convertValue(null));
+        Assert::null($this->_createReflection('integer', 'id')->convertValue(null));
+        Assert::null($this->_createReflection('array', 'id')->convertValue(null));
+        Assert::null($this->_createReflection('boolean', 'id')->convertValue(null));
+        Assert::null($this->_createReflection('Simple', 'id')->convertValue(null));
+        Assert::null($this->_createReflection('Simple[]', 'id')->convertValue(null));
+        Assert::null($this->_createReflection('DateTime', 'id')->convertValue(null));
     }
 
     /**

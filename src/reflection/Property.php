@@ -449,6 +449,10 @@ class Property
      */
     public function convertValue($value)
     {
+        if ($value === null || ($value === "" && $this->typeOption !== "string")) {
+            return;
+        }
+
         if ($this->type === self::TYPE_BASIC) {
             // Basic
 
