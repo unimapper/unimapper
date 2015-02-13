@@ -196,12 +196,20 @@ class Property
 
             $filter = explode("|", $this->getOption(self::OPTION_MAP_FILTER));
             if (!isset($filter[0]) || !isset($filter[1])) {
-                throw new Exception\PropertyException("Invalid filter definition!");
+                throw new Exception\PropertyException("You must define input/output filter!");
             }
-            $this->options[self::OPTION_MAP_FILTER] = [
-                $this->_createCallback($this->entityReflection->getClassName(), $filter[0]),
-                $this->_createCallback($this->entityReflection->getClassName(), $filter[1])
-            ];
+
+            $filterIn = $this->_createCallback($this->entityReflection->getClassName(), $filter[0]);
+            if (!$filterIn) {
+                throw new Exception\PropertyException("Invalid input filter definition!");
+            }
+
+            $filterOut = $this->_createCallback($this->entityReflection->getClassName(), $filter[1]);
+            if (!$filterOut) {
+                throw new Exception\PropertyException("Invalid output filter definition!");
+            }
+
+            $this->options[self::OPTION_MAP_FILTER] = [$filterIn, $filterOut];
         }
     }
 

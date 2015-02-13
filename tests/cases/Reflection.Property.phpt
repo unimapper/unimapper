@@ -281,10 +281,48 @@ class ReflectionPropertyTest extends UniMapper\Tests\TestCase
 
     public function testOptionMap()
     {
+        $reflection = $this->_createReflection('array', 'name', 'm:map-by(foo)');
+        Assert::same("foo", $reflection->getName(true));
+    }
+
+    public function testOptionMapFilterWithEntityMethod()
+    {
         $reflection = $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter(stringToArray|arrayToString)');
         Assert::same("foo", $reflection->getName(true));
         Assert::true(is_callable($reflection->getOption(Reflection\Property::OPTION_MAP_FILTER)[0]));
         Assert::true(is_callable($reflection->getOption(Reflection\Property::OPTION_MAP_FILTER)[1]));
+    }
+
+    public function testOptionMapFilterWithFullCallback()
+    {
+        $reflection = $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter(UniMapper\Tests\Fixtures\Entity\Simple::stringToArray|UniMapper\Tests\Fixtures\Entity\Simple::arrayToString)');
+        Assert::same("foo", $reflection->getName(true));
+        Assert::true(is_callable($reflection->getOption(Reflection\Property::OPTION_MAP_FILTER)[0]));
+        Assert::true(is_callable($reflection->getOption(Reflection\Property::OPTION_MAP_FILTER)[1]));
+    }
+
+    /**
+     * @throws UniMapper\Exception\PropertyException You must define input/output filter!
+     */
+    public function testOptionMapFilterInvalidFilter()
+    {
+        $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter()');
+    }
+
+    /**
+     * @throws UniMapper\Exception\PropertyException Invalid input filter definition!
+     */
+    public function testOptionMapFilterInvalidInputFilter()
+    {
+        $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter(undefinedInputMethod|arrayToString)');
+    }
+
+    /**
+     * @throws UniMapper\Exception\PropertyException Invalid output filter definition!
+     */
+    public function testOptionMapFilterInvalidOutputFilter()
+    {
+        $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter(stringToArray|undefinedOutputMethod)');
     }
 
     /**
