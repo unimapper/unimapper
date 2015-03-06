@@ -241,6 +241,162 @@ class RepositoryTest extends UniMapper\Tests\TestCase
         Assert::same(2, $result[1]->id);
     }
 
+    public function testFindWithFilter()
+    {
+        $filter = [
+            "one" => [
+                "!" => 1
+            ],
+            "two" => [
+                "!" => null, // IS NOT NULL
+            ],
+            "three" => [
+                "!" => [2] // NOT IN
+            ],
+            "four" => [
+                "=" => 3
+            ],
+            "five" => [
+                "=" => null, // IS NULL
+            ],
+            "six" => [
+                "=" => [4], // IN
+                "<=" => 5,
+                ">=" => 6,
+                ">" => 7,
+                "<" => 8
+            ],
+            "text" => [
+                "like" => "%foo%"
+            ],
+            "bool" => [
+                "!" => false, // IS NOT TRUE
+                "=" => true // IS TRUE
+            ]
+        ];
+        $expectedFilter = [
+            ["one", "!=", 1, "AND"],
+            ["two", "IS NOT", null, "AND"],
+            ["three", "NOT IN", [2], "AND"],
+            ["four", "=", 3, "AND"],
+            ["five", "IS", null, "AND"],
+            ["six", "IN", [4], "AND"],
+            ["six", "<=", 5, "AND"],
+            ["six", ">=", 6, "AND"],
+            ["six", ">", 7, "AND"],
+            ["six", "<", 8, "AND"],
+            ["text", "LIKE", "%foo%", "AND"],
+            ["bool", "IS NOT", false, "AND"],
+            ["bool", "IS", true, "AND"]
+        ];
+
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("setConditions")
+            ->once()
+            ->with($expectedFilter);
+        $adapterQueryMock->shouldReceive("getRaw")->once();
+
+        $this->adapterMock->shouldReceive("createSelect")
+            ->with("filter_resource", ['one', 'two', 'three', 'four', 'five', 'six', 'bool', 'text'], [], null, null)
+            ->once()
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("onExecute")
+            ->with($adapterQueryMock)
+            ->once();
+
+        $this->createRepository("Filter", ["FooAdapter" => $this->adapterMock])->find($filter);
+    }
+
+    public function testFindWithDeepFilter()
+    {
+        // WHERE (one = 1 OR two = 2) OR ((three = 3 OR four = 4) AND (five > 4 AMD five < 6 AND six = 6))
+        $filter = [
+            "or" => [
+                [
+                    "or" => [
+                        "one" => ["=" => 1],
+                        "two" => ["=" => 2]
+                    ]
+                ],
+                [
+                    [
+                        "or" => [
+                            "three" => ["=" => 3],
+                            "four" => ["=" => 4]
+                        ]
+                    ],
+                    [
+                        "five" => [
+                            ">" => 4,
+                            "<" => 6
+                        ],
+                        "six" => ["=" => 6]
+                    ]
+                ]
+            ]
+        ];
+        $expectedFilter = [
+            [
+                [
+                    [
+                        [
+                            [
+                                [
+                                    ['one', '=', 1, 'OR'],
+                                    ['two', '=', 2, 'OR']
+                                ],
+                                'AND'
+                            ]
+                        ],
+                        'OR'
+                    ],
+                    [
+                        [
+                            [
+                                [
+                                    [
+                                        [
+                                            ['three', '=', 3, 'OR'],
+                                            ['four', '=', 4, 'OR']
+                                        ],
+                                        'AND'
+                                    ]
+                                ],
+                                'AND'
+                            ],
+                            [
+                                [
+                                    ['five', '>', 4, 'AND'],
+                                    ['five', '<', 6, 'AND'],
+                                    ['six', '=', 6, 'AND']
+                                ],
+                                'AND'
+                            ]
+                        ],
+                        'OR'
+                    ]
+                ],
+                'AND'
+            ]
+        ];
+
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("setConditions")
+            ->once()
+            ->with($expectedFilter);
+        $adapterQueryMock->shouldReceive("getRaw")->once();
+
+        $this->adapterMock->shouldReceive("createSelect")
+            ->with("filter_resource", ['one', 'two', 'three', 'four', 'five', 'six', 'bool', 'text'], [], null, null)
+            ->once()
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("onExecute")
+            ->with($adapterQueryMock)
+            ->once();
+
+        $this->createRepository("Filter", ["FooAdapter" => $this->adapterMock])->find($filter);
+    }
+
     /**
      * @throws UniMapper\Exception\InvalidArgumentException Values can not be empty!
      */

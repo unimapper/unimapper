@@ -164,14 +164,75 @@ abstract class Repository
         return $query->run($this->connection);
     }
 
+    /**
+     * Apply filter on query
+     *
+     * @param \UniMapper\Query $query
+     * @param array            $filter
+     * @param bool             $and
+     */
+    private function _applyFilter(Query $query, array $filter, $and = true)
+    {
+        if ($filter === array_values($filter)) {
+            // Conditions with parentheses
+
+            foreach ($filter as $filterGroup) {
+
+                $fn = $and ? "whereAre" : "orWhereAre";
+                $query->{$fn}(function ($nestedQuery) use ($filterGroup) {
+                    $this->_applyFilter($nestedQuery, $filterGroup);
+                });
+            }
+        } else {
+            // Simple conditions
+
+            if (isset($filter["or"]) && count($filter) === 1) {
+                // OR statement
+
+                $fn = $and ? "whereAre" : "orWhereAre";
+                return $query->{$fn}(function ($query) use ($filter) {
+                    $this->_applyFilter($query, $filter["or"], false);
+                });
+            }
+
+            foreach ($filter as $name => $conditions) {
+
+                foreach ($conditions as $modifier => $value) {
+
+                    // Convert to condition operator
+                    if ($modifier === "!" && ($value === null || is_bool($value))) {
+                        $operator = "IS NOT";
+                    } elseif ($modifier === "=" && ($value === null || is_bool($value))) {
+                        $operator = "IS";
+                    } elseif ($modifier === "!" && is_array($value)) {
+                        $operator = "NOT IN";
+                    } elseif ($modifier === "=" && is_array($value)) {
+                        $operator = "IN";
+                    } elseif ($modifier === "!") {
+                        $operator = "!=";
+                    } else {
+                        $operator = strtoupper($modifier);
+                    }
+
+                    // Call query
+                    if ($and) {
+                        $query->where($name, $operator, $value);
+                    } else {
+                        $query->orWhere($name, $operator, $value);
+                    }
+                }
+            }
+        }
+    }
+
     public function find(array $filter = [], array $orderBy = [], $limit = 0,
         $offset = 0, array $associate = []
     ) {
-        $query = $this->query()->select()->associate($associate);
+        $query = $this->query()
+            ->select()
+            ->associate($associate);
 
-        foreach ($filter as $rule) {
-            $query->where($rule[0], $rule[1], $rule[2]);
-        }
+        $this->_applyFilter($query, $filter);
 
         foreach ($orderBy as $orderByRule) {
             $query->orderBy($orderByRule[0], $orderByRule[1]);
