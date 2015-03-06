@@ -1,14 +1,14 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Reflection;
+use Tester\Assert;
+use UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class QueryConditionableTest extends UniMapper\Tests\TestCase
+class QueryConditionableTest extends \Tester\TestCase
 {
 
     /** @var \Mockery\Mock $adapterMock */

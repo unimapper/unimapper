@@ -7,7 +7,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class QueryInsertTest extends UniMapper\Tests\TestCase
+class QueryInsertTest extends \Tester\TestCase
 {
 
     /** @var array $adapters */

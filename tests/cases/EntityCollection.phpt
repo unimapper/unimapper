@@ -10,12 +10,12 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class EntityCollectionTest extends UniMapper\Tests\TestCase
+class EntityCollectionTest extends \Tester\TestCase
 {
 
     public function testCreateCollection()
     {
-        $entity = $this->createEntity("Simple", ["text" => "test"]);
+        $entity = new Fixtures\Entity\Simple(["text" => "test"]);
 
         $collection = new EntityCollection("Simple");
 

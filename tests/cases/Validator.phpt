@@ -1,14 +1,15 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Validator;
+use Tester\Assert;
+use UniMapper\Validator;
+use UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class ValidatorTest extends UniMapper\Tests\TestCase
+class ValidatorTest extends \Tester\TestCase
 {
 
     /** @var \UniMapper\Validator $validator */
@@ -19,7 +20,7 @@ class ValidatorTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->entity = $this->createEntity("Simple");
+        $this->entity = new Fixtures\Entity\Simple;
         $this->validator = new Validator($this->entity);
     }
 
@@ -102,8 +103,8 @@ class ValidatorTest extends UniMapper\Tests\TestCase
                 }, "Collection must contain two items at least!");
 
         $entity = $this->validator->getEntity();
-        $entity->collection[] = $this->createEntity("Nested");
-        $entity->collection['testIndex'] = $this->createEntity("Nested");
+        $entity->collection[] = new Fixtures\Entity\Nested;
+        $entity->collection['testIndex'] = new Fixtures\Entity\Nested;
         $this->validator->validate();
 
         Assert::isEqual(
@@ -163,7 +164,7 @@ class ValidatorTest extends UniMapper\Tests\TestCase
      */
     public function testConditionMustBeOnProperty()
     {
-        $validator = new Validator($this->createEntity("Simple"));
+        $validator = new Validator(new Fixtures\Entity\Simple);
         $validator->addCondition(Validator::FILLED);
     }
 
@@ -172,7 +173,7 @@ class ValidatorTest extends UniMapper\Tests\TestCase
      */
     public function testOnUndefined()
     {
-        $validator = new Validator($this->createEntity("Simple"));
+        $validator = new Validator(new Fixtures\Entity\Simple);
         $validator->on("undefined");
     }
 
@@ -181,7 +182,7 @@ class ValidatorTest extends UniMapper\Tests\TestCase
      */
     public function testOnComputed()
     {
-        $validator = new Validator($this->createEntity("Simple"));
+        $validator = new Validator(new Fixtures\Entity\Simple);
         $validator->on("year");
     }
 
@@ -240,13 +241,13 @@ class ValidatorTest extends UniMapper\Tests\TestCase
 
     public function testNestedValidators()
     {
-        $nested = $this->createEntity("Nested");
+        $nested = new Fixtures\Entity\Nested;
         $nested->getValidator()
             ->on("text")
                 ->addRule(Validator::EMAIL, "Text must be e-mail!");
 
         // Get even deeper
-        $nested->entity = $this->createEntity("Simple");
+        $nested->entity = new Fixtures\Entity\Simple;
         $nested->entity->getValidator()
                 ->on("url")
                     ->addRule(Validator::URL, "Invalid URL!");

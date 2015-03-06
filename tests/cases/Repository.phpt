@@ -9,7 +9,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class RepositoryTest extends UniMapper\Tests\TestCase
+class RepositoryTest extends \Tester\TestCase
 {
 
     /** @var \UniMapper\Repository $repository */
@@ -59,7 +59,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->with($adapterQueryMock)
             ->andReturn(true);
 
-        $entity = $this->createEntity("Simple", ["id" => 2, "text" => "foo"]);
+        $entity = new Fixtures\Entity\Simple(["id" => 2, "text" => "foo"]);
         $entity->manyToMany[] = new Fixtures\Entity\Remote(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote")); // Associations are ignored
 
         $this->repository->save($entity);
@@ -84,7 +84,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->with($adapterQueryMock)
             ->andReturn(false);
 
-        $entity = $this->createEntity("Simple", ["id" => 2, "text" => "foo"]);
+        $entity = new Fixtures\Entity\Simple(["id" => 2, "text" => "foo"]);
         $this->repository->save($entity);
     }
 
@@ -102,8 +102,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->with($adapterQueryMock)
             ->andReturn(["id" => 1]);
 
-        $entity = $this->createEntity("Simple", ["simplePrimaryId" => null, "text" => "foo"]);
-        $entity->text = "foo";
+        $entity = new Fixtures\Entity\Simple(["simplePrimaryId" => null, "text" => "foo"]);
         $entity->manyToMany[] = new Fixtures\Entity\Remote(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote")); // Associations are ignored
 
         $this->repository->save($entity);
@@ -113,10 +112,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
 
     public function testSaveInvalid()
     {
-        $entity = $this->createEntity(
-            "Simple",
-            ["email" => "invalidemail", "text" => "foo"]
-        );
+        $entity = new Fixtures\Entity\Simple(["email" => "invalidemail", "text" => "foo"]);
         $entity->getValidator()->on("email")->addRule(\UniMapper\Validator::EMAIL, "Invalid e-mail format!");
 
         try {
@@ -142,8 +138,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
      */
     public function testDeleteNoPrimaryValue()
     {
-        $entity = $this->createEntity("Simple");
-        $this->repository->destroy($entity);
+        $this->repository->destroy(new Fixtures\Entity\Simple);
     }
 
     public function testDelete()
@@ -160,7 +155,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn(true);
 
-        $entity = $this->createEntity("Simple", ["id" => 1]);
+        $entity = new Fixtures\Entity\Simple(["id" => 1]);
         $this->repository->destroy($entity);
     }
 
@@ -178,7 +173,7 @@ class RepositoryTest extends UniMapper\Tests\TestCase
             ->once()
             ->andReturn(false);
 
-        $entity = $this->createEntity("Simple", ["id" => 1]);
+        $entity = new Fixtures\Entity\Simple(["id" => 1]);
         Assert::false($this->repository->destroy($entity));
     }
 

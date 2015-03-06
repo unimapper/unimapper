@@ -1,15 +1,15 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\EntityCollection,
-    UniMapper\Reflection;
+use Tester\Assert;
+use UniMapper\EntityCollection;
+use UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class ReflectionPropertyTest extends UniMapper\Tests\TestCase
+class ReflectionPropertyTest extends \Tester\TestCase
 {
 
     const ENUM1 = 1,

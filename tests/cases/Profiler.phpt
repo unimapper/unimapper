@@ -7,7 +7,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class ProfilerTest extends UniMapper\Tests\TestCase
+class ProfilerTest extends \Tester\TestCase
 {
 
     public function testLog()

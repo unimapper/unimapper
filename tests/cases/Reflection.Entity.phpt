@@ -1,14 +1,14 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Reflection;
+use Tester\Assert;
+use UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class ReflectionEntityTest extends UniMapper\Tests\TestCase
+class ReflectionEntityTest extends \Tester\TestCase
 {
 
     public function testCreateEntity()

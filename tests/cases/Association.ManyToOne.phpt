@@ -1,16 +1,16 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Association,
-    UniMapper\Reflection,
-    UniMapper\Tests\Fixtures;
+use Tester\Assert;
+use UniMapper\Association;
+use UniMapper\Reflection;
+use UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class AssociationManyToOneTest extends UniMapper\Tests\TestCase
+class AssociationManyToOneTest extends \Tester\TestCase
 {
 
     /** @var array $adapters */

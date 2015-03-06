@@ -9,7 +9,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class QuerySelectableTest extends UniMapper\Tests\TestCase
+class QuerySelectableTest extends \Tester\TestCase
 {
 
     public function testAssociate()

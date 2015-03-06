@@ -7,7 +7,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class QueryCountTest extends UniMapper\Tests\TestCase
+class QueryCountTest extends \Tester\TestCase
 {
 
     public function testOnExecute()

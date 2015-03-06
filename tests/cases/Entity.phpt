@@ -8,7 +8,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class EntityTest extends UniMapper\Tests\TestCase
+class EntityTest extends \Tester\TestCase
 {
 
     /** @var \UniMapper\Tests\Fixtures\Entity\Simple */
@@ -16,8 +16,7 @@ class EntityTest extends UniMapper\Tests\TestCase
 
     public function setUp()
     {
-        $this->entity = $this->createEntity(
-            "Simple",
+        $this->entity = new Fixtures\Entity\Simple(
             [
                 "text" => "test",
                 "id" => 1,
@@ -28,8 +27,7 @@ class EntityTest extends UniMapper\Tests\TestCase
 
     public function testConstruct()
     {
-        $entity = $this->createEntity(
-            "Simple",
+        $entity = new Fixtures\Entity\Simple(
             [
                 "year" => "foo", // Skip comuted
                 "readonly" => "foo", // Set readonly
@@ -50,7 +48,7 @@ class EntityTest extends UniMapper\Tests\TestCase
      */
     public function testConstructNotAbleToConvertType()
     {
-        $this->createEntity("Simple", ["id" => new DateTime]);
+        new Fixtures\Entity\Simple(["id" => new DateTime]);
     }
 
     public function testGetProperty()
@@ -112,15 +110,15 @@ class EntityTest extends UniMapper\Tests\TestCase
     {
         $this->entity->id = 1;
         Assert::equal(1, $this->entity->id);
-        $this->entity->collection[] = $this->createEntity("Nested", ["text" => "foo"]);
+        $this->entity->collection[] = new Fixtures\Entity\Nested(["text" => "foo"]);
         Assert::same("foo", $this->entity->collection[0]->text);
     }
 
     public function testToArray()
     {
-        $this->entity->collection[] = $this->createEntity("Nested", ["text" => "foo"]);
-        $this->entity->manyToMany[] = $this->createEntity("Remote", ["id" => 1]);
-        $this->entity->entity = $this->createEntity("Nested");
+        $this->entity->collection[] = new Fixtures\Entity\Nested(["text" => "foo"]);
+        $this->entity->manyToMany[] = new Fixtures\Entity\Remote(["id" => 1]);
+        $this->entity->entity = new Fixtures\Entity\Nested;
 
         Assert::type("array", $this->entity->toArray());
         Assert::count(20, $this->entity->toArray());
@@ -134,9 +132,9 @@ class EntityTest extends UniMapper\Tests\TestCase
 
     public function testToArrayRecursive()
     {
-        $this->entity->collection[] = $this->createEntity("Nested", ["text" => "foo"]);
-        $this->entity->manyToMany[] = $this->createEntity("Remote", ["id" => 1]);
-        $this->entity->entity = $this->createEntity("Nested");
+        $this->entity->collection[] = new Fixtures\Entity\Nested(["text" => "foo"]);
+        $this->entity->manyToMany[] = new Fixtures\Entity\Remote(["id" => 1]);
+        $this->entity->entity = new Fixtures\Entity\Nested;
 
         Assert::same(
             array(

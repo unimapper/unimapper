@@ -1,14 +1,14 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Reflection;
+use Tester\Assert;
+use UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class MapperTest extends UniMapper\Tests\TestCase
+class MapperTest extends \Tester\TestCase
 {
 
     /** @var \UniMapper\Mapper */
@@ -43,8 +43,7 @@ class MapperTest extends UniMapper\Tests\TestCase
 
     public function testUnmapEntity()
     {
-        $entity = $this->createEntity(
-            "Simple",
+        $entity = new Fixtures\Entity\Simple(
             [
                 "email" => "john.doe@example.com",
                 "url" => "http://example.com",
@@ -88,8 +87,7 @@ class MapperTest extends UniMapper\Tests\TestCase
 
     public function testUnmapCollection()
     {
-        $entity = $this->createEntity(
-            "Simple",
+        $entity = new Fixtures\Entity\Simple(
             [
                 "email" => "john.doe@example.com",
                 "url" => "http://example.com",

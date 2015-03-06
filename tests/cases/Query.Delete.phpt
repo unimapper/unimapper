@@ -1,15 +1,15 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Query,
-    UniMapper\Reflection;
+use Tester\Assert;
+use UniMapper\Query;
+use UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class QueryDeleteTest extends UniMapper\Tests\TestCase
+class QueryDeleteTest extends \Tester\TestCase
 {
 
     /** @var array $adapters */

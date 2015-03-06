@@ -1,14 +1,14 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\NamingConvention as UNC;
+use Tester\Assert;
+use UniMapper\NamingConvention as UNC;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class NamingConventionTest extends UniMapper\Tests\TestCase
+class NamingConventionTest extends \Tester\TestCase
 {
 
     public function testSetMask()

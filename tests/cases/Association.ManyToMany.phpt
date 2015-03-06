@@ -10,7 +10,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class AssociationManyToManyTest extends UniMapper\Tests\TestCase
+class AssociationManyToManyTest extends \Tester\TestCase
 {
 
     /** @var array $adapters */

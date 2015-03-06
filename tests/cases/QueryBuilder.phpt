@@ -7,7 +7,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class QueryBuilderTest extends UniMapper\Tests\TestCase
+class QueryBuilderTest extends \Tester\TestCase
 {
 
     private function createBuilder($entity = "Simple")

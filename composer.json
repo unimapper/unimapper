@@ -19,6 +19,6 @@
         "mockery/mockery": "~0.9.0"
     },
     "autoload": {
-        "classmap": ["src/"]
+        "psr-4": {"UniMapper\\": "src/"}
     }
 }

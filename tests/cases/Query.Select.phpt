@@ -1,18 +1,19 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Association,
-    UniMapper\Query,
-    UniMapper\Cache,
-    UniMapper\Mapper,
-    UniMapper\Reflection;
+use Tester\Assert;
+use UniMapper\Association;
+use UniMapper\Query;
+use UniMapper\Cache;
+use UniMapper\Mapper;
+use UniMapper\Reflection;
+use UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class QuerySelectTest extends UniMapper\Tests\TestCase
+class QuerySelectTest extends \Tester\TestCase
 {
 
     /** @var array $adapters */
@@ -37,8 +38,8 @@ class QuerySelectTest extends UniMapper\Tests\TestCase
 
     public function testOnExecute()
     {
-        $entity1 = $this->createEntity("Simple", ["id" => 2]);
-        $entity2 = $this->createEntity("Simple", ["id" => 3]);
+        $entity1 = new Fixtures\Entity\Simple(["id" => 2]);
+        $entity2 = new Fixtures\Entity\Simple(["id" => 3]);
 
         $collection = new UniMapper\EntityCollection("Simple");
         $collection[] = $entity1;

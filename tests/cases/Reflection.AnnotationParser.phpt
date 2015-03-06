@@ -1,14 +1,14 @@
 <?php
 
-use Tester\Assert,
-    UniMapper\Reflection;
+use Tester\Assert;
+use UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class ReflectionAnnotationParserTest extends UniMapper\Tests\TestCase
+class ReflectionAnnotationParserTest extends \Tester\TestCase
 {
 
     public function testParseAdapter()
