@@ -84,7 +84,7 @@ class Property
         $this->_initAssociation();
     }
 
-    public function registerAssocFilter($name, callable $callback)
+    public static function registerAssocFilter($name, callable $callback)
     {
         self::$assocFilters[$name] = $callback;
     }
