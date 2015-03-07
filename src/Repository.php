@@ -20,6 +20,8 @@ abstract class Repository
      *
      * @param Entity $entity
      *
+     * @return Entity
+     *
      * @throws Exception\RepositoryException
      */
     public function save(Entity $entity)
@@ -46,6 +48,8 @@ abstract class Repository
         } else {
             $this->update($entity, $primaryValue);
         }
+
+        return $entity;
     }
 
     /**
