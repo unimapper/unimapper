@@ -160,11 +160,7 @@ abstract class Repository
     public function count($filter = [])
     {
         $query = $this->query()->count();
-
-        foreach ($filter as $rule) {
-            $query->where($rule[0], $rule[1], $rule[2]);
-        }
-
+        $this->_applyFilter($query, $filter);
         return $query->run($this->connection);
     }
 
