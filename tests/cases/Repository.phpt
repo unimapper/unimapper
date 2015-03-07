@@ -393,6 +393,22 @@ class RepositoryTest extends \Tester\TestCase
     }
 
     /**
+     * @throws UniMapper\Exception\QueryException Condition group must contain one condition at least!
+     */
+    public function testFindWithInvalidFilter()
+    {
+        $this->createRepository("Filter", ["FooAdapter" => $this->adapterMock])->find([[]]);
+    }
+
+    /**
+     * @throws UniMapper\Exception\RepositoryException Invalid property name 'undefinedProperty'!
+     */
+    public function testFindWithInvalidFilterUndefinedProperty()
+    {
+        $this->createRepository("Filter", ["FooAdapter" => $this->adapterMock])->find([["undefinedProperty" => ["=" => 1]]]);
+    }
+
+    /**
      * @throws UniMapper\Exception\InvalidArgumentException Values can not be empty!
      */
     public function testFindPrimaryNoValues()

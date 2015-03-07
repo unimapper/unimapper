@@ -215,10 +215,15 @@ abstract class Repository
                     }
 
                     // Call query
-                    if ($and) {
-                        $query->where($name, $operator, $value);
-                    } else {
-                        $query->orWhere($name, $operator, $value);
+                    try {
+
+                        if ($and) {
+                            $query->where($name, $operator, $value);
+                        } else {
+                            $query->orWhere($name, $operator, $value);
+                        }
+                    } catch (Exception\QueryException $e) {
+                        throw new Exception\RepositoryException($e->getMessage());
                     }
                 }
             }
