@@ -393,11 +393,35 @@ class RepositoryTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\QueryException Condition group must contain one condition at least!
+     * @throws UniMapper\Exception\RepositoryException Condition group must contain one condition at least!
      */
-    public function testFindWithInvalidFilter()
+    public function testFindWithInvalidFilterEmptyGroup()
     {
         $this->createRepository("Filter", ["FooAdapter" => $this->adapterMock])->find([[]]);
+    }
+
+    /**
+     * @throws UniMapper\Exception\RepositoryException Invalid filter structure given!
+     */
+    public function testFindWithInvalidFilterGroup()
+    {
+        $this->createRepository("Filter", ["FooAdapter" => $this->adapterMock])->find(["foo" => "foo"]);
+    }
+
+    /**
+     * @throws UniMapper\Exception\RepositoryException Invalid filter structure given!
+     */
+    public function testFindWithInvalidFilterWithOr()
+    {
+        $this->createRepository("Filter", ["FooAdapter" => $this->adapterMock])->find(["or" => "foo"]);
+    }
+
+    /**
+     * @throws UniMapper\Exception\RepositoryException Invalid filter structure given!
+     */
+    public function testFindWithInvalidFilterNoModifier()
+    {
+        $this->createRepository("Filter", ["FooAdapter" => $this->adapterMock])->find(["foo"]);
     }
 
     /**

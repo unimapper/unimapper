@@ -173,60 +173,72 @@ abstract class Repository
      */
     private function _applyFilter(Query $query, array $filter, $and = true)
     {
-        if ($filter === array_values($filter)) {
-            // Conditions with parentheses
 
-            foreach ($filter as $filterGroup) {
+        try {
 
-                $fn = $and ? "whereAre" : "orWhereAre";
-                $query->{$fn}(function ($nestedQuery) use ($filterGroup) {
-                    $this->_applyFilter($nestedQuery, $filterGroup);
-                });
-            }
-        } else {
-            // Simple conditions
+            if ($filter === array_values($filter)) {
+                // Conditions with parentheses
 
-            if (isset($filter["or"]) && count($filter) === 1) {
-                // OR statement
+                foreach ($filter as $filterGroup) {
 
-                $fn = $and ? "whereAre" : "orWhereAre";
-                return $query->{$fn}(function ($query) use ($filter) {
-                    $this->_applyFilter($query, $filter["or"], false);
-                });
-            }
-
-            foreach ($filter as $name => $conditions) {
-
-                foreach ($conditions as $modifier => $value) {
-
-                    // Convert to condition operator
-                    if ($modifier === "!" && ($value === null || is_bool($value))) {
-                        $operator = "IS NOT";
-                    } elseif ($modifier === "=" && ($value === null || is_bool($value))) {
-                        $operator = "IS";
-                    } elseif ($modifier === "!" && is_array($value)) {
-                        $operator = "NOT IN";
-                    } elseif ($modifier === "=" && is_array($value)) {
-                        $operator = "IN";
-                    } elseif ($modifier === "!") {
-                        $operator = "!=";
-                    } else {
-                        $operator = strtoupper($modifier);
+                    if (!is_array($filterGroup)) {
+                        throw new Exception\RepositoryException("Invalid filter structure given!");
                     }
 
-                    // Call query
-                    try {
+                    $fn = $and ? "whereAre" : "orWhereAre";
+                    $query->{$fn}(function ($nestedQuery) use ($filterGroup) {
+                        $this->_applyFilter($nestedQuery, $filterGroup);
+                    });
+                }
+            } else {
+                // Simple conditions
 
+                if (isset($filter["or"])
+                    && count($filter) === 1
+                    && is_array($filter["or"])
+                ) {
+                    // OR statement
+
+                    $fn = $and ? "whereAre" : "orWhereAre";
+                    return $query->{$fn}(function ($query) use ($filter) {
+                        $this->_applyFilter($query, $filter["or"], false);
+                    });
+                }
+
+                foreach ($filter as $name => $conditions) {
+
+                    if (!is_array($conditions)) {
+                        throw new Exception\RepositoryException("Invalid filter structure given!");
+                    }
+
+                    foreach ($conditions as $modifier => $value) {
+
+                        // Convert to condition operator
+                        if ($modifier === "!" && ($value === null || is_bool($value))) {
+                            $operator = "IS NOT";
+                        } elseif ($modifier === "=" && ($value === null || is_bool($value))) {
+                            $operator = "IS";
+                        } elseif ($modifier === "!" && is_array($value)) {
+                            $operator = "NOT IN";
+                        } elseif ($modifier === "=" && is_array($value)) {
+                            $operator = "IN";
+                        } elseif ($modifier === "!") {
+                            $operator = "!=";
+                        } else {
+                            $operator = strtoupper($modifier);
+                        }
+
+                        // Call query
                         if ($and) {
                             $query->where($name, $operator, $value);
                         } else {
                             $query->orWhere($name, $operator, $value);
                         }
-                    } catch (Exception\QueryException $e) {
-                        throw new Exception\RepositoryException($e->getMessage());
                     }
                 }
             }
+        } catch (Exception\QueryException $e) {
+            throw new Exception\RepositoryException($e->getMessage());
         }
     }
 
