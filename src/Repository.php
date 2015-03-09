@@ -230,6 +230,17 @@ abstract class Repository
         }
     }
 
+    /**
+     * Find all records
+     *
+     * @param array $filter
+     * @param array $orderBy
+     * @param int   $limit
+     * @param int   $offset
+     * @param array $associate
+     *
+     * @return EntityCollection
+     */
     public function find(array $filter = [], array $orderBy = [], $limit = 0,
         $offset = 0, array $associate = []
     ) {
@@ -257,10 +268,11 @@ abstract class Repository
      * Find records by set of primary values
      *
      * @param array $primaryValues
+     * @param array $associate
      *
      * @return EntityCollection
      */
-    public function findPrimaries(array $primaryValues)
+    public function findPrimaries(array $primaryValues, array $associate = [])
     {
         $entityReflection = Reflection\Loader::load(
             $this->getEntityName()
@@ -286,6 +298,7 @@ abstract class Repository
                 "IN",
                 $primaryValues
             )
+            ->associate($associate)
             ->run($this->connection);
     }
 

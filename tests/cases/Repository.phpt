@@ -212,7 +212,7 @@ class RepositoryTest extends \Tester\TestCase
         Assert::false($this->repository->findOne(1));
     }
 
-    public function testFindPrimary()
+    public function testFindPrimaries()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $adapterQueryMock->shouldReceive("setConditions")
