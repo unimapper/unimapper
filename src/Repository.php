@@ -254,7 +254,7 @@ abstract class Repository
     }
 
     /**
-     * Find records by set if primary values
+     * Find records by set of primary values
      *
      * @param array $primaryValues
      *
