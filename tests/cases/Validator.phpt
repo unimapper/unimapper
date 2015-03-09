@@ -24,6 +24,11 @@ class ValidatorTest extends \Tester\TestCase
         $this->validator = new Validator($this->entity);
     }
 
+    public function testNoRules()
+    {
+        Assert::true($this->validator->on("id")->validate());
+    }
+
     public function testOnEntity()
     {
         $this->validator
