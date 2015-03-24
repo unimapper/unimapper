@@ -304,10 +304,12 @@ class Validator
 
             if ($rule->getSeverity() <= $minSeverity) {
 
+                $failedIndexes = $rule->getFailedChildIndexes();
                 if ($rule->getProperty() !== null
                     && $rule->getProperty()->getType() === Reflection\Property::TYPE_COLLECTION
+                    && !empty($failedIndexes)
                 ) {
-                    foreach ($rule->getFailedChildIndexes() as $index) {
+                    foreach ($failedIndexes as $index) {
 
                         $path = $rule->getPath();
                         if (count($path) > 1) {

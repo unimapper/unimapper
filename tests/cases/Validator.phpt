@@ -137,9 +137,15 @@ class ValidatorTest extends \Tester\TestCase
 
     public function testGetMessages()
     {
+        $this->entity->manyToMany[] = new Fixtures\Entity\Remote;
+
         $this->validator
             ->on("id")
                 ->addRule(Validator::FILLED, "Id is required!")
+            ->on("collection")
+                ->addRule(Validator::FILLED, "Collection can not be empty!", Validator\Rule::DEBUG)
+            ->on("manyToMany", "text")
+                ->addRule(Validator::FILLED, "Text on nested collection must be filled!", Validator\Rule::WARNING)
             ->on("email")
                 ->addRule(Validator::EMAIL, "This is just info!", Validator\Rule::INFO);
         $this->validator->validate();
@@ -159,9 +165,17 @@ class ValidatorTest extends \Tester\TestCase
         Assert::same(Validator\Rule::ERROR, $messages[0]->severity);
         Assert::same(["id"], $messages[0]->path);
 
-        Assert::same("This is just info!", $messages[1]->message);
-        Assert::same(Validator\Rule::INFO, $messages[1]->severity);
-        Assert::same(["email"], $messages[1]->path);
+        Assert::same("Collection can not be empty!", $messages[1]->message);
+        Assert::same(Validator\Rule::DEBUG, $messages[1]->severity);
+        Assert::same(["collection"], $messages[1]->path);
+
+        Assert::same("Text on nested collection must be filled!", $messages[2]->message);
+        Assert::same(Validator\Rule::WARNING, $messages[2]->severity);
+        Assert::same(["manyToMany", 0, "text"], $messages[2]->path);
+
+        Assert::same("This is just info!", $messages[3]->message);
+        Assert::same(Validator\Rule::INFO, $messages[3]->severity);
+        Assert::same(["email"], $messages[3]->path);
     }
 
     /**
