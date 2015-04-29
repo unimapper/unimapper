@@ -64,6 +64,12 @@ class AssociationManyToOneTest extends \Tester\TestCase
         $association->saveChanges(1, $this->connectionMock, new Fixtures\Entity\NoPrimary);
     }
 
+    public function testLoadWithEmptyPrimaries()
+    {
+        $association = new Association\ManyToOne("manyToOne", Reflection\Loader::load("Simple"), Reflection\Loader::load("Remote"), ["remoteId"]);
+        $association->load($this->connectionMock, [null, null]);
+    }
+
 }
 
 $testCase = new AssociationManyToOneTest;

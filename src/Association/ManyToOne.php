@@ -53,6 +53,12 @@ class ManyToOne extends Single
 
     public function load(Connection $connection, array $primaryValues)
     {
+        // Remove empty primary values
+        $primaryValues = array_filter(array_unique($primaryValues));
+        if (empty($primaryValues)) {
+            return [];
+        }
+
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
 
         $query = $targetAdapter->createSelect($this->getTargetResource());
