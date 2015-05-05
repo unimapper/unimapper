@@ -2,6 +2,7 @@
 
 namespace UniMapper\Query;
 
+use UniMapper\Association\OneToMany;
 use UniMapper\Exception,
     UniMapper\Reflection;
 
@@ -60,17 +61,22 @@ class SelectOne extends \UniMapper\Query
         // Get remote associations
         if ($this->associations["remote"]) {
 
-            settype($result, "array");
-
             foreach ($this->associations["remote"] as $colName => $association) {
 
-                $assocValue = $result[$association->getKey()];
+                $assocValue = $result->{$association->getKey()};
 
                 $associated = $association->load($connection, [$assocValue]);
 
-                // Merge returned associations
-                if (isset($associated[$assocValue])) {
-                    $result[$colName] = $associated[$assocValue];
+                if ($association instanceof OneToMany) {
+                    // Set returned associations
+                    if (isset($associated)) {
+                        $result->{$colName} = $associated;
+                    }
+                } else {
+                    // Merge returned associations
+                    if (isset($associated[$assocValue])) {
+                        $result->{$colName} = $associated[$assocValue];
+                    }
                 }
             }
         }
