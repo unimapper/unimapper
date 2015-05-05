@@ -36,6 +36,12 @@ class OneToMany extends Multi
 
     public function load(Connection $connection, array $primaryValues)
     {
+        // Remove empty primary values
+        $primaryValues = array_filter(array_unique($primaryValues));
+        if (empty($primaryValues)) {
+            return [];
+        }
+
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
 
         $query = $targetAdapter->createSelect(
@@ -43,7 +49,7 @@ class OneToMany extends Multi
             [],
             $this->orderBy,
             $this->limit,
-            $this->offse
+            $this->offset
         );
 
         // Set target conditions
@@ -51,7 +57,7 @@ class OneToMany extends Multi
         $conditions[] = [
             $this->getReferencedKey(),
             "IN",
-            array_keys($primaryValues),
+            array_values($primaryValues),
             "AND"
         ];
         $query->setConditions($conditions);
