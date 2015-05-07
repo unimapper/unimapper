@@ -43,7 +43,7 @@ class OneToMany extends Multi
             [],
             $this->orderBy,
             $this->limit,
-            $this->offset   // TODO: typo
+            $this->offset
         );
 
         // Set target conditions
@@ -51,7 +51,7 @@ class OneToMany extends Multi
         $conditions[] = [
             $this->getReferencedKey(),
             "IN",
-            array_values($primaryValues), // TODO: no array_keys but array_values
+            array_values($primaryValues),
             "AND"
         ];
         $query->setConditions($conditions);
