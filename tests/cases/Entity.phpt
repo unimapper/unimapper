@@ -121,7 +121,7 @@ class EntityTest extends \Tester\TestCase
         $this->entity->entity = new Fixtures\Entity\Nested;
 
         Assert::type("array", $this->entity->toArray());
-        Assert::count(20, $this->entity->toArray());
+        Assert::count(22, $this->entity->toArray());
         Assert::same("test", $this->entity->toArray()["text"]);
         Assert::same("", $this->entity->toArray()["empty"]);
         Assert::same($this->entity->collection, $this->entity->toArray()["collection"]);
@@ -163,6 +163,8 @@ class EntityTest extends \Tester\TestCase
                         'publicProperty' => 'defaultValue'
                     ),
                 ),
+                'oneToMany' => array(),
+                'oneToManyRemote' => array(),
                 'manyToMany' => array(array('id' => 1, 'manyToManyNoDominance' => array(), 'text' => NULL)),
                 'mmFilter' => array(),
                 'manyToOne' => NULL,
@@ -189,7 +191,7 @@ class EntityTest extends \Tester\TestCase
     public function testJsonSerializable()
     {
         Assert::same(
-            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"manyToMany":[],"mmFilter":[],"manyToOne":null,"oneToOne":null,"ooFilter":null,"readonly":null,"storedData":null,"enumeration":null,"publicProperty":"defaultValue"}',
+            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"oneToMany":[],"oneToManyRemote":[],"manyToMany":[],"mmFilter":[],"manyToOne":null,"oneToOne":null,"ooFilter":null,"readonly":null,"storedData":null,"enumeration":null,"publicProperty":"defaultValue"}',
             json_encode($this->entity)
         );
     }
@@ -334,6 +336,8 @@ class EntityTest extends \Tester\TestCase
             'mark',
             'entity',
             'collection',
+            'oneToMany',
+            'oneToManyRemote',
             'manyToMany',
             'mmFilter',
             'manyToOne',

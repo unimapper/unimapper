@@ -62,6 +62,8 @@ class ReflectionEntityTest extends \Tester\TestCase
                 'mark',
                 'entity',
                 'collection',
+                'oneToMany',
+                'oneToManyRemote',
                 'manyToMany',
                 'mmFilter',
                 'manyToOne',

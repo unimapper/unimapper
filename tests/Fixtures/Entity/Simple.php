@@ -26,6 +26,8 @@ Reflection\Property::registerAssocFilter("textLikeFoo", function (Assoc\Single $
  * @property      integer  $mark
  * @property      Nested   $entity
  * @property      Nested[] $collection  m:assoc(M:N) m:assoc-by(simpleId|simple_nested|nestedId)
+ * @property      Nested[] $oneToMany   m:assoc(1:N) m:assoc-by(simplePrimaryId)
+ * @property      Remote[] $oneToManyRemote m:assoc(1:N) m:assoc-by(simplePrimaryId)
  * @property      Remote[] $manyToMany  m:assoc(M:N) m:assoc-by(simpleId|simple_remote|remoteId)
  * @property      Remote[] $mmFilter    m:assoc(M:N) m:assoc-by(simpleId|simple_remote|remoteId) m:assoc-filter-sortAndLimit(DESC|10)
  * @property      Remote   $manyToOne   m:assoc(N:1) m:assoc-by(remoteId)
