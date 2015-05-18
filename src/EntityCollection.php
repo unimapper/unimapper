@@ -209,7 +209,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     }
 
     /**
-     * Convert collection to array
+     * Convert collection to an array
      *
      * @param boolean $nesting Convert nested entities and collections too
      *
@@ -217,11 +217,9 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
      */
     public function toArray($nesting = false)
     {
-        $output = [];
-        foreach ($this->data as $index => $entity) {
-            $output[$index] = $entity->toArray($nesting);
-        }
-        return $output;
+        return array_map(function (Entity $entity) use ($nesting) {
+            return $entity->toArray($nesting);
+        }, $this->data);
     }
 
     /**
@@ -231,11 +229,9 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
      */
     public function jsonSerialize()
     {
-        $output = [];
-        foreach ($this->data as $index => $entity) {
-            $output[$index] = $entity->jsonSerialize();
-        }
-        return $output;
+        return array_map(function (Entity $entity) {
+            return $entity->jsonSerialize();
+        }, $this->data);
     }
 
     /**
