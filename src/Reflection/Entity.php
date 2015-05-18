@@ -54,6 +54,9 @@ class Entity
         foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC)
             as $property
         ) {
+            if ($property->isStatic()) {
+                continue;
+            }
             $this->publicProperties[] =  $property->getName();
         }
 

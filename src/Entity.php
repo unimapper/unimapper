@@ -8,6 +8,8 @@ use UniMapper\EntityCollection,
 abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 {
 
+    public static $dateFormat = "Y-m-d";
+
     const CHANGE_ATTACH = 1;
     const CHANGE_DETACH = 2;
     const CHANGE_ADD = 3;
@@ -421,13 +423,29 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     }
 
     /**
-     * Convert to json representation of entity collection
+     * Gets data which should be serialized to JSON
      *
      * @return array
      */
     public function jsonSerialize()
     {
-        return $this->toArray(true);
+        $output = [];
+        foreach ($this->reflection->getProperties() as $propertyName => $property) {
+
+            $value = $this->{$propertyName};
+            if ($value instanceof EntityCollection || $value instanceof Entity) {
+                $output[$propertyName] = $value->jsonSerialize();
+            } elseif ($value instanceof \DateTime
+                && $property->getType() === Reflection\Property::TYPE_DATE
+            ) {
+                $output[$propertyName] = (array) $value;
+                $output[$propertyName]["date"] = $value->format(self::$dateFormat);
+            } else {
+                $output[$propertyName] = $value;
+            }
+        }
+
+        return array_merge($output, $this->_getPublicPropertyValues());
     }
 
     public function rewind()

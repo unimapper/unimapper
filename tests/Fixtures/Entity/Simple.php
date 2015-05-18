@@ -21,6 +21,7 @@ Reflection\Property::registerAssocFilter("textLikeFoo", function (Assoc\Single $
  * @property      string   $url         m:map-by(link)
  * @property      string   $email       m:map-by(email_address)
  * @property      DateTime $time
+ * @property      Date     $date
  * @property      integer  $year        m:computed
  * @property      string   $ip
  * @property      integer  $mark

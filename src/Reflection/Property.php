@@ -11,6 +11,7 @@ class Property
 {
 
     const TYPE_DATETIME = "datetime",
+          TYPE_DATE = "date",
           TYPE_COLLECTION = "collection",
           TYPE_ENTITY = "entity",
           TYPE_BASIC = "basic";
@@ -164,6 +165,10 @@ class Property
             // DateTime
 
             $this->type = self::TYPE_DATETIME;
+        } elseif (strtolower($definition) === self::TYPE_DATE) {
+            // Date
+
+            $this->type = self::TYPE_DATE;
         } elseif (class_exists(UNC::nameToClass($definition, UNC::ENTITY_MASK))) {
             // Entity
 
@@ -439,6 +444,18 @@ class Property
                     $value
                 );
             }
+        } elseif ($this->type === self::TYPE_DATE) {
+            // Date
+
+            if ($value instanceof \DateTime) {
+                return;
+            } else {
+                throw new Exception\InvalidArgumentException(
+                    "Expected date as DateTime object but " . $givenType
+                    . " given on property " . $this->name . "!",
+                    $value
+                );
+            }
         } else {
             // Unexpected
 
@@ -478,7 +495,9 @@ class Property
             if (settype($value, $this->typeOption)) {
                 return $value;
             }
-        } elseif ($this->type === self::TYPE_DATETIME) {
+        } elseif ($this->type === self::TYPE_DATETIME
+            || $this->type === self::TYPE_DATE
+        ) {
             // DateTime
 
             if ($value instanceof \DateTime) {

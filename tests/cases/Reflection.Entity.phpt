@@ -57,6 +57,7 @@ class ReflectionEntityTest extends \Tester\TestCase
                 'url',
                 'email',
                 'time',
+                'date',
                 'year',
                 'ip',
                 'mark',

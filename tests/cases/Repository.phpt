@@ -221,7 +221,7 @@ class RepositoryTest extends \Tester\TestCase
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $this->adapterMock->shouldReceive("createSelect")
-            ->with("simple_resource", ['simplePrimaryId', 'text', 'empty', 'link', 'email_address', 'time', 'ip', 'mark', 'entity', 'readonly', 'stored_data', 'enumeration'], [], null, null)
+            ->with("simple_resource", ['simplePrimaryId', 'text', 'empty', 'link', 'email_address', 'time', 'date', 'ip', 'mark', 'entity', 'readonly', 'stored_data', 'enumeration'], [], null, null)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
