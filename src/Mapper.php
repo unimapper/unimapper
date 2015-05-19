@@ -75,8 +75,10 @@ class Mapper
             // Entity
 
             return $this->mapEntity($property->getTypeOption(), $value);
-        } elseif ($property->getType() === Reflection\Property::TYPE_DATETIME) {
-            // DateTime
+        } elseif ($property->getType() === Reflection\Property::TYPE_DATETIME
+            || $property->getType() === Reflection\Property::TYPE_DATE
+        ) {
+            // DateTime & Date
 
             if ($value instanceof \DateTime) {
                 return $value;

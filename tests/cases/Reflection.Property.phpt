@@ -91,11 +91,26 @@ class ReflectionPropertyTest extends \Tester\TestCase
         );
 
         // object -> datetime
-        $dateTime = new \stdClass;
-        $dateTime->date = "2012-02-01";
         Assert::type(
             "DateTime",
-            $this->_createReflection('DateTime', 'time')->convertValue($dateTime)
+            $this->_createReflection('DateTime', 'time')->convertValue(
+                (object) ["date" => "2012-02-01"]
+            )
+        );
+
+        // array -> date
+        Assert::type(
+            "DateTime",
+            $this->_createReflection('Date', 'date')
+                ->convertValue(["date" => "2012-02-01"])
+        );
+
+        // object -> date
+        Assert::type(
+            "DateTime",
+            $this->_createReflection('Date', 'date')->convertValue(
+                (object) ["date" => "2012-02-01"]
+            )
         );
 
         // string -> boolean
