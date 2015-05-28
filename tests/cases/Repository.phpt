@@ -133,15 +133,41 @@ class RepositoryTest extends \Tester\TestCase
         );
     }
 
+    public function testUpdateBy()
+    {
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("setConditions")
+            ->once()
+            ->with([["simplePrimaryId", "=", 1, "AND"]]);
+        $adapterQueryMock->shouldReceive("getRaw")->once();
+
+        $this->adapterMock->shouldReceive("createUpdate")
+            ->once()
+            ->with("simple_resource", ["text" => "foo"])
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("onExecute")
+            ->once()
+            ->with($adapterQueryMock)
+            ->andReturn(3);
+
+        Assert::same(
+            3,
+            $this->repository->updateBy(
+                new Fixtures\Entity\Simple(["text" => "foo"]),
+                ["id" => ["=" => 1]]
+            )
+        );
+    }
+
     /**
      * @throws UniMapper\Exception\QueryException Primary value can not be empty!
      */
-    public function testDeleteNoPrimaryValue()
+    public function testDestroyNoPrimaryValue()
     {
         $this->repository->destroy(new Fixtures\Entity\Simple);
     }
 
-    public function testDelete()
+    public function testDestroy()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $adapterQueryMock->shouldReceive("getRaw")->once();
@@ -159,7 +185,7 @@ class RepositoryTest extends \Tester\TestCase
         $this->repository->destroy($entity);
     }
 
-    public function testDeleteFailed()
+    public function testDestroyFailed()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $adapterQueryMock->shouldReceive("getRaw")->once();
@@ -175,6 +201,26 @@ class RepositoryTest extends \Tester\TestCase
 
         $entity = new Fixtures\Entity\Simple(["id" => 1]);
         Assert::false($this->repository->destroy($entity));
+    }
+
+    public function testDestroyBy()
+    {
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("setConditions")
+            ->once()
+            ->with([["simplePrimaryId", "=", 1, "AND"]]);
+        $adapterQueryMock->shouldReceive("getRaw")->once();
+
+        $this->adapterMock->shouldReceive("createDelete")
+            ->with("simple_resource")
+            ->once()
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("onExecute")
+            ->with($adapterQueryMock)
+            ->once()
+            ->andReturn(3);
+
+        Assert::same(3, $this->repository->destroyBy(["id" => ["=" => 1]]));
     }
 
     public function testFindOne()

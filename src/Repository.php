@@ -93,7 +93,7 @@ abstract class Repository
     }
 
     /**
-     * Update record
+     * Update single record
      *
      * @param Entity $entity
      * @param mixed  $primaryValue
@@ -118,6 +118,33 @@ abstract class Repository
         $this->_saveAssociated($primaryValue, $entity);
     }
 
+    /**
+     * Update records
+     *
+     * @param Entity $entity
+     * @param array $filter
+     *
+     * @return int Affected records count
+     *
+     * @throws Exception\RepositoryException
+     * @throws Exception\ValidatorException
+     */
+    public function updateBy(Entity $entity, array $filter = [])
+    {
+        if (!$entity->getValidator()->validate()) {
+            throw new Exception\ValidatorException($entity->getValidator());
+        }
+
+        $query = $this->query()->update($entity->getData());
+        $this->_applyFilter($query, $filter);
+
+        try {
+            return $query->run($this->connection);
+        } catch (Exception\QueryException $e) {
+            throw new Exception\RepositoryException($e->getMessage());
+        }
+    }
+
     private function _saveAssociated($primaryValue, Entity $entity)
     {
         foreach ($entity->getChanges() as $name => $associated) {
@@ -130,7 +157,7 @@ abstract class Repository
     }
 
     /**
-     * Delete single entity
+     * Delete single record
      *
      * @param Entity $entity
      *
@@ -157,7 +184,21 @@ abstract class Repository
         return $this->query()->deleteOne($entity->{$primaryName})->run($this->connection);
     }
 
-    public function count($filter = [])
+    /**
+     * Delete records
+     *
+     * @param array $filter
+     *
+     * @return int Deleted records count
+     */
+    public function destroyBy(array $filter = [])
+    {
+        $query = $this->query()->delete();
+        $this->_applyFilter($query, $filter);
+        return $query->run($this->connection);
+    }
+
+    public function count(array $filter = [])
     {
         $query = $this->query()->count();
         $this->_applyFilter($query, $filter);
