@@ -63,6 +63,15 @@ class Mapper
                 return true;
             }
 
+            if (Validator::isTraversable($value)
+                && $property->getTypeOption() !== Reflection\Property::TYPE_BASIC_ARRAY
+            ) {
+                throw new Exception\InvalidArgumentException(
+                    "Traversable value can not be mapped to scalar!",
+                    $value
+                );
+            }
+
             if (settype($value, $property->getTypeOption())) {
                 return $value;
             }

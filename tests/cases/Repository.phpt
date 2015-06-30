@@ -100,14 +100,14 @@ class RepositoryTest extends \Tester\TestCase
         $this->adapterMock->shouldReceive("onExecute")
             ->once()
             ->with($adapterQueryMock)
-            ->andReturn(["id" => 1]);
+            ->andReturn(3);
 
         $entity = new Fixtures\Entity\Simple(["simplePrimaryId" => null, "text" => "foo"]);
         $entity->manyToMany[] = new Fixtures\Entity\Remote(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote")); // Associations are ignored
 
         $this->repository->save($entity);
 
-        Assert::same(1, $entity->id);
+        Assert::same(3, $entity->id);
     }
 
     public function testSaveInvalid()

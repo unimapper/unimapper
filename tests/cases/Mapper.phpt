@@ -2,6 +2,7 @@
 
 use Tester\Assert;
 use UniMapper\Tests\Fixtures;
+use UniMapper\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -39,6 +40,28 @@ class MapperTest extends \Tester\TestCase
         Assert::same("http://example.com", $entity->url);
         Assert::same("foo", $entity->readonly);
         Assert::same(["one", "two", "three"], $entity->storedData);
+    }
+
+    /**
+     * @throws UniMapper\Exception\InvalidArgumentException Traversable value can not be mapped to scalar!
+     */
+    public function testMapValueArrayToString()
+    {
+        $this->mapper->mapValue(
+            Reflection\Loader::load("Simple")->getProperty("text"),
+            []
+        );
+    }
+
+    /**
+     * @throws UniMapper\Exception\InvalidArgumentException Traversable value can not be mapped to scalar!
+     */
+    public function testMapValueObjectToString()
+    {
+        $this->mapper->mapValue(
+            Reflection\Loader::load("Simple")->getProperty("text"),
+            new stdClass
+        );
     }
 
     public function testUnmapEntity()

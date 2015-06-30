@@ -16,6 +16,12 @@ class Property
           TYPE_ENTITY = "entity",
           TYPE_BASIC = "basic";
 
+    const TYPE_BASIC_BOOLEAN = "boolean",
+          TYPE_BASIC_INTEGER = "integer",
+          TYPE_BASIC_DOUBLE = "double",
+          TYPE_BASIC_STRING = "string",
+          TYPE_BASIC_ARRAY = "array";
+
     const OPTION_ASSOC = "assoc",
           OPTION_ASSOC_BY = "assoc-by",
           OPTION_COMPUTED = "computed",
@@ -35,7 +41,13 @@ class Property
     private $name;
 
     /** @var array $basicTypes */
-    private $basicTypes = ["boolean", "integer", "double", "string", "array"];
+    private $basicTypes = [
+        self::TYPE_BASIC_BOOLEAN,
+        self::TYPE_BASIC_INTEGER,
+        self::TYPE_BASIC_DOUBLE,
+        self::TYPE_BASIC_STRING,
+        self::TYPE_BASIC_ARRAY
+    ];
 
     /** @var Entity */
     private $entityReflection;
