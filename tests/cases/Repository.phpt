@@ -95,7 +95,7 @@ class RepositoryTest extends \Tester\TestCase
 
         $this->adapterMock->shouldReceive("createInsert")
             ->once()
-            ->with("simple_resource", ["text" => "foo"])
+            ->with("simple_resource", ["text" => "foo"], "simplePrimaryId")
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->once()

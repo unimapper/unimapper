@@ -25,17 +25,19 @@ class Insert extends \UniMapper\Query
 
         $query = $adapter->createInsert(
             $this->entityReflection->getAdapterResource(),
-            $mapper->unmapEntity($this->entity)
+            $mapper->unmapEntity($this->entity),
+            $this->entityReflection->hasPrimary() ? $this->entityReflection->getPrimaryProperty()->getName(true) : null
         );
 
         $primaryValue = $adapter->execute($query);
 
         if ($this->entityReflection->hasPrimary()) {
 
-            return $mapper->mapValue(
+            $t = $mapper->mapValue(
                 $this->entityReflection->getPrimaryProperty(),
                 $primaryValue
             );
+            return $t;
         }
     }
 

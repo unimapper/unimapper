@@ -31,7 +31,7 @@ class AssociationManyToManyTest extends \Tester\TestCase
     {
         $this->adapters["RemoteAdapter"]
             ->shouldReceive("createInsert")
-            ->with("remote_resource", ['text' => 'foo'])
+            ->with("remote_resource", ['text' => 'foo'], "id")
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["RemoteAdapter"]

@@ -28,7 +28,7 @@ class QueryInsertTest extends \Tester\TestCase
     {
         $this->adapters["FooAdapter"]->shouldReceive("createInsert")
             ->once()
-            ->with("simple_resource", ['text'=>'foo'])
+            ->with("simple_resource", ['text'=>'foo'], "simplePrimaryId")
             ->andReturn($this->adapterQueryMock);
 
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
@@ -56,7 +56,7 @@ class QueryInsertTest extends \Tester\TestCase
 
         $this->adapters["FooAdapter"]->shouldReceive("createInsert")
             ->once()
-            ->with("simple_resource", [])
+            ->with("simple_resource", [], "simplePrimaryId")
             ->andReturn($this->adapterQueryMock);
 
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")

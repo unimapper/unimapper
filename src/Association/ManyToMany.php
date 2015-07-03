@@ -211,7 +211,11 @@ class ManyToMany extends Multi
             foreach ($collection->getChanges()[Entity::CHANGE_ADD] as $entity) {
 
                 $assocKeys[] = $targetAdapter->execute(
-                    $targetAdapter->createInsert($this->targetReflection->getAdapterResource(), $entity->getData())
+                    $targetAdapter->createInsert(
+                        $this->targetReflection->getAdapterResource(),
+                        $entity->getData(),
+                        $this->targetReflection->getPrimaryProperty()->getName(true)
+                    )
                 );
             }
         }

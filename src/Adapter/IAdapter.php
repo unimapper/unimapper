@@ -18,7 +18,7 @@ interface IAdapter
 
     public function createCount($resource);
 
-    public function createInsert($resource, array $values);
+    public function createInsert($resource, array $values, $primaryName = null);
 
     public function createUpdate($resource, array $values);
 
