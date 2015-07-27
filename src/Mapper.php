@@ -191,8 +191,10 @@ class Mapper
 
             $property = $entity->getReflection()->getProperty($propertyName);
 
-            // Skip associations
-            if ($property->hasOption(Reflection\Property::OPTION_ASSOC)) {
+            // Skip associations & readonly
+            if ($property->hasOption(Reflection\Property::OPTION_ASSOC)
+                || !$property->isWritable()
+            ) {
                 continue;
             }
 

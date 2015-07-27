@@ -72,7 +72,8 @@ class MapperTest extends \Tester\TestCase
                 "url" => "http://example.com",
                 "empty" => null,
                 "storedData" => ["one", "two", "three"],
-                "oneToOne" => ["id" => 3]
+                "oneToOne" => ["id" => 3],
+                "readonly" => "readonlyValue"
             ]
         );
 
