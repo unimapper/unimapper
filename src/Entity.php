@@ -339,6 +339,13 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 
     public function __unset($name)
     {
+        if ($this->reflection->hasProperty($name)
+            && !$this->reflection->getProperty($name)->isWritable()
+        ) {
+            throw new Exception\InvalidArgumentException(
+                "Property '" . $name . "' is read-only!"
+            );
+        }
         unset($this->data[$name]);
     }
 

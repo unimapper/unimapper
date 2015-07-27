@@ -81,7 +81,7 @@ class EntityTest extends \Tester\TestCase
     /**
      * @throws UniMapper\Exception\InvalidArgumentException Property 'readonly' is read-only!
      */
-    public function testSetReadnonlyProperty()
+    public function testSetReadonly()
     {
         $this->entity->readonly = "trytowrite";
     }
@@ -104,6 +104,14 @@ class EntityTest extends \Tester\TestCase
     {
         unset($this->entity->id);
         Assert::null($this->entity->id);
+    }
+
+    /**
+     * @throws UniMapper\Exception\InvalidArgumentException Property 'readonly' is read-only!
+     */
+    public function testUnsetReadonlyProperty()
+    {
+        unset($this->entity->readonly);
     }
 
     public function testSetProperty()
