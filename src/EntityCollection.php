@@ -9,8 +9,8 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     \JsonSerializable
 {
 
-    /** @var Reflection\Entity $entityReflection */
-    private $entityReflection;
+    /** @var string $entityClass */
+    private $entityClass;
 
     /** @var array $data Data container */
     private $data = [];
@@ -24,12 +24,14 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     ];
 
     /**
-     * @param string $name   Entity name
-     * @param mixed  $values
+     * @param string|UniMapper\Entity $name   Entity name, class or entity object
+     * @param mixed                   $values
      */
     public function __construct($name, $values = null)
     {
-        $this->entityReflection = Reflection\Loader::load($name);
+        $reflection = Reflection\Loader::load($name);
+
+        $this->entityClass = $reflection->getClassName();
 
         if ($values) {
 
@@ -40,7 +42,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
                     if ($value instanceof Entity) {
                         $this->offsetSet($index, $value);
                     } else {
-                        $this->data[$index] = $this->entityReflection->createEntity($value);
+                        $this->data[$index] = $reflection->createEntity($value);
                     }
                 }
             } else {
@@ -54,17 +56,16 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
 
     private function _validateEntity($entity, $primaryRequired = false)
     {
-        $entityClass = $this->entityReflection->getClassName();
-        if (!$entity instanceof $entityClass) {
+        if (!$entity instanceof $this->entityClass) {
             throw new Exception\InvalidArgumentException(
-                "Expected instance of entity " . $entityClass . "!",
+                "Expected instance of entity " . $this->entityClass . "!",
                 $entity
             );
         }
 
         if ($primaryRequired) {
 
-            $primaryName = $entity->getReflection()->getPrimaryProperty()->getName();
+            $primaryName = Reflection\Loader::load($entity)->getPrimaryProperty()->getName();
             if (empty($entity->{$primaryName})) {
                 throw new Exception\InvalidArgumentException(
                     "Primary value can not be empty!"
@@ -77,7 +78,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         $this->_validateEntity($entity, true);
 
-        $primary = $entity->{$entity->getReflection()->getPrimaryProperty()->getName()};
+        $primary = $entity->{Reflection\Loader::load($entity)->getPrimaryProperty()->getName()};
         if (!in_array($primary, $this->changes[Entity::CHANGE_ATTACH], true)) {
             array_push($this->changes{Entity::CHANGE_ATTACH}, $primary);
         }
@@ -87,7 +88,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         $this->_validateEntity($entity, true);
 
-        $primary = $entity->{$entity->getReflection()->getPrimaryProperty()->getName()};
+        $primary = $entity->{Reflection\Loader::load($entity)->getPrimaryProperty()->getName()};
         if (!in_array($primary, $this->changes[Entity::CHANGE_DETACH], true)) {
             array_push($this->changes{Entity::CHANGE_DETACH}, $primary);
         }
@@ -103,7 +104,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         $this->_validateEntity($entity, true);
 
-        $primary = $entity->{$entity->getReflection()->getPrimaryProperty()->getName()};
+        $primary = $entity->{Reflection\Loader::load($entity)->getPrimaryProperty()->getName()};
         if (!in_array($primary, $this->changes[Entity::CHANGE_REMOVE], true)) {
             array_push($this->changes{Entity::CHANGE_REMOVE}, $primary);
         }
@@ -125,13 +126,25 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     }
 
     /**
+     * Get entity class
+     *
+     * @return string
+     */
+    public function getEntityClass()
+    {
+        return $this->entityClass;
+    }
+
+    /**
      * Get entity reflection
      *
      * @return \UniMapper\Reflection\Entity
+     *
+     * @deprecated
      */
     public function getEntityReflection()
     {
-        return $this->entityReflection;
+        return Reflection\Loader::load($this->entityClass);
     }
 
     /**
@@ -245,8 +258,10 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         foreach ($this->data as $entity) {
 
-            $primaryPropertyName = $entity->getReflection()->getPrimaryProperty()
+            $primaryPropertyName = Reflection\Loader::load($entity)
+                ->getPrimaryProperty()
                 ->getName();
+
             $primaryValue = $entity->{$primaryPropertyName};
             if ($primaryValue === $value && $primaryValue !== null) {
                 return $entity;

@@ -87,7 +87,9 @@ class ManyToOne extends Single
 
     public function saveChanges($primaryValue, Connection $connection, Entity $entity)
     {
-        if (!$entity->getReflection()->hasPrimary()) {
+        $reflection = Reflection\Loader::load($entity);
+
+        if (!$reflection->hasPrimary()) {
             throw new Exception\InvalidArgumentException(
                 "Only entity with primary can save changes!"
             );
@@ -95,7 +97,7 @@ class ManyToOne extends Single
 
         $sourceAdapter = $connection->getAdapter($this->entityReflection->getAdapterName());
 
-        $primaryName = $entity->getReflection()->getPrimaryProperty()->getName();
+        $primaryName = $reflection->getPrimaryProperty()->getName();
 
         switch ($entity->getChangeType()) {
         case Entity::CHANGE_ATTACH:

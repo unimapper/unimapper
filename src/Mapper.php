@@ -189,7 +189,7 @@ class Mapper
         $output = [];
         foreach ($entity->getData() as $propertyName => $value) {
 
-            $property = $entity->getReflection()->getProperty($propertyName);
+            $property = Reflection\Loader::load($entity)->getProperty($propertyName);
 
             // Skip associations & readonly
             if ($property->hasOption(Reflection\Property::OPTION_ASSOC)

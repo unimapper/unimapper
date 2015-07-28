@@ -431,12 +431,12 @@ class Property
                     . " property " . $this->name . "!",
                     $value
                 );
-            } elseif ($value->getEntityReflection()->getClassName() !== $expectedType) {
+            } elseif ($value->getEntityClass() !== $expectedType) {
                 throw new Exception\InvalidArgumentException(
                     "Expected collection of entity "
                     . $expectedType
                     . " but collection of entity "
-                    . $value->getEntityReflection()->getClassName()
+                    . $value->getEntityClass()
                     . " given on property " . $this->name . "!",
                     $value
                 );

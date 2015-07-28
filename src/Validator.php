@@ -124,12 +124,14 @@ class Validator
      */
     public function on($name, $child = null)
     {
-        if (!$this->entity->getReflection()->hasProperty($name)) {
+        $reflection = Reflection\Loader::load($this->entity);
+
+        if (!$reflection->hasProperty($name)) {
             throw new Exception\InvalidArgumentException(
                 "Unknown property '" . $name . "'!"
             );
         }
-        $this->property = $this->entity->getReflection()->getProperty($name);
+        $this->property = $reflection->getProperty($name);
 
         if ($this->property->hasOption(Reflection\Property::OPTION_COMPUTED)) {
             throw new Exception\InvalidArgumentException(

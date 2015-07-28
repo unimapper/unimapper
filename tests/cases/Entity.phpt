@@ -227,7 +227,7 @@ class EntityTest extends \Tester\TestCase
 
         $unserialized = unserialize($serialized);
         Assert::isEqual($this->entity, $unserialized);
-        Assert::type("UniMapper\Reflection\Entity", $unserialized->getReflection());
+        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $unserialized);
         Assert::same(['text' => 'test', 'id' => 1, 'empty' => ''], $unserialized->getData());
     }
 

@@ -33,7 +33,7 @@ abstract class Repository
             );
         }
 
-        $reflection = $entity->getReflection();
+        $reflection = Reflection\Loader::load($entity);
         if (!$reflection->hasPrimary()) {
             throw new Exception\RepositoryException(
                 "Can not save entity without primary property!"
@@ -69,12 +69,12 @@ abstract class Repository
 
         $values = $entity->getData();
 
-        // Prevent to force empty primary property
-        if ($entity->getReflection()->hasPrimary()) {
+        $reflection = Reflection\Loader::load($entity);
 
-            $primaryName = $entity->getReflection()
-                ->getPrimaryProperty()
-                ->getName();
+        // Prevent to force empty primary property
+        if ($reflection->hasPrimary()) {
+
+            $primaryName = $reflection->getPrimaryProperty()->getName();
 
             if (empty($values[$primaryName])) {
                 unset($values[$primaryName]);
@@ -148,7 +148,7 @@ abstract class Repository
     private function _saveAssociated($primaryValue, Entity $entity)
     {
         foreach ($entity->getChanges() as $name => $associated) {
-            $entity->getReflection()->getProperty($name)->getOption(Reflection\Property::OPTION_ASSOC)->saveChanges(
+            Reflection\Loader::load($entity)->getProperty($name)->getOption(Reflection\Property::OPTION_ASSOC)->saveChanges(
                 $primaryValue,
                 $this->connection,
                 $associated
@@ -172,7 +172,7 @@ abstract class Repository
             );
         }
 
-        $reflection = $entity->getReflection();
+        $reflection = Reflection\Loader::load($entity);
         if (!$reflection->hasPrimary()) {
             throw new Exception\RepositoryException(
                 "Can not delete entity without primary property!"

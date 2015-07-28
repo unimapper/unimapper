@@ -15,9 +15,6 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     const CHANGE_ADD = 3;
     const CHANGE_REMOVE = 4;
 
-    /** @var \UniMapper\Reflection\Entity $reflection */
-    private $reflection;
-
     /** @var array $data Stored variables */
     private $data = [];
 
@@ -38,8 +35,6 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     public function __construct($values = null)
     {
-        $this->reflection = Reflection\Loader::load(get_called_class());
-
         if ($values) {
             $this->_setProperties($values, true, true, true, true);
         }
@@ -61,16 +56,18 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             );
         }
 
+        $reflection = Reflection\Loader::load(get_called_class());
+
         foreach ($values as $name => $value) {
 
             // Public
-            if (in_array($name, $this->reflection->getPublicProperties())) {
+            if (in_array($name, $reflection->getPublicProperties())) {
                 $this->{$name} = $value;
                 continue;
             }
 
             // Undefined
-            if (!$this->reflection->hasProperty($name)) {
+            if (!$reflection->hasProperty($name)) {
 
                 if ($skipUndefined) {
                     continue;
@@ -81,7 +78,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
                 );
             }
 
-            $property = $this->reflection->getProperty($name);
+            $property = $reflection->getProperty($name);
 
             // Computed
             if ($property->hasOption(Reflection\Property::OPTION_COMPUTED)) {
@@ -129,26 +126,26 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     private function _resetIterator()
     {
-        if (!$this->reflection) {
-            $this->reflection = Reflection\Loader::load(get_called_class());
-        }
+        $reflection = Reflection\Loader::load(get_called_class());
 
         $this->iteration = array_merge(
-            array_keys($this->reflection->getProperties()),
-            $this->reflection->getPublicProperties()
+            array_keys($reflection->getProperties()),
+            $reflection->getPublicProperties()
         );
         $this->rewind();
     }
 
     private function _validateChangeType()
     {
-        if (!$this->reflection->hasPrimary()) {
+        $reflection = Reflection\Loader::load(get_called_class());
+
+        if (!$reflection->hasPrimary()) {
             throw new Exception\InvalidArgumentException(
                 "Only entity with primary can define changes!"
             );
         }
 
-        $primaryName = $this->reflection->getPrimaryProperty()->getName();
+        $primaryName = $reflection->getPrimaryProperty()->getName();
         if (empty($this->{$primaryName})) {
             throw new Exception\InvalidArgumentException(
                 "Primary value can not be empty!"
@@ -223,13 +220,15 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     public function __call($name, $arguments)
     {
-        if (!$this->reflection->hasProperty($name)) {
+        $reflection = Reflection\Loader::load(get_called_class());
+
+        if (!$reflection->hasProperty($name)) {
             throw new Exception\InvalidArgumentException(
                 "Undefined property '" . $name . "'!"
             );
         }
 
-        $propertyReflection = $this->reflection->getProperty($name);
+        $propertyReflection = $reflection->getProperty($name);
 
         if ($propertyReflection->getType() !== Reflection\Property::TYPE_ENTITY
             && $propertyReflection->getType() !== Reflection\Property::TYPE_COLLECTION
@@ -294,13 +293,14 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             return $this->data[$name];
         }
 
-        if (!$this->reflection->hasProperty($name)) {
+        $reflection = Reflection\Loader::load(get_called_class());
+        if (!$reflection->hasProperty($name)) {
             throw new Exception\InvalidArgumentException(
                 "Undefined property '" . $name . "'!"
             );
         }
 
-        $property = $this->reflection->getProperty($name);
+        $property = $reflection->getProperty($name);
 
         // computed property
         if ($property->hasOption(Reflection\Property::OPTION_COMPUTED)) {
@@ -339,8 +339,9 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 
     public function __unset($name)
     {
-        if ($this->reflection->hasProperty($name)
-            && !$this->reflection->getProperty($name)->isWritable()
+        $reflection = Reflection\Loader::load(get_called_class());
+        if ($reflection->hasProperty($name)
+            && !$reflection->getProperty($name)->isWritable()
         ) {
             throw new Exception\InvalidArgumentException(
                 "Property '" . $name . "' is read-only!"
@@ -359,9 +360,12 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         return $this->changes;
     }
 
+    /**
+     * @deprecated
+     */
     public function getReflection()
     {
-        return $this->reflection;
+        return Reflection\Loader::load(get_called_class());
     }
 
     /**
@@ -404,8 +408,8 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     public function toArray($nesting = false)
     {
-        $output = array();
-        foreach ($this->reflection->getProperties() as $propertyName => $property) {
+        $output = [];
+        foreach (Reflection\Loader::load(get_called_class())->getProperties() as $propertyName => $property) {
 
             $value = $this->{$propertyName};
             if (($value instanceof EntityCollection || $value instanceof Entity)
@@ -423,7 +427,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     private function _getPublicPropertyValues()
     {
         $result = [];
-        foreach ($this->reflection->getPublicProperties() as $name) {
+        foreach (Reflection\Loader::load(get_called_class())->getPublicProperties() as $name) {
             $result[$name] = $this->{$name};
         }
         return $result;
@@ -437,7 +441,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     public function jsonSerialize()
     {
         $output = [];
-        foreach ($this->reflection->getProperties() as $propertyName => $property) {
+        foreach (Reflection\Loader::load(get_called_class())->getProperties() as $propertyName => $property) {
 
             $value = $this->{$propertyName};
             if ($value instanceof EntityCollection || $value instanceof Entity) {
