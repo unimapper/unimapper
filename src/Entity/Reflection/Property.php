@@ -1,11 +1,11 @@
 <?php
 
-namespace UniMapper\Reflection;
+namespace UniMapper\Entity\Reflection;
 
-use UniMapper\EntityCollection,
-    UniMapper\Validator,
+use UniMapper\Validator,
     UniMapper\NamingConvention as UNC,
     UniMapper\Exception;
+use UniMapper\Entity;
 
 class Property
 {
@@ -49,7 +49,7 @@ class Property
         self::TYPE_BASIC_ARRAY
     ];
 
-    /** @var Entity */
+    /** @var Entity\Reflection */
     private $entityReflection;
 
     /** @var array $assocTypes List of available association types */
@@ -72,16 +72,16 @@ class Property
     private static $assocFilters = [];
 
     /**
-     * @param string $type
-     * @param string $name
-     * @param Entity $entityReflection
-     * @param bool   $readonly
-     * @param string $options
+     * @param string            $type
+     * @param string            $name
+     * @param Entity\Reflection $entityReflection
+     * @param bool              $readonly
+     * @param string            $options
      */
     public function __construct(
         $type,
         $name,
-        Entity $entityReflection,
+        Entity\Reflection $entityReflection,
         $readonly = false,
         $options = null
     ) {
@@ -120,7 +120,7 @@ class Property
     /**
      * Get entity reflection
      *
-     * @return Entity
+     * @return Entity\Reflection
      */
     public function getEntityReflection()
     {
@@ -424,7 +424,7 @@ class Property
             // Collection
 
             $expectedType = UNC::nameToClass($expectedType, UNC::ENTITY_MASK);
-            if (!$value instanceof EntityCollection) {
+            if (!$value instanceof Entity\Collection) {
 
                 throw new Exception\InvalidArgumentException(
                     "Expected entity collection but " . $givenType . " given on"
@@ -534,7 +534,7 @@ class Property
         ) {
             // Collection
 
-            return new EntityCollection($this->typeOption, $value);
+            return new Entity\Collection($this->typeOption, $value);
         } elseif ($this->type === self::TYPE_ENTITY
             && Validator::isTraversable($value)
         ) {

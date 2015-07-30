@@ -5,10 +5,10 @@ namespace UniMapper;
 abstract class Association
 {
 
-    /** @var Reflection\Entity */
-    protected $entityReflection;
+    /** @var Entity\Reflection */
+    protected $sourceReflection;
 
-    /** @var Reflection\Entity */
+    /** @var Entity\Reflection */
     protected $targetReflection;
 
     /** @var bool */
@@ -22,18 +22,18 @@ abstract class Association
 
     public function __construct(
         $propertyName,
-        Reflection\Entity $sourceReflection,
-        Reflection\Entity $targetReflection,
+        Entity\Reflection $sourceReflection,
+        Entity\Reflection $targetReflection,
         array $mapBy,
         $dominant = true
     ) {
         $this->propertyName = $propertyName;
-        $this->entityReflection = $sourceReflection;
+        $this->sourceReflection = $sourceReflection;
         $this->targetReflection = $targetReflection;
         $this->dominant = (bool) $dominant;
         $this->mapBy = $mapBy;
 
-        if (!$this->entityReflection->hasAdapter()) {
+        if (!$this->sourceReflection->hasAdapter()) {
             throw new Exception\AssociationException(
                 "Can not use associations while source entity "
                 . $sourceReflection->getName()
@@ -51,7 +51,7 @@ abstract class Association
 
     public function getPrimaryKey()
     {
-        return $this->entityReflection->getPrimaryProperty()->getName(true);
+        return $this->sourceReflection->getPrimaryProperty()->getName(true);
     }
 
     /**
@@ -76,7 +76,7 @@ abstract class Association
 
     public function getSourceResource()
     {
-        return $this->entityReflection->getAdapterResource();
+        return $this->sourceReflection->getAdapterResource();
     }
 
     public function getTargetAdapterName()
@@ -86,7 +86,7 @@ abstract class Association
 
     public function isRemote()
     {
-        return $this->entityReflection->getAdapterName()
+        return $this->sourceReflection->getAdapterName()
             !== $this->targetReflection->getAdapterName();
     }
 

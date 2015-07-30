@@ -56,7 +56,7 @@ class EntityTest extends \Tester\TestCase
         Assert::same("test", $this->entity->text);
         Assert::same(1, $this->entity->id);
         Assert::same("", $this->entity->empty);
-        Assert::type("UniMapper\EntityCollection", $this->entity->manyToMany);
+        Assert::type("UniMapper\Entity\Collection", $this->entity->manyToMany);
         Assert::count(0, $this->entity->manyToMany);
         Assert::null($this->entity->year); // Computed
     }
@@ -254,7 +254,7 @@ class EntityTest extends \Tester\TestCase
         );
         Assert::same(2, $this->entity->id);
         Assert::same("3", $this->entity->text);
-        Assert::type("UniMapper\EntityCollection", $this->entity->collection);
+        Assert::type("UniMapper\Entity\Collection", $this->entity->collection);
         Assert::same("1999-01-12", $this->entity->time->format("Y-m-d"));
         Assert::same("foo", $this->entity->publicProperty);
         Assert::same(null, $this->entity->empty);
@@ -372,7 +372,7 @@ class EntityTest extends \Tester\TestCase
 
     public function testCallOnCollection()
     {
-        $collection = new UniMapper\EntityCollection("Remote");
+        $collection = new UniMapper\Entity\Collection("Remote");
 
         Assert::same($collection, $this->entity->manyToMany($collection));
         Assert::same($collection, $this->entity->manyToMany());

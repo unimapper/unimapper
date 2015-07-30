@@ -1,7 +1,5 @@
 <?php
 
-use UniMapper\Reflection;
-
 require __DIR__ . '/../bootstrap.php';
 
 /**
@@ -16,7 +14,7 @@ class QueryTest extends \Tester\TestCase
     public function testNoAdapterEntity()
     {
         new UniMapper\Query\Select(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoAdapter")
+            new \UniMapper\Entity\Reflection("UniMapper\Tests\Fixtures\Entity\NoAdapter")
         );
     }
 

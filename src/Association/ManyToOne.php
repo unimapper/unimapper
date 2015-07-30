@@ -5,15 +5,14 @@ namespace UniMapper\Association;
 use UniMapper\Connection;
 use UniMapper\Entity;
 use UniMapper\Exception;
-use UniMapper\Reflection;
 
 class ManyToOne extends Single
 {
 
     public function __construct(
         $propertyName,
-        Reflection\Entity $sourceReflection,
-        Reflection\Entity $targetReflection,
+        Entity\Reflection $sourceReflection,
+        Entity\Reflection $targetReflection,
         array $mapBy
     ) {
         parent::__construct(
@@ -87,7 +86,7 @@ class ManyToOne extends Single
 
     public function saveChanges($primaryValue, Connection $connection, Entity $entity)
     {
-        $reflection = Reflection\Loader::load($entity);
+        $reflection = Entity\Reflection\Loader::load($entity);
 
         if (!$reflection->hasPrimary()) {
             throw new Exception\InvalidArgumentException(
@@ -95,7 +94,7 @@ class ManyToOne extends Single
             );
         }
 
-        $sourceAdapter = $connection->getAdapter($this->entityReflection->getAdapterName());
+        $sourceAdapter = $connection->getAdapter($this->sourceReflection->getAdapterName());
 
         $primaryName = $reflection->getPrimaryProperty()->getName();
 

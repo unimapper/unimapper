@@ -1,11 +1,12 @@
 <?php
 
-namespace UniMapper;
+namespace UniMapper\Entity;
 
-/**
- * Entity collection as ArrayList
- */
-class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
+use UniMapper\Entity;
+use UniMapper\Exception;
+use UniMapper\Validator;
+
+class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
     \JsonSerializable
 {
 
@@ -24,12 +25,12 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     ];
 
     /**
-     * @param string|UniMapper\Entity $name   Entity name, class or entity object
-     * @param mixed                   $values
+     * @param string|Entity $name   Entity name, class or entity object
+     * @param mixed         $values
      */
     public function __construct($name, $values = null)
     {
-        $reflection = Reflection\Loader::load($name);
+        $reflection = Entity\Reflection\Loader::load($name);
 
         $this->entityClass = $reflection->getClassName();
 
@@ -65,7 +66,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
 
         if ($primaryRequired) {
 
-            $primaryName = Reflection\Loader::load($entity)->getPrimaryProperty()->getName();
+            $primaryName = Entity\Reflection\Loader::load($entity)->getPrimaryProperty()->getName();
             if (empty($entity->{$primaryName})) {
                 throw new Exception\InvalidArgumentException(
                     "Primary value can not be empty!"
@@ -78,7 +79,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         $this->_validateEntity($entity, true);
 
-        $primary = $entity->{Reflection\Loader::load($entity)->getPrimaryProperty()->getName()};
+        $primary = $entity->{Entity\Reflection\Loader::load($entity)->getPrimaryProperty()->getName()};
         if (!in_array($primary, $this->changes[Entity::CHANGE_ATTACH], true)) {
             array_push($this->changes{Entity::CHANGE_ATTACH}, $primary);
         }
@@ -88,7 +89,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         $this->_validateEntity($entity, true);
 
-        $primary = $entity->{Reflection\Loader::load($entity)->getPrimaryProperty()->getName()};
+        $primary = $entity->{Entity\Reflection\Loader::load($entity)->getPrimaryProperty()->getName()};
         if (!in_array($primary, $this->changes[Entity::CHANGE_DETACH], true)) {
             array_push($this->changes{Entity::CHANGE_DETACH}, $primary);
         }
@@ -104,7 +105,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         $this->_validateEntity($entity, true);
 
-        $primary = $entity->{Reflection\Loader::load($entity)->getPrimaryProperty()->getName()};
+        $primary = $entity->{Entity\Reflection\Loader::load($entity)->getPrimaryProperty()->getName()};
         if (!in_array($primary, $this->changes[Entity::CHANGE_REMOVE], true)) {
             array_push($this->changes{Entity::CHANGE_REMOVE}, $primary);
         }
@@ -138,13 +139,13 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     /**
      * Get entity reflection
      *
-     * @return \UniMapper\Reflection\Entity
+     * @return Reflection
      *
      * @deprecated
      */
     public function getEntityReflection()
     {
-        return Reflection\Loader::load($this->entityClass);
+        return Entity\Reflection\Loader::load($this->entityClass);
     }
 
     /**
@@ -170,8 +171,8 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
     /**
      * Replaces or appends a item.
      *
-     * @param integer           $offset Index
-     * @param \UniMapper\Entity $value  Value
+     * @param integer $offset Index
+     * @param Entity  $value  Value
      */
     public function offsetSet($offset, $value)
     {
@@ -189,7 +190,7 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
      *
      * @param integer $key Key
      *
-     * @return \UniMapper\Entity|null
+     * @return Entity|null
      */
     public function offsetGet($key)
     {
@@ -252,13 +253,13 @@ class EntityCollection implements \ArrayAccess, \Countable, \IteratorAggregate,
      *
      * @param mixed $value
      *
-     * @return \UniMapper\Entity|false
+     * @return Entity|false
      */
     public function getByPrimary($value)
     {
         foreach ($this->data as $entity) {
 
-            $primaryPropertyName = Reflection\Loader::load($entity)
+            $primaryPropertyName = Entity\Reflection\Loader::load($entity)
                 ->getPrimaryProperty()
                 ->getName();
 

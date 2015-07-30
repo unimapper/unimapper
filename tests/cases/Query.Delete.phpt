@@ -2,7 +2,7 @@
 
 use Tester\Assert;
 use UniMapper\Query;
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -47,7 +47,7 @@ class QueryDeleteTest extends \Tester\TestCase
             ->andReturn("2");
 
         $query = new Query\Delete(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
+            new Reflection("UniMapper\Tests\Fixtures\Entity\Simple")
         );
         $query->where("id", "=", 1);
         Assert::same(2, $query->run($this->connectionMock));
@@ -65,7 +65,7 @@ class QueryDeleteTest extends \Tester\TestCase
             ->andReturn("2");
 
         $query = new Query\Delete(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
+            new Reflection("UniMapper\Tests\Fixtures\Entity\Simple")
         );
         $query->run($this->connectionMock);
     }

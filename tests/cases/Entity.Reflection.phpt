@@ -1,19 +1,19 @@
 <?php
 
 use Tester\Assert;
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class ReflectionEntityTest extends \Tester\TestCase
+class EntityReflectionTest extends \Tester\TestCase
 {
 
     public function testCreateEntity()
     {
-        $reflection = new Reflection\Entity(
+        $reflection = new Reflection(
             "UniMapper\Tests\Fixtures\Entity\Simple"
         );
 
@@ -28,7 +28,7 @@ class ReflectionEntityTest extends \Tester\TestCase
 
     public function testNoAdapterDefined()
     {
-        $reflection = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoAdapter");
+        $reflection = new Reflection("UniMapper\Tests\Fixtures\Entity\NoAdapter");
         Assert::same("UniMapper\Tests\Fixtures\Entity\NoAdapter", $reflection->getClassName());
     }
 
@@ -37,18 +37,18 @@ class ReflectionEntityTest extends \Tester\TestCase
      */
     public function testDuplicatePublicProperty()
     {
-        new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\DuplicatePublicProperty");
+        new Reflection("UniMapper\Tests\Fixtures\Entity\DuplicatePublicProperty");
     }
 
     public function testNoPropertyDefined()
     {
-        $reflection = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\NoProperty");
+        $reflection = new Reflection("UniMapper\Tests\Fixtures\Entity\NoProperty");
         Assert::count(0, $reflection->getProperties());
     }
 
     public function testGetProperties()
     {
-        $reflection = new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple");
+        $reflection = new Reflection("UniMapper\Tests\Fixtures\Entity\Simple");
         Assert::same(
             array(
                 'id',
@@ -80,11 +80,11 @@ class ReflectionEntityTest extends \Tester\TestCase
 
     public function testHasPrimary()
     {
-        $noPrimary = new Reflection\Entity(
+        $noPrimary = new Reflection(
             "UniMapper\Tests\Fixtures\Entity\NoPrimary"
         );
         Assert::false($noPrimary->hasPrimary());
-        $simple = new Reflection\Entity(
+        $simple = new Reflection(
             "UniMapper\Tests\Fixtures\Entity\Simple"
         );
         Assert::true($simple->hasPrimary());
@@ -92,7 +92,7 @@ class ReflectionEntityTest extends \Tester\TestCase
 
     public function testGetPrimaryProperty()
     {
-        $reflection = new Reflection\Entity(
+        $reflection = new Reflection(
             "UniMapper\Tests\Fixtures\Entity\Simple"
         );
         Assert::same("id", $reflection->getPrimaryProperty()->getName());
@@ -103,7 +103,7 @@ class ReflectionEntityTest extends \Tester\TestCase
      */
     public function testGetPrimaryPropertyNotDefined()
     {
-        $reflection = new Reflection\Entity(
+        $reflection = new Reflection(
             "UniMapper\Tests\Fixtures\Entity\NoPrimary"
         );
         $reflection->getPrimaryProperty();
@@ -111,5 +111,5 @@ class ReflectionEntityTest extends \Tester\TestCase
 
 }
 
-$testCase = new ReflectionEntityTest;
+$testCase = new EntityReflectionTest;
 $testCase->run();

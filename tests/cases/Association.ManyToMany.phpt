@@ -2,7 +2,7 @@
 
 use Tester\Assert;
 use UniMapper\Association;
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 use UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
@@ -59,7 +59,7 @@ class AssociationManyToManyTest extends \Tester\TestCase
         $connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
         $connectionMock->shouldReceive("getAdapter")->once()->with("RemoteAdapter")->andReturn($this->adapters["RemoteAdapter"]);
 
-        $collection = new UniMapper\EntityCollection("Remote");
+        $collection = new UniMapper\Entity\Collection("Remote");
         $collection->add(new Fixtures\Entity\Remote(["text" => "foo"]));
 
         $association = new Association\ManyToMany("manyToMany", Reflection\Loader::load("Simple"), Reflection\Loader::load("Remote"), ["simpleId", "simple_remote", "remoteId"]);
@@ -99,7 +99,7 @@ class AssociationManyToManyTest extends \Tester\TestCase
         $connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
         $connectionMock->shouldReceive("getAdapter")->once()->with("RemoteAdapter")->andReturn($this->adapters["RemoteAdapter"]);
 
-        $collection = new UniMapper\EntityCollection("Remote");
+        $collection = new UniMapper\Entity\Collection("Remote");
         $collection->remove(new Fixtures\Entity\Remote(["id" => 3, "text" => "foo"]));
 
         $association = new Association\ManyToMany("manyToMany", Reflection\Loader::load("Simple"), Reflection\Loader::load("Remote"), ["simpleId", "simple_remote", "remoteId"]);

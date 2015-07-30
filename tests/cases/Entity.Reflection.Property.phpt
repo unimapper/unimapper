@@ -1,15 +1,14 @@
 <?php
 
 use Tester\Assert;
-use UniMapper\EntityCollection;
-use UniMapper\Reflection;
+use UniMapper\Entity;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class ReflectionPropertyTest extends \Tester\TestCase
+class EntityReflectionPropertyTest extends \Tester\TestCase
 {
 
     const ENUM1 = 1,
@@ -22,10 +21,10 @@ class ReflectionPropertyTest extends \Tester\TestCase
         $readonly = false,
         $entityClass = "UniMapper\Tests\Fixtures\Entity\Simple"
     ) {
-        return new Reflection\Property(
+        return new Entity\Reflection\Property(
             $type,
             $name,
-            new Reflection\Entity($entityClass),
+            new Entity\Reflection($entityClass),
             $readonly,
             $options
         );
@@ -47,7 +46,7 @@ class ReflectionPropertyTest extends \Tester\TestCase
         // Collection
         $this->_createReflection('NoAdapter[]', 'collection')
             ->validateValueType(
-                new EntityCollection("NoAdapter")
+                new Entity\Collection("NoAdapter")
             );
 
         // Enumeration
@@ -132,7 +131,7 @@ class ReflectionPropertyTest extends \Tester\TestCase
         ];
         $collection = $this->_createReflection('Simple[]', 'collection')
             ->convertValue($data);
-        Assert::type("UniMapper\EntityCollection", $collection);
+        Assert::type("UniMapper\Entity\Collection", $collection);
         Assert::same(2, count($collection));
         Assert::isEqual("http://example.com", $collection[0]->url);
         Assert::isEqual("http://johndoe.com", $collection[1]->url);
@@ -167,11 +166,11 @@ class ReflectionPropertyTest extends \Tester\TestCase
     {
         Assert::same(
             array(
-                Reflection\Loader::load("Simple")->getFileName(),
-                Reflection\Loader::load("Nested")->getFileName(),
-                Reflection\Loader::load("Remote")->getFileName()
+                Entity\Reflection\Loader::load("Simple")->getFileName(),
+                Entity\Reflection\Loader::load("Nested")->getFileName(),
+                Entity\Reflection\Loader::load("Remote")->getFileName()
             ),
-            Reflection\Loader::load("Simple")->getRelatedFiles()
+            Entity\Reflection\Loader::load("Simple")->getRelatedFiles()
         );
     }
 
@@ -214,13 +213,13 @@ class ReflectionPropertyTest extends \Tester\TestCase
     public function testTypeEntity()
     {
         Assert::same(
-            Reflection\Property::TYPE_ENTITY,
+            Entity\Reflection\Property::TYPE_ENTITY,
             $this->_createReflection(
                 'Simple', 'entity'
             )->getType()
         );
         Assert::false(
-            $this->_createReflection('integer', 'id', 'm:primary')->getType() === Reflection\Property::TYPE_ENTITY
+            $this->_createReflection('integer', 'id', 'm:primary')->getType() === Entity\Reflection\Property::TYPE_ENTITY
         );
     }
 
@@ -228,13 +227,13 @@ class ReflectionPropertyTest extends \Tester\TestCase
     {
         // Local
         $local = $this->_createReflection('Simple[]', 'manyToMany', 'm:assoc(M:N) m:assoc-by(sourceId|source_target|targetId)');
-        Assert::type("UniMapper\Association\ManyToMany", $local->getOption(Reflection\Property::OPTION_ASSOC));
-        Assert::true($local->hasOption(Reflection\Property::OPTION_ASSOC));
-        Assert::false($local->getOption(Reflection\Property::OPTION_ASSOC)->isRemote());
-        Assert::same("FooAdapter", $local->getOption(Reflection\Property::OPTION_ASSOC)->getTargetAdapterName());
+        Assert::type("UniMapper\Association\ManyToMany", $local->getOption(Entity\Reflection\Property::OPTION_ASSOC));
+        Assert::true($local->hasOption(Entity\Reflection\Property::OPTION_ASSOC));
+        Assert::false($local->getOption(Entity\Reflection\Property::OPTION_ASSOC)->isRemote());
+        Assert::same("FooAdapter", $local->getOption(Entity\Reflection\Property::OPTION_ASSOC)->getTargetAdapterName());
 
         // Remote
-        $remote = $this->_createReflection('Remote[]', 'manyToMany', 'm:assoc(M:N) m:assoc-by(localId|local_remote|remoteId)')->getOption(Reflection\Property::OPTION_ASSOC);
+        $remote = $this->_createReflection('Remote[]', 'manyToMany', 'm:assoc(M:N) m:assoc-by(localId|local_remote|remoteId)')->getOption(Entity\Reflection\Property::OPTION_ASSOC);
         Assert::true($remote->isRemote());
         Assert::true($remote->isDominant());
         Assert::same("RemoteAdapter", $remote->getTargetAdapterName());
@@ -245,22 +244,22 @@ class ReflectionPropertyTest extends \Tester\TestCase
 
         // Remote - not dominant
         $remoteNotDominant = $this->_createReflection('Remote[]', 'manyToMany', 'm:assoc(M<N) m:assoc-by(localId|local_remote|remoteId)');
-        Assert::true($remoteNotDominant->getOption(Reflection\Property::OPTION_ASSOC)->isRemote());
-        Assert::false($remoteNotDominant->getOption(Reflection\Property::OPTION_ASSOC)->isDominant());
+        Assert::true($remoteNotDominant->getOption(Entity\Reflection\Property::OPTION_ASSOC)->isRemote());
+        Assert::false($remoteNotDominant->getOption(Entity\Reflection\Property::OPTION_ASSOC)->isDominant());
     }
 
     public function testOptionAssocOneToMany()
     {
         $property = $this->_createReflection('Simple[]', 'oneToMany', 'm:assoc(1:N) m:assoc-by(sourceId)');
         Assert::true($property->hasOption("assoc"));
-        Assert::type("UniMapper\Association\OneToMany", $property->getOption(Reflection\Property::OPTION_ASSOC));
+        Assert::type("UniMapper\Association\OneToMany", $property->getOption(Entity\Reflection\Property::OPTION_ASSOC));
     }
 
     public function testOptionAssocOneToOne()
     {
         $property = $this->_createReflection('Simple', 'oneToOne', 'm:assoc(1:1) m:assoc-by(targetId)');
         Assert::true($property->hasOption("assoc"));
-        $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
+        $association = $property->getOption(Entity\Reflection\Property::OPTION_ASSOC);
         Assert::type("UniMapper\Association\OneToOne", $association);
         Assert::same("simplePrimaryId", $association->getTargetPrimaryKey());
         Assert::same("targetId", $association->getReferencingKey());
@@ -279,7 +278,7 @@ class ReflectionPropertyTest extends \Tester\TestCase
     {
         $property = $this->_createReflection('Simple', 'manyToOne', 'm:assoc(N:1) m:assoc-by(targetId)');
         Assert::true($property->hasOption("assoc"));
-        $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
+        $association = $property->getOption(Entity\Reflection\Property::OPTION_ASSOC);
         Assert::type("UniMapper\Association\ManyToOne", $association);
         Assert::same("simplePrimaryId", $association->getTargetPrimaryKey());
         Assert::same("targetId", $association->getReferencingKey());
@@ -304,16 +303,16 @@ class ReflectionPropertyTest extends \Tester\TestCase
     {
         $reflection = $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter(stringToArray|arrayToString)');
         Assert::same("foo", $reflection->getName(true));
-        Assert::true(is_callable($reflection->getOption(Reflection\Property::OPTION_MAP_FILTER)[0]));
-        Assert::true(is_callable($reflection->getOption(Reflection\Property::OPTION_MAP_FILTER)[1]));
+        Assert::true(is_callable($reflection->getOption(Entity\Reflection\Property::OPTION_MAP_FILTER)[0]));
+        Assert::true(is_callable($reflection->getOption(Entity\Reflection\Property::OPTION_MAP_FILTER)[1]));
     }
 
     public function testOptionMapFilterWithFullCallback()
     {
         $reflection = $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter(UniMapper\Tests\Fixtures\Entity\Simple::stringToArray|UniMapper\Tests\Fixtures\Entity\Simple::arrayToString)');
         Assert::same("foo", $reflection->getName(true));
-        Assert::true(is_callable($reflection->getOption(Reflection\Property::OPTION_MAP_FILTER)[0]));
-        Assert::true(is_callable($reflection->getOption(Reflection\Property::OPTION_MAP_FILTER)[1]));
+        Assert::true(is_callable($reflection->getOption(Entity\Reflection\Property::OPTION_MAP_FILTER)[0]));
+        Assert::true(is_callable($reflection->getOption(Entity\Reflection\Property::OPTION_MAP_FILTER)[1]));
     }
 
     /**
@@ -358,12 +357,12 @@ class ReflectionPropertyTest extends \Tester\TestCase
 
     public function testOptionEnum()
     {
-        $self = $this->_createReflection('string', 'name', 'm:enum(self::ENUMERATION_* )')->getOption(Reflection\Property::OPTION_ENUM);
+        $self = $this->_createReflection('string', 'name', 'm:enum(self::ENUMERATION_* )')->getOption(Entity\Reflection\Property::OPTION_ENUM);
         Assert::same(['ENUMERATION_ONE' => 1, 'ENUMERATION_TWO' => 2], $self->getValues());
         Assert::true($self->isValid(1));
         Assert::false($self->isValid(3));
 
-        $class = $this->_createReflection('string', 'name', 'm:enum(' . get_class() . '::ENUM*' . ')')->getOption(Reflection\Property::OPTION_ENUM);
+        $class = $this->_createReflection('string', 'name', 'm:enum(' . get_class() . '::ENUM*' . ')')->getOption(Entity\Reflection\Property::OPTION_ENUM);
         Assert::same(['ENUM1' => 1, 'ENUM2' => 2], $class->getValues());
         Assert::true($class->isValid(1));
         Assert::false($class->isValid(3));
@@ -371,5 +370,5 @@ class ReflectionPropertyTest extends \Tester\TestCase
 
 }
 
-$testCase = new ReflectionPropertyTest;
+$testCase = new EntityReflectionPropertyTest;
 $testCase->run();

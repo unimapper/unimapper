@@ -3,7 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exception;
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 
 trait Conditionable
 {

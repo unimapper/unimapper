@@ -2,13 +2,15 @@
 
 namespace UniMapper\Tests\Fixtures\Entity;
 
-use UniMapper\Reflection;
+use UniMapper\Association\Multi;
+use UniMapper\Association\Single;
+use UniMapper\Entity\Reflection;
 
-Reflection\Property::registerAssocFilter("sortAndLimit", function (Assoc\Multi $assoc, $orderBy = "ASC", $limit = 10) {
+Reflection\Property::registerAssocFilter("sortAndLimit", function (Multi $assoc, $orderBy = "ASC", $limit = 10) {
     $assoc->limit($limit)->orderBy($orderBy);
 });
 
-Reflection\Property::registerAssocFilter("textLikeFoo", function (Assoc\Single $assoc) {
+Reflection\Property::registerAssocFilter("textLikeFoo", function (Single $assoc) {
     $assoc->where("text", "LIKE", "foo");
 });
 

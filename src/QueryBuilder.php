@@ -34,7 +34,7 @@ class QueryBuilder
     /** @var array */
     private static $beforeRun = [];
 
-    /** @var Reflection\Entity $entityReflection */
+    /** @var Entity\Reflection $entityReflection */
     private $entityReflection;
 
     /**
@@ -42,7 +42,7 @@ class QueryBuilder
      */
     public function __construct($entity)
     {
-        $this->entityReflection = Reflection\Loader::load($entity);
+        $this->entityReflection = Entity\Reflection\Loader::load($entity);
     }
 
     public function __call($name, $arguments)

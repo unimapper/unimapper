@@ -1,14 +1,14 @@
 <?php
 
 use Tester\Assert;
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class ReflectionAnnotationParserTest extends \Tester\TestCase
+class EntityReflectionAnnotationParserTest extends \Tester\TestCase
 {
 
     public function testParseAdapter()
@@ -75,5 +75,5 @@ class ReflectionAnnotationParserTest extends \Tester\TestCase
 
 }
 
-$testCase = new ReflectionAnnotationParserTest;
+$testCase = new EntityReflectionAnnotationParserTest;
 $testCase->run();

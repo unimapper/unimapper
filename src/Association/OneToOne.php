@@ -4,15 +4,15 @@ namespace UniMapper\Association;
 
 use UniMapper\Connection;
 use UniMapper\Exception;
-use UniMapper\Reflection;
+use UniMapper\Entity;
 
 class OneToOne extends Single
 {
 
     public function __construct(
         $propertyName,
-        Reflection\Entity $sourceReflection,
-        Reflection\Entity $targetReflection,
+        Entity\Reflection $sourceReflection,
+        Entity\Reflection $targetReflection,
         array $mapBy
     ) {
         parent::__construct(

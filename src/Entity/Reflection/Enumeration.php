@@ -1,6 +1,6 @@
 <?php
 
-namespace UniMapper\Reflection;
+namespace UniMapper\Entity\Reflection;
 
 class Enumeration
 {

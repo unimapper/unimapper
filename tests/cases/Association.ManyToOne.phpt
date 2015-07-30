@@ -2,7 +2,7 @@
 
 use Tester\Assert;
 use UniMapper\Association;
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 use UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';

@@ -3,7 +3,7 @@
 use Tester\Assert;
 use UniMapper\Association;
 use UniMapper\Query;
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -294,7 +294,7 @@ class QuerySelectOneTest extends \Tester\TestCase
     private function createQuery($id, $entity = "Simple")
     {
         return new Query\SelectOne(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\\" . $entity),
+            new Reflection("UniMapper\Tests\Fixtures\Entity\\" . $entity),
             $id
         );
     }

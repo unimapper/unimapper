@@ -103,7 +103,7 @@ class ValidatorTest extends \Tester\TestCase
                     return $index === 0;
                 }, "Not first entity!")
             ->on("collection")
-                ->addRule(function(UniMapper\EntityCollection $collection) {
+                ->addRule(function(UniMapper\Entity\Collection $collection) {
                     return count($collection) > 2;
                 }, "Collection must contain two items at least!");
 
