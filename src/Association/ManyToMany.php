@@ -5,17 +5,15 @@ namespace UniMapper\Association;
 use UniMapper\Adapter;
 use UniMapper\Connection;
 use UniMapper\Entity;
-use UniMapper\EntityCollection;
 use UniMapper\Exception;
-use UniMapper\Reflection;
 
 class ManyToMany extends Multi
 {
 
     public function __construct(
         $propertyName,
-        Reflection\Entity $sourceReflection,
-        Reflection\Entity $targetReflection,
+        Entity\Reflection $sourceReflection,
+        Entity\Reflection $targetReflection,
         array $mapBy,
         $dominant = true
     ) {
@@ -82,7 +80,7 @@ class ManyToMany extends Multi
      */
     public function load(Connection $connection, array $primaryValues)
     {
-        $currentAdapter = $connection->getAdapter($this->entityReflection->getAdapterName());
+        $currentAdapter = $connection->getAdapter($this->sourceReflection->getAdapterName());
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
 
         if (!$this->isDominant()) {
@@ -161,13 +159,13 @@ class ManyToMany extends Multi
     /**
      * Save changes in target collection
      *
-     * @param string           $primaryValue Primary value from source entity
-     * @param Connection       $connection
-     * @param EntityCollection $collection   Target collection
+     * @param string            $primaryValue Primary value from source entity
+     * @param Connection        $connection
+     * @param Entity\Collection $collection   Target collection
      */
-    public function saveChanges($primaryValue, Connection $connection, EntityCollection $collection)
+    public function saveChanges($primaryValue, Connection $connection, Entity\Collection $collection)
     {
-        $sourceAdapter = $connection->getAdapter($this->entityReflection->getAdapterName());
+        $sourceAdapter = $connection->getAdapter($this->sourceReflection->getAdapterName());
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
 
         if ($this->isRemote() && !$this->isDominant()) {
@@ -188,7 +186,7 @@ class ManyToMany extends Multi
         $primaryValue,
         Adapter $joinAdapter,
         Adapter $targetAdapter,
-        EntityCollection $collection,
+        Entity\Collection $collection,
         $action = Adapter\IAdapter::ASSOC_ADD
     ) {
         if ($action === Adapter\IAdapter::ASSOC_REMOVE) {

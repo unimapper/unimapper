@@ -2,16 +2,15 @@
 
 namespace UniMapper;
 
-use UniMapper\Reflection,
-    UniMapper\Exception\QueryException;
+use UniMapper\Exception\QueryException;
 
 abstract class Query
 {
 
-    /** @var \UniMapper\Reflection\Entity */
+    /** @var Entity\Reflection */
     protected $entityReflection;
 
-    public function __construct(Reflection\Entity $reflection)
+    public function __construct(Entity\Reflection $reflection)
     {
         if (!$reflection->hasAdapter()) {
             throw new QueryException(

@@ -25,7 +25,7 @@ class QueryCountTest extends \Tester\TestCase
         $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
 
         $query = new UniMapper\Query\Count(
-            new UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
+            new UniMapper\Entity\Reflection("UniMapper\Tests\Fixtures\Entity\Simple")
         );
         $query->where("id", "=", 1);
         Assert::same(1, $query->run($connectionMock));

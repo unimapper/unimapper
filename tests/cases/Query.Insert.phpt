@@ -41,7 +41,7 @@ class QueryInsertTest extends \Tester\TestCase
         $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
 
         $query = new \UniMapper\Query\Insert(
-            new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
+            new \UniMapper\Entity\Reflection("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["text" => "foo", "oneToOne" => ["id" => 3]]
         );
         Assert::same(1, $query->run($connectionMock));
@@ -50,7 +50,7 @@ class QueryInsertTest extends \Tester\TestCase
     public function testNoValues()
     {
         $query = new \UniMapper\Query\Insert(
-            new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
+            new \UniMapper\Entity\Reflection("UniMapper\Tests\Fixtures\Entity\Simple"),
             []
         );
 

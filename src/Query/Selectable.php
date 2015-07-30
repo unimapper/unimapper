@@ -4,7 +4,7 @@ namespace UniMapper\Query;
 
 use UniMapper\Association;
 use UniMapper\Exception;
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 
 trait Selectable
 {

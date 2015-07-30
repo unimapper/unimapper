@@ -3,7 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exception,
-    UniMapper\Reflection;
+    UniMapper\Entity\Reflection;
 
 class UpdateOne extends \UniMapper\Query
 {
@@ -15,7 +15,7 @@ class UpdateOne extends \UniMapper\Query
     protected $primaryValue;
 
     public function __construct(
-        Reflection\Entity $entityReflection,
+        Reflection $entityReflection,
         $primaryValue,
         array $data
     ) {

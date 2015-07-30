@@ -2,17 +2,17 @@
 
 namespace UniMapper\Adapter;
 
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection\Property;
 
 abstract class Mapping
 {
 
-    public function mapValue(Reflection\Property $property, $value)
+    public function mapValue(Property $property, $value)
     {
         return $value;
     }
 
-    public function unmapValue(Reflection\Property $property, $value)
+    public function unmapValue(Property $property, $value)
     {
         return $value;
     }

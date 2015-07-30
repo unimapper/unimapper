@@ -2,9 +2,7 @@
 
 namespace UniMapper\Validator;
 
-use UniMapper\Reflection,
-    UniMapper\EntityCollection,
-    UniMapper\Entity;
+use UniMapper\Entity;
 
 class Rule
 {
@@ -28,7 +26,7 @@ class Rule
         Entity $entity,
         callable $validation,
         $message,
-        Reflection\Property $property = null,
+        Entity\Reflection\Property $property = null,
         $severity = self::ERROR,
         $child = null
     ) {
@@ -108,7 +106,7 @@ class Rule
             if ($this->child) {
 
                 $this->childFailed = [];
-                if ($value instanceof EntityCollection) {
+                if ($value instanceof Entity\Collection) {
 
                     foreach ($value as $index => $entity) {
 

@@ -1,9 +1,10 @@
 <?php
 
-namespace UniMapper\Reflection;
+namespace UniMapper\Entity\Reflection;
 
 use UniMapper\Exception;
 use UniMapper\NamingConvention as UNC;
+use UniMapper\Entity;
 
 class Loader
 {
@@ -11,7 +12,7 @@ class Loader
     /** @var array */
     private static $reflections = [];
 
-    public static function register(Entity $reflection)
+    public static function register(Entity\Reflection $reflection)
     {
         if (isset(self::$reflections[$reflection->getClassName()])) {
             throw new Exception\InvalidArgumentException(
@@ -63,7 +64,7 @@ class Loader
             return self::$reflections[$class];
         }
 
-        return new Entity($class);
+        return new Entity\Reflection($class);
     }
 
 }

@@ -5,7 +5,7 @@ use UniMapper\Association;
 use UniMapper\Query;
 use UniMapper\Cache;
 use UniMapper\Mapper;
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 use UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
@@ -41,7 +41,7 @@ class QuerySelectTest extends \Tester\TestCase
         $entity1 = new Fixtures\Entity\Simple(["id" => 2]);
         $entity2 = new Fixtures\Entity\Simple(["id" => 3]);
 
-        $collection = new UniMapper\EntityCollection("Simple");
+        $collection = new UniMapper\Entity\Collection("Simple");
         $collection[] = $entity1;
         $collection[] = $entity2;
 
@@ -86,7 +86,7 @@ class QuerySelectTest extends \Tester\TestCase
                 })->orderBy("id", "DESC")
             ->run($this->connectionMock);
 
-        Assert::type("Unimapper\EntityCollection", $result);
+        Assert::type("Unimapper\Entity\Collection", $result);
         Assert::same(2, count($result));
         Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $result[0]);
         Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $result[1]);
@@ -115,7 +115,7 @@ class QuerySelectTest extends \Tester\TestCase
 
         $result = $this->createQuery("NoPrimary")->run($this->connectionMock);
 
-        Assert::type("Unimapper\EntityCollection", $result);
+        Assert::type("Unimapper\Entity\Collection", $result);
         Assert::same($result[0]->text, "foo");
     }
 
@@ -398,7 +398,7 @@ class QuerySelectTest extends \Tester\TestCase
             ->cached(true, [Cache\ICache::TAGS => ["myTag"]])
             ->run($this->connectionMock);
 
-        Assert::type("UniMapper\EntityCollection", $result);
+        Assert::type("UniMapper\Entity\Collection", $result);
         Assert::count(2, $result);
         Assert::same(3, $result[0]->id);
         Assert::same(4, $result[1]->id);
@@ -422,7 +422,7 @@ class QuerySelectTest extends \Tester\TestCase
             ->cached(true, [Cache\ICache::TAGS => ["myTag"]])
             ->run($this->connectionMock);
 
-        Assert::type("UniMapper\EntityCollection", $result);
+        Assert::type("UniMapper\Entity\Collection", $result);
         Assert::count(2, $result);
         Assert::same(3, $result[0]->id);
         Assert::same(4, $result[1]->id);
@@ -524,7 +524,7 @@ class QuerySelectTest extends \Tester\TestCase
     private function createQuery($entity = "Simple")
     {
         return new Query\Select(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\\" . $entity)
+            new Reflection("UniMapper\Tests\Fixtures\Entity\\" . $entity)
         );
     }
 

@@ -2,7 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 use UniMapper\NamingConvention as UNC;
 use UniMapper\Cache\ICache;
 
@@ -20,7 +20,7 @@ class Select extends \UniMapper\Query
     protected $cached = false;
     protected $cachedOptions = [];
 
-    public function __construct(Reflection\Entity $entityReflection)
+    public function __construct(Reflection $entityReflection)
     {
         parent::__construct($entityReflection);
         $this->select(array_slice(func_get_args(), 3));

@@ -2,7 +2,7 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 
 class Insert extends \UniMapper\Query
 {
@@ -11,7 +11,7 @@ class Insert extends \UniMapper\Query
     protected $entity;
 
     public function __construct(
-        Reflection\Entity $entityReflection,
+        Reflection $entityReflection,
         array $data
     ) {
         parent::__construct($entityReflection);

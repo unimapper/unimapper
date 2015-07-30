@@ -3,7 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\Exception,
-    UniMapper\Reflection;
+    UniMapper\Entity\Reflection;
 
 class SelectOne extends \UniMapper\Query
 {
@@ -14,7 +14,7 @@ class SelectOne extends \UniMapper\Query
     protected $primaryValue;
 
     public function __construct(
-        Reflection\Entity $entityReflection,
+        Reflection $entityReflection,
         $primaryValue
     ) {
         parent::__construct($entityReflection);

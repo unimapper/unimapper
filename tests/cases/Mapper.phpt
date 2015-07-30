@@ -2,7 +2,7 @@
 
 use Tester\Assert;
 use UniMapper\Tests\Fixtures;
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -101,7 +101,7 @@ class MapperTest extends \Tester\TestCase
                 ]
             ]
         );
-        Assert::type("UniMapper\EntityCollection", $collection);
+        Assert::type("UniMapper\Entity\Collection", $collection);
         Assert::count(1, $collection);
         Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $collection[0]);
         Assert::same("john.doe@example.com", $collection[0]->email);
@@ -119,7 +119,7 @@ class MapperTest extends \Tester\TestCase
             ]
         );
 
-        $collection = new \UniMapper\EntityCollection("Simple");
+        $collection = new UniMapper\Entity\Collection("Simple");
         $collection[] = $entity;
 
         Assert::same(

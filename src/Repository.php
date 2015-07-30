@@ -33,7 +33,7 @@ abstract class Repository
             );
         }
 
-        $reflection = Reflection\Loader::load($entity);
+        $reflection = Entity\Reflection\Loader::load($entity);
         if (!$reflection->hasPrimary()) {
             throw new Exception\RepositoryException(
                 "Can not save entity without primary property!"
@@ -69,7 +69,7 @@ abstract class Repository
 
         $values = $entity->getData();
 
-        $reflection = Reflection\Loader::load($entity);
+        $reflection = Entity\Reflection\Loader::load($entity);
 
         // Prevent to force empty primary property
         if ($reflection->hasPrimary()) {
@@ -122,7 +122,7 @@ abstract class Repository
      * Update records
      *
      * @param Entity $entity
-     * @param array $filter
+     * @param array  $filter
      *
      * @return int Affected records count
      *
@@ -148,7 +148,7 @@ abstract class Repository
     private function _saveAssociated($primaryValue, Entity $entity)
     {
         foreach ($entity->getChanges() as $name => $associated) {
-            Reflection\Loader::load($entity)->getProperty($name)->getOption(Reflection\Property::OPTION_ASSOC)->saveChanges(
+            Entity\Reflection\Loader::load($entity)->getProperty($name)->getOption(Entity\Reflection\Property::OPTION_ASSOC)->saveChanges(
                 $primaryValue,
                 $this->connection,
                 $associated
@@ -172,7 +172,7 @@ abstract class Repository
             );
         }
 
-        $reflection = Reflection\Loader::load($entity);
+        $reflection = Entity\Reflection\Loader::load($entity);
         if (!$reflection->hasPrimary()) {
             throw new Exception\RepositoryException(
                 "Can not delete entity without primary property!"
@@ -292,7 +292,7 @@ abstract class Repository
      * @param int   $offset
      * @param array $associate
      *
-     * @return EntityCollection
+     * @return Entity\Collection
      */
     public function find(array $filter = [], array $orderBy = [], $limit = 0,
         $offset = 0, array $associate = []
@@ -323,11 +323,11 @@ abstract class Repository
      * @param array $primaryValues
      * @param array $associate
      *
-     * @return EntityCollection
+     * @return Entity\Collection
      */
     public function findPrimaries(array $primaryValues, array $associate = [])
     {
-        $entityReflection = Reflection\Loader::load(
+        $entityReflection = Entity\Reflection\Loader::load(
             $this->getEntityName()
         );
 

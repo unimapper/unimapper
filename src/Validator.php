@@ -25,7 +25,7 @@ class Validator
     /** @var \UniMapper\Validator $parent Parent validator */
     protected $parent = [];
 
-    /** @var \UniMapper\Reflection\Property $property */
+    /** @var Entity\Reflection\Property $property */
     protected $property;
 
     /** @var \UniMapper\Entity $entity */
@@ -124,7 +124,7 @@ class Validator
      */
     public function on($name, $child = null)
     {
-        $reflection = Reflection\Loader::load($this->entity);
+        $reflection = Entity\Reflection\Loader::load($this->entity);
 
         if (!$reflection->hasProperty($name)) {
             throw new Exception\InvalidArgumentException(
@@ -133,14 +133,14 @@ class Validator
         }
         $this->property = $reflection->getProperty($name);
 
-        if ($this->property->hasOption(Reflection\Property::OPTION_COMPUTED)) {
+        if ($this->property->hasOption(Entity\Reflection\Property::OPTION_COMPUTED)) {
             throw new Exception\InvalidArgumentException(
                 "Validation can not be used on computed property!"
             );
         }
         if ($child
-            && (!$this->property->getType() === Reflection\Property::TYPE_ENTITY
-            && !$this->property->getType() === Reflection\Property::TYPE_COLLECTION)
+            && (!$this->property->getType() === Entity\Reflection\Property::TYPE_ENTITY
+            && !$this->property->getType() === Entity\Reflection\Property::TYPE_COLLECTION)
         ) {
             throw new Exception\InvalidArgumentException(
                 "Child validation can be used only on entities and collections!"
@@ -308,7 +308,7 @@ class Validator
 
                 $failedIndexes = $rule->getFailedChildIndexes();
                 if ($rule->getProperty() !== null
-                    && $rule->getProperty()->getType() === Reflection\Property::TYPE_COLLECTION
+                    && $rule->getProperty()->getType() === Entity\Reflection\Property::TYPE_COLLECTION
                     && !empty($failedIndexes)
                 ) {
                     foreach ($failedIndexes as $index) {

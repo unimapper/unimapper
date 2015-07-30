@@ -60,7 +60,7 @@ class RepositoryTest extends \Tester\TestCase
             ->andReturn(true);
 
         $entity = new Fixtures\Entity\Simple(["id" => 2, "text" => "foo"]);
-        $entity->manyToMany[] = new Fixtures\Entity\Remote(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote")); // Associations are ignored
+        $entity->manyToMany[] = new Fixtures\Entity\Remote(new \UniMapper\Entity\Reflection("UniMapper\Tests\Fixtures\Entity\Remote")); // Associations are ignored
 
         $this->repository->save($entity);
 
@@ -103,7 +103,7 @@ class RepositoryTest extends \Tester\TestCase
             ->andReturn(3);
 
         $entity = new Fixtures\Entity\Simple(["simplePrimaryId" => null, "text" => "foo"]);
-        $entity->manyToMany[] = new Fixtures\Entity\Remote(new \UniMapper\Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Remote")); // Associations are ignored
+        $entity->manyToMany[] = new Fixtures\Entity\Remote(new \UniMapper\Entity\Reflection("UniMapper\Tests\Fixtures\Entity\Remote")); // Associations are ignored
 
         $this->repository->save($entity);
 
@@ -277,7 +277,7 @@ class RepositoryTest extends \Tester\TestCase
 
         $result = $this->repository->findPrimaries([1, 2]);
 
-        Assert::type("UniMapper\EntityCollection", $result);
+        Assert::type("UniMapper\Entity\Collection", $result);
         Assert::same(1, $result[0]->id);
         Assert::same(2, $result[1]->id);
     }

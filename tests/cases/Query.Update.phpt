@@ -2,7 +2,7 @@
 
 use Tester\Assert;
 use UniMapper\Query\Update;
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -28,7 +28,7 @@ class QueryUpdateTest extends \Tester\TestCase
         $connectionMock = Mockery::mock("UniMapper\Connection");
         $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
 
-        $query = new Update(new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"), []);
+        $query = new Update(new Reflection("UniMapper\Tests\Fixtures\Entity\Simple"), []);
         $query->run($connectionMock);
     }
 
@@ -55,7 +55,7 @@ class QueryUpdateTest extends \Tester\TestCase
         $connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
 
         $query = new Update(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple"),
+            new Reflection("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["text" => "foo", "oneToOne" => ["id" => 3]]
         );
         $query->where("id", "=", 1);

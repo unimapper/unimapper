@@ -1,11 +1,11 @@
 <?php
 
-namespace UniMapper\Reflection;
+namespace UniMapper\Entity;
 
-use UniMapper\Exception,
-    UniMapper\NamingConvention as UNC;
+use UniMapper\Exception;
+use UniMapper\NamingConvention as UNC;
 
-class Entity
+class Reflection
 {
 
     /** @var string */
@@ -30,7 +30,7 @@ class Entity
     private $primaryName;
 
     /**
-     * @param string $class   Entity class name
+     * @param string $class Entity class name
      *
      * @throws Exception\InvalidArgumentException
      * @throws Exception\EntityException
@@ -61,8 +61,8 @@ class Entity
         }
 
         // Register reflection to loader if needed
-        if (!Loader::get($this->className)) {
-            Loader::register($this);
+        if (!Reflection\Loader::get($this->className)) {
+            Reflection\Loader::register($this);
         }
 
         $docComment = $reflection->getDocComment();
@@ -70,7 +70,7 @@ class Entity
         // Parse adapter
         try {
 
-            $adapter = AnnotationParser::parseAdapter($docComment);
+            $adapter = Reflection\AnnotationParser::parseAdapter($docComment);
             if ($adapter) {
                 list($this->adapterName, $this->adapterResource) = $adapter;
             }
@@ -117,10 +117,10 @@ class Entity
     private function _parseProperties($docComment)
     {
         $properties = [];
-        foreach (AnnotationParser::parseProperties($docComment) as $definition) {
+        foreach (Reflection\AnnotationParser::parseProperties($docComment) as $definition) {
 
             try {
-                $property = new Property(
+                $property = new Reflection\Property(
                     $definition[2],
                     $definition[3],
                     $this,
@@ -153,7 +153,7 @@ class Entity
             }
 
             // Primary property
-            if ($property->hasOption(Property::OPTION_PRIMARY)) {
+            if ($property->hasOption(Reflection\Property::OPTION_PRIMARY)) {
 
                 if ($this->hasPrimary()) {
                     throw new Exception\EntityException(
@@ -165,7 +165,7 @@ class Entity
                 $this->primaryName = $property->getName();
             }
 
-            if ($property->hasOption(Property::OPTION_ASSOC) && $this->primaryName === null) {
+            if ($property->hasOption(Reflection\Property::OPTION_ASSOC) && $this->primaryName === null) {
                 throw new Exception\EntityException(
                     "You must define primary property before the association!",
                     $this->className,
@@ -202,7 +202,7 @@ class Entity
      *
      * @param string $name
      *
-     * @return \UniMapper\Reflection\Property
+     * @return Reflection\Property
      *
      * @throws Exception\InvalidArgumentException
      */
@@ -241,8 +241,8 @@ class Entity
 
         $files[] = $this->fileName;
         foreach ($this->properties as $property) {
-            if (in_array($property->getType(), [Property::TYPE_COLLECTION, Property::TYPE_ENTITY])) {
-                $files += Loader::load($property->getTypeOption())->getRelatedFiles($files);
+            if (in_array($property->getType(), [Reflection\Property::TYPE_COLLECTION, Reflection\Property::TYPE_ENTITY])) {
+                $files += Reflection\Loader::load($property->getTypeOption())->getRelatedFiles($files);
             }
         }
         return $files;
@@ -256,7 +256,7 @@ class Entity
     /**
      * Get primary property reflection
      *
-     * @return Property
+     * @return Reflection\Property
      *
      * @throws \Exception
      */

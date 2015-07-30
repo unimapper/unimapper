@@ -1,7 +1,7 @@
 <?php
 
 use Tester\Assert;
-use UniMapper\Reflection;
+use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -27,7 +27,7 @@ class QueryConditionableTest extends \Tester\TestCase
     private function createConditionableQuery()
     {
         return new UniMapper\Query\Select(
-            new Reflection\Entity("UniMapper\Tests\Fixtures\Entity\Simple")
+            new Reflection("UniMapper\Tests\Fixtures\Entity\Simple")
         );
     }
 

@@ -22,14 +22,14 @@ class Mapper
     /**
      * Convert value to defined property format
      *
-     * @param \UniMapper\Reflection\Property $property
-     * @param mixed                                 $value
+     * @param Entity\Reflection\Property $property
+     * @param mixed                      $value
      *
      * @return mixed
      *
      * @throws Exception\InvalidArgumentException
      */
-    public function mapValue(Reflection\Property $property, $value)
+    public function mapValue(Entity\Reflection\Property $property, $value)
     {
         // Call adapter's mapping if needed
         if (!$property->getEntityReflection()->hasAdapter()) {
@@ -44,15 +44,15 @@ class Mapper
         }
 
         // Call map filter from property option
-        if ($property->hasOption(Reflection\Property::OPTION_MAP_FILTER)) {
-            $value = call_user_func($property->getOption(Reflection\Property::OPTION_MAP_FILTER)[0], $value);
+        if ($property->hasOption(Entity\Reflection\Property::OPTION_MAP_FILTER)) {
+            $value = call_user_func($property->getOption(Entity\Reflection\Property::OPTION_MAP_FILTER)[0], $value);
         }
 
         if ($value === null || $value === "") {
             return null;
         }
 
-        if ($property->getType() === Reflection\Property::TYPE_BASIC) {
+        if ($property->getType() === Entity\Reflection\Property::TYPE_BASIC) {
             // Basic type
 
             if ($property->getTypeOption() === "boolean" && $value === "false") {
@@ -64,7 +64,7 @@ class Mapper
             }
 
             if (Validator::isTraversable($value)
-                && $property->getTypeOption() !== Reflection\Property::TYPE_BASIC_ARRAY
+                && $property->getTypeOption() !== Entity\Reflection\Property::TYPE_BASIC_ARRAY
             ) {
                 throw new Exception\InvalidArgumentException(
                     "Traversable value can not be mapped to scalar!",
@@ -76,16 +76,16 @@ class Mapper
                 return $value;
             }
 
-        } elseif ($property->getType() === Reflection\Property::TYPE_COLLECTION) {
+        } elseif ($property->getType() === Entity\Reflection\Property::TYPE_COLLECTION) {
             // Collection
 
             return $this->mapCollection($property->getTypeOption(), $value);
-        } elseif ($property->getType() === Reflection\Property::TYPE_ENTITY) {
+        } elseif ($property->getType() === Entity\Reflection\Property::TYPE_ENTITY) {
             // Entity
 
             return $this->mapEntity($property->getTypeOption(), $value);
-        } elseif ($property->getType() === Reflection\Property::TYPE_DATETIME
-            || $property->getType() === Reflection\Property::TYPE_DATE
+        } elseif ($property->getType() === Entity\Reflection\Property::TYPE_DATETIME
+            || $property->getType() === Entity\Reflection\Property::TYPE_DATE
         ) {
             // DateTime & Date
 
@@ -129,7 +129,7 @@ class Mapper
             );
         }
 
-        $collection = new EntityCollection($name);
+        $collection = new Entity\Collection($name);
         foreach ($data as $value) {
             $collection[] = $this->mapEntity($name, $value);
         }
@@ -145,7 +145,7 @@ class Mapper
             );
         }
 
-        $entityReflection = Reflection\Loader::load($name);
+        $entityReflection = Entity\Reflection\Loader::load($name);
 
         $values = [];
         foreach ($data as $index => $value) {
@@ -189,10 +189,10 @@ class Mapper
         $output = [];
         foreach ($entity->getData() as $propertyName => $value) {
 
-            $property = Reflection\Loader::load($entity)->getProperty($propertyName);
+            $property = Entity\Reflection\Loader::load($entity)->getProperty($propertyName);
 
             // Skip associations & readonly
-            if ($property->hasOption(Reflection\Property::OPTION_ASSOC)
+            if ($property->hasOption(Entity\Reflection\Property::OPTION_ASSOC)
                 || !$property->isWritable()
             ) {
                 continue;
@@ -206,14 +206,14 @@ class Mapper
         return $output;
     }
 
-    public function unmapValue(Reflection\Property $property, $value)
+    public function unmapValue(Entity\Reflection\Property $property, $value)
     {
         // Call map filter from property option
-        if ($property->hasOption(Reflection\Property::OPTION_MAP_FILTER)) {
-            $value = call_user_func($property->getOption(Reflection\Property::OPTION_MAP_FILTER)[1], $value);
+        if ($property->hasOption(Entity\Reflection\Property::OPTION_MAP_FILTER)) {
+            $value = call_user_func($property->getOption(Entity\Reflection\Property::OPTION_MAP_FILTER)[1], $value);
         }
 
-        if ($value instanceof EntityCollection) {
+        if ($value instanceof Entity\Collection) {
             return $this->unmapCollection($value);
         } elseif ($value instanceof Entity) {
             return $this->unmapEntity($value);
@@ -238,11 +238,11 @@ class Mapper
     /**
      * Convert entity to simple array
      *
-     *  @param EntityCollection $collection
+     *  @param Entity\Collection $collection
      *
      *  @return array
      */
-    public function unmapCollection(EntityCollection $collection)
+    public function unmapCollection(Entity\Collection $collection)
     {
         $data = [];
         foreach ($collection as $index => $entity) {
