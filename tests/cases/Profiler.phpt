@@ -24,7 +24,7 @@ class ProfilerTest extends \Tester\TestCase
         $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
 
         $query = new UniMapper\Query\Count(
-            UniMapper\Entity\Reflection\Loader::load("Simple")
+            UniMapper\Entity\Reflection::load("Simple")
         );
 
         UniMapper\Profiler::startQuery($query);

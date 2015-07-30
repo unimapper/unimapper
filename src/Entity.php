@@ -53,7 +53,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             );
         }
 
-        $reflection = Entity\Reflection\Loader::load(get_called_class());
+        $reflection = Entity\Reflection::load(get_called_class());
 
         foreach ($values as $name => $value) {
 
@@ -123,7 +123,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     private function _resetIterator()
     {
-        $reflection = Entity\Reflection\Loader::load(get_called_class());
+        $reflection = Entity\Reflection::load(get_called_class());
 
         $this->iteration = array_merge(
             array_keys($reflection->getProperties()),
@@ -134,7 +134,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 
     private function _validateChangeType()
     {
-        $reflection = Entity\Reflection\Loader::load(get_called_class());
+        $reflection = Entity\Reflection::load(get_called_class());
 
         if (!$reflection->hasPrimary()) {
             throw new Exception\InvalidArgumentException(
@@ -217,7 +217,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     public function __call($name, $arguments)
     {
-        $reflection = Entity\Reflection\Loader::load(get_called_class());
+        $reflection = Entity\Reflection::load(get_called_class());
 
         if (!$reflection->hasProperty($name)) {
             throw new Exception\InvalidArgumentException(
@@ -268,7 +268,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             if ($propertyReflection->getType() === Entity\Reflection\Property::TYPE_COLLECTION) {
                 $this->changes[$name] = new Entity\Collection($propertyReflection->getTypeOption());
             } else {
-                $this->changes[$name] = Entity\Reflection\Loader::load($propertyReflection->getTypeOption())->createEntity();
+                $this->changes[$name] = Entity\Reflection::load($propertyReflection->getTypeOption())->createEntity();
             }
         }
 
@@ -290,7 +290,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             return $this->data[$name];
         }
 
-        $reflection = Entity\Reflection\Loader::load(get_called_class());
+        $reflection = Entity\Reflection::load(get_called_class());
         if (!$reflection->hasProperty($name)) {
             throw new Exception\InvalidArgumentException(
                 "Undefined property '" . $name . "'!"
@@ -336,7 +336,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 
     public function __unset($name)
     {
-        $reflection = Entity\Reflection\Loader::load(get_called_class());
+        $reflection = Entity\Reflection::load(get_called_class());
         if ($reflection->hasProperty($name)
             && !$reflection->getProperty($name)->isWritable()
         ) {
@@ -362,7 +362,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     public function getReflection()
     {
-        return Entity\Reflection\Loader::load(get_called_class());
+        return Entity\Reflection::load(get_called_class());
     }
 
     /**
@@ -406,7 +406,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     public function toArray($nesting = false)
     {
         $output = [];
-        foreach (Entity\Reflection\Loader::load(get_called_class())->getProperties() as $propertyName => $property) {
+        foreach (Entity\Reflection::load(get_called_class())->getProperties() as $propertyName => $property) {
 
             $value = $this->{$propertyName};
             if (($value instanceof Entity\Collection || $value instanceof Entity)
@@ -424,7 +424,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     private function _getPublicPropertyValues()
     {
         $result = [];
-        foreach (Entity\Reflection\Loader::load(get_called_class())->getPublicProperties() as $name) {
+        foreach (Entity\Reflection::load(get_called_class())->getPublicProperties() as $name) {
             $result[$name] = $this->{$name};
         }
         return $result;
@@ -438,7 +438,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
     public function jsonSerialize()
     {
         $output = [];
-        foreach (Entity\Reflection\Loader::load(get_called_class())->getProperties() as $propertyName => $property) {
+        foreach (Entity\Reflection::load(get_called_class())->getProperties() as $propertyName => $property) {
 
             $value = $this->{$propertyName};
             if ($value instanceof Entity\Collection || $value instanceof Entity) {

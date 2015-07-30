@@ -166,11 +166,11 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
     {
         Assert::same(
             array(
-                Entity\Reflection\Loader::load("Simple")->getFileName(),
-                Entity\Reflection\Loader::load("Nested")->getFileName(),
-                Entity\Reflection\Loader::load("Remote")->getFileName()
+                Entity\Reflection::load("Simple")->getFileName(),
+                Entity\Reflection::load("Nested")->getFileName(),
+                Entity\Reflection::load("Remote")->getFileName()
             ),
-            Entity\Reflection\Loader::load("Simple")->getRelatedFiles()
+            Entity\Reflection::load("Simple")->getRelatedFiles()
         );
     }
 

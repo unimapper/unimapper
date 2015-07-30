@@ -48,7 +48,7 @@ class MapperTest extends \Tester\TestCase
     public function testMapValueArrayToString()
     {
         $this->mapper->mapValue(
-            Reflection\Loader::load("Simple")->getProperty("text"),
+            Reflection::load("Simple")->getProperty("text"),
             []
         );
     }
@@ -59,7 +59,7 @@ class MapperTest extends \Tester\TestCase
     public function testMapValueObjectToString()
     {
         $this->mapper->mapValue(
-            Reflection\Loader::load("Simple")->getProperty("text"),
+            Reflection::load("Simple")->getProperty("text"),
             new stdClass
         );
     }

@@ -86,7 +86,7 @@ class ManyToOne extends Single
 
     public function saveChanges($primaryValue, Connection $connection, Entity $entity)
     {
-        $reflection = Entity\Reflection\Loader::load($entity);
+        $reflection = Entity\Reflection::load($entity);
 
         if (!$reflection->hasPrimary()) {
             throw new Exception\InvalidArgumentException(

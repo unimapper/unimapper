@@ -12,7 +12,6 @@ require_once __DIR__ . '/Entity/Collection.php';
 require_once __DIR__ . '/Entity/Reflection.php';
 require_once __DIR__ . '/Entity/Reflection/AnnotationParser.php';
 require_once __DIR__ . '/Entity/Reflection/Enumeration.php';
-require_once __DIR__ . '/Entity/Reflection/Loader.php';
 require_once __DIR__ . '/Entity/Reflection/Property.php';
 require_once __DIR__ . '/Exception.php';
 require_once __DIR__ . '/Mapper.php';

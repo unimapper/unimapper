@@ -2,6 +2,7 @@
 
 namespace UniMapper\Entity;
 
+use UniMapper\Entity;
 use UniMapper\Exception;
 use UniMapper\NamingConvention as UNC;
 
@@ -28,6 +29,9 @@ class Reflection
 
     /** @var string */
     private $primaryName;
+
+    /** @var array $registered Registered reflections */
+    private static $registered = [];
 
     /**
      * @param string $class Entity class name
@@ -60,10 +64,8 @@ class Reflection
             $this->publicProperties[] =  $property->getName();
         }
 
-        // Register reflection to loader if needed
-        if (!Reflection\Loader::get($this->className)) {
-            Reflection\Loader::register($this);
-        }
+        // Register reflection
+        self::load($this);
 
         $docComment = $reflection->getDocComment();
 
@@ -84,6 +86,52 @@ class Reflection
 
         // Parse properties
         $this->_parseProperties($docComment);
+    }
+
+    /**
+     * Load and register reflection
+     *
+     * @param string|Entity|Reflection $arg
+     *
+     * @throws Exception\InvalidArgumentException
+     *
+     * @return Reflection
+     */
+    public static function load($arg)
+    {
+        if (is_object($arg) && $arg instanceof Entity) {
+            $class = get_class($arg);
+        } elseif (is_object($arg) && $arg instanceof Reflection) {
+
+            $class = $arg->getClassName();
+            if (!isset(self::$registered[$class])) {
+                return self::$registered[$class] = $arg;
+            }
+            return $arg;
+        } elseif (is_string($arg)) {
+            $class = $arg;
+        } else {
+            throw new Exception\InvalidArgumentException(
+                "Entity identifier must be object, class or name!",
+                $arg
+            );
+        }
+
+        if (!is_subclass_of($class, "UniMapper\Entity")) {
+            $class = UNC::nameToClass($arg, UNC::ENTITY_MASK);
+        }
+
+        if (!class_exists($class)) {
+            throw new Exception\InvalidArgumentException(
+                "Entity class " . $class . " not found!"
+            );
+        }
+
+        if (isset(self::$registered[$class])) {
+            return self::$registered[$class];
+        }
+
+        return self::$registered[$class] = new Reflection($class);
     }
 
     public function createEntity($values = null)
@@ -227,7 +275,7 @@ class Reflection
     }
 
     /**
-     * Get entity's related files
+     * Get arg's related files
      *
      * @param array  $files
      *
@@ -242,7 +290,7 @@ class Reflection
         $files[] = $this->fileName;
         foreach ($this->properties as $property) {
             if (in_array($property->getType(), [Reflection\Property::TYPE_COLLECTION, Reflection\Property::TYPE_ENTITY])) {
-                $files += Reflection\Loader::load($property->getTypeOption())->getRelatedFiles($files);
+                $files += self::load($property->getTypeOption())->getRelatedFiles($files);
             }
         }
         return $files;

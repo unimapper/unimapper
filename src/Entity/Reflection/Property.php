@@ -300,7 +300,7 @@ class Property
                 $association = new $class(
                     $this->name,
                     $this->entityReflection,
-                    Loader::load($this->typeOption),
+                    Entity\Reflection::load($this->typeOption),
                     explode("|", $this->getOption(self::OPTION_ASSOC_BY)),
                     $this->getOption(self::OPTION_ASSOC) === "M<N" ? false : true
                 );
@@ -540,7 +540,7 @@ class Property
         ) {
             // Entity
 
-            return Loader::load($this->typeOption)->createEntity($value);
+            return Entity\Reflection::load($this->typeOption)->createEntity($value);
         }
 
         throw new Exception\InvalidArgumentException(

@@ -50,7 +50,7 @@ class AssociationManyToOneTest extends \Tester\TestCase
         $entity = new Fixtures\Entity\Remote(["id" => 2]);
         $entity->attach();
 
-        $association = new Association\ManyToOne("manyToOne", Reflection\Loader::load("Simple"), Reflection\Loader::load("Remote"), ["remoteId"]);
+        $association = new Association\ManyToOne("manyToOne", Reflection::load("Simple"), Reflection::load("Remote"), ["remoteId"]);
 
         Assert::null($association->saveChanges(1, $this->connectionMock, $entity));
     }
@@ -60,13 +60,13 @@ class AssociationManyToOneTest extends \Tester\TestCase
      */
     public function testSaveChangesNoPrimary()
     {
-        $association = new Association\ManyToOne("manyToOne", Reflection\Loader::load("Simple"), Reflection\Loader::load("Remote"), ["remoteId"]);
+        $association = new Association\ManyToOne("manyToOne", Reflection::load("Simple"), Reflection::load("Remote"), ["remoteId"]);
         $association->saveChanges(1, $this->connectionMock, new Fixtures\Entity\NoPrimary);
     }
 
     public function testLoadWithEmptyPrimaries()
     {
-        $association = new Association\ManyToOne("manyToOne", Reflection\Loader::load("Simple"), Reflection\Loader::load("Remote"), ["remoteId"]);
+        $association = new Association\ManyToOne("manyToOne", Reflection::load("Simple"), Reflection::load("Remote"), ["remoteId"]);
         $association->load($this->connectionMock, [null, null]);
     }
 

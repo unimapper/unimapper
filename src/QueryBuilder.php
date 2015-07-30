@@ -42,7 +42,7 @@ class QueryBuilder
      */
     public function __construct($entity)
     {
-        $this->entityReflection = Entity\Reflection\Loader::load($entity);
+        $this->entityReflection = Entity\Reflection::load($entity);
     }
 
     public function __call($name, $arguments)

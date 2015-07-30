@@ -62,7 +62,7 @@ class AssociationManyToManyTest extends \Tester\TestCase
         $collection = new UniMapper\Entity\Collection("Remote");
         $collection->add(new Fixtures\Entity\Remote(["text" => "foo"]));
 
-        $association = new Association\ManyToMany("manyToMany", Reflection\Loader::load("Simple"), Reflection\Loader::load("Remote"), ["simpleId", "simple_remote", "remoteId"]);
+        $association = new Association\ManyToMany("manyToMany", Reflection::load("Simple"), Reflection::load("Remote"), ["simpleId", "simple_remote", "remoteId"]);
 
         Assert::null($association->saveChanges(1, $connectionMock, $collection));
     }
@@ -102,7 +102,7 @@ class AssociationManyToManyTest extends \Tester\TestCase
         $collection = new UniMapper\Entity\Collection("Remote");
         $collection->remove(new Fixtures\Entity\Remote(["id" => 3, "text" => "foo"]));
 
-        $association = new Association\ManyToMany("manyToMany", Reflection\Loader::load("Simple"), Reflection\Loader::load("Remote"), ["simpleId", "simple_remote", "remoteId"]);
+        $association = new Association\ManyToMany("manyToMany", Reflection::load("Simple"), Reflection::load("Remote"), ["simpleId", "simple_remote", "remoteId"]);
 
         Assert::null($association->saveChanges(1, $connectionMock, $collection));
     }

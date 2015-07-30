@@ -30,7 +30,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
      */
     public function __construct($name, $values = null)
     {
-        $reflection = Entity\Reflection\Loader::load($name);
+        $reflection = Entity\Reflection::load($name);
 
         $this->entityClass = $reflection->getClassName();
 
@@ -66,7 +66,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
 
         if ($primaryRequired) {
 
-            $primaryName = Entity\Reflection\Loader::load($entity)->getPrimaryProperty()->getName();
+            $primaryName = Entity\Reflection::load($entity)->getPrimaryProperty()->getName();
             if (empty($entity->{$primaryName})) {
                 throw new Exception\InvalidArgumentException(
                     "Primary value can not be empty!"
@@ -79,7 +79,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         $this->_validateEntity($entity, true);
 
-        $primary = $entity->{Entity\Reflection\Loader::load($entity)->getPrimaryProperty()->getName()};
+        $primary = $entity->{Entity\Reflection::load($entity)->getPrimaryProperty()->getName()};
         if (!in_array($primary, $this->changes[Entity::CHANGE_ATTACH], true)) {
             array_push($this->changes{Entity::CHANGE_ATTACH}, $primary);
         }
@@ -89,7 +89,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         $this->_validateEntity($entity, true);
 
-        $primary = $entity->{Entity\Reflection\Loader::load($entity)->getPrimaryProperty()->getName()};
+        $primary = $entity->{Entity\Reflection::load($entity)->getPrimaryProperty()->getName()};
         if (!in_array($primary, $this->changes[Entity::CHANGE_DETACH], true)) {
             array_push($this->changes{Entity::CHANGE_DETACH}, $primary);
         }
@@ -105,7 +105,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         $this->_validateEntity($entity, true);
 
-        $primary = $entity->{Entity\Reflection\Loader::load($entity)->getPrimaryProperty()->getName()};
+        $primary = $entity->{Entity\Reflection::load($entity)->getPrimaryProperty()->getName()};
         if (!in_array($primary, $this->changes[Entity::CHANGE_REMOVE], true)) {
             array_push($this->changes{Entity::CHANGE_REMOVE}, $primary);
         }
@@ -145,7 +145,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
      */
     public function getEntityReflection()
     {
-        return Entity\Reflection\Loader::load($this->entityClass);
+        return Entity\Reflection::load($this->entityClass);
     }
 
     /**
@@ -259,7 +259,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         foreach ($this->data as $entity) {
 
-            $primaryPropertyName = Entity\Reflection\Loader::load($entity)
+            $primaryPropertyName = Entity\Reflection::load($entity)
                 ->getPrimaryProperty()
                 ->getName();
 
