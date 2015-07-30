@@ -4,7 +4,7 @@ namespace UniMapper\Entity\Reflection;
 
 use UniMapper\Exception;
 
-class AnnotationParser
+class Annotation
 {
 
     /**

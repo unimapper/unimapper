@@ -87,7 +87,7 @@ class Property
     ) {
         $this->entityReflection = $entityReflection;
         $this->name = $name;
-        $this->options = AnnotationParser::parseOptions($options);
+        $this->options = Annotation::parseOptions($options);
         $this->readonly = (bool) $readonly;
 
         $this->_initType($type);

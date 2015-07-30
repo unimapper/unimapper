@@ -72,7 +72,7 @@ class Reflection
         // Parse adapter
         try {
 
-            $adapter = Reflection\AnnotationParser::parseAdapter($docComment);
+            $adapter = Reflection\Annotation::parseAdapter($docComment);
             if ($adapter) {
                 list($this->adapterName, $this->adapterResource) = $adapter;
             }
@@ -165,7 +165,7 @@ class Reflection
     private function _parseProperties($docComment)
     {
         $properties = [];
-        foreach (Reflection\AnnotationParser::parseProperties($docComment) as $definition) {
+        foreach (Reflection\Annotation::parseProperties($docComment) as $definition) {
 
             try {
                 $property = new Reflection\Property(

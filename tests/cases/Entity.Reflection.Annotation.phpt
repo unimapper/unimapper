@@ -8,24 +8,24 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class EntityReflectionAnnotationParserTest extends \Tester\TestCase
+class EntityReflectionAnnotationTest extends \Tester\TestCase
 {
 
     public function testParseAdapter()
     {
         Assert::same(
             array('Foo', 'bar_'),
-            Reflection\AnnotationParser::parseAdapter(" *  @adapter  Foo( bar_ ) ")
+            Reflection\Annotation::parseAdapter(" *  @adapter  Foo( bar_ ) ")
         );
         Assert::same(
             array('Foo', ''),
-            Reflection\AnnotationParser::parseAdapter(" *  @adapter  Foo() ")
+            Reflection\Annotation::parseAdapter(" *  @adapter  Foo() ")
         );
         Assert::same(
             array('Foo', ''),
-            Reflection\AnnotationParser::parseAdapter(" *  @adapter  Foo ")
+            Reflection\Annotation::parseAdapter(" *  @adapter  Foo ")
         );
-        Assert::same(array('Foo', ''), Reflection\AnnotationParser::parseAdapter(" *  @adapter  Foo( bar _ ) "));
+        Assert::same(array('Foo', ''), Reflection\Annotation::parseAdapter(" *  @adapter  Foo( bar _ ) "));
     }
 
     public function testParseOptions()
@@ -35,13 +35,13 @@ class EntityReflectionAnnotationParserTest extends \Tester\TestCase
                 'assoc-filter-by' => 'value1|value2',
                 'primary' => null,
             ),
-            Reflection\AnnotationParser::parseOptions(" m:assoc-filter-by(value1|value2) m:primary ")
+            Reflection\Annotation::parseOptions(" m:assoc-filter-by(value1|value2) m:primary ")
         );
     }
 
     public function testParseProperties()
     {
-        $matched = Reflection\AnnotationParser::parseProperties(
+        $matched = Reflection\Annotation::parseProperties(
             '*  @property  type  $one  m:filter Commentary
             * @property-read type $two m:filter m:filter  Comment
             *@property type $three
@@ -75,5 +75,5 @@ class EntityReflectionAnnotationParserTest extends \Tester\TestCase
 
 }
 
-$testCase = new EntityReflectionAnnotationParserTest;
+$testCase = new EntityReflectionAnnotationTest;
 $testCase->run();
