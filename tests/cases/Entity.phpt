@@ -51,6 +51,14 @@ class EntityTest extends \Tester\TestCase
         new Fixtures\Entity\Simple(["id" => new DateTime]);
     }
 
+    public function testCreateCollection()
+    {
+        Assert::same(
+            "UniMapper\Tests\Fixtures\Entity\Simple",
+            Fixtures\Entity\Simple::createCollection([["id" => 1]])->getEntityClass()
+        );
+    }
+
     public function testGetProperty()
     {
         Assert::same("test", $this->entity->text);

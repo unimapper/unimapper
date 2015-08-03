@@ -2,6 +2,8 @@
 
 namespace UniMapper;
 
+use UniMapper\Entity\Collection;
+
 abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 {
 
@@ -148,6 +150,18 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
                 "Primary value can not be empty!"
             );
         }
+    }
+
+    /**
+     * Create new entity collection
+     *
+     * @param mixed $values
+     *
+     * @return Collection
+     */
+    public static function createCollection($values = null)
+    {
+        return new Collection(get_called_class(), $values);
     }
 
     public function attach()
