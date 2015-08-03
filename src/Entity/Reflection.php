@@ -91,7 +91,7 @@ class Reflection
     /**
      * Load and register reflection
      *
-     * @param string|Entity|Reflection $arg
+     * @param string|Entity|Collection|Reflection $arg
      *
      * @throws Exception\InvalidArgumentException
      *
@@ -101,6 +101,8 @@ class Reflection
     {
         if (is_object($arg) && $arg instanceof Entity) {
             $class = get_class($arg);
+        } elseif (is_object($arg) && $arg instanceof Collection) {
+            $class = $arg->getEntityClass();
         } elseif (is_object($arg) && $arg instanceof Reflection) {
 
             $class = $arg->getClassName();
@@ -112,7 +114,7 @@ class Reflection
             $class = $arg;
         } else {
             throw new Exception\InvalidArgumentException(
-                "Entity identifier must be object, class or name!",
+                "Entity identifier must be object, collection, class or name!",
                 $arg
             );
         }
