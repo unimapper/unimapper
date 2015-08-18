@@ -52,6 +52,9 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
         // Enumeration
         $this->_createReflection('integer', "enum", "m:enum(" . get_class() . "::ENUM*)")
             ->validateValueType(1);
+
+        // Primary
+        $this->_createReflection('integer', 'id', 'm:primary')->validateValueType(0);
     }
 
     /**
@@ -62,6 +65,22 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
         // Enumeration
         $this->_createReflection('integer', "enum", "m:enum(" . get_class() . "::ENUM*)")
             ->validateValueType(3);
+    }
+
+    /**
+     * @throws UniMapper\Exception\InvalidArgumentException Primary value can not be empty string or null!
+     */
+    public function testValidateValueTypePrimaryNull()
+    {
+        $this->_createReflection('integer', 'id', 'm:primary')->validateValueType(null);
+    }
+
+    /**
+     * @throws UniMapper\Exception\InvalidArgumentException Primary value can not be empty string or null!
+     */
+    public function testValidateValueTypePrimaryEmptyString()
+    {
+        $this->_createReflection('string', 'id', 'm:primary')->validateValueType("");
     }
 
     public function testConvertValue()
@@ -220,6 +239,52 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
         );
         Assert::false(
             $this->_createReflection('integer', 'id', 'm:primary')->getType() === Entity\Reflection\Property::TYPE_ENTITY
+        );
+    }
+
+    public function testPrimaryTypeBoolean()
+    {
+        Assert::exception(
+            function() {
+                $this->_createReflection('Date', 'id', 'm:primary');
+            },
+            "UniMapper\Exception\PropertyException",
+            "Primary property can be only double,integer,string but 'date' given!"
+        );
+        Assert::exception(
+            function() {
+                $this->_createReflection('DateTime', 'id', 'm:primary');
+            },
+            "UniMapper\Exception\PropertyException",
+            "Primary property can be only double,integer,string but 'datetime' given!"
+        );
+        Assert::exception(
+            function() {
+                $this->_createReflection('Simple', 'id', 'm:primary');
+            },
+            "UniMapper\Exception\PropertyException",
+            "Primary property can be only double,integer,string but 'entity' given!"
+        );
+        Assert::exception(
+            function() {
+                $this->_createReflection('Simple[]', 'id', 'm:primary');
+            },
+            "UniMapper\Exception\PropertyException",
+            "Primary property can be only double,integer,string but 'collection' given!"
+        );
+        Assert::exception(
+            function() {
+                $this->_createReflection('boolean', 'id', 'm:primary');
+            },
+            "UniMapper\Exception\PropertyException",
+            "Primary property can be only double,integer,string but 'boolean' given!"
+        );
+        Assert::exception(
+            function() {
+                $this->_createReflection('array', 'id', 'm:primary');
+            },
+            "UniMapper\Exception\PropertyException",
+            "Primary property can be only double,integer,string but 'array' given!"
         );
     }
 

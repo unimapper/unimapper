@@ -196,6 +196,22 @@ class Property
                 "Unsupported type '" . $definition . "'!"
             );
         }
+
+        // Validate primary type
+        $requiredPrimaryType = [
+            Property::TYPE_BASIC_DOUBLE,
+            Property::TYPE_BASIC_INTEGER,
+            Property::TYPE_BASIC_STRING
+        ];
+        if ($this->hasOption(self::OPTION_PRIMARY)
+            && !in_array($this->typeOption, $requiredPrimaryType, true)
+        ) {
+            throw new Exception\PropertyException(
+                "Primary property can be only "
+                . implode(",", $requiredPrimaryType) . " but '"
+                . ($this->type === self::TYPE_BASIC ? $this->typeOption : $this->type) . "' given!"
+            );
+        }
     }
 
     private function _initMapping()
@@ -372,6 +388,15 @@ class Property
      */
     public function validateValueType($value)
     {
+        if ($this->hasOption(self::OPTION_PRIMARY)
+            && ($value === null || $value === "")
+        ) {
+            throw new Exception\InvalidArgumentException(
+                "Primary value can not be empty string or null!",
+                $value
+            );
+        }
+
         if ($value === null) {
             return;
         }
