@@ -2,6 +2,8 @@
 
 namespace UniMapper;
 
+use UniMapper\Exception\QueryException;
+use UniMapper\Exception\RepositoryException;
 use UniMapper\NamingConvention as UNC;
 
 abstract class Repository
@@ -181,7 +183,11 @@ abstract class Repository
 
         $primaryName = $reflection->getPrimaryProperty()->getName();
 
-        return $this->query()->deleteOne($entity->{$primaryName})->run($this->connection);
+        try {
+            return $this->query()->deleteOne($entity->{$primaryName})->run($this->connection);
+        } catch (Exception\QueryException $e) {
+            throw new Exception\RepositoryException($e->getMessage());
+        }
     }
 
     /**
@@ -214,7 +220,6 @@ abstract class Repository
      */
     private function _applyFilter(Query $query, array $filter, $and = true)
     {
-
         try {
 
             if ($filter === array_values($filter)) {
@@ -312,9 +317,13 @@ abstract class Repository
 
     public function findOne($primaryValue, array $associate = [])
     {
-        return $this->query()->selectOne($primaryValue)
-            ->associate($associate)
-            ->run($this->connection);
+        try {
+            return $this->query()->selectOne($primaryValue)
+                ->associate($associate)
+                ->run($this->connection);
+        } catch (QueryException $e) {
+            throw new RepositoryException($e->getMessage());
+        }
     }
 
     /**
@@ -339,7 +348,7 @@ abstract class Repository
         }
 
         if (empty($primaryValues)) {
-            throw new Exception\InvalidArgumentException(
+            throw new Exception\RepositoryException(
                 "Values can not be empty!"
             );
         }

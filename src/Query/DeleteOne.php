@@ -29,7 +29,11 @@ class DeleteOne extends \UniMapper\Query
             );
         }
 
-        $entityReflection->getPrimaryProperty()->validateValueType($primaryValue);
+        try {
+            $entityReflection->getPrimaryProperty()->validateValueType($primaryValue);
+        } catch (Exception\InvalidArgumentException $e) {
+            throw new Exception\QueryException($e->getMessage());
+        }
 
         $this->primaryValue = $primaryValue;
     }

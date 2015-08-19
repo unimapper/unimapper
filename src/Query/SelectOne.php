@@ -25,7 +25,13 @@ class SelectOne extends \UniMapper\Query
                 "Can not use query on entity without primary property!"
             );
         }
-        $entityReflection->getPrimaryProperty()->validateValueType($primaryValue);
+
+        try {
+            $entityReflection->getPrimaryProperty()->validateValueType($primaryValue);
+        } catch (Exception\InvalidArgumentException $e) {
+            throw new Exception\QueryException($e->getMessage());
+        }
+
         $this->primaryValue = $primaryValue;
 
         // Selection

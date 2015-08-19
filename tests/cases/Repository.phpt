@@ -160,7 +160,7 @@ class RepositoryTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\QueryException Primary value can not be empty!
+     * @throws UniMapper\Exception\RepositoryException Primary value can not be empty!
      */
     public function testDestroyNoPrimaryValue()
     {
@@ -479,7 +479,7 @@ class RepositoryTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\InvalidArgumentException Values can not be empty!
+     * @throws UniMapper\Exception\RepositoryException Values can not be empty!
      */
     public function testFindPrimaryNoValues()
     {
