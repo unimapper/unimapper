@@ -4,6 +4,7 @@ namespace UniMapper\Tests\Fixtures\Entity;
 
 use UniMapper\Association\Multi;
 use UniMapper\Association\Single;
+use UniMapper\Entity\Filter;
 use UniMapper\Entity\Reflection;
 
 Reflection\Property::registerAssocFilter("sortAndLimit", function (Multi $assoc, $orderBy = "ASC", $limit = 10) {
@@ -11,7 +12,7 @@ Reflection\Property::registerAssocFilter("sortAndLimit", function (Multi $assoc,
 });
 
 Reflection\Property::registerAssocFilter("textLikeFoo", function (Single $assoc) {
-    $assoc->where("text", "LIKE", "foo");
+    $assoc->setFilter(["text" => [Filter::LIKE => "foo"]]);
 });
 
 /**

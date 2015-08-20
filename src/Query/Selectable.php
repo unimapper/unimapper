@@ -3,6 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\Association;
+use UniMapper\Entity\Filter;
 use UniMapper\Exception;
 use UniMapper\Entity\Reflection;
 
@@ -109,22 +110,15 @@ trait Selectable
 
             $selection = $this->selection;
 
-            // Add properties from conditions
-            $callback = function ($conditions) use (& $callback, $selection) {
-
-                if (is_array($conditions[0])) {
-                    // Group
-
-                    array_walk_recursive($conditions[0], $callback);
-                } else {
-                    // Condition
-
-                    if (!in_array($conditions[0], $selection)) {
-                        $selection[] = $conditions[0];
-                    }
+            // Add properties from filter
+            Filter::merge(
+                $this->entityReflection,
+                [],
+                $this->filter,
+                function ($name) use ($selection) {
+                    $selection[] = $name;
                 }
-            };
-            array_walk_recursive($this->conditions, $callback);
+            );
 
             // Include primary automatically if not provided
             if ($this->entityReflection->hasPrimary()) {

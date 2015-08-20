@@ -36,8 +36,8 @@ class QueryDeleteTest extends \Tester\TestCase
             ->once()
             ->andReturn($this->adapterQueryMock);
 
-        $this->adapterQueryMock->shouldReceive("setConditions")
-            ->with([["simplePrimaryId", "=", 1, "AND"]])
+        $this->adapterQueryMock->shouldReceive("setFilter")
+            ->with(["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => 1]])
             ->once();
         $this->adapterQueryMock->shouldReceive("getRaw")->once();
 
@@ -49,11 +49,11 @@ class QueryDeleteTest extends \Tester\TestCase
         $query = new Query\Delete(
             new Reflection("UniMapper\Tests\Fixtures\Entity\Simple")
         );
-        $query->where("id", "=", 1);
+        $query->setFilter(["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]);
         Assert::same(2, $query->run($this->connectionMock));
     }
 
-    public function testOnExecuteNoConditions()
+    public function testOnExecuteNoFilter()
     {
         $this->adapters["FooAdapter"]->shouldReceive("createDelete")
             ->with("simple_resource")

@@ -13,7 +13,7 @@ class QueryCountTest extends \Tester\TestCase
     public function testOnExecute()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $adapterQueryMock->shouldReceive("setConditions")->with([["simplePrimaryId", "=", 1, "AND"]])->once();
+        $adapterQueryMock->shouldReceive("setFilter")->with(["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => 1]])->once();
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $adapterMock = Mockery::mock("UniMapper\Adapter");
@@ -27,7 +27,7 @@ class QueryCountTest extends \Tester\TestCase
         $query = new UniMapper\Query\Count(
             new UniMapper\Entity\Reflection("UniMapper\Tests\Fixtures\Entity\Simple")
         );
-        $query->where("id", "=", 1);
+        $query->setFilter(["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]);
         Assert::same(1, $query->run($connectionMock));
     }
 

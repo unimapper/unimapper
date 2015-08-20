@@ -2,6 +2,7 @@
 
 namespace UniMapper;
 
+use UniMapper\Entity\Filter;
 use UniMapper\Exception\QueryException;
 use UniMapper\Exception\RepositoryException;
 use UniMapper\NamingConvention as UNC;
@@ -62,6 +63,7 @@ abstract class Repository
      * @return mixed
      *
      * @throws Exception\ValidatorException
+     * @throws Exception\RepositoryException
      */
     public function create(Entity $entity)
     {
@@ -137,11 +139,10 @@ abstract class Repository
             throw new Exception\ValidatorException($entity->getValidator());
         }
 
-        $query = $this->query()->update($entity->getData());
-        $this->_applyFilter($query, $filter);
-
         try {
-            return $query->run($this->connection);
+            return $this->query()->update($entity->getData())
+                ->setFilter($filter)
+                ->run($this->connection);
         } catch (Exception\QueryException $e) {
             throw new Exception\RepositoryException($e->getMessage());
         }
@@ -164,6 +165,8 @@ abstract class Repository
      * @param Entity $entity
      *
      * @return boolean
+     *
+     * @throws Exception\RepositoryException
      */
     public function destroy(Entity $entity)
     {
@@ -196,93 +199,26 @@ abstract class Repository
      * @param array $filter
      *
      * @return int Deleted records count
+     *
+     * @throws Exception\RepositoryException
      */
     public function destroyBy(array $filter = [])
     {
-        $query = $this->query()->delete();
-        $this->_applyFilter($query, $filter);
-        return $query->run($this->connection);
+        try {
+            return $this->query()->delete()
+                ->setFilter($filter)
+                ->run($this->connection);
+        } catch (Exception\QueryException $e) {
+            throw new Exception\RepositoryException($e->getMessage());
+        }
     }
 
     public function count(array $filter = [])
     {
-        $query = $this->query()->count();
-        $this->_applyFilter($query, $filter);
-        return $query->run($this->connection);
-    }
-
-    /**
-     * Apply filter on query
-     *
-     * @param \UniMapper\Query $query
-     * @param array            $filter
-     * @param bool             $and
-     */
-    private function _applyFilter(Query $query, array $filter, $and = true)
-    {
         try {
-
-            if ($filter === array_values($filter)) {
-                // Conditions with parentheses
-
-                foreach ($filter as $filterGroup) {
-
-                    if (!is_array($filterGroup)) {
-                        throw new Exception\RepositoryException("Invalid filter structure given!");
-                    }
-
-                    $fn = $and ? "whereAre" : "orWhereAre";
-                    $query->{$fn}(function ($nestedQuery) use ($filterGroup) {
-                        $this->_applyFilter($nestedQuery, $filterGroup);
-                    });
-                }
-            } else {
-                // Simple conditions
-
-                if (isset($filter["or"])
-                    && count($filter) === 1
-                    && is_array($filter["or"])
-                ) {
-                    // OR statement
-
-                    $fn = $and ? "whereAre" : "orWhereAre";
-                    return $query->{$fn}(function ($query) use ($filter) {
-                        $this->_applyFilter($query, $filter["or"], false);
-                    });
-                }
-
-                foreach ($filter as $name => $conditions) {
-
-                    if (!is_array($conditions)) {
-                        throw new Exception\RepositoryException("Invalid filter structure given!");
-                    }
-
-                    foreach ($conditions as $modifier => $value) {
-
-                        // Convert to condition operator
-                        if ($modifier === "!" && ($value === null || is_bool($value))) {
-                            $operator = "IS NOT";
-                        } elseif ($modifier === "=" && ($value === null || is_bool($value))) {
-                            $operator = "IS";
-                        } elseif ($modifier === "!" && is_array($value)) {
-                            $operator = "NOT IN";
-                        } elseif ($modifier === "=" && is_array($value)) {
-                            $operator = "IN";
-                        } elseif ($modifier === "!") {
-                            $operator = "!=";
-                        } else {
-                            $operator = strtoupper($modifier);
-                        }
-
-                        // Call query
-                        if ($and) {
-                            $query->where($name, $operator, $value);
-                        } else {
-                            $query->orWhere($name, $operator, $value);
-                        }
-                    }
-                }
-            }
+            return $this->query()->count()
+                ->setFilter($filter)
+                ->run($this->connection);
         } catch (Exception\QueryException $e) {
             throw new Exception\RepositoryException($e->getMessage());
         }
@@ -302,17 +238,21 @@ abstract class Repository
     public function find(array $filter = [], array $orderBy = [], $limit = 0,
         $offset = 0, array $associate = []
     ) {
-        $query = $this->query()
-            ->select()
-            ->associate($associate);
+        try {
 
-        $this->_applyFilter($query, $filter);
+            $query = $this->query()
+                ->select()
+                ->associate($associate)
+                ->setFilter($filter);
 
-        foreach ($orderBy as $orderByRule) {
-            $query->orderBy($orderByRule[0], $orderByRule[1]);
+            foreach ($orderBy as $orderByRule) {
+                $query->orderBy($orderByRule[0], $orderByRule[1]);
+            }
+
+            return $query->limit($limit)->offset($offset)->run($this->connection);
+        } catch (Exception\QueryException $e) {
+            throw new Exception\RepositoryException($e->getMessage());
         }
-
-        return $query->limit($limit)->offset($offset)->run($this->connection);
     }
 
     public function findOne($primaryValue, array $associate = [])
@@ -333,6 +273,8 @@ abstract class Repository
      * @param array $associate
      *
      * @return Entity\Collection
+     *
+     * @throws Exception\RepositoryException
      */
     public function findPrimaries(array $primaryValues, array $associate = [])
     {
@@ -353,15 +295,22 @@ abstract class Repository
             );
         }
 
-        return $this->query()
-            ->select()
-            ->where(
-                $entityReflection->getPrimaryProperty()->getName(),
-                "IN",
-                $primaryValues
-            )
-            ->associate($associate)
-            ->run($this->connection);
+        try {
+
+            return $this->query()
+                ->select()
+                ->setFilter(
+                    [
+                        $entityReflection->getPrimaryProperty()->getName() => [
+                            Filter::EQUAL => $primaryValues
+                        ]
+                    ]
+                )
+                ->associate($associate)
+                ->run($this->connection);
+        } catch (Exception\QueryException $e) {
+            throw new Exception\RepositoryException($e->getMessage());
+        }
     }
 
     /**

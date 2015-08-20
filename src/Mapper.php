@@ -2,6 +2,9 @@
 
 namespace UniMapper;
 
+use UniMapper\Entity\Filter;
+use UniMapper\Entity\Reflection;
+
 class Mapper
 {
 
@@ -249,6 +252,32 @@ class Mapper
             $data[$index] = $this->unmapEntity($entity);
         }
         return $data;
+    }
+
+    /**
+     * @param Reflection $reflection
+     * @param array      $filter
+     *
+     * @return array
+     */
+    public function unmapFilter(Reflection $reflection, array $filter)
+    {
+        return Filter::merge(
+            $reflection,
+            [],
+            $filter,
+            function ($name, $item) use ($reflection) {
+
+                $property = $reflection->getProperty($name);
+                foreach ($item as $modifier => $value) {
+                    $item[$modifier] = $this->unmapValue(
+                        $property,
+                        $value
+                    );
+                }
+                return [$property->getName(true) => $item];
+            }
+        );
     }
 
 }

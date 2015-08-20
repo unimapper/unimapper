@@ -9,7 +9,7 @@ use UniMapper\Cache\ICache;
 class Select extends \UniMapper\Query
 {
 
-    use Conditionable;
+    use Filterable;
     use Limit;
     use Selectable;
     use Sortable;
@@ -62,8 +62,13 @@ class Select extends \UniMapper\Query
             $this->offset
         );
 
-        if ($this->conditions) {
-            $query->setConditions($this->unmapConditions($mapper, $this->conditions));
+        if ($this->filter) {
+            $query->setFilter(
+                $mapper->unmapFilter(
+                    $this->entityReflection,
+                    $this->filter
+                )
+            );
         }
 
         if ($this->associations["local"]) {
@@ -194,7 +199,7 @@ class Select extends \UniMapper\Query
                     "orderBy" => $this->orderBy,
                     "localAssociations" => array_keys($this->associations["local"]),
                     "remoteAssociations" => array_keys($this->associations["remote"]),
-                    "conditions" => $this->conditions
+                    "conditions" => $this->filter
                 ]
             )
         );

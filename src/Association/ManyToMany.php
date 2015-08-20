@@ -91,8 +91,8 @@ class ManyToMany extends Multi
             $this->getJoinResource(),
             [$this->getJoinKey(), $this->getReferencingKey()]
         );
-        $joinQuery->setConditions(
-            [[$this->getJoinKey(), "IN", $primaryValues, "AND"]]
+        $joinQuery->setFilter(
+            [$this->getJoinKey() => [Entity\Filter::EQUAL => $primaryValues]]
         );
 
         $joinResult = $currentAdapter->execute($joinQuery);
@@ -118,14 +118,9 @@ class ManyToMany extends Multi
         );
 
         // Set target conditions
-        $conditions = $this->conditions;
-        $conditions[] = [
-            $this->getTargetPrimaryKey(),
-            "IN",
-            array_keys($joinResult),
-            "AND"
-        ];
-        $targetQuery->setConditions($conditions);
+        $filter = $this->filter;
+        $filter[$this->getTargetPrimaryKey()][Entity\Filter::EQUAL] = array_keys($joinResult);
+        $targetQuery->setFilter($filter);
 
         $targetResult = $targetAdapter->execute($targetQuery);
         if (!$targetResult) {

@@ -48,24 +48,11 @@ class QuerySelectTest extends \Tester\TestCase
         $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new Mapper);
         $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
 
-        $this->adapterQueryMock->shouldReceive("setConditions")
-            ->with(
-                [
-                    ["simplePrimaryId", ">", 1, "AND"],
-                    [
-                        [
-                            ["text", "LIKE", "%foo", "AND"]
-                        ],
-                        'OR'
-                    ]
-                ]
-            )
-            ->once();
         $this->adapters["FooAdapter"]->shouldReceive("createSelect")
             ->with(
                 "simple_resource",
                 ["link", "text", "simplePrimaryId"],
-                ["simplePrimaryId" => "desc"],
+                [],
                 null,
                 null
             )
@@ -80,10 +67,6 @@ class QuerySelectTest extends \Tester\TestCase
         $result = $this->createQuery()
             ->select("url")
             ->select("text")
-            ->where("id", ">", 1)
-                ->orWhereAre(function($query) {
-                    $query->where("text", "LIKE", "%foo");
-                })->orderBy("id", "DESC")
             ->run($this->connectionMock);
 
         Assert::type("Unimapper\Entity\Collection", $result);
@@ -134,8 +117,8 @@ class QuerySelectTest extends \Tester\TestCase
             ->once()
             ->andReturn([["simplePrimaryId" => 1, "remoteId" => 3], ["simplePrimaryId" => 2, "remoteId" => 4]]);
 
-        $this->adapterQueryMock->shouldReceive("setConditions")
-            ->with([["id", "IN", [3, 4], "AND"]])
+        $this->adapterQueryMock->shouldReceive("setFilter")
+            ->with(["id" => [\UniMapper\Entity\Filter::EQUAL => [3, 4]]])
             ->once();
         $this->adapters["RemoteAdapter"]->shouldReceive("createSelect")
             ->with("remote_resource")
@@ -208,8 +191,8 @@ class QuerySelectTest extends \Tester\TestCase
             ->once()
             ->andReturn([["simplePrimaryId" => 1], ["simplePrimaryId" => 2]]);
 
-        $this->adapterQueryMock->shouldReceive("setConditions")
-            ->with([["simpleId", "IN", [1, 2], "AND"]])
+        $this->adapterQueryMock->shouldReceive("setFilter")
+            ->with(["simpleId" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]])
             ->once();
         $this->adapters["FooAdapter"]->shouldReceive("createSelect")
             ->with("simple_remote", ['simpleId', 'remoteId'])
@@ -246,8 +229,8 @@ class QuerySelectTest extends \Tester\TestCase
             ->once()
             ->andReturn([["simplePrimaryId" => 1], ["simplePrimaryId" => 2]]);
 
-        $this->adapterQueryMock->shouldReceive("setConditions")
-            ->with([["simpleId", "IN", [1, 2], "AND"]])
+        $this->adapterQueryMock->shouldReceive("setFilter")
+            ->with(["simpleId" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]])
             ->once();
         $this->adapters["FooAdapter"]->shouldReceive("createSelect")
             ->with("simple_remote", ['simpleId', 'remoteId'])
@@ -263,8 +246,8 @@ class QuerySelectTest extends \Tester\TestCase
                 ]
             );
 
-        $this->adapterQueryMock->shouldReceive("setConditions")
-            ->with([["id", "IN", [3, 4], "AND"]])
+        $this->adapterQueryMock->shouldReceive("setFilter")
+            ->with(["id" => [\UniMapper\Entity\Filter::EQUAL => [3, 4]]])
             ->once();
         $this->adapters["RemoteAdapter"]->shouldReceive("createSelect")
             ->with("remote_resource", [], [], null, null)
@@ -306,8 +289,8 @@ class QuerySelectTest extends \Tester\TestCase
             ->once()
             ->andReturn([["id" => 3], ["id" => 4]]);
 
-        $this->adapterQueryMock->shouldReceive("setConditions")
-            ->with([["remoteId", "IN", [3, 4], "AND"]])
+        $this->adapterQueryMock->shouldReceive("setFilter")
+            ->with(["remoteId" => [\UniMapper\Entity\Filter::EQUAL => [3, 4]]])
             ->once();
         $this->adapters["FooAdapter"]->shouldReceive("createSelect")
             ->with("simple_remote", ['remoteId', 'simpleId'])
@@ -323,8 +306,8 @@ class QuerySelectTest extends \Tester\TestCase
                 ]
             );
 
-        $this->adapterQueryMock->shouldReceive("setConditions")
-            ->with([["simplePrimaryId", "IN", [1, 2], "AND"]])
+        $this->adapterQueryMock->shouldReceive("setFilter")
+            ->with(["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]])
             ->once();
         $this->adapters["FooAdapter"]->shouldReceive("createSelect")
             ->with("simple_resource", [], [], null, null)
@@ -359,11 +342,11 @@ class QuerySelectTest extends \Tester\TestCase
 
         $cacheMock = Mockery::mock("UniMapper\Cache\ICache");
         $cacheMock->shouldReceive("load")
-            ->with("d886dfb98c2b2a3aa4e74579606919f2")
+            ->with("35b84606bf241dfbcd314adcb85c1945")
             ->andReturn(false);
         $cacheMock->shouldReceive("save")
             ->with(
-                "d886dfb98c2b2a3aa4e74579606919f2",
+                "35b84606bf241dfbcd314adcb85c1945",
                 [["simplePrimaryId" => 3], ["simplePrimaryId" => 4]],
                 [
                     Cache\ICache::TAGS => ["myTag", Cache\ICache::TAG_QUERY],
@@ -388,13 +371,13 @@ class QuerySelectTest extends \Tester\TestCase
             ->once()
             ->andReturn([["simplePrimaryId" => 3], ["simplePrimaryId" => 4]]);
 
-        $this->adapterQueryMock->shouldReceive("setConditions")
-            ->with([["simplePrimaryId", "IS", 1, "AND"]])
+        $this->adapterQueryMock->shouldReceive("setFilter")
+            ->with(["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => 1]])
             ->once();
 
         $result = $this->createQuery("Simple")
             ->select("id")
-            ->where("id", "IS", 1)
+            ->setFilter(["id" => [\UniMapper\Entity\Filter::EQUAL => 1]])
             ->cached(true, [Cache\ICache::TAGS => ["myTag"]])
             ->run($this->connectionMock);
 
@@ -409,7 +392,7 @@ class QuerySelectTest extends \Tester\TestCase
         $cacheMock = Mockery::mock("UniMapper\Cache\ICache");
         $cacheMock->shouldReceive("load")
             ->once()
-            ->with("d886dfb98c2b2a3aa4e74579606919f2")
+            ->with("35b84606bf241dfbcd314adcb85c1945")
             ->andReturn([["simplePrimaryId" => 3], ["simplePrimaryId" => 4]]);
 
         $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new Mapper);
@@ -418,7 +401,7 @@ class QuerySelectTest extends \Tester\TestCase
 
         $result = $this->createQuery("Simple")
             ->select("id")
-            ->where("id", "IS", 1)
+            ->setFilter(["id" => [\UniMapper\Entity\Filter::EQUAL => 1]])
             ->cached(true, [Cache\ICache::TAGS => ["myTag"]])
             ->run($this->connectionMock);
 
@@ -496,8 +479,8 @@ class QuerySelectTest extends \Tester\TestCase
             ->once()
             ->andReturn($this->adapterQueryMock);
 
-        $this->adapterQueryMock->shouldReceive("setConditions")
-            ->with([["simplePrimaryId", "IN", [100,101,102], "AND"]])
+        $this->adapterQueryMock->shouldReceive("setFilter")
+            ->with(["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => [100, 101, 102]]])
             ->once();
 
         $this->adapters["RemoteAdapter"]->shouldReceive("onExecute")

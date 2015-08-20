@@ -47,14 +47,9 @@ class OneToMany extends Multi
         );
 
         // Set target conditions
-        $conditions = $this->conditions;
-        $conditions[] = [
-            $this->getReferencedKey(),
-            "IN",
-            array_values($primaryValues),
-            "AND"
-        ];
-        $query->setConditions($conditions);
+        $filter = $this->filter;
+        $filter[$this->getReferencedKey()][Entity\Filter::EQUAL] = array_values($primaryValues);
+        $query->setFilter($filter);
 
         $result = $targetAdapter->execute($query);
 

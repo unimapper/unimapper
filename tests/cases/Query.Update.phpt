@@ -35,9 +35,9 @@ class QueryUpdateTest extends \Tester\TestCase
     public function testSuccess()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $adapterQueryMock->shouldReceive("setConditions")
+        $adapterQueryMock->shouldReceive("setFilter")
             ->once()
-            ->with([["simplePrimaryId", "=", 1, "AND"]]);
+            ->with(["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => 1]]);
         $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $this->adapters["FooAdapter"]->shouldReceive("createUpdate")
@@ -58,7 +58,7 @@ class QueryUpdateTest extends \Tester\TestCase
             new Reflection("UniMapper\Tests\Fixtures\Entity\Simple"),
             ["text" => "foo", "oneToOne" => ["id" => 3]]
         );
-        $query->where("id", "=", 1);
+        $query->setFilter(["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]);
         Assert::same(2, $query->run($connectionMock));
     }
 

@@ -63,14 +63,9 @@ class ManyToOne extends Single
         $query = $targetAdapter->createSelect($this->getTargetResource());
 
         // Set target conditions
-        $conditions = $this->conditions;
-        $conditions[] = [
-            $this->getTargetPrimaryKey(),
-            "IN",
-            $primaryValues,
-            "AND"
-        ];
-        $query->setConditions($conditions);
+        $filter = $this->filter;
+        $filter[$this->getTargetPrimaryKey()][Entity\Filter::EQUAL] = $primaryValues;
+        $query->setFilter($filter);
 
         $result = $targetAdapter->execute($query);
 

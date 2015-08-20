@@ -8,7 +8,7 @@ use UniMapper\Exception,
 class Update extends \UniMapper\Query
 {
 
-    use Conditionable;
+    use Filterable;
     use Limit;
 
     /** @var \UniMapper\Entity */
@@ -38,8 +38,13 @@ class Update extends \UniMapper\Query
             $this->entityReflection->getAdapterResource(),
             $values
         );
-        if ($this->conditions) {
-            $query->setConditions($this->unmapConditions($mapper, $this->conditions));
+        if ($this->filter) {
+            $query->setFilter(
+                $mapper->unmapFilter(
+                    $this->entityReflection,
+                    $this->filter
+                )
+            );
         }
 
         return (int) $adapter->execute($query);

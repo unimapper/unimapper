@@ -5,7 +5,7 @@ namespace UniMapper\Query;
 class Delete extends \UniMapper\Query
 {
 
-    use Conditionable;
+    use Filterable;
     use Limit;
 
     protected function onExecute(\UniMapper\Connection $connection)
@@ -16,8 +16,13 @@ class Delete extends \UniMapper\Query
             $this->entityReflection->getAdapterResource()
         );
 
-        if ($this->conditions) {
-            $query->setConditions($this->unmapConditions($connection->getMapper(), $this->conditions));
+        if ($this->filter) {
+            $query->setFilter(
+                $connection->getMapper()->unmapFilter(
+                    $this->entityReflection,
+                    $this->filter
+                )
+            );
         }
 
         return (int) $adapter->execute($query);

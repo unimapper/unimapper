@@ -5,7 +5,7 @@ namespace UniMapper\Query;
 class Count extends \UniMapper\Query
 {
 
-    use Conditionable;
+    use Filterable;
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
@@ -13,8 +13,13 @@ class Count extends \UniMapper\Query
         $query = $adapter->createCount(
             $this->entityReflection->getAdapterResource()
         );
-        if ($this->conditions) {
-            $query->setConditions($this->unmapConditions($connection->getMapper(), $this->conditions));
+        if ($this->filter) {
+            $query->setFilter(
+                $connection->getMapper()->unmapFilter(
+                    $this->entityReflection,
+                    $this->filter
+                )
+            );
         }
         return (int) $adapter->execute($query);
     }

@@ -5,7 +5,7 @@ namespace UniMapper\Adapter;
 interface IQuery
 {
 
-    public function setConditions(array $conditions);
+    public function setFilter(array $filter);
 
     public function setAssociations(array $associations);
 
