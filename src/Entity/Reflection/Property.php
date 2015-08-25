@@ -14,13 +14,11 @@ class Property
           TYPE_DATE = "date",
           TYPE_COLLECTION = "collection",
           TYPE_ENTITY = "entity",
-          TYPE_BASIC = "basic";
-
-    const TYPE_BASIC_BOOLEAN = "boolean",
-          TYPE_BASIC_INTEGER = "integer",
-          TYPE_BASIC_DOUBLE = "double",
-          TYPE_BASIC_STRING = "string",
-          TYPE_BASIC_ARRAY = "array";
+          TYPE_BOOLEAN = "boolean",
+          TYPE_INTEGER = "integer",
+          TYPE_DOUBLE = "double",
+          TYPE_STRING = "string",
+          TYPE_ARRAY = "array";
 
     const OPTION_ASSOC = "assoc",
           OPTION_ASSOC_BY = "assoc-by",
@@ -40,13 +38,12 @@ class Property
     /** @var string $name */
     private $name;
 
-    /** @var array $basicTypes */
-    private $basicTypes = [
-        self::TYPE_BASIC_BOOLEAN,
-        self::TYPE_BASIC_INTEGER,
-        self::TYPE_BASIC_DOUBLE,
-        self::TYPE_BASIC_STRING,
-        self::TYPE_BASIC_ARRAY
+    /** @var array $scalarTypes */
+    private static $scalarTypes = [
+        self::TYPE_BOOLEAN,
+        self::TYPE_INTEGER,
+        self::TYPE_DOUBLE,
+        self::TYPE_STRING
     ];
 
     /** @var Entity\Reflection */
@@ -108,13 +105,15 @@ class Property
     }
 
     /**
-     * Get list of supported basic types
+     * Is type scalar?
      *
-     * @return array
+     * @param string $type
+     *
+     * @return bool
      */
-    public function getBasicTypes()
+    public static function isScalarType($type)
     {
-        return $this->basicTypes;
+        return in_array($type, self::$scalarTypes, true);
     }
 
     /**
@@ -168,10 +167,15 @@ class Property
      */
     private function _initType($definition)
     {
-        if (in_array($definition, $this->basicTypes)) {
+        if (self::isScalarType($definition)) {
             // Basic
 
-            $this->type = self::TYPE_BASIC;
+            $this->type = $definition;
+            $this->typeOption = $definition;
+        } elseif (strtolower($definition) === self::TYPE_ARRAY) {
+            // array
+
+            $this->type = $definition;
             $this->typeOption = $definition;
         } elseif (strtolower($definition) === self::TYPE_DATETIME) {
             // DateTime
@@ -199,17 +203,17 @@ class Property
 
         // Validate primary type
         $requiredPrimaryType = [
-            Property::TYPE_BASIC_DOUBLE,
-            Property::TYPE_BASIC_INTEGER,
-            Property::TYPE_BASIC_STRING
+            Property::TYPE_DOUBLE,
+            Property::TYPE_INTEGER,
+            Property::TYPE_STRING
         ];
         if ($this->hasOption(self::OPTION_PRIMARY)
-            && !in_array($this->typeOption, $requiredPrimaryType, true)
+            && !in_array($this->type, $requiredPrimaryType, true)
         ) {
             throw new Exception\PropertyException(
                 "Primary property can be only "
-                . implode(",", $requiredPrimaryType) . " but '"
-                . ($this->type === self::TYPE_BASIC ? $this->typeOption : $this->type) . "' given!"
+                . implode(",", $requiredPrimaryType) . " but '" . $this->type
+                . "' given!"
             );
         }
     }
@@ -401,8 +405,6 @@ class Property
             return;
         }
 
-        $expectedType = $this->typeOption;
-
         // Enumeration
         if ($this->hasOption(self::OPTION_ENUM) && !$this->getOption(self::OPTION_ENUM)->isValid($value)) {
             throw new Exception\InvalidArgumentException(
@@ -412,14 +414,14 @@ class Property
             );
         }
 
-        // Basic type
-        if ($this->type === self::TYPE_BASIC) {
+        // Scalar or array type
+        if (self::isScalarType($this->type) || $this->type === self::TYPE_ARRAY) {
 
-            if (gettype($value) === $expectedType) {
+            if (gettype($value) === $this->type) {
                 return;
             }
             throw new Exception\InvalidArgumentException(
-                "Expected " . $expectedType . " but " . gettype($value)
+                "Expected " . $this->type . " but " . gettype($value)
                 . " given on property " . $this->name . "!",
                 $value
             );
@@ -434,21 +436,20 @@ class Property
         if ($this->type === self::TYPE_ENTITY) {
             // Entity
 
-            $expectedType = UNC::nameToClass($expectedType, UNC::ENTITY_MASK);
-            if ($value instanceof $expectedType) {
+            $expectedEntityClass = UNC::nameToClass($this->typeOption, UNC::ENTITY_MASK);
+            if ($value instanceof $expectedEntityClass) {
                 return;
             } else {
                 throw new Exception\InvalidArgumentException(
-                    "Expected entity " . $expectedType . " but " . $givenType
+                    "Expected entity " . $this->typeOption . " but " . $givenType
                     . " given on property " . $this->name . "!",
                     $value
                 );
             }
-
         } elseif ($this->type === self::TYPE_COLLECTION) {
             // Collection
 
-            $expectedType = UNC::nameToClass($expectedType, UNC::ENTITY_MASK);
+            $entityClass = UNC::nameToClass($this->typeOption, UNC::ENTITY_MASK);
             if (!$value instanceof Entity\Collection) {
 
                 throw new Exception\InvalidArgumentException(
@@ -456,19 +457,16 @@ class Property
                     . " property " . $this->name . "!",
                     $value
                 );
-            } elseif ($value->getEntityClass() !== $expectedType) {
+            } elseif ($value->getEntityClass() !== $entityClass) {
                 throw new Exception\InvalidArgumentException(
-                    "Expected collection of entity "
-                    . $expectedType
-                    . " but collection of entity "
-                    . $value->getEntityClass()
+                    "Expected collection of entity " . $entityClass
+                    . " but collection of entity " . $value->getEntityClass()
                     . " given on property " . $this->name . "!",
                     $value
                 );
             } else {
                 return;
             }
-
         } elseif ($this->type === self::TYPE_DATETIME) {
             // DateTime
 
@@ -511,26 +509,21 @@ class Property
      */
     public function convertValue($value)
     {
-        if ($value === null || ($value === "" && $this->typeOption !== "string")) {
+        if ($value === null || ($value === "" && $this->type !== self::TYPE_STRING)) {
             return;
         }
 
-        if ($this->type === self::TYPE_BASIC) {
-            // Basic
+        if (self::isScalarType($this->type) || $this->type === self::TYPE_ARRAY) {
+            // Scalar and array
 
-            if ($this->typeOption === "boolean" && strtolower($value) === "false") {
+            if ($this->type === self::TYPE_BOOLEAN && strtolower($value) === "false") {
                 return false;
             }
 
-            if (!is_scalar($value) && $this->typeOption !== "array") {
-                throw new Exception\InvalidArgumentException(
-                    "Only scalar variables can be converted to basic type!",
-                    $value
-                );
-            }
-
-            if (settype($value, $this->typeOption)) {
-                return $value;
+            if (is_scalar($value) || $this->type === self::TYPE_ARRAY) {
+                if (settype($value, $this->type)) {
+                    return $value;
+                }
             }
         } elseif ($this->type === self::TYPE_DATETIME
             || $this->type === self::TYPE_DATE

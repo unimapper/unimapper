@@ -55,19 +55,19 @@ class Mapper
             return null;
         }
 
-        if ($property->getType() === Entity\Reflection\Property::TYPE_BASIC) {
-            // Basic type
+        if ($property->isScalarType($property->getType())
+            || $property->getType() === Entity\Reflection\Property::TYPE_ARRAY
+        ) {
+            // Scalar & array
 
-            if ($property->getTypeOption() === "boolean" && $value === "false") {
-                return false;
-            }
-
-            if ($property->getTypeOption() === "boolean" && $value === "true") {
-                return true;
+            if ($property->getType() === Reflection\Property::TYPE_BOOLEAN
+                && in_array($value, ["false", "true"], true)
+            ) {
+                return filter_var($value, FILTER_VALIDATE_BOOLEAN);
             }
 
             if (Validator::isTraversable($value)
-                && $property->getTypeOption() !== Entity\Reflection\Property::TYPE_BASIC_ARRAY
+                && $property->getType() !== Entity\Reflection\Property::TYPE_ARRAY
             ) {
                 throw new Exception\InvalidArgumentException(
                     "Traversable value can not be mapped to scalar!",
@@ -75,10 +75,9 @@ class Mapper
                 );
             }
 
-            if (settype($value, $property->getTypeOption())) {
+            if (settype($value, $property->getType())) {
                 return $value;
             }
-
         } elseif ($property->getType() === Entity\Reflection\Property::TYPE_COLLECTION) {
             // Collection
 

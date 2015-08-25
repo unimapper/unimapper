@@ -44,7 +44,7 @@ class EntityTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\InvalidArgumentException Only scalar variables can be converted to basic type!
+     * @throws UniMapper\Exception\InvalidArgumentException Can not convert value on property 'id' automatically!
      */
     public function testConstructNotAbleToConvertType()
     {
