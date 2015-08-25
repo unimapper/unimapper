@@ -6,7 +6,7 @@ use UniMapper\Entity;
 use UniMapper\Exception;
 use UniMapper\NamingConvention as UNC;
 
-class Reflection
+class Reflection implements \JsonSerializable
 {
 
     /** @var string */
@@ -318,6 +318,17 @@ class Reflection
             );
         }
         return $this->properties[$this->primaryName];
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            "name" => $this->getName(),
+            "primaryName" => $this->primaryName,
+            "adapterName" => $this->adapterName,
+            "adapterResource" => $this->adapterResource,
+            "properties" => $this->properties
+        ];
     }
 
 }

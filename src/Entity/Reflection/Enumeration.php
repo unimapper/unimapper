@@ -2,7 +2,7 @@
 
 namespace UniMapper\Entity\Reflection;
 
-class Enumeration
+class Enumeration implements \JsonSerializable
 {
 
     /** @var array $values */
@@ -11,8 +11,17 @@ class Enumeration
     /** @var array $index */
     private $index = [];
 
+    /** @var string */
+    private $class;
+
+    /** @var string */
+    private $prefix;
+
     public function __construct($class, $prefix)
     {
+        $this->class = $class;
+        $this->prefix = $prefix;
+
         $reflectionClass = new \ReflectionClass($class);
         foreach ($reflectionClass->getConstants() as $name => $value) {
 
@@ -39,6 +48,14 @@ class Enumeration
     public function isValid($value)
     {
         return isset($this->index[$value]);
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            "class" => $this->class,
+            "prefix" => $this->prefix
+        ];
     }
 
 }

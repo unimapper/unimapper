@@ -171,6 +171,14 @@ class EntityReflectionTest extends \Tester\TestCase
         );
     }
 
+    public function testJsonSerialize()
+    {
+        Assert::matchFile(
+            __DIR__ . DIRECTORY_SEPARATOR . "Entity.Reflection.jsonSerialize.json",
+            json_encode(Reflection::load("Simple"))
+        );
+    }
+
 }
 
 $testCase = new EntityReflectionTest;

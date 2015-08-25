@@ -7,7 +7,7 @@ use UniMapper\Validator,
     UniMapper\Exception;
 use UniMapper\Entity;
 
-class Property
+class Property implements \JsonSerializable
 {
 
     const TYPE_DATETIME = "DateTime",
@@ -614,6 +614,17 @@ class Property
             );
         }
         return $this->options[$key];
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            "name" => $this->name,
+            "readonly" => $this->readonly,
+            "type" => $this->type,
+            "typeOption" => $this->typeOption,
+            "options" => $this->options
+        ];
     }
 
 }
