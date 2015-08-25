@@ -10,8 +10,8 @@ use UniMapper\Entity;
 class Property
 {
 
-    const TYPE_DATETIME = "datetime",
-          TYPE_DATE = "date",
+    const TYPE_DATETIME = "DateTime",
+          TYPE_DATE = "Date",
           TYPE_COLLECTION = "collection",
           TYPE_ENTITY = "entity",
           TYPE_BOOLEAN = "boolean",
@@ -44,6 +44,14 @@ class Property
         self::TYPE_INTEGER,
         self::TYPE_DOUBLE,
         self::TYPE_STRING
+    ];
+
+    /** @var array $typeAliases */
+    private static $typeAliases = [
+        "bool" => self::TYPE_BOOLEAN,
+        "int" =>  self::TYPE_INTEGER,
+        "real" => self::TYPE_DOUBLE,
+        "float" => self::TYPE_DOUBLE
     ];
 
     /** @var Entity\Reflection */
@@ -167,24 +175,20 @@ class Property
      */
     private function _initType($definition)
     {
-        if (self::isScalarType($definition)) {
-            // Basic
+        if (isset(self::$typeAliases[$definition])) {
+            $definition = self::$typeAliases[$definition];
+        }
+
+        if (self::isScalarType($definition)
+            || in_array(
+                $definition,
+                [self::TYPE_ARRAY, self::TYPE_DATE, self::TYPE_DATETIME],
+                true
+            )
+        ) {
+            // Scalar, array, date, datetime
 
             $this->type = $definition;
-            $this->typeOption = $definition;
-        } elseif (strtolower($definition) === self::TYPE_ARRAY) {
-            // array
-
-            $this->type = $definition;
-            $this->typeOption = $definition;
-        } elseif (strtolower($definition) === self::TYPE_DATETIME) {
-            // DateTime
-
-            $this->type = self::TYPE_DATETIME;
-        } elseif (strtolower($definition) === self::TYPE_DATE) {
-            // Date
-
-            $this->type = self::TYPE_DATE;
         } elseif (class_exists(UNC::nameToClass($definition, UNC::ENTITY_MASK))) {
             // Entity
 
