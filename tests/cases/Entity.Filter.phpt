@@ -264,6 +264,27 @@ class EntityFilterTest extends \Tester\TestCase
         Filter::merge(Reflection::load("Simple"), [], ["entity" => [Filter::EQUAL => 1]]);
     }
 
+    public function testMergeArray()
+    {
+        Filter::merge(Reflection::load("Simple"), [], ["storedData" => [Filter::EQUAL => [1]]]);
+    }
+
+    /**
+     * @throws UniMapper\Exception\FilterException Expected array but integer given on property storedData!
+     */
+    public function testMergeInvalidValueType()
+    {
+        Filter::merge(Reflection::load("Simple"), [], ["storedData" => [Filter::EQUAL => 1]]);
+    }
+
+    /**
+     * @throws UniMapper\Exception\FilterException Expected integer but string given on property id!
+     */
+    public function testMergeInvalidValueTypeInArray()
+    {
+        Filter::merge(Reflection::load("Simple"), [], ["id" => [Filter::EQUAL => ["foo"]]]);
+    }
+
 }
 
 $testCase = new EntityFilterTest;

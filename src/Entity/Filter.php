@@ -119,7 +119,7 @@ class Filter
                     try {
 
                         if (is_array($value)
-                            && $property->getTypeOption() !== Reflection\Property::TYPE_ARRAY
+                            && $property->getType() !== Reflection\Property::TYPE_ARRAY
                             && in_array($modifier, [self::EQUAL, self::NOT], true)
                         ) {
                             // Array values
