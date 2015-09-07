@@ -57,14 +57,14 @@ class EntityFilterTest extends \Tester\TestCase
         Assert::same(
             [
                 ["id" => [Filter::EQUAL => 1]],
-                ["text" => [Filter::LIKE => "foo"]]
+                ["text" => [Filter::EQUAL => "foo"]]
             ],
             Filter::merge(
                 Reflection::load("Simple"),
                 [],
                 [
                     ["id" => [Filter::EQUAL => 1]],
-                    ["text" => [Filter::LIKE => "foo"]]
+                    ["text" => [Filter::EQUAL => "foo"]]
                 ]
             )
         );
@@ -78,7 +78,7 @@ class EntityFilterTest extends \Tester\TestCase
                     "id" => [Filter::EQUAL => 1]
                 ],
                 [
-                    "text" => [Filter::LIKE => "foo"]
+                    "text" => [Filter::EQUAL => "foo"]
                 ]
             ],
             Filter::merge(
@@ -90,7 +90,7 @@ class EntityFilterTest extends \Tester\TestCase
                 ],
                 [
                     [
-                        "text" => [Filter::LIKE => "foo"]
+                        "text" => [Filter::EQUAL => "foo"]
                     ]
                 ]
             )
@@ -102,7 +102,7 @@ class EntityFilterTest extends \Tester\TestCase
         Assert::same(
             [
                 [
-                    "text" => [Filter::LIKE => "foo"]
+                    "text" => [Filter::EQUAL => "foo"]
                 ],
                 [
                     Filter::_OR => [
@@ -114,7 +114,7 @@ class EntityFilterTest extends \Tester\TestCase
                 Reflection::load("Simple"),
                 [
                     [
-                        "text" => [Filter::LIKE => "foo"]
+                        "text" => [Filter::EQUAL => "foo"]
                     ]
                 ],
                 [
@@ -135,7 +135,7 @@ class EntityFilterTest extends \Tester\TestCase
                 ],
                 [
                     Filter::_OR => [
-                        "text" => [Filter::LIKE => "foo"]
+                        "text" => [Filter::EQUAL => "foo"]
                     ]
                 ]
             ],
@@ -148,7 +148,7 @@ class EntityFilterTest extends \Tester\TestCase
                 ],
                 [
                     Filter::_OR => [
-                        "text" => [Filter::LIKE => "foo"]
+                        "text" => [Filter::EQUAL => "foo"]
                     ]
                 ]
             )
@@ -219,7 +219,7 @@ class EntityFilterTest extends \Tester\TestCase
                 Filter::_OR => [
                     "text" => [Filter::EQUAL => "foo"]
                 ],
-                "text" => [Filter::LIKE => "foo"]
+                "text" => [Filter::EQUAL => "foo"]
             ]
         );
     }

@@ -12,7 +12,7 @@ Reflection\Property::registerAssocFilter("sortAndLimit", function (Multi $assoc,
 });
 
 Reflection\Property::registerAssocFilter("textLikeFoo", function (Single $assoc) {
-    $assoc->setFilter(["text" => [Filter::LIKE => "foo"]]);
+    $assoc->setFilter(["text" => [Filter::EQUAL => "foo"]]);
 });
 
 /**
