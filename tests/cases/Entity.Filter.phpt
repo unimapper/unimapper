@@ -24,20 +24,61 @@ class EntityFilterTest extends \Tester\TestCase
     {
         Assert::same(
             [
-                "id" => [Filter::EQUAL => 1],
-                "text" => [Filter::NOT => "foo"]
+                ["id" => [Filter::EQUAL => 1]],
+                ["text" => [Filter::NOT => "foo"]]
             ],
             Filter::merge(
-                Reflection::load("Simple"),
                 ["id" => [Filter::EQUAL => 1]],
                 ["text" => [Filter::NOT => "foo"]]
             )
         );
     }
 
+    public function testMergeSameNameItems()
+    {
+        Assert::same(
+            [
+                [
+                    "id" => [Filter::GREATER => 1],
+                    "text" => [Filter::CONTAIN => "foo1"]
+                ],
+                [
+                    "id" => [Filter::LESS => 3],
+                    "text" => [Filter::CONTAIN => "foo2"]
+                ]
+            ],
+            Filter::merge(
+                [
+                    "id" => [Filter::GREATER => 1],
+                    "text" => [Filter::CONTAIN => "foo1"]
+                ],
+                [
+                    "id" => [Filter::LESS => 3],
+                    "text" => [Filter::CONTAIN => "foo2"]
+                ]
+            )
+        );
+    }
+
+    public function testMergeItemToGroup()
+    {
+        Assert::same(
+            [
+                [["id" => [Filter::GREATER => 1]]],
+                ["id" => [Filter::LESS => 3]]
+            ],
+            Filter::merge(
+                [
+                    ["id" => [Filter::GREATER => 1]]
+                ],
+                ["id" => [Filter::LESS => 3]]
+            )
+        );
+    }
+
     public function testMergeEmptyToEmpty()
     {
-        Assert::same([], Filter::merge(Reflection::load("Simple"), [], []));
+        Assert::same([], Filter::merge([], []));
     }
 
     public function testMergeToEmpty()
@@ -45,7 +86,6 @@ class EntityFilterTest extends \Tester\TestCase
         Assert::same(
             ["id" => [Filter::EQUAL => 1]],
             Filter::merge(
-                Reflection::load("Simple"),
                 [],
                 ["id" => [Filter::EQUAL => 1]]
             )
@@ -60,7 +100,6 @@ class EntityFilterTest extends \Tester\TestCase
                 ["text" => [Filter::EQUAL => "foo"]]
             ],
             Filter::merge(
-                Reflection::load("Simple"),
                 [],
                 [
                     ["id" => [Filter::EQUAL => 1]],
@@ -74,25 +113,20 @@ class EntityFilterTest extends \Tester\TestCase
     {
         Assert::same(
             [
-                Filter::_OR => [
-                    "id" => [Filter::EQUAL => 1]
-                ],
-                [
-                    "text" => [Filter::EQUAL => "foo"]
-                ]
-            ],
-            Filter::merge(
-                Reflection::load("Simple"),
                 [
                     Filter::_OR => [
                         "id" => [Filter::EQUAL => 1]
-                    ],
-                ],
-                [
-                    [
-                        "text" => [Filter::EQUAL => "foo"]
                     ]
-                ]
+                ],
+                [["text" => [Filter::EQUAL => "foo"]]]
+            ],
+            Filter::merge(
+                [
+                    Filter::_OR => [
+                        "id" => [Filter::EQUAL => 1]
+                    ]
+                ],
+                [["text" => [Filter::EQUAL => "foo"]]]
             )
         );
     }
@@ -101,9 +135,7 @@ class EntityFilterTest extends \Tester\TestCase
     {
         Assert::same(
             [
-                [
-                    "text" => [Filter::EQUAL => "foo"]
-                ],
+                [["text" => [Filter::EQUAL => "foo"]]],
                 [
                     Filter::_OR => [
                         "id" => [Filter::EQUAL => 1]
@@ -111,16 +143,13 @@ class EntityFilterTest extends \Tester\TestCase
                 ]
             ],
             Filter::merge(
-                Reflection::load("Simple"),
                 [
-                    [
-                        "text" => [Filter::EQUAL => "foo"]
-                    ]
+                    ["text" => [Filter::EQUAL => "foo"]]
                 ],
                 [
                     Filter::_OR => [
                         "id" => [Filter::EQUAL => 1]
-                    ],
+                    ]
                 ]
             )
         );
@@ -130,8 +159,10 @@ class EntityFilterTest extends \Tester\TestCase
     {
         Assert::same(
             [
-                Filter::_OR => [
-                    "id" => [Filter::EQUAL => 1]
+                [
+                    Filter::_OR => [
+                        "id" => [Filter::EQUAL => 1]
+                    ]
                 ],
                 [
                     Filter::_OR => [
@@ -140,7 +171,6 @@ class EntityFilterTest extends \Tester\TestCase
                 ]
             ],
             Filter::merge(
-                Reflection::load("Simple"),
                 [
                     Filter::_OR => [
                         "id" => [Filter::EQUAL => 1]
@@ -155,50 +185,41 @@ class EntityFilterTest extends \Tester\TestCase
         );
     }
 
-    public function testMergeToEmptySingleItem()
-    {
-        $filter = ["id" => [Filter::EQUAL => 1]];
-        Assert::same($filter, Filter::merge(Reflection::load("Simple"), [], $filter));
-    }
-
-    public function testMergeToEmptyWithTwoItems()
+    public function testMergeTwoItemsToEmpty()
     {
         $filter = [
             "id" => [
                 Filter::EQUAL => 1,
                 Filter::NOT => 2
             ],
-            "text" => [
-                Filter::EQUAL => ["foo"]
-            ]
+            "text" => [Filter::EQUAL => ["foo"]]
         ];
-        Assert::same($filter, Filter::merge(Reflection::load("Simple"), [], $filter));
+        Assert::same($filter, Filter::merge([], $filter));
     }
 
     /**
      * @throws UniMapper\Exception\FilterException Invalid filter group structure!
      */
-    public function testMergeWithEmptyGroup()
+    public function testValidateWithEmptyGroup()
     {
-        Filter::merge(Reflection::load("Simple"), [], [[]]);
+        Filter::validate(Reflection::load("Simple"), [[]]);
     }
 
     /**
      * @throws UniMapper\Exception\FilterException Invalid filter structure!
      */
-    public function testMergeWithInvalidGroup()
+    public function testValidateWithInvalidGroup()
     {
-        Filter::merge(Reflection::load("Simple"), [], ["foo" => "foo"]);
+        Filter::validate(Reflection::load("Simple"), ["foo" => "foo"]);
     }
 
     /**
      * @throws UniMapper\Exception\FilterException Invalid filter structure!
      */
-    public function testMergeInvalidFilterWithMixedGroupAndItems()
+    public function testValidateInvalidFilterWithMixedGroupAndItems()
     {
-        Filter::merge(
+        Filter::validate(
             Reflection::load("Simple"),
-            [],
             [
                 "id" => [Filter::EQUAL => 1],
                 ["text" => [Filter::EQUAL => "foo"]]
@@ -207,13 +228,26 @@ class EntityFilterTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\FilterException Invalid filter group structure!
+     * @throws UniMapper\Exception\FilterException Invalid filter structure!
      */
-    public function testMergeInvalidFilterGroupWithMixedOrAndItems()
+    public function testValidateInvalidFilterWithOrAndGroup()
     {
-        Filter::merge(
+        Filter::validate(
             Reflection::load("Simple"),
-            [],
+            [
+                ["text" => [Filter::EQUAL => "foo"]],
+                Filter::_OR => [Filter::EQUAL => 1]
+            ]
+        );
+    }
+
+    /**
+     * @throws UniMapper\Exception\FilterException Invalid filter structure!
+     */
+    public function testValidateInvalidFilterGroupWithMixedOrAndItems()
+    {
+        Filter::validate(
+            Reflection::load("Simple"),
             [
                 ["id" => [Filter::EQUAL => 1]],
                 Filter::_OR => [
@@ -227,62 +261,76 @@ class EntityFilterTest extends \Tester\TestCase
     /**
      * @throws UniMapper\Exception\FilterException Invalid filter group structure!
      */
-    public function testMergeWithNoModifier()
+    public function testValidateWithNoModifier()
     {
-        Filter::merge(Reflection::load("Simple"), [], ["foo"]);
+        Filter::validate(Reflection::load("Simple"), ["foo"]);
     }
 
     /**
      * @throws UniMapper\Exception\FilterException Undefined property name 'undefinedProperty' used in filter!
      */
-    public function testMergeWithUndefinedProperty()
+    public function testValidateWithUndefinedProperty()
     {
-        Filter::merge(Reflection::load("Simple"), [], ["undefinedProperty" => [Filter::EQUAL => 1]]);
+        Filter::validate(Reflection::load("Simple"), ["undefinedProperty" => [Filter::EQUAL => 1]]);
+    }
+
+    /**
+     * @throws UniMapper\Exception\FilterException Undefined property name '%or' used in filter!
+     */
+    public function testValidateUndefinedPropertyWithNameIdenticalToOrModifier()
+    {
+        Filter::validate(
+            Reflection::load("Simple"),
+            [
+                Filter::_OR => [Filter::EQUAL => 1],
+                ["text" => [Filter::EQUAL => "foo"]]
+            ]
+        );
     }
 
     /**
      * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections and entities!
      */
-    public function testMergeWithNotAllowedComputed()
+    public function testValidateWithNotAllowedComputed()
     {
-        Filter::merge(Reflection::load("Simple"), [], ["year" => [Filter::EQUAL => new DateTime]]);
+        Filter::validate(Reflection::load("Simple"), ["year" => [Filter::EQUAL => new DateTime]]);
     }
 
     /**
      * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections and entities!
      */
-    public function testMergeWithNotAllowedAssociation()
+    public function testValidateWithNotAllowedAssociation()
     {
-        Filter::merge(Reflection::load("Simple"), [], ["collection" => [Filter::EQUAL => 1]]);
+        Filter::validate(Reflection::load("Simple"), ["collection" => [Filter::EQUAL => 1]]);
     }
 
     /**
      * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections and entities!
      */
-    public function testMergeWithNotAllowedCollection()
+    public function testValidateWithNotAllowedCollection()
     {
-        Filter::merge(Reflection::load("Simple"), [], ["entity" => [Filter::EQUAL => 1]]);
+        Filter::validate(Reflection::load("Simple"), ["entity" => [Filter::EQUAL => 1]]);
     }
 
-    public function testMergeArray()
+    public function testValidateArray()
     {
-        Filter::merge(Reflection::load("Simple"), [], ["storedData" => [Filter::EQUAL => [1]]]);
+        Filter::validate(Reflection::load("Simple"), ["storedData" => [Filter::EQUAL => [1]]]);
     }
 
     /**
      * @throws UniMapper\Exception\FilterException Expected array but integer given on property storedData!
      */
-    public function testMergeInvalidValueType()
+    public function testValidateInvalidValueType()
     {
-        Filter::merge(Reflection::load("Simple"), [], ["storedData" => [Filter::EQUAL => 1]]);
+        Filter::validate(Reflection::load("Simple"), ["storedData" => [Filter::EQUAL => 1]]);
     }
 
     /**
      * @throws UniMapper\Exception\FilterException Expected integer but string given on property id!
      */
-    public function testMergeInvalidValueTypeInArray()
+    public function testValidateInvalidValueTypeInArray()
     {
-        Filter::merge(Reflection::load("Simple"), [], ["id" => [Filter::EQUAL => ["foo"]]]);
+        Filter::validate(Reflection::load("Simple"), ["id" => [Filter::EQUAL => ["foo"]]]);
     }
 
 }

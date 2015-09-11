@@ -132,7 +132,21 @@ class MapperTest extends \Tester\TestCase
     {
         Assert::same(
             ["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => 1]],
-            $this->mapper->unmapFilter(Reflection::load("Simple"), ["id" => [\UniMapper\Entity\Filter::EQUAL => 1]])
+            $this->mapper->unmapFilter(
+                Reflection::load("Simple"),
+                ["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]
+            )
+        );
+    }
+
+    public function testUnmapFilterGroup()
+    {
+        Assert::same(
+            [["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => 1]]],
+            $this->mapper->unmapFilter(
+                Reflection::load("Simple"),
+                [["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]]
+            )
         );
     }
 

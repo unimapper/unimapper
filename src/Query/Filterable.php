@@ -14,35 +14,23 @@ trait Filterable
 
     public function setFilter(array $filter = [])
     {
-        if (empty($filter)) {
-            $this->filter = $filter;
-        }
-
         try {
-
-            $this->filter = Entity\Filter::merge(
-                $this->entityReflection,
-                $this->filter,
-                $filter
-            );
+            Entity\Filter::validate($this->entityReflection, $filter);
         } catch (Exception\FilterException $e) {
             throw new Exception\QueryException($e->getMessage());
         }
+        $this->filter = $filter;
         return $this;
     }
 
     public function where(array $filter)
     {
         try {
-
-            Entity\Filter::merge(
-                $this->entityReflection,
-                $this->filter,
-                $filter
-            );
+            Entity\Filter::validate($this->entityReflection, $filter);
         } catch (Exception\FilterException $e) {
             throw new Exception\QueryException($e->getMessage());
         }
+        $this->filter = Entity\Filter::merge($this->filter, $filter);
         return $this;
     }
 

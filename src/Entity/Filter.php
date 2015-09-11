@@ -7,7 +7,7 @@ use UniMapper\Exception;
 class Filter
 {
 
-    const _OR = "or",
+    const _OR = "%or",
         EQUAL = "=",
         NOT = "!",
         START = "START",
@@ -32,7 +32,27 @@ class Filter
     ];
 
     /**
-     * Is filter group
+     * @param array $original
+     * @param array $new
+     *
+     * @return array
+     *
+     * @throws Exception\FilterException
+     */
+    public static function merge(array $original, array $new)
+    {
+        if (empty($new)) {
+            return $original;
+        }
+        if (empty($original)) {
+            return $new;
+        }
+
+        return array_merge([$original], [$new]);
+    }
+
+    /**
+     * Is it filter with groups?
      *
      * @param array $value
      *
@@ -40,53 +60,39 @@ class Filter
      */
     public static function isGroup(array $value)
     {
-        return $value === array_values($value) || isset($value[self::_OR]);
+        return $value === array_values($value)
+            || (isset($value[self::_OR]) && count($value) === 1);
     }
 
     /**
      * Merge two filters
      *
-     * @param Reflection    $reflection
-     * @param array         $current
-     * @param array         $new
-     * @param callable|null $itemCb     Callback on filter item
+     * @param Reflection $reflection
+     * @param array      $filter
      *
      * @return array
      *
      * @throws Exception\FilterException
-     * @throws Exception\InvalidArgumentException
-     * @throws \Exception
      */
-    public static function merge(
-        Reflection $reflection,
-        array $current,
-        array $new,
-        callable $itemCb = null
-    ) {
-        if (self::isGroup($new)) {
+    public static function validate(Reflection $reflection, array $filter)
+    {
+        if (self::isGroup($filter)) {
             // Filter group
 
-            foreach ($new as $modifier => $item) {
+            foreach ($filter as $modifier => $item) {
 
-                if (($modifier !== self::_OR && !is_int($modifier))
-                    || !is_array($item) || empty($item)
-                ) {
+                if (!is_array($item) || empty($item)) {
                     throw new Exception\FilterException(
                         "Invalid filter group structure!"
                     );
                 }
 
-                $group = self::merge($reflection, [], $item, $itemCb);
-                if ($modifier === self::_OR) {
-                    $current[] = [$modifier => $group];
-                } else {
-                    $current[] = $group;
-                }
+                self::validate($reflection, $item);
             }
         } else {
             // Filter item
 
-            foreach ($new as $name => $item) {
+            foreach ($filter as $name => $item) {
 
                 if (!is_array($item) || !is_string($name)) {
                     throw new Exception\FilterException(
@@ -138,20 +144,8 @@ class Filter
                         throw new Exception\FilterException($e->getMessage());
                     }
                 }
-
-                if ($itemCb) {
-                    $item = $itemCb($name, $item);
-                    if ($item) {
-                        $key = key($item);
-                        $current[$key] = $item[$key];
-                    }
-                } else {
-                    $current[$name] = $item;
-                }
             }
         }
-
-        return $current;
     }
 
 }

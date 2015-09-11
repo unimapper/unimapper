@@ -261,22 +261,31 @@ class Mapper
      */
     public function unmapFilter(Reflection $reflection, array $filter)
     {
-        return Filter::merge(
-            $reflection,
-            [],
-            $filter,
-            function ($name, $item) use ($reflection) {
+        $result = [];
+
+        if (Filter::isGroup($filter)) {
+
+            foreach ($filter as $modifier => $item) {
+                $result[$modifier] = $this->unmapFilter($reflection, $item);
+            }
+        } else {
+
+            foreach ($filter as $name => $item) {
 
                 $property = $reflection->getProperty($name);
+                $unmappedName = $property->getName(true);
+
                 foreach ($item as $modifier => $value) {
-                    $item[$modifier] = $this->unmapValue(
+
+                    $result[$unmappedName][$modifier] = $this->unmapValue(
                         $property,
                         $value
                     );
                 }
-                return [$property->getName(true) => $item];
             }
-        );
+        }
+
+        return $result;
     }
 
 }

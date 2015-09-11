@@ -108,17 +108,8 @@ trait Selectable
             }
         } else {
 
-            $selection = $this->selection;
-
             // Add properties from filter
-            Filter::merge(
-                $this->entityReflection,
-                [],
-                $this->filter,
-                function ($name) use ($selection) {
-                    $selection[] = $name;
-                }
-            );
+            $selection = $this->selection;
 
             // Include primary automatically if not provided
             if ($this->entityReflection->hasPrimary()) {
