@@ -397,7 +397,7 @@ class Property implements \JsonSerializable
     public function validateValueType($value)
     {
         if ($this->hasOption(self::OPTION_PRIMARY)
-            && ($value === null || $value === "")
+            && (self::isPrimaryEmpty($value))
         ) {
             throw new Exception\InvalidArgumentException(
                 "Primary value can not be empty string or null!",
@@ -625,6 +625,18 @@ class Property implements \JsonSerializable
             "typeOption" => $this->typeOption,
             "options" => $this->options
         ];
+    }
+
+    /**
+     * Checks if primary value is empty
+     *
+     * @param $value
+     *
+     * @return bool
+     */
+    public static function isPrimaryEmpty($value)
+    {
+        return $value === "" || $value === null ? true : false;
     }
 
 }

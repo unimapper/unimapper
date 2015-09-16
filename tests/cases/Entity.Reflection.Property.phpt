@@ -194,6 +194,14 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
     }
 
     /**
+     * @throws UniMapper\Exception\InvalidArgumentException Expected double but integer given on property test!
+     */
+    public function testValidateValueTypeInvalidDouble()
+    {
+        $this->_createReflection('double', 'test')->validateValueType(0);
+    }
+
+    /**
      * @throws UniMapper\Exception\InvalidArgumentException Expected string but integer given on property test!
      */
     public function testValidateValueTypeInvalidString()
@@ -214,8 +222,7 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
      */
     public function testValidateValueTypeInvalidInteger()
     {
-        $this->_createReflection('integer', 'id', 'm:primary')
-            ->validateValueType("foo");
+        $this->_createReflection('integer', 'id')->validateValueType("foo");
     }
 
     /**
@@ -233,12 +240,10 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
     {
         Assert::same(
             Entity\Reflection\Property::TYPE_ENTITY,
-            $this->_createReflection(
-                'Simple', 'entity'
-            )->getType()
+            $this->_createReflection('Simple', 'entity')->getType()
         );
         Assert::false(
-            $this->_createReflection('integer', 'id', 'm:primary')->getType() === Entity\Reflection\Property::TYPE_ENTITY
+            $this->_createReflection('integer', 'id')->getType() === Entity\Reflection\Property::TYPE_ENTITY
         );
     }
 
@@ -266,7 +271,7 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
         $this->_createReflection('Int', 'name');
     }
 
-    public function testPrimaryTypeBoolean()
+    public function testInvalidPrimaryType()
     {
         Assert::exception(
             function() {
@@ -457,6 +462,15 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
         Assert::false($class->isValid(3));
     }
 
+    public function testIsPrimaryEmpty()
+    {
+        Assert::false(Entity\Reflection\Property::isPrimaryEmpty(0));
+        Assert::false(Entity\Reflection\Property::isPrimaryEmpty(0.0));
+        Assert::false(Entity\Reflection\Property::isPrimaryEmpty("foo"));
+        Assert::false(Entity\Reflection\Property::isPrimaryEmpty(" "));
+        Assert::true(Entity\Reflection\Property::isPrimaryEmpty(null));
+        Assert::true(Entity\Reflection\Property::isPrimaryEmpty(""));
+    }
 }
 
 $testCase = new EntityReflectionPropertyTest;

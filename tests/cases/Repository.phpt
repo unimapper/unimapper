@@ -110,6 +110,26 @@ class RepositoryTest extends \Tester\TestCase
         Assert::same(3, $entity->id);
     }
 
+    /**
+     * @throws UniMapper\Exception\RepositoryException Entity was successfully created but returned primary is empty!
+     */
+    public function testSaveInsertButEmptyPrimaryReturned()
+    {
+        $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
+        $adapterQueryMock->shouldReceive("getRaw")->once();
+
+        $this->adapterMock->shouldReceive("createInsert")
+            ->once()
+            ->with("simple_resource", ["text" => "foo"], "simplePrimaryId")
+            ->andReturn($adapterQueryMock);
+        $this->adapterMock->shouldReceive("onExecute")
+            ->once()
+            ->with($adapterQueryMock)
+            ->andReturn(null);
+
+        $this->repository->save(new Fixtures\Entity\Simple(["simplePrimaryId" => null, "text" => "foo"]));
+    }
+
     public function testSaveInvalid()
     {
         $entity = new Fixtures\Entity\Simple(["email" => "invalidemail", "text" => "foo"]);

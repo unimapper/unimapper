@@ -3,6 +3,7 @@
 namespace UniMapper;
 
 use UniMapper\Entity\Filter;
+use UniMapper\Entity\Reflection\Property;
 use UniMapper\Exception\QueryException;
 use UniMapper\Exception\RepositoryException;
 use UniMapper\NamingConvention as UNC;
@@ -47,7 +48,14 @@ abstract class Repository
         $primaryValue = $entity->{$primaryName};
 
         if ($primaryValue === null) {
-            $entity->{$primaryName} = $this->create($entity);
+
+            $primaryValue = $this->create($entity);
+            if (Property::isPrimaryEmpty($primaryValue)) {
+                throw new RepositoryException(
+                    "Entity was successfully created but returned primary is empty!"
+                );
+            }
+            $entity->{$primaryName} = $primaryValue;
         } else {
             $this->update($entity, $primaryValue);
         }
@@ -103,6 +111,7 @@ abstract class Repository
      * @param mixed  $primaryValue
      *
      * @throws Exception\ValidatorException
+     * @throws Exception\RepositoryException
      */
     public function update(Entity $entity, $primaryValue)
     {
@@ -234,6 +243,8 @@ abstract class Repository
      * @param array $associate
      *
      * @return Entity\Collection
+     *
+     * @throws Exception\RepositoryException
      */
     public function find(array $filter = [], array $orderBy = [], $limit = 0,
         $offset = 0, array $associate = []
