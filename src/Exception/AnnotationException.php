@@ -6,14 +6,27 @@ class AnnotationException extends \UniMapper\Exception
 {
 
     /** @var string */
-    private $definition;
+    protected $definition;
 
-    public function __construct($message, $definition = null)
-    {
-        parent::__construct($message);
+    /**
+     * @param string          $message
+     * @param mixed|null      $definition
+     * @param int             $code
+     * @param \Exception|null $previous
+     */
+    public function __construct(
+        $message,
+        $definition = null,
+        $code = 0,
+        \Exception $previous = null
+    ) {
+        parent::__construct($message, $code, $previous);
         $this->definition;
     }
 
+    /**
+     * @return string
+     */
     public function getDefinition()
     {
         return $this->definition;

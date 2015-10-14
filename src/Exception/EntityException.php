@@ -11,9 +11,14 @@ class EntityException extends \UniMapper\Exception
     /** @var string $definition Docblock definition */
     protected $definition;
 
-    public function __construct($message, $class, $definition = null, $code = 0)
-    {
-        parent::__construct($message, $code);
+    public function __construct(
+        $message,
+        $class,
+        $definition = null,
+        $code = 0,
+        \Exception $previous = null
+    ) {
+        parent::__construct($message, $code, $previous);
         $this->class = $class;
         $this->definition = $definition;
     }
