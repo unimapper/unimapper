@@ -37,7 +37,7 @@ trait Selectable
                 }
 
                 $property = $this->entityReflection->getProperty($name);
-                if (!$property->hasOption(Reflection\Property::OPTION_ASSOC)) {
+                if (!$property->hasOption(Reflection\Property\Option\Assoc::KEY)) {
                     throw new Exception\QueryException(
                         "Property '" . $name . "' is not defined as association"
                         . " on entity " . $this->entityReflection->getClassName()
@@ -45,7 +45,7 @@ trait Selectable
                     );
                 }
 
-                $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
+                $association = $property->getOption(Reflection\Property\Option\Assoc::KEY);
                 if ($association->isRemote()) {
                     $this->associations["remote"][$name] = $association;
                 } else {
@@ -75,8 +75,8 @@ trait Selectable
                 }
 
                 $property = $this->entityReflection->getProperty($name);
-                if ($property->hasOption(Reflection\Property::OPTION_ASSOC)
-                    || $property->hasOption(Reflection\Property::OPTION_COMPUTED)
+                if ($property->hasOption(Reflection\Property\Option\Assoc::KEY)
+                    || $property->hasOption(Reflection\Property\Option\Computed::KEY)
                 ) {
                     throw new Exception\QueryException(
                         "Associations and computed properties can not be selected!"
@@ -100,8 +100,8 @@ trait Selectable
             foreach ($this->entityReflection->getProperties() as $property) {
 
                 // Exclude associations & computed properties
-                if (!$property->hasOption(Reflection\Property::OPTION_ASSOC)
-                    && !$property->hasOption(Reflection\Property::OPTION_COMPUTED)
+                if (!$property->hasOption(Reflection\Property\Option\Assoc::KEY)
+                    && !$property->hasOption(Reflection\Property\Option\Computed::KEY)
                 ) {
                     $selection[] = $property->getName(true);
                 }

@@ -3,6 +3,7 @@
 namespace UniMapper;
 
 use UniMapper\Entity\Collection;
+use UniMapper\Entity\Reflection\Property\Option\Computed;
 
 abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 {
@@ -80,7 +81,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             $property = $reflection->getProperty($name);
 
             // Computed
-            if ($property->hasOption(Entity\Reflection\Property::OPTION_COMPUTED)) {
+            if ($property->hasOption(Computed::KEY)) {
 
                 if ($skipUnwritable) {
                     continue;
@@ -314,9 +315,9 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         $property = $reflection->getProperty($name);
 
         // computed property
-        if ($property->hasOption(Entity\Reflection\Property::OPTION_COMPUTED)) {
+        if ($property->hasOption(Computed::KEY)) {
 
-            $computedValue = $this->{$property->getOption(Entity\Reflection\Property::OPTION_COMPUTED)}();
+            $computedValue = $this->{$property->getOption(Computed::KEY)->getName()}();
             if ($computedValue === null) {
                 return null;
             }

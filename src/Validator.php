@@ -1,6 +1,7 @@
 <?php
 
 namespace UniMapper;
+use UniMapper\Entity\Reflection\Property\Option\Computed;
 
 /**
  * Validates entity
@@ -133,7 +134,7 @@ class Validator
         }
         $this->property = $reflection->getProperty($name);
 
-        if ($this->property->hasOption(Entity\Reflection\Property::OPTION_COMPUTED)) {
+        if ($this->property->hasOption(Computed::KEY)) {
             throw new Exception\InvalidArgumentException(
                 "Validation can not be used on computed property!"
             );

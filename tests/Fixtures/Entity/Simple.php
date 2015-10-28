@@ -5,13 +5,15 @@ namespace UniMapper\Tests\Fixtures\Entity;
 use UniMapper\Association\Multi;
 use UniMapper\Association\Single;
 use UniMapper\Entity\Filter;
-use UniMapper\Entity\Reflection;
+use UniMapper\Entity\Reflection\Property\Option\Assoc;
+use UniMapper\Query\Select;
 
-Reflection\Property::registerAssocFilter("sortAndLimit", function (Multi $assoc, $orderBy = "ASC", $limit = 10) {
-    $assoc->limit($limit)->orderBy($orderBy);
+
+Assoc::registerFilter("sortAndLimit", function (Multi $assoc, $orderBy = "id", $limit = 10) {
+    $assoc->limit($limit)->orderBy("id");
 });
 
-Reflection\Property::registerAssocFilter("textLikeFoo", function (Single $assoc) {
+Assoc::registerFilter("textLikeFoo", function (Single $assoc) {
     $assoc->setFilter(["text" => [Filter::EQUAL => "foo"]]);
 });
 
@@ -33,7 +35,7 @@ Reflection\Property::registerAssocFilter("textLikeFoo", function (Single $assoc)
  * @property      Nested[] $oneToMany   m:assoc(1:N) m:assoc-by(simplePrimaryId)
  * @property      Remote[] $oneToManyRemote m:assoc(1:N) m:assoc-by(simplePrimaryId)
  * @property      Remote[] $manyToMany  m:assoc(M:N) m:assoc-by(simpleId|simple_remote|remoteId)
- * @property      Remote[] $mmFilter    m:assoc(M:N) m:assoc-by(simpleId|simple_remote|remoteId) m:assoc-filter-sortAndLimit(DESC|10)
+ * @property      Remote[] $mmFilter    m:assoc(M:N) m:assoc-by(simpleId|simple_remote|remoteId) m:assoc-filter-sortAndLimit(id|10)
  * @property      Remote   $manyToOne   m:assoc(N:1) m:assoc-by(remoteId)
  * @property      Remote   $oneToOne    m:assoc(1:1) m:assoc-by(remoteId)
  * @property      Remote   $ooFilter    m:assoc(1:1) m:assoc-by(remoteId) m:assoc-filter-textLikeFoo

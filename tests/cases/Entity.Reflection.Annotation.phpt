@@ -5,6 +5,27 @@ use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
+class Option implements Reflection\Property\IOption
+{
+
+    public static function getKey()
+    {
+        return "option";
+    }
+
+    public static function create(
+        \UniMapper\Entity\Reflection\Property $property,
+        $value = null,
+        array $parameters = []
+    ) {
+
+    }
+
+}
+
+/** @param int $id m:option */
+class Entity extends \UniMapper\Entity {}
+
 /**
  * @testCase
  */
@@ -32,10 +53,56 @@ class EntityReflectionAnnotationTest extends \Tester\TestCase
     {
         Assert::same(
             array(
-                'assoc-filter-by' => 'value1|value2',
-                'primary' => null,
+                'assoc' => '',
+                'assoc-filter-by' => 'value1 | value2',
+                'primary' => NULL,
+                'map-by' => '',
+                'map' => 'false',
             ),
-            Reflection\Annotation::parseOptions(" m:assoc-filter-by(value1|value2) m:primary ")
+            Reflection\Annotation::parseOptions("m:assoc( ) m:assoc-filter-by( value1 | value2 ) m:primary m:map-by() m:map(false)")
+        );
+    }
+
+    public function testRegisterOption()
+    {
+        Reflection\Annotation::registerOption("custom", "Option");
+    }
+
+    /**
+     * @throws UniMapper\Exception\AnnotationException Option key can not be empty!
+     */
+    public function testRegisterOptionEmptyKey()
+    {
+        Reflection\Annotation::registerOption("", "");
+    }
+
+    /**
+     * @throws UniMapper\Exception\AnnotationException Class stdClass should implement UniMapper\Entity\Reflection\Property\IOption!
+     */
+    public function testRegisterOptionInterfaceNotImplemented()
+    {
+        Reflection\Annotation::registerOption("custom", "stdClass");
+    }
+
+    /**
+     * @throws UniMapper\Exception\AnnotationException Class Undefined not found!
+     */
+    public function testRegisterOptionUndefinedClass()
+    {
+        Reflection\Annotation::registerOption("custom", "Undefined");
+    }
+
+    public static function getRegisteredOptions()
+    {
+        Assert::same(
+            [
+                Assoc::KEY => 'UniMapper\Entity\Reflection\Property\Option\Assoc',
+                Computed::KEY => 'UniMapper\Entity\Reflection\Property\Option\Computed',
+                Enum::KEY => 'UniMapper\Entity\Reflection\Property\Option\Enum',
+                Map::KEY => 'UniMapper\Entity\Reflection\Property\Option\Map',
+                Primary::KEY => 'UniMapper\Entity\Reflection\Property\Option\Primary'
+            ],
+            Reflection\Annotation::getRegisteredOptions()
         );
     }
 

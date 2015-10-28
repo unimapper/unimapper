@@ -27,9 +27,6 @@ class Reflection
     /** @var string */
     private $fileName;
 
-    /** @var string */
-    private $primaryName;
-
     /** @var array $registered Registered reflections */
     private static $registered = [];
 
@@ -202,27 +199,6 @@ class Reflection
                 );
             }
 
-            // Primary property
-            if ($property->hasOption(Reflection\Property::OPTION_PRIMARY)) {
-
-                if ($this->hasPrimary()) {
-                    throw new Exception\EntityException(
-                        "Primary already defined!",
-                        $this->className,
-                        $definition[0]
-                    );
-                }
-                $this->primaryName = $property->getName();
-            }
-
-            if ($property->hasOption(Reflection\Property::OPTION_ASSOC) && $this->primaryName === null) {
-                throw new Exception\EntityException(
-                    "You must define primary property before the association!",
-                    $this->className,
-                    $definition[0]
-                );
-            }
-
             $this->properties[$property->getName()] = $property;
         }
     }
@@ -300,7 +276,13 @@ class Reflection
 
     public function hasPrimary()
     {
-        return $this->primaryName !== null;
+        foreach ($this->properties as $property) {
+
+            if ($property->hasOption(Entity\Reflection\Property\Option\Primary::KEY)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -312,12 +294,15 @@ class Reflection
      */
     public function getPrimaryProperty()
     {
-        if (!$this->hasPrimary()) {
-            throw new \Exception(
-                "Primary property not defined in " . $this->className . "!"
-            );
+        foreach ($this->properties as $property) {
+
+            if ($property->hasOption(Entity\Reflection\Property\Option\Primary::KEY)) {
+                return $property;
+            }
         }
-        return $this->properties[$this->primaryName];
+        throw new \Exception(
+            "Primary property not defined in " . $this->className . "!"
+        );
     }
 
 }

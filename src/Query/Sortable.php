@@ -9,7 +9,7 @@ trait Sortable
 
     protected $orderBy = [];
 
-    public function orderBy($name, $direction = self::ASC)
+    public function orderBy($name, $direction = Select::ASC)
     {
         if (!$this->entityReflection->hasProperty($name)) {
             throw new Exception\QueryException(
@@ -18,8 +18,8 @@ trait Sortable
         }
 
         $direction = strtolower($direction);
-        if ($direction !== self::ASC && $direction !== self::DESC) {
-            throw new Exception\QueryException("Order direction must be 'asc' or 'desc'!");
+        if ($direction !== Select::ASC && $direction !== Select::DESC) {
+            throw new Exception\QueryException("Order direction must be '" . Select::ASC . "' or '" . Select::DESC . "'!");
         }
 
         $this->orderBy[$this->entityReflection->getProperty($name)->getName(true)] = $direction;

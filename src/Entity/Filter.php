@@ -2,6 +2,8 @@
 
 namespace UniMapper\Entity;
 
+use UniMapper\Entity\Reflection\Property\Option\Assoc;
+use UniMapper\Entity\Reflection\Property\Option\Computed;
 use UniMapper\Exception;
 
 class Filter
@@ -115,8 +117,8 @@ class Filter
                         );
                     }
 
-                    if ($property->hasOption(Reflection\Property::OPTION_ASSOC)
-                        || $property->hasOption(Reflection\Property::OPTION_COMPUTED)
+                    if ($property->hasOption(Assoc::KEY)
+                        || $property->hasOption(Computed::KEY)
                         || $property->getType() === Reflection\Property::TYPE_COLLECTION
                         || $property->getType() === Reflection\Property::TYPE_ENTITY
                     ) {

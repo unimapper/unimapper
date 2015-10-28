@@ -20,15 +20,6 @@ class Property
           TYPE_STRING = "string",
           TYPE_ARRAY = "array";
 
-    const OPTION_ASSOC = "assoc",
-          OPTION_ASSOC_BY = "assoc-by",
-          OPTION_COMPUTED = "computed",
-          OPTION_ENUM = "enum",
-          OPTION_MAP = "map",
-          OPTION_MAP_BY = "map-by",
-          OPTION_MAP_FILTER = "map-filter",
-          OPTION_PRIMARY = "primary";
-
     /** @var string $type */
     private $type;
 
@@ -57,24 +48,11 @@ class Property
     /** @var Entity\Reflection */
     private $entityReflection;
 
-    /** @var array $assocTypes List of available association types */
-    private $assocTypes = [
-        "M:N" => "ManyToMany",
-        "M<N" => "ManyToMany",
-        "M>N" => "ManyToMany",
-        "N:1" => "ManyToOne",
-        "1:1" => "OneToOne",
-        "1:N" => "OneToMany"
-    ];
-
     /** @var boolean $readonly */
     private $readonly = false;
 
     /** @var array */
     private $options = [];
-
-    /** @var array */
-    private static $assocFilters = [];
 
     /**
      * @param string            $type
@@ -92,19 +70,40 @@ class Property
     ) {
         $this->entityReflection = $entityReflection;
         $this->name = $name;
-        $this->options = Annotation::parseOptions($options);
         $this->readonly = (bool) $readonly;
-
         $this->_initType($type);
-        $this->_initComputed();
-        $this->_initMapping();
-        $this->_initEnumeration();
-        $this->_initAssociation();
+        $this->options = $this->_initOptions($options);
     }
 
-    public static function registerAssocFilter($name, callable $callback)
+    private function _initOptions($options)
     {
-        self::$assocFilters[$name] = $callback;
+        $parsed = Annotation::parseOptions($options);
+
+        $result = [];
+        foreach (Annotation::getRegisteredOptions() as $key => $class) {
+
+            $value = array_key_exists($key, $parsed) ? $parsed[$key] : false;
+            $parameters = preg_grep("/" . $key . "-[aA-zZ-]*/", array_keys($parsed));
+            if ($value !== false || !empty($parameters)) {
+
+                try {
+
+                    $result[$key] = $class::create(
+                        $this,
+                        $value,
+                        array_intersect_key($parsed,  array_flip($parameters))
+                    );
+                 } catch (Exception\OptionException $e) {
+
+                    throw new Exception\PropertyException(
+                        $e->getMessage(),
+                        $e->getCode(),
+                        $e
+                    );
+                }
+            }
+        }
+        return $result;
     }
 
     public function isWritable()
@@ -143,8 +142,8 @@ class Property
      */
     public function getName($unmapped = false)
     {
-        if ($unmapped && $this->hasOption(self::OPTION_MAP_BY)) {
-            return $this->getOption(self::OPTION_MAP_BY);
+        if ($unmapped && $this->hasOption(Entity\Reflection\Property\Option\Map::KEY)) {
+            return $this->getOption(Entity\Reflection\Property\Option\Map::KEY)->getUnmapped();
         }
         return $this->name;
     }
@@ -204,186 +203,6 @@ class Property
                 "Unsupported type '" . $definition . "'!"
             );
         }
-
-        // Validate primary type
-        $requiredPrimaryType = [
-            Property::TYPE_DOUBLE,
-            Property::TYPE_INTEGER,
-            Property::TYPE_STRING
-        ];
-        if ($this->hasOption(self::OPTION_PRIMARY)
-            && !in_array($this->type, $requiredPrimaryType, true)
-        ) {
-            throw new Exception\PropertyException(
-                "Primary property can be only "
-                . implode(",", $requiredPrimaryType) . " but '" . $this->type
-                . "' given!"
-            );
-        }
-    }
-
-    private function _initMapping()
-    {
-        if ($this->hasOption(self::OPTION_MAP)) {
-
-            // Mapping disabled
-            if ($this->getOption(self::OPTION_MAP) === "false") {
-                return;
-            }
-        }
-
-        // Init filter
-        if ($this->hasOption(self::OPTION_MAP_FILTER)) {
-
-            $filter = explode("|", $this->getOption(self::OPTION_MAP_FILTER));
-            if (!isset($filter[0]) || !isset($filter[1])) {
-                throw new Exception\PropertyException("You must define input/output filter!");
-            }
-
-            $filterIn = $this->_createCallback($this->entityReflection->getClassName(), $filter[0]);
-            if (!$filterIn) {
-                throw new Exception\PropertyException("Invalid input filter definition!");
-            }
-
-            $filterOut = $this->_createCallback($this->entityReflection->getClassName(), $filter[1]);
-            if (!$filterOut) {
-                throw new Exception\PropertyException("Invalid output filter definition!");
-            }
-
-            $this->options[self::OPTION_MAP_FILTER] = [$filterIn, $filterOut];
-        }
-    }
-
-    private function _initEnumeration()
-    {
-        if ($this->hasOption(self::OPTION_ENUM)) {
-
-            if (!preg_match("/^\s*(\S+)::(\S*)\*\s*$/", $this->getOption(self::OPTION_ENUM), $matched)) {
-                throw new Exception\PropertyException(
-                    "Invalid enumeration definition!"
-                );
-            }
-
-            // Find out enumeration class
-            if ($matched[1] === 'self') {
-                $class = $this->entityReflection->getClassName();
-            } else {
-
-                $class = $matched[1];
-                if (!class_exists($class)) {
-                    throw new Exception\PropertyException(
-                        "Enumeration class " . $class . " not found!"
-                    );
-                }
-            }
-
-            $this->options[self::OPTION_ENUM] = new Enumeration($class, $matched[2]);
-        }
-    }
-
-    private function _initAssociation()
-    {
-        if ($this->hasOption(self::OPTION_ASSOC)) {
-
-            if ($this->hasOption(self::OPTION_MAP)
-                || $this->hasOption(self::OPTION_ENUM)
-                || $this->hasOption(self::OPTION_COMPUTED)
-            ) {
-                throw new Exception\PropertyException(
-                    "Association can not be combined with mapping, computed or "
-                    . "enumeration!"
-                );
-            }
-
-            if ($this->type !== self::TYPE_COLLECTION
-                && $this->type !== self::TYPE_ENTITY
-            ) {
-                throw new Exception\PropertyException(
-                    "Property type must be collection or entity if association "
-                    . "defined!"
-                );
-            }
-
-            if (!$this->hasOption(self::OPTION_ASSOC)) {
-                throw new Exception\PropertyException(
-                    "You must define association type!"
-                );
-            }
-
-            if (!$this->hasOption(self::OPTION_ASSOC_BY)) {
-                throw new Exception\PropertyException(
-                    "You must define association by!"
-                );
-            }
-
-            $class = "UniMapper\Association\\"
-                . $this->assocTypes[$this->getOption(self::OPTION_ASSOC)];
-
-            try {
-
-                $association = new $class(
-                    $this->name,
-                    $this->entityReflection,
-                    Entity\Reflection::load($this->typeOption),
-                    explode("|", $this->getOption(self::OPTION_ASSOC_BY)),
-                    $this->getOption(self::OPTION_ASSOC) === "M<N" ? false : true
-                );
-            } catch (Exception\AssociationException $e) {
-                throw new Exception\PropertyException($e->getMessage());
-            }
-
-            // Get filter
-            $filters = preg_grep("/" . self::OPTION_ASSOC . "-filter-[aA-zZ]*/", $this->options);
-            if ($filters) {
-
-                if (count($filters) > 1) {
-                    throw new Exception\PropertyException(
-                        "Only one association filter can be set!"
-                    );
-                }
-
-                $name = end(explode("-", key($filters)));
-                if (isset(self::$assocFilters[$name])) {
-
-                    $args = current($filters);
-                    array_unshift($args, $association);
-
-                    // Apply filter on association
-                    call_user_func_array(self::$assocFilters[$name], $args);
-                } else {
-                    throw new Exception\PropertyException(
-                        "Association filter " . $name . " not is registered!"
-                    );
-                }
-            }
-
-            $this->options[self::OPTION_ASSOC] = $association;
-        }
-    }
-
-    private function _initComputed()
-    {
-        if ($this->hasOption(self::OPTION_COMPUTED)) {
-
-            if ($this->hasOption(self::OPTION_MAP)
-                || $this->hasOption(self::OPTION_ENUM)
-                || $this->hasOption(self::OPTION_PRIMARY)
-            ) {
-                throw new Exception\PropertyException(
-                    "Computed property can not be combined with mapping, "
-                    . "enumeration or primary!"
-                );
-            }
-
-            $method = "compute" . ucfirst($this->name);
-            if (!method_exists($this->entityReflection->getClassName(), $method)) {
-                throw new Exception\PropertyException(
-                    "Computed method " . $method . " not found in "
-                    . $this->entityReflection->getClassName() . "!"
-                );
-            }
-            $this->options[self::OPTION_COMPUTED] = $method;
-        }
     }
 
     /**
@@ -396,8 +215,8 @@ class Property
      */
     public function validateValueType($value)
     {
-        if ($this->hasOption(self::OPTION_PRIMARY)
-            && (self::isPrimaryEmpty($value))
+        if ($this->hasOption(Entity\Reflection\Property\Option\Primary::KEY)
+            && (Entity\Reflection\Property\Option\Primary::isEmpty($value))
         ) {
             throw new Exception\InvalidArgumentException(
                 "Primary value can not be empty string or null!",
@@ -410,7 +229,9 @@ class Property
         }
 
         // Enumeration
-        if ($this->hasOption(self::OPTION_ENUM) && !$this->getOption(self::OPTION_ENUM)->isValid($value)) {
+        if ($this->hasOption(Entity\Reflection\Property\Option\Enum::KEY)
+            && !$this->getOption(Entity\Reflection\Property\Option\Enum::KEY)->isValid($value)
+        ) {
             throw new Exception\InvalidArgumentException(
                 "Value " . $value . " is not from defined entity enumeration "
                 . "range on property " . $this->name . "!",
@@ -572,17 +393,6 @@ class Property
         );
     }
 
-    private function _createCallback($class, $method)
-    {
-        if (method_exists($class, $method)) {
-            return [$class, $method];
-        } elseif (is_callable($method)) {
-            return $method;
-        }
-
-        return false;
-    }
-
     /**
      * Has option?
      *
@@ -614,18 +424,6 @@ class Property
             );
         }
         return $this->options[$key];
-    }
-
-    /**
-     * Checks if primary value is empty
-     *
-     * @param $value
-     *
-     * @return bool
-     */
-    public static function isPrimaryEmpty($value)
-    {
-        return $value === "" || $value === null ? true : false;
     }
 
 }

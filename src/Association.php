@@ -5,6 +5,13 @@ namespace UniMapper;
 abstract class Association
 {
 
+    /**
+     * @var Entity\Reflection
+     *
+     * @todo quick fix for traits
+     */
+    protected $entityReflection;
+
     /** @var Entity\Reflection */
     protected $sourceReflection;
 
@@ -28,7 +35,7 @@ abstract class Association
         $dominant = true
     ) {
         $this->propertyName = $propertyName;
-        $this->sourceReflection = $sourceReflection;
+        $this->sourceReflection = $this->entityReflection = $sourceReflection; // @todo quick fix for traits
         $this->targetReflection = $targetReflection;
         $this->dominant = (bool) $dominant;
         $this->mapBy = $mapBy;

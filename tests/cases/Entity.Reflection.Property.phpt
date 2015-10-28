@@ -33,7 +33,7 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
     public function testValidateValueType()
     {
         // Integer
-        $this->_createReflection('integer', 'id', 'm:primary')
+        $this->_createReflection('integer', 'id')
             ->validateValueType(1);
 
         // String
@@ -54,7 +54,7 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
             ->validateValueType(1);
 
         // Primary
-        $this->_createReflection('integer', 'id', 'm:primary')->validateValueType(0);
+        Entity\Reflection::load("Simple")->getProperty("id")->validateValueType(0);
     }
 
     /**
@@ -72,7 +72,7 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
      */
     public function testValidateValueTypePrimaryNull()
     {
-        $this->_createReflection('integer', 'id', 'm:primary')->validateValueType(null);
+        Entity\Reflection::load("Simple")->getProperty("id")->validateValueType(null);
     }
 
     /**
@@ -80,13 +80,13 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
      */
     public function testValidateValueTypePrimaryEmptyString()
     {
-        $this->_createReflection('string', 'id', 'm:primary')->validateValueType("");
+        Entity\Reflection::load("Simple")->getProperty("id")->validateValueType("");
     }
 
     public function testConvertValue()
     {
         // string -> integer
-        Assert::same(1, $this->_createReflection('integer',  'id', 'm:primary')->convertValue("1"));
+        Assert::same(1, $this->_createReflection('integer',  'id')->convertValue("1"));
         Assert::null($this->_createReflection('integer', 'id')->convertValue(""));
 
         // integer -> string
@@ -271,206 +271,6 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
         $this->_createReflection('Int', 'name');
     }
 
-    public function testInvalidPrimaryType()
-    {
-        Assert::exception(
-            function() {
-                $this->_createReflection('Date', 'id', 'm:primary');
-            },
-            "UniMapper\Exception\PropertyException",
-            "Primary property can be only double,integer,string but '" . Entity\Reflection\Property::TYPE_DATE . "' given!"
-        );
-        Assert::exception(
-            function() {
-                $this->_createReflection('DateTime', 'id', 'm:primary');
-            },
-            "UniMapper\Exception\PropertyException",
-            "Primary property can be only double,integer,string but '" . Entity\Reflection\Property::TYPE_DATETIME . "' given!"
-        );
-        Assert::exception(
-            function() {
-                $this->_createReflection('Simple', 'id', 'm:primary');
-            },
-            "UniMapper\Exception\PropertyException",
-            "Primary property can be only double,integer,string but '" . Entity\Reflection\Property::TYPE_ENTITY . "' given!"
-        );
-        Assert::exception(
-            function() {
-                $this->_createReflection('Simple[]', 'id', 'm:primary');
-            },
-            "UniMapper\Exception\PropertyException",
-            "Primary property can be only double,integer,string but '" . Entity\Reflection\Property::TYPE_COLLECTION . "' given!"
-        );
-        Assert::exception(
-            function() {
-                $this->_createReflection('boolean', 'id', 'm:primary');
-            },
-            "UniMapper\Exception\PropertyException",
-            "Primary property can be only double,integer,string but '" . Entity\Reflection\Property::TYPE_BOOLEAN . "' given!"
-        );
-        Assert::exception(
-            function() {
-                $this->_createReflection('array', 'id', 'm:primary');
-            },
-            "UniMapper\Exception\PropertyException",
-            "Primary property can be only double,integer,string but '" . Entity\Reflection\Property::TYPE_ARRAY . "' given!"
-        );
-    }
-
-    public function testOptionAssocManyToMany()
-    {
-        // Local
-        $local = $this->_createReflection('Simple[]', 'manyToMany', 'm:assoc(M:N) m:assoc-by(sourceId|source_target|targetId)');
-        Assert::type("UniMapper\Association\ManyToMany", $local->getOption(Entity\Reflection\Property::OPTION_ASSOC));
-        Assert::true($local->hasOption(Entity\Reflection\Property::OPTION_ASSOC));
-        Assert::false($local->getOption(Entity\Reflection\Property::OPTION_ASSOC)->isRemote());
-        Assert::same("FooAdapter", $local->getOption(Entity\Reflection\Property::OPTION_ASSOC)->getTargetAdapterName());
-
-        // Remote
-        $remote = $this->_createReflection('Remote[]', 'manyToMany', 'm:assoc(M:N) m:assoc-by(localId|local_remote|remoteId)')->getOption(Entity\Reflection\Property::OPTION_ASSOC);
-        Assert::true($remote->isRemote());
-        Assert::true($remote->isDominant());
-        Assert::same("RemoteAdapter", $remote->getTargetAdapterName());
-        Assert::same("localId", $remote->getJoinKey());
-        Assert::same("local_remote", $remote->getJoinResource());
-        Assert::same("remoteId", $remote->getReferencingKey());
-        Assert::same("id", $remote->getTargetPrimaryKey());
-
-        // Remote - not dominant
-        $remoteNotDominant = $this->_createReflection('Remote[]', 'manyToMany', 'm:assoc(M<N) m:assoc-by(localId|local_remote|remoteId)');
-        Assert::true($remoteNotDominant->getOption(Entity\Reflection\Property::OPTION_ASSOC)->isRemote());
-        Assert::false($remoteNotDominant->getOption(Entity\Reflection\Property::OPTION_ASSOC)->isDominant());
-    }
-
-    public function testOptionAssocOneToMany()
-    {
-        $property = $this->_createReflection('Simple[]', 'oneToMany', 'm:assoc(1:N) m:assoc-by(sourceId)');
-        Assert::true($property->hasOption("assoc"));
-        Assert::type("UniMapper\Association\OneToMany", $property->getOption(Entity\Reflection\Property::OPTION_ASSOC));
-    }
-
-    public function testOptionAssocOneToOne()
-    {
-        $property = $this->_createReflection('Simple', 'oneToOne', 'm:assoc(1:1) m:assoc-by(targetId)');
-        Assert::true($property->hasOption("assoc"));
-        $association = $property->getOption(Entity\Reflection\Property::OPTION_ASSOC);
-        Assert::type("UniMapper\Association\OneToOne", $association);
-        Assert::same("simplePrimaryId", $association->getTargetPrimaryKey());
-        Assert::same("targetId", $association->getReferencingKey());
-        Assert::same("targetId", $association->getKey());
-    }
-
-    /**
-     * @throws UniMapper\Exception\PropertyException Target entity must have defined primary when 1:1 relation used!
-     */
-    public function testOptionAssocOneToOneTargetNoPrimary()
-    {
-        $this->_createReflection('NoPrimary', 'oneToOne', 'm:assoc(1:1) m:assoc-by(targetId)');
-    }
-
-    public function testOptionAssocManyToOne()
-    {
-        $property = $this->_createReflection('Simple', 'manyToOne', 'm:assoc(N:1) m:assoc-by(targetId)');
-        Assert::true($property->hasOption("assoc"));
-        $association = $property->getOption(Entity\Reflection\Property::OPTION_ASSOC);
-        Assert::type("UniMapper\Association\ManyToOne", $association);
-        Assert::same("simplePrimaryId", $association->getTargetPrimaryKey());
-        Assert::same("targetId", $association->getReferencingKey());
-        Assert::same("targetId", $association->getKey());
-    }
-
-    /**
-     * @throws UniMapper\Exception\PropertyException Target entity must have defined primary when N:1 relation used!
-     */
-    public function testOptionAssocManyToOneTargetNoPrimary()
-    {
-        $this->_createReflection('NoPrimary', 'manyToOne', 'm:assoc(N:1) m:assoc-by(remoteId)');
-    }
-
-    public function testOptionMap()
-    {
-        $reflection = $this->_createReflection('array', 'name', 'm:map-by(foo)');
-        Assert::same("foo", $reflection->getName(true));
-    }
-
-    public function testOptionMapFilterWithEntityMethod()
-    {
-        $reflection = $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter(stringToArray|arrayToString)');
-        Assert::same("foo", $reflection->getName(true));
-        Assert::true(is_callable($reflection->getOption(Entity\Reflection\Property::OPTION_MAP_FILTER)[0]));
-        Assert::true(is_callable($reflection->getOption(Entity\Reflection\Property::OPTION_MAP_FILTER)[1]));
-    }
-
-    public function testOptionMapFilterWithFullCallback()
-    {
-        $reflection = $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter(UniMapper\Tests\Fixtures\Entity\Simple::stringToArray|UniMapper\Tests\Fixtures\Entity\Simple::arrayToString)');
-        Assert::same("foo", $reflection->getName(true));
-        Assert::true(is_callable($reflection->getOption(Entity\Reflection\Property::OPTION_MAP_FILTER)[0]));
-        Assert::true(is_callable($reflection->getOption(Entity\Reflection\Property::OPTION_MAP_FILTER)[1]));
-    }
-
-    /**
-     * @throws UniMapper\Exception\PropertyException You must define input/output filter!
-     */
-    public function testOptionMapFilterInvalidFilter()
-    {
-        $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter()');
-    }
-
-    /**
-     * @throws UniMapper\Exception\PropertyException Invalid input filter definition!
-     */
-    public function testOptionMapFilterInvalidInputFilter()
-    {
-        $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter(undefinedInputMethod|arrayToString)');
-    }
-
-    /**
-     * @throws UniMapper\Exception\PropertyException Invalid output filter definition!
-     */
-    public function testOptionMapFilterInvalidOutputFilter()
-    {
-        $this->_createReflection('array', 'name', 'm:map-by(foo) m:map-filter(stringToArray|undefinedOutputMethod)');
-    }
-
-    /**
-     * @throws UniMapper\Exception\PropertyException Invalid enumeration definition!
-     */
-    public function testOptionEnumInvalidDefinition()
-    {
-        $this->_createReflection('string', 'name', 'm:enum(self::ENUMERATION_)');
-    }
-
-    /**
-     * @throws UniMapper\Exception\PropertyException Enumeration class Undefined not found!
-     */
-    public function testOptionEnumClassNotFound()
-    {
-        $this->_createReflection('string', 'name', 'm:enum(Undefined::TYPE_*)');
-    }
-
-    public function testOptionEnum()
-    {
-        $self = $this->_createReflection('string', 'name', 'm:enum(self::ENUMERATION_* )')->getOption(Entity\Reflection\Property::OPTION_ENUM);
-        Assert::same(['ENUMERATION_ONE' => 1, 'ENUMERATION_TWO' => 2], $self->getValues());
-        Assert::true($self->isValid(1));
-        Assert::false($self->isValid(3));
-
-        $class = $this->_createReflection('string', 'name', 'm:enum(' . get_class() . '::ENUM*' . ')')->getOption(Entity\Reflection\Property::OPTION_ENUM);
-        Assert::same(['ENUM1' => 1, 'ENUM2' => 2], $class->getValues());
-        Assert::true($class->isValid(1));
-        Assert::false($class->isValid(3));
-    }
-
-    public function testIsPrimaryEmpty()
-    {
-        Assert::false(Entity\Reflection\Property::isPrimaryEmpty(0));
-        Assert::false(Entity\Reflection\Property::isPrimaryEmpty(0.0));
-        Assert::false(Entity\Reflection\Property::isPrimaryEmpty("foo"));
-        Assert::false(Entity\Reflection\Property::isPrimaryEmpty(" "));
-        Assert::true(Entity\Reflection\Property::isPrimaryEmpty(null));
-        Assert::true(Entity\Reflection\Property::isPrimaryEmpty(""));
-    }
 }
 
 $testCase = new EntityReflectionPropertyTest;

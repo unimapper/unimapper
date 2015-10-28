@@ -50,7 +50,7 @@ abstract class Repository
         if ($primaryValue === null) {
 
             $primaryValue = $this->create($entity);
-            if (Property::isPrimaryEmpty($primaryValue)) {
+            if (Entity\Reflection\Property\Option\Primary::isEmpty($primaryValue)) {
                 throw new RepositoryException(
                     "Entity was successfully created but returned primary is empty!"
                 );
@@ -160,7 +160,7 @@ abstract class Repository
     private function _saveAssociated($primaryValue, Entity $entity)
     {
         foreach ($entity->getChanges() as $name => $associated) {
-            Entity\Reflection::load($entity)->getProperty($name)->getOption(Entity\Reflection\Property::OPTION_ASSOC)->saveChanges(
+            Entity\Reflection::load($entity)->getProperty($name)->getOption(Property\Option\Assoc::KEY)->saveChanges(
                 $primaryValue,
                 $this->connection,
                 $associated

@@ -47,8 +47,12 @@ class Mapper
         }
 
         // Call map filter from property option
-        if ($property->hasOption(Entity\Reflection\Property::OPTION_MAP_FILTER)) {
-            $value = call_user_func($property->getOption(Entity\Reflection\Property::OPTION_MAP_FILTER)[0], $value);
+        if ($property->hasOption(Reflection\Property\Option\Map::KEY)) {
+
+            $filterIn = $property->getOption(Reflection\Property\Option\Map::KEY)->getFilterIn();
+            if ($filterIn) {
+                $value = call_user_func($filterIn, $value);
+            }
         }
 
         if ($value === null || $value === "") {
@@ -194,7 +198,7 @@ class Mapper
             $property = Entity\Reflection::load($entity)->getProperty($propertyName);
 
             // Skip associations & readonly
-            if ($property->hasOption(Entity\Reflection\Property::OPTION_ASSOC)
+            if ($property->hasOption(Reflection\Property\Option\Assoc::KEY)
                 || !$property->isWritable()
             ) {
                 continue;
@@ -211,8 +215,12 @@ class Mapper
     public function unmapValue(Entity\Reflection\Property $property, $value)
     {
         // Call map filter from property option
-        if ($property->hasOption(Entity\Reflection\Property::OPTION_MAP_FILTER)) {
-            $value = call_user_func($property->getOption(Entity\Reflection\Property::OPTION_MAP_FILTER)[1], $value);
+        if ($property->hasOption(Reflection\Property\Option\Map::KEY)) {
+
+            $filterOut = $property->getOption(Reflection\Property\Option\Map::KEY)->getFilterOut();
+            if ($filterOut) {
+                $value = call_user_func($filterOut, $value);
+            }
         }
 
         if ($value instanceof Entity\Collection) {
