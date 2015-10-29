@@ -2,7 +2,7 @@
 
 namespace UniMapper;
 
-abstract class Association implements \JsonSerializable
+abstract class Association
 {
 
     /** @var Entity\Reflection */
@@ -151,17 +151,6 @@ abstract class Association implements \JsonSerializable
         }
 
         return $converted;
-    }
-
-    public function jsonSerialize()
-    {
-        return [
-            "class" => get_called_class(),
-            "targetEntity" => $this->targetReflection->getName(),
-            "sourceEntity" => $this->sourceReflection->getName(),
-            "dominant" => $this->dominant,
-            "mapBy" => $this->mapBy
-        ];
     }
 
 }
