@@ -1,5 +1,5 @@
 {
-    "name": "bauer01/unimapper",
+    "name": "unimapper/unimapper",
     "type": "library",
     "description": "Universal mapping tool for collecting data from different sources",
     "keywords": ["php", "mapping", "data", "orm", "database"],
