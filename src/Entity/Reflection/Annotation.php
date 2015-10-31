@@ -106,6 +106,8 @@ class Annotation
      * @param string $definition
      *
      * @return array
+     *
+     * @throws Exception\AnnotationException
      */
     public static function parseOptions($definition)
     {
@@ -113,6 +115,13 @@ class Annotation
 
         $result = [];
         foreach ($matched as $match) {
+
+            if (array_key_exists($match[1], $result)) {
+                throw new Exception\AnnotationException(
+                    "Duplicate option '" . $match[1] . "'!"
+                );
+            }
+
             $result[$match[1]] = isset($match[2]) ? trim($match[2]) : null;
         }
         return $result;

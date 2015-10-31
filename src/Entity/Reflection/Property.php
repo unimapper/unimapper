@@ -83,7 +83,15 @@ class Property
 
     private function _initOptions($options)
     {
-        $parsed = Annotation::parseOptions($options);
+        try {
+            $parsed = Annotation::parseOptions($options);
+        } catch (Exception\AnnotationException $e) {
+            throw new Exception\PropertyException(
+                $e->getMessage(),
+                $e->getCode(),
+                $e
+            );
+        }
 
         foreach (Annotation::getRegisteredOptions() as $key => $class) {
 

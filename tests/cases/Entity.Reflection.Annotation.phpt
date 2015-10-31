@@ -63,6 +63,23 @@ class EntityReflectionAnnotationTest extends \Tester\TestCase
         );
     }
 
+    /**
+     * @throws UniMapper\Exception\AnnotationException Duplicate option 'map' found!
+     */
+    public function testParseOptionsDuplications()
+    {
+        Assert::same(
+            array(
+                'assoc' => '',
+                'assoc-filter-by' => 'value1 | value2',
+                'primary' => NULL,
+                'map-by' => '',
+                'map' => 'false',
+            ),
+            Reflection\Annotation::parseOptions("m:map(false) m:map(fd)")
+        );
+    }
+
     public function testRegisterOption()
     {
         Reflection\Annotation::registerOption("custom", "Option");
