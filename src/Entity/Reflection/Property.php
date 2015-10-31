@@ -72,14 +72,13 @@ class Property
         $this->name = $name;
         $this->readonly = (bool) $readonly;
         $this->_initType($type);
-        $this->options = $this->_initOptions($options);
+        $this->_initOptions($options);
     }
 
     private function _initOptions($options)
     {
         $parsed = Annotation::parseOptions($options);
 
-        $result = [];
         foreach (Annotation::getRegisteredOptions() as $key => $class) {
 
             $value = array_key_exists($key, $parsed) ? $parsed[$key] : false;
@@ -88,7 +87,7 @@ class Property
 
                 try {
 
-                    $result[$key] = $class::create(
+                    $this->options[$key] = $class::create(
                         $this,
                         $value,
                         array_intersect_key($parsed,  array_flip($parameters))
@@ -103,7 +102,6 @@ class Property
                 }
             }
         }
-        return $result;
     }
 
     public function isWritable()
