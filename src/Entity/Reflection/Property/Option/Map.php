@@ -95,6 +95,9 @@ class Map implements Reflection\Property\IOption
         return new self($property, $by, $filterIn, $filterOut);
     }
 
+    public static function afterCreate(Reflection\Property $property, $option)
+    {}
+
     private static function createCallback($class, $method)
     {
         if (method_exists($class, $method)) {

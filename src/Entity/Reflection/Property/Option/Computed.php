@@ -39,17 +39,20 @@ class Computed implements Reflection\Property\IOption
         $value = null,
         array $parameters = []
     ) {
+        return new self($property);
+    }
+
+    public static function afterCreate(Reflection\Property $property, $option)
+    {
         if ($property->hasOption(Map::KEY)
             || $property->hasOption(Enum::KEY)
             || $property->hasOption(Primary::KEY)
         ) {
             throw new OptionException(
-                "Computed option can not be combined with mapping, "
-                . "enumeration or primary option!"
+                "Computed option can not be combined with mapping, enumeration "
+                . "or primary options!"
             );
         }
-
-        return new self($property);
     }
 
 }

@@ -11,8 +11,8 @@ interface IOption
      * Create an option instance
      *
      * @param Property $property
-     * @param null     $value
-     * @param array    $parameters
+     * @param null $value
+     * @param array $parameters
      *
      * @return mixed
      */
@@ -21,5 +21,13 @@ interface IOption
         $value = null,
         array $parameters = []
     );
+
+    /**
+     * Called after all options on property created
+     *
+     * @param Property $property
+     * @param mixed    $option
+     */
+    public static function afterCreate(Property $property, $option);
 
 }

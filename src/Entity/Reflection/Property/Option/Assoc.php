@@ -36,17 +36,6 @@ class Assoc implements IOption
         $value = null,
         array $parameters = []
     ) {
-        if ($property->hasOption(Map::KEY)
-            || $property->hasOption(Enum::KEY)
-            || $property->hasOption(Computed::KEY)
-            || $property->hasOption(Primary::KEY)
-        ) {
-            throw new OptionException(
-                "Association can not be combined with mapping, computed, primary"
-                . " or enumeration!"
-            );
-        }
-
         if (!in_array($property->getType(), [Property::TYPE_COLLECTION, Property::TYPE_ENTITY], true)) {
             throw new OptionException(
                 "Property type must be collection or entity if association "
@@ -55,9 +44,7 @@ class Assoc implements IOption
         }
 
         if (!$value) {
-            throw new OptionException(
-                "Association definition required!"
-            );
+            throw new OptionException("Association definition required!");
         }
 
         if (!isset($parameters[self::KEY . "-by"])) {
@@ -104,6 +91,19 @@ class Assoc implements IOption
         }
 
         return $association;
+    }
+
+    public static function afterCreate(Property $property, $option)
+    {
+        if ($property->hasOption(Map::KEY)
+            || $property->hasOption(Enum::KEY)
+            || $property->hasOption(Computed::KEY)
+        ) {
+            throw new OptionException(
+                "Association can not be combined with mapping, computed or "
+                . "enumeration!"
+            );
+        }
     }
 
 }

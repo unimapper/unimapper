@@ -74,4 +74,7 @@ class Enum implements Reflection\Property\IOption
         return new self(new \ReflectionClass($matched[1]), $matched[2]);
     }
 
+    public static function afterCreate(Reflection\Property $property, $option)
+    {}
+
 }

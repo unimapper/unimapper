@@ -31,10 +31,29 @@ class Bar extends Entity {}
 /**
  * @adapter Foo()
  *
- * @property int     $id  m:primary
- * @property Mapping $foo m:assoc(1:1) m:assoc-by(targetKey) m:map-by(foo)
+ * @property int $id  m:primary
+ * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:map-by(foo)
  */
-class Mapping extends Entity {}
+class Map extends Entity {}
+
+/**
+ * @adapter Foo()
+ *
+ * @property int $id  m:primary
+ * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:enum(self::ENUM_*)
+ */
+class Enum extends Entity {}
+
+/**
+ * @adapter Foo()
+ *
+ * @property int  $id  m:primary
+ * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:computed
+ */
+class Computed extends Entity
+{
+    public function computeFoo() {}
+}
 
 /**
  * @testCase
@@ -93,9 +112,28 @@ class EntityReflectionPropertyOptionAssocTest extends \Tester\TestCase
         Assert::same("targetKey", $association->getReferencingKey());
     }
 
-    public function testCreateMappingNotAllowed()
+    /**
+     * @throws UniMapper\Exception\OptionException Association can not be combined with mapping, computed or enumeration!
+     */
+    public function testCreateMapNotAllowed()
     {
-        Entity\Reflection::load("Mapping");
+        Entity\Reflection::load("Map");
+    }
+
+    /**
+     * @throws UniMapper\Exception\OptionException Association can not be combined with mapping, computed or enumeration!
+     */
+    public function testCreateEnumNotAllowed()
+    {
+        Entity\Reflection::load("Enum");
+    }
+
+    /**
+     * @throws UniMapper\Exception\OptionException Association can not be combined with mapping, computed or enumeration!
+     */
+    public function testCreateComputedNotAllowed()
+    {
+        Entity\Reflection::load("Computed");
     }
 
 }

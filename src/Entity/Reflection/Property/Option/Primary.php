@@ -35,6 +35,9 @@ class Primary implements Reflection\Property\IOption
         return new self;
     }
 
+    public static function afterCreate(Reflection\Property $property, $option)
+    {}
+
     /**
      * Checks if primary value is empty
      *

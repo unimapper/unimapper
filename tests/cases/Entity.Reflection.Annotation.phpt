@@ -7,20 +7,20 @@ require __DIR__ . '/../bootstrap.php';
 
 class Option implements Reflection\Property\IOption
 {
-
     public static function getKey()
     {
         return "option";
     }
 
     public static function create(
-        \UniMapper\Entity\Reflection\Property $property,
+        Reflection\Property $property,
         $value = null,
         array $parameters = []
-    ) {
+    )
+    {}
 
-    }
-
+    public static function afterCreate(Reflection\Property $property, $option)
+    {}
 }
 
 /** @param int $id m:option */
