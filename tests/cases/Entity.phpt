@@ -446,6 +446,11 @@ class EntityTest extends \Tester\TestCase
         $this->entity->manyToMany("");
     }
 
+    public function testGetReflection()
+    {
+        Assert::same("Simple", $this->entity->getReflection()->getName());
+    }
+
 }
 
 $testCase = new EntityTest;

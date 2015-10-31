@@ -125,7 +125,7 @@ class Validator
      */
     public function on($name, $child = null)
     {
-        $reflection = Entity\Reflection::load($this->entity);
+        $reflection = $this->entity->getReflection();
 
         if (!$reflection->hasProperty($name)) {
             throw new Exception\InvalidArgumentException(

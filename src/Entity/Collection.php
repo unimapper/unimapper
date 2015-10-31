@@ -66,7 +66,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
 
         if ($primaryRequired) {
 
-            $primaryName = Entity\Reflection::load($entity)->getPrimaryProperty()->getName();
+            $primaryName = $entity::getReflection()->getPrimaryProperty()->getName();
             if (empty($entity->{$primaryName})) {
                 throw new Exception\InvalidArgumentException(
                     "Primary value can not be empty!"
@@ -79,7 +79,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         $this->_validateEntity($entity, true);
 
-        $primary = $entity->{Entity\Reflection::load($entity)->getPrimaryProperty()->getName()};
+        $primary = $entity->{$entity::getReflection()->getPrimaryProperty()->getName()};
         if (!in_array($primary, $this->changes[Entity::CHANGE_ATTACH], true)) {
             array_push($this->changes{Entity::CHANGE_ATTACH}, $primary);
         }
@@ -89,7 +89,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         $this->_validateEntity($entity, true);
 
-        $primary = $entity->{Entity\Reflection::load($entity)->getPrimaryProperty()->getName()};
+        $primary = $entity->{$entity::getReflection()->getPrimaryProperty()->getName()};
         if (!in_array($primary, $this->changes[Entity::CHANGE_DETACH], true)) {
             array_push($this->changes{Entity::CHANGE_DETACH}, $primary);
         }
@@ -105,7 +105,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         $this->_validateEntity($entity, true);
 
-        $primary = $entity->{Entity\Reflection::load($entity)->getPrimaryProperty()->getName()};
+        $primary = $entity->{$entity::getReflection()->getPrimaryProperty()->getName()};
         if (!in_array($primary, $this->changes[Entity::CHANGE_REMOVE], true)) {
             array_push($this->changes{Entity::CHANGE_REMOVE}, $primary);
         }
@@ -259,7 +259,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
     {
         foreach ($this->data as $entity) {
 
-            $primaryPropertyName = Entity\Reflection::load($entity)
+            $primaryPropertyName = $entity::getReflection()
                 ->getPrimaryProperty()
                 ->getName();
 
