@@ -64,7 +64,7 @@ class EntityReflectionAnnotationTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\AnnotationException Duplicate option 'map' found!
+     * @throws UniMapper\Exception\AnnotationException Duplicate option 'map'!
      */
     public function testParseOptionsDuplications()
     {
