@@ -16,8 +16,6 @@ class Primary implements Reflection\Property\IOption
         array $parameters = []
     ) {
         if ($property->getEntityReflection()->hasPrimary()) {
-            var_dump($property->getEntityReflection()->getPrimaryProperty()->getName());
-            var_dump($property->getName());
             throw new OptionException("Primary property already defined!");
         }
 
