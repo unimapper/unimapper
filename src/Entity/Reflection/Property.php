@@ -72,13 +72,7 @@ class Property
         $this->name = $name;
         $this->readonly = (bool) $readonly;
         $this->_initType($type);
-
         $this->_initOptions($options);
-        foreach ($this->options as $key => $option) {
-
-            $class = Annotation::getRegisteredOptions()[$key];
-            $class::afterCreate($this, $option);
-        }
     }
 
     private function _initOptions($options)
@@ -114,6 +108,21 @@ class Property
                         $e
                     );
                 }
+            }
+        }
+
+        foreach ($this->options as $key => $option) {
+
+            $class = Annotation::getRegisteredOptions()[$key];
+
+            try {
+                $class::afterCreate($this, $option);
+            } catch (Exception\OptionException $e) {
+                throw new Exception\PropertyException(
+                    $e->getMessage(),
+                    $e->getCode(),
+                    $e
+                );
             }
         }
     }

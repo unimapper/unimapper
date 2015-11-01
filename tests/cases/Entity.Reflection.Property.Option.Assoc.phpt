@@ -113,7 +113,7 @@ class EntityReflectionPropertyOptionAssocTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\OptionException Association can not be combined with mapping, computed or enumeration!
+     * @throws UniMapper\Exception\EntityException Association can not be combined with mapping, computed or enumeration!
      */
     public function testCreateMapNotAllowed()
     {
@@ -121,7 +121,7 @@ class EntityReflectionPropertyOptionAssocTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\OptionException Association can not be combined with mapping, computed or enumeration!
+     * @throws UniMapper\Exception\EntityException Association can not be combined with mapping, computed or enumeration!
      */
     public function testCreateEnumNotAllowed()
     {
@@ -129,7 +129,7 @@ class EntityReflectionPropertyOptionAssocTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\OptionException Association can not be combined with mapping, computed or enumeration!
+     * @throws UniMapper\Exception\EntityException Association can not be combined with mapping, computed or enumeration!
      */
     public function testCreateComputedNotAllowed()
     {
