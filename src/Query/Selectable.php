@@ -2,8 +2,6 @@
 
 namespace UniMapper\Query;
 
-use UniMapper\Association;
-use UniMapper\Entity\Filter;
 use UniMapper\Exception;
 use UniMapper\Entity\Reflection;
 
@@ -92,58 +90,6 @@ trait Selectable
         }
 
         return $this;
-    }
-
-    protected function createSelection()
-    {
-        if (empty($this->selection)) {
-
-            $selection = [];
-            foreach ($this->entityReflection->getProperties() as $property) {
-
-                // Exclude associations & computed properties & disabled mapping
-                if (!$property->hasOption(Reflection\Property\Option\Assoc::KEY)
-                    && !$property->hasOption(Reflection\Property\Option\Computed::KEY)
-                    && !($property->hasOption(Reflection\Property\Option\Map::KEY)
-                        && !$property->getOption(Reflection\Property\Option\Map::KEY))
-                ) {
-                    $selection[] = $property->getUnmapped();
-                }
-            }
-        } else {
-
-            // Add properties from filter
-            $selection = $this->selection;
-
-            // Include primary automatically if not provided
-            if ($this->entityReflection->hasPrimary()) {
-
-                $primaryName = $this->entityReflection
-                    ->getPrimaryProperty()
-                    ->getName();
-
-                if (!in_array($primaryName, $selection)) {
-                    $selection[] = $primaryName;
-                }
-            }
-
-            // Unmap all names
-            foreach ($selection as $index => $name) {
-                $selection[$index] = $this->entityReflection->getProperty($name)->getUnmapped();
-            }
-        }
-
-        // Add required keys from remote associations
-        foreach ($this->associations["remote"] as $association) {
-
-            if (($association instanceof Association\ManyToOne || $association instanceof Association\OneToOne)
-                && !in_array($association->getReferencingKey(), $selection, true)
-            ) {
-                $selection[] = $association->getReferencingKey();
-            }
-        }
-
-        return $selection;
     }
 
 }
