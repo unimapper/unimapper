@@ -157,16 +157,21 @@ class Property
     /**
      * Get property name
      *
-     * @param bool $unmapped
-     *
      * @return string
      */
-    public function getName($unmapped = false)
+    public function getName()
     {
-        if ($unmapped && $this->hasOption(Entity\Reflection\Property\Option\Map::KEY)) {
-            return $this->getOption(Entity\Reflection\Property\Option\Map::KEY)->getUnmapped();
-        }
         return $this->name;
+    }
+
+    public function getUnmapped()
+    {
+        if ($this->hasOption(Entity\Reflection\Property\Option\Map::KEY)
+            && !$this->getOption(Entity\Reflection\Property\Option\Map::KEY)
+        ) {
+            throw new \Exception("Mapping is disabled!");
+        }
+        return $this->hasOption(Entity\Reflection\Property\Option\Map::KEY) ? $this->getOption(Entity\Reflection\Property\Option\Map::KEY)->getUnmapped() : $this->name;
     }
 
     /**

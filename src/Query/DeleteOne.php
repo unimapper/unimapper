@@ -46,7 +46,7 @@ class DeleteOne extends \UniMapper\Query
 
         $query = $adapter->createDeleteOne(
             $this->entityReflection->getAdapterResource(),
-            $primaryProperty->getName(true),
+            $primaryProperty->getUnmapped(),
             $connection->getMapper()->unmapValue(
                 $primaryProperty,
                 $this->primaryValue

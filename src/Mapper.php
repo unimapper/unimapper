@@ -46,10 +46,17 @@ class Mapper
                 ->mapValue($property, $value);
         }
 
-        // Call map filter from property option
         if ($property->hasOption(Reflection\Property\Option\Map::KEY)) {
 
-            $filterIn = $property->getOption(Reflection\Property\Option\Map::KEY)->getFilterIn();
+            $mapOption = $property->getOption(Reflection\Property\Option\Map::KEY);
+            if (!$mapOption) {
+                throw new Exception\InvalidArgumentException(
+                    "Mapping disabled on property " . $property->getName() . "!"
+                );
+            }
+
+            // Call map filter from property option
+            $filterIn = $mapOption->getFilterIn();
             if ($filterIn) {
                 $value = call_user_func($filterIn, $value);
             }
@@ -151,36 +158,55 @@ class Mapper
             );
         }
 
-        $entityReflection = Entity\Reflection::load($name);
+        $reflection = Entity\Reflection::load($name);
 
         $values = [];
-        foreach ($data as $index => $value) {
-
-            $propertyName = $index;
+        foreach ($data as $name => $value) {
 
             // Map property name if needed
-            foreach ($entityReflection->getProperties() as $propertyReflection) {
+            foreach ($reflection->getProperties() as $property) {
 
-                if ($propertyReflection->getName(true) === $index) {
+                if ($property->hasOption(Reflection\Property\Option\Map::KEY)) {
+                    // Option mapping
 
-                    $propertyName = $propertyReflection->getName();
-                    break;
+                    $option = $property->getOption(Reflection\Property\Option\Map::KEY);
+                    if (!$option) {
+
+                        if ($property->getName() === $name) {
+                            continue 2;
+                        }
+                        continue; // Skip disabled
+                    }
+
+                    if ($option->getUnmapped() === $name) {
+
+                        $name = $property->getName();
+                        break;
+                    }
+                } else {
+                    // Auto-mapping
+
+                    if ($name === $property->getName()) {
+                        break;
+                    } else {
+                        continue;
+                    }
                 }
             }
 
             // Skip undefined properties
-            if (!$entityReflection->hasProperty($propertyName)) {
+            if (!$reflection->hasProperty($name)) {
                 continue;
             }
 
             // Map value
-            $values[$propertyName] = $this->mapValue(
-                $entityReflection->getProperty($propertyName),
+            $values[$name] = $this->mapValue(
+                $reflection->getProperty($name),
                 $value
             );
         }
 
-        return $entityReflection->createEntity($values);
+        return $reflection->createEntity($values);
     }
 
     /**
@@ -193,31 +219,37 @@ class Mapper
     public function unmapEntity(Entity $entity)
     {
         $output = [];
-        foreach ($entity->getData() as $propertyName => $value) {
+        foreach ($entity->getData() as $name => $value) {
 
-            $property = $entity::getReflection()->getProperty($propertyName);
+            $property = $entity::getReflection()->getProperty($name);
 
-            // Skip associations & readonly
+            // Skip associations & readonly & disabled mapping
             if ($property->hasOption(Reflection\Property\Option\Assoc::KEY)
                 || !$property->isWritable()
+                || ($property->hasOption(Reflection\Property\Option\Map::KEY)
+                    && !$property->getOption(Reflection\Property\Option\Map::KEY))
             ) {
                 continue;
             }
 
-            $output[$property->getName(true)] = $this->unmapValue(
-                $property,
-                $value
-            );
+            $output[$property->getUnmapped()] = $this->unmapValue($property, $value);
         }
         return $output;
     }
 
     public function unmapValue(Entity\Reflection\Property $property, $value)
     {
-        // Call map filter from property option
         if ($property->hasOption(Reflection\Property\Option\Map::KEY)) {
 
-            $filterOut = $property->getOption(Reflection\Property\Option\Map::KEY)->getFilterOut();
+            $mapOption = $property->getOption(Reflection\Property\Option\Map::KEY);
+            if (!$mapOption) {
+                throw new Exception\InvalidArgumentException(
+                    "Mapping disabled on property " . $property->getName() . "!"
+                );
+            }
+
+            // Call map filter from property option
+            $filterOut = $mapOption->getFilterOut();
             if ($filterOut) {
                 $value = call_user_func($filterOut, $value);
             }
@@ -281,7 +313,7 @@ class Mapper
             foreach ($filter as $name => $item) {
 
                 $property = $reflection->getProperty($name);
-                $unmappedName = $property->getName(true);
+                $unmappedName = $property->getUnmapped();
 
                 foreach ($item as $modifier => $value) {
 

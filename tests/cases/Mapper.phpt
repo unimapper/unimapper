@@ -30,7 +30,8 @@ class MapperTest extends \Tester\TestCase
                 "undefined" => 1,
                 "link" => "http://example.com",
                 "readonly" => "foo",
-                "stored_data" => "one,two,three"
+                "stored_data" => "one,two,three",
+                "disabledMap" => 1
             ]
         );
 
@@ -64,6 +65,14 @@ class MapperTest extends \Tester\TestCase
         );
     }
 
+    /**
+     * @throws \UniMapper\Exception\InvalidArgumentException Mapping disabled on property disabledMap!
+     */
+    public function testMapValueMappingDisabled()
+    {
+        $this->mapper->mapValue(Reflection::load("Simple")->getProperty("disabledMap"), 1);
+    }
+
     public function testUnmapEntity()
     {
         $entity = new Fixtures\Entity\Simple(
@@ -73,7 +82,8 @@ class MapperTest extends \Tester\TestCase
                 "empty" => null,
                 "storedData" => ["one", "two", "three"],
                 "oneToOne" => ["id" => 3],
-                "readonly" => "readonlyValue"
+                "readonly" => "readonlyValue",
+                "disabledMap" => 1
             ]
         );
 

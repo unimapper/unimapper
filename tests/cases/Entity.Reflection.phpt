@@ -73,6 +73,7 @@ class EntityReflectionTest extends \Tester\TestCase
                 'readonly',
                 'storedData',
                 'enumeration',
+                'disabledMap'
             ),
             array_keys($reflection->getProperties())
         );

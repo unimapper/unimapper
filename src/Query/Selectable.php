@@ -77,9 +77,11 @@ trait Selectable
                 $property = $this->entityReflection->getProperty($name);
                 if ($property->hasOption(Reflection\Property\Option\Assoc::KEY)
                     || $property->hasOption(Reflection\Property\Option\Computed::KEY)
+                    || ($property->hasOption(Reflection\Property\Option\Map::KEY)
+                        && !$property->getOption(Reflection\Property\Option\Map::KEY))
                 ) {
                     throw new Exception\QueryException(
-                        "Associations and computed properties can not be selected!"
+                        "Associations, computed and properties with disabled mapping can not be selected!"
                     );
                 }
 
@@ -99,11 +101,13 @@ trait Selectable
             $selection = [];
             foreach ($this->entityReflection->getProperties() as $property) {
 
-                // Exclude associations & computed properties
+                // Exclude associations & computed properties & disabled mapping
                 if (!$property->hasOption(Reflection\Property\Option\Assoc::KEY)
                     && !$property->hasOption(Reflection\Property\Option\Computed::KEY)
+                    && !($property->hasOption(Reflection\Property\Option\Map::KEY)
+                        && !$property->getOption(Reflection\Property\Option\Map::KEY))
                 ) {
-                    $selection[] = $property->getName(true);
+                    $selection[] = $property->getUnmapped();
                 }
             }
         } else {
@@ -125,7 +129,7 @@ trait Selectable
 
             // Unmap all names
             foreach ($selection as $index => $name) {
-                $selection[$index] = $this->entityReflection->getProperty($name)->getName(true);
+                $selection[$index] = $this->entityReflection->getProperty($name)->getUnmapped();
             }
         }
 

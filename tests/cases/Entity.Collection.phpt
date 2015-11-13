@@ -93,7 +93,7 @@ class EntityCollectionTest extends \Tester\TestCase
 
         $collection[] = new Fixtures\Entity\Simple(["id" => 1]);
         Assert::same(
-            '[{"id":1,"text":null,"empty":null,"url":null,"email":null,"time":null,"date":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"oneToMany":[],"oneToManyRemote":[],"manyToMany":[],"mmFilter":[],"manyToOne":null,"oneToOne":null,"ooFilter":null,"readonly":null,"storedData":null,"enumeration":null,"publicProperty":"defaultValue"}]',
+            '[{"id":1,"text":null,"empty":null,"url":null,"email":null,"time":null,"date":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"oneToMany":[],"oneToManyRemote":[],"manyToMany":[],"mmFilter":[],"manyToOne":null,"oneToOne":null,"ooFilter":null,"readonly":null,"storedData":null,"enumeration":null,"disabledMap":null,"publicProperty":"defaultValue"}]',
             json_encode($collection)
         );
     }

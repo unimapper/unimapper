@@ -51,7 +51,7 @@ class UpdateOne extends \UniMapper\Query
 
         $query = $adapter->createUpdateOne(
             $this->entityReflection->getAdapterResource(),
-            $this->entityReflection->getPrimaryProperty()->getName(true),
+            $this->entityReflection->getPrimaryProperty()->getUnmapped(),
             $mapper->unmapValue(
                 $this->entityReflection->getPrimaryProperty(),
                 $this->primaryValue

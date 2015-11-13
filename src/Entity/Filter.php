@@ -119,11 +119,13 @@ class Filter
 
                     if ($property->hasOption(Assoc::KEY)
                         || $property->hasOption(Computed::KEY)
+                        || ($property->hasOption(Reflection\Property\Option\Map::KEY)
+                            && !$property->getOption(Reflection\Property\Option\Map::KEY))
                         || $property->getType() === Reflection\Property::TYPE_COLLECTION
                         || $property->getType() === Reflection\Property::TYPE_ENTITY
                     ) {
                         throw new Exception\FilterException(
-                            "Filter can not be used with associations, computed, collections and entities!"
+                            "Filter can not be used with associations, computed, collections, entities and disabled mapping!"
                         );
                     }
 

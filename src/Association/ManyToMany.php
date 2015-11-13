@@ -67,7 +67,7 @@ class ManyToMany extends Multi
 
     public function getTargetPrimaryKey()
     {
-        return $this->targetReflection->getPrimaryProperty()->getName(true);
+        return $this->targetReflection->getPrimaryProperty()->getUnmapped();
     }
 
     public function isDominant()
@@ -192,7 +192,7 @@ class ManyToMany extends Multi
                 $targetAdapter->execute(
                     $targetAdapter->createDeleteOne(
                         $this->targetReflection->getAdapterResource(),
-                        $this->targetReflection->getPrimaryProperty()->getName(true),
+                        $this->targetReflection->getPrimaryProperty()->getUnmapped(),
                         $targetPrimary
                     )
                 );
@@ -207,7 +207,7 @@ class ManyToMany extends Multi
                     $targetAdapter->createInsert(
                         $this->targetReflection->getAdapterResource(),
                         $entity->getData(),
-                        $this->targetReflection->getPrimaryProperty()->getName(true)
+                        $this->targetReflection->getPrimaryProperty()->getUnmapped()
                     )
                 );
             }

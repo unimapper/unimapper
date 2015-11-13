@@ -35,6 +35,29 @@ class QuerySelectableTest extends \Tester\TestCase
         $this->createQuery()->associate("id");
     }
 
+    public function testSelect()
+    {
+        Assert::same(["id"], $this->createQuery()->select("id")->selection);
+        Assert::same(["id", "text"], $this->createQuery()->select(["id", "text"])->selection);
+        Assert::same(["id", "text"], $this->createQuery()->select("id", "text")->selection);
+    }
+
+    /**
+     * @throws UniMapper\Exception\QueryException Property 'undefined' is not defined on entity UniMapper\Tests\Fixtures\Entity\Simple!
+     */
+    public function testSelectUndefinedProperty()
+    {
+        $this->createQuery()->select("undefined");
+    }
+
+    /**
+     * @throws UniMapper\Exception\QueryException Associations, computed and properties with disabled mapping can not be selected!
+     */
+    public function testSelectDisabledMapping()
+    {
+        $this->createQuery()->select("disabledMap");
+    }
+
     private function createQuery($entity = "Simple")
     {
         return new Query\Select(

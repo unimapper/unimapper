@@ -47,7 +47,7 @@ class ManyToOne extends Single
 
     public function getTargetPrimaryKey()
     {
-        return $this->targetReflection->getPrimaryProperty()->getName(true);
+        return $this->targetReflection->getPrimaryProperty()->getUnmapped();
     }
 
     public function load(Connection $connection, array $primaryValues)

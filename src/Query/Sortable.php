@@ -2,6 +2,7 @@
 
 namespace UniMapper\Query;
 
+use UniMapper\Entity\Reflection\Property\Option\Map;
 use UniMapper\Exception;
 
 trait Sortable
@@ -22,7 +23,14 @@ trait Sortable
             throw new Exception\QueryException("Order direction must be '" . Select::ASC . "' or '" . Select::DESC . "'!");
         }
 
-        $this->orderBy[$this->entityReflection->getProperty($name)->getName(true)] = $direction;
+        $property = $this->entityReflection->getProperty($name);
+        if ($property->hasOption(Map::KEY) && !$property->getOption(Map::KEY)) {
+            throw new Exception\QueryException(
+                "Order can not be used on properties with disabled mapping!"
+            );
+        }
+
+        $this->orderBy[$this->entityReflection->getProperty($name)->getUnmapped()] = $direction;
         return $this;
     }
 

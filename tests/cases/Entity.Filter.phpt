@@ -289,7 +289,7 @@ class EntityFilterTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections and entities!
+     * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections, entities and disabled mapping!
      */
     public function testValidateWithNotAllowedComputed()
     {
@@ -297,7 +297,7 @@ class EntityFilterTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections and entities!
+     * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections, entities and disabled mapping!
      */
     public function testValidateWithNotAllowedAssociation()
     {
@@ -305,11 +305,19 @@ class EntityFilterTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections and entities!
+     * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections, entities and disabled mapping!
      */
     public function testValidateWithNotAllowedCollection()
     {
         Filter::validate(Reflection::load("Simple"), ["entity" => [Filter::EQUAL => 1]]);
+    }
+
+    /**
+     * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections, entities and disabled mapping!
+     */
+    public function testValidateWithDisabledMapping()
+    {
+        Filter::validate(Reflection::load("Simple"), ["disabledMap" => [Filter::EQUAL => 1]]);
     }
 
     public function testValidateArray()

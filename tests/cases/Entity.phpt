@@ -137,7 +137,7 @@ class EntityTest extends \Tester\TestCase
         $this->entity->entity = new Fixtures\Entity\Nested;
 
         Assert::type("array", $this->entity->toArray());
-        Assert::count(23, $this->entity->toArray());
+        Assert::count(24, $this->entity->toArray());
         Assert::same("test", $this->entity->toArray()["text"]);
         Assert::same("", $this->entity->toArray()["empty"]);
         Assert::same($this->entity->collection, $this->entity->toArray()["collection"]);
@@ -190,6 +190,7 @@ class EntityTest extends \Tester\TestCase
                 'readonly' => NULL,
                 'storedData' => NULL,
                 'enumeration' => NULL,
+                'disabledMap' => NULL,
                 'publicProperty' => 'defaultValue',
             ),
             $this->entity->toArray(true)
@@ -210,7 +211,7 @@ class EntityTest extends \Tester\TestCase
         $this->entity->time = new DateTime("2014-01-01");
         $this->entity->date = new DateTime("2014-01-01");
         Assert::same(
-            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":{"date":"2014-01-01 00:00:00.000000","timezone_type":3,"timezone":"Europe\/Prague"},"date":{"date":"2014-01-01","timezone_type":3,"timezone":"Europe\/Prague"},"year":2014,"ip":null,"mark":null,"entity":null,"collection":[],"oneToMany":[],"oneToManyRemote":[],"manyToMany":[],"mmFilter":[],"manyToOne":null,"oneToOne":null,"ooFilter":null,"readonly":null,"storedData":null,"enumeration":null,"publicProperty":"defaultValue"}',
+            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":{"date":"2014-01-01 00:00:00.000000","timezone_type":3,"timezone":"Europe\/Prague"},"date":{"date":"2014-01-01","timezone_type":3,"timezone":"Europe\/Prague"},"year":2014,"ip":null,"mark":null,"entity":null,"collection":[],"oneToMany":[],"oneToManyRemote":[],"manyToMany":[],"mmFilter":[],"manyToOne":null,"oneToOne":null,"ooFilter":null,"readonly":null,"storedData":null,"enumeration":null,"disabledMap":null,"publicProperty":"defaultValue"}',
             json_encode($this->entity)
         );
     }
@@ -366,6 +367,7 @@ class EntityTest extends \Tester\TestCase
             'readonly',
             'storedData',
             'enumeration',
+            'disabledMap',
             'publicProperty',
         );
 

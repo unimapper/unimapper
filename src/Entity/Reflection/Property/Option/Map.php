@@ -64,6 +64,12 @@ class Map implements Reflection\Property\IOption
         $filterIn = null;
         $filterOut = null;
         $by = null;
+        $disabled = false;
+
+        // Mapping disabled
+        if (strtolower($value) === "false") {
+            $disabled = true;
+        }
 
         // By
         if (array_key_exists(self::KEY . "-by", $parameters)) {
@@ -92,11 +98,28 @@ class Map implements Reflection\Property\IOption
             }
         }
 
+        if ($disabled) {
+            // Mapping disabled
+
+            if ($by || $filterIn || $filterOut) {
+                throw new OptionException(
+                    "Can not configure mapping if option disabled!"
+                );
+            }
+            return false;
+        }
+
         return new self($property, $by, $filterIn, $filterOut);
     }
 
     public static function afterCreate(Reflection\Property $property, $option)
-    {}
+    {
+        if ($property->hasOption(Primary::KEY) && !$option) {
+            throw new OptionException(
+                "Mapping can not be disabled on primary property!"
+            );
+        }
+    }
 
     private static function createCallback($class, $method)
     {

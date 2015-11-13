@@ -42,6 +42,7 @@ Assoc::registerFilter("textLikeFoo", function (Single $assoc) {
  * @property-read string   $readonly
  * @property      array    $storedData  m:map-by(stored_data) m:map-filter(stringToArray|arrayToString)
  * @property      integer  $enumeration m:enum(self::ENUMERATION_*)
+ * @property      int      $disabledMap m:map(false)
  */
 class Simple extends \UniMapper\Entity
 {

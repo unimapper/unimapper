@@ -58,7 +58,7 @@ abstract class Association
 
     public function getPrimaryKey()
     {
-        return $this->sourceReflection->getPrimaryProperty()->getName(true);
+        return $this->sourceReflection->getPrimaryProperty()->getUnmapped();
     }
 
     /**

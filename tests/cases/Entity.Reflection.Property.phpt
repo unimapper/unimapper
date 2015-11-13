@@ -271,6 +271,19 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
         $this->_createReflection('Int', 'name');
     }
 
+    public function testGetName()
+    {
+        Assert::same("id", $this->_createReflection("int", "id")->getName());
+    }
+
+    /**
+     * @throws Exception Mapping is disabled!
+     */
+    public function testGetUnmapped()
+    {
+        Assert::same("id", $this->_createReflection("int", "disabledMap", "m:map(false)")->getUnmapped());
+    }
+
 }
 
 $testCase = new EntityReflectionPropertyTest;
