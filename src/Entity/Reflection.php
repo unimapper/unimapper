@@ -199,13 +199,6 @@ class Reflection
                 );
             }
 
-            if ($property->hasOption(Entity\Reflection\Property\Option\Primary::KEY)
-                && ($property->hasOption(Entity\Reflection\Property\Option\Map::KEY)
-                    && !$property->getOption(Entity\Reflection\Property\Option\Map::KEY))
-            ) {
-                throw new OptionException("Mapping can not be disabled on primary property!");
-            }
-
             $this->properties[$property->getName()] = $property;
         }
     }
