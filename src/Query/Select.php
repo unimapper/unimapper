@@ -208,9 +208,10 @@ class Select extends \UniMapper\Query
 
     protected function createSelection()
     {
+        $selection = [];
+
         if (empty($this->selection)) {
 
-            $selection = [];
             foreach ($this->entityReflection->getProperties() as $property) {
 
                 // Exclude associations & computed properties & disabled mapping
@@ -234,7 +235,7 @@ class Select extends \UniMapper\Query
                     ->getPrimaryProperty()
                     ->getName();
 
-                if (!in_array($primaryName, $selection)) {
+                if (!in_array($primaryName, $selection, true)) {
                     $selection[] = $primaryName;
                 }
             }
