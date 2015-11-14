@@ -32,15 +32,13 @@ class EntityTest extends \Tester\TestCase
                 "year" => "foo", // Skip comuted
                 "readonly" => "foo", // Set readonly
                 "undefined" => "foo", // Skip undefined,
-                "id" => "1", // Convert type automatically,
-                "publicProperty" => "foo" // Set public property
+                "id" => "1", // Convert type automatically
             ]
         );
 
         Assert::null($entity->year);
         Assert::same("foo", $entity->readonly);
         Assert::same(1, $entity->id);
-        Assert::same("foo", $entity->publicProperty);
     }
 
     /**
@@ -78,14 +76,6 @@ class EntityTest extends \Tester\TestCase
         $this->entity->undefined;
     }
 
-    public function testGetPublicProperty()
-    {
-        Assert::same("defaultValue", $this->entity->publicProperty);
-
-        $this->entity->publicProperty = "newValue";
-        Assert::same("newValue", $this->entity->publicProperty);
-    }
-
     /**
      * @throws UniMapper\Exception\InvalidArgumentException Property 'readonly' is read-only!
      */
@@ -97,7 +87,6 @@ class EntityTest extends \Tester\TestCase
     public function testIsset()
     {
         Assert::true(isset($this->entity->id));
-        Assert::true(isset($this->entity->publicProperty));
         Assert::false(isset($this->entity->missing));
     }
 
@@ -137,12 +126,11 @@ class EntityTest extends \Tester\TestCase
         $this->entity->entity = new Fixtures\Entity\Nested;
 
         Assert::type("array", $this->entity->toArray());
-        Assert::count(24, $this->entity->toArray());
+        Assert::count(23, $this->entity->toArray());
         Assert::same("test", $this->entity->toArray()["text"]);
         Assert::same("", $this->entity->toArray()["empty"]);
         Assert::same($this->entity->collection, $this->entity->toArray()["collection"]);
         Assert::same($this->entity->entity, $this->entity->toArray()["entity"]);
-        Assert::same("defaultValue", $this->entity->toArray()["publicProperty"]);
         Assert::same($this->entity->manyToMany, $this->entity->toArray()["manyToMany"]);
     }
 
@@ -168,16 +156,14 @@ class EntityTest extends \Tester\TestCase
                     'id' => NULL,
                     'text' => NULL,
                     'collection' => array(),
-                    'entity' => NULL,
-                    'publicProperty' => 'defaultValue'
+                    'entity' => NULL
                 ),
                 'collection' => array(
                     array(
                         'id' => NULL,
                         'text' => 'foo',
                         'collection' => array(),
-                        'entity' => NULL,
-                        'publicProperty' => 'defaultValue'
+                        'entity' => NULL
                     ),
                 ),
                 'oneToMany' => array(),
@@ -190,8 +176,7 @@ class EntityTest extends \Tester\TestCase
                 'readonly' => NULL,
                 'storedData' => NULL,
                 'enumeration' => NULL,
-                'disabledMap' => NULL,
-                'publicProperty' => 'defaultValue',
+                'disabledMap' => NULL
             ),
             $this->entity->toArray(true)
         );
@@ -211,7 +196,7 @@ class EntityTest extends \Tester\TestCase
         $this->entity->time = new DateTime("2014-01-01");
         $this->entity->date = new DateTime("2014-01-01");
         Assert::same(
-            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":{"date":"2014-01-01 00:00:00.000000","timezone_type":3,"timezone":"Europe\/Prague"},"date":{"date":"2014-01-01","timezone_type":3,"timezone":"Europe\/Prague"},"year":2014,"ip":null,"mark":null,"entity":null,"collection":[],"oneToMany":[],"oneToManyRemote":[],"manyToMany":[],"mmFilter":[],"manyToOne":null,"oneToOne":null,"ooFilter":null,"readonly":null,"storedData":null,"enumeration":null,"disabledMap":null,"publicProperty":"defaultValue"}',
+            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":{"date":"2014-01-01 00:00:00.000000","timezone_type":3,"timezone":"Europe\/Prague"},"date":{"date":"2014-01-01","timezone_type":3,"timezone":"Europe\/Prague"},"year":2014,"ip":null,"mark":null,"entity":null,"collection":[],"oneToMany":[],"oneToManyRemote":[],"manyToMany":[],"mmFilter":[],"manyToOne":null,"oneToOne":null,"ooFilter":null,"readonly":null,"storedData":null,"enumeration":null,"disabledMap":null}',
             json_encode($this->entity)
         );
     }
@@ -231,7 +216,7 @@ class EntityTest extends \Tester\TestCase
 
     public function testSerializable()
     {
-        $serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":102:{a:4:{s:4:"text";s:4:"test";s:2:"id";i:1;s:5:"empty";s:0:"";s:14:"publicProperty";s:12:"defaultValue";}}';
+        $serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":60:{a:3:{s:4:"text";s:4:"test";s:2:"id";i:1;s:5:"empty";s:0:"";}}';
         Assert::same($serialized, serialize($this->entity));
 
         $unserialized = unserialize($serialized);
@@ -244,7 +229,6 @@ class EntityTest extends \Tester\TestCase
     {
         $entityObject = new stdClass;
         $entityObject->text = "foo";
-        $entityObject->publicProperty = "foo";
 
         $this->entity->import(
             [
@@ -252,7 +236,6 @@ class EntityTest extends \Tester\TestCase
                 "text" => 3.0,
                 "collection" => [],
                 "time" => "1999-01-12",
-                "publicProperty" => "foo",
                 "empty" => null,
                 "entity" => $entityObject,
                 "collection" => [$entityObject],
@@ -265,11 +248,8 @@ class EntityTest extends \Tester\TestCase
         Assert::same("3", $this->entity->text);
         Assert::type("UniMapper\Entity\Collection", $this->entity->collection);
         Assert::same("1999-01-12", $this->entity->time->format("Y-m-d"));
-        Assert::same("foo", $this->entity->publicProperty);
         Assert::same(null, $this->entity->empty);
         Assert::same("foo", $this->entity->entity->text);
-        Assert::same("foo", $this->entity->entity->publicProperty);
-        Assert::same("foo", $this->entity->collection[0]->publicProperty);
         Assert::same("foo", $this->entity->collection[0]->text);
         Assert::same(1, count($this->entity->collection));
         Assert::same(1999, $this->entity->year);
@@ -344,40 +324,12 @@ class EntityTest extends \Tester\TestCase
 
     public function testIterate()
     {
-        $expected = array(
-            'id',
-            'text',
-            'empty',
-            'url',
-            'email',
-            'time',
-            'date',
-            'year',
-            'ip',
-            'mark',
-            'entity',
-            'collection',
-            'oneToMany',
-            'oneToManyRemote',
-            'manyToMany',
-            'mmFilter',
-            'manyToOne',
-            'oneToOne',
-            'ooFilter',
-            'readonly',
-            'storedData',
-            'enumeration',
-            'disabledMap',
-            'publicProperty',
-        );
-
         $given = [];
         foreach ($this->entity as $name => $value) {
-           $given[] = $name;
+           $given[$name] = $value;
         }
-        Assert::same($expected, $given);
-        Assert::same('publicProperty', key($this->entity));
-        Assert::same('defaultValue', current($this->entity));
+
+        Assert::same(array('text' => 'test', 'id' => 1, 'empty' => ''), $given);
     }
 
     public function testCallOnCollection()

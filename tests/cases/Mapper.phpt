@@ -37,7 +37,6 @@ class MapperTest extends \Tester\TestCase
 
         Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity);
         Assert::same("john.doe@example.com", $entity->email);
-        Assert::same("defaultValue", $entity->publicProperty);
         Assert::same("http://example.com", $entity->url);
         Assert::same("foo", $entity->readonly);
         Assert::same(["one", "two", "three"], $entity->storedData);
@@ -115,7 +114,6 @@ class MapperTest extends \Tester\TestCase
         Assert::count(1, $collection);
         Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $collection[0]);
         Assert::same("john.doe@example.com", $collection[0]->email);
-        Assert::same("defaultValue", $collection[0]->publicProperty);
         Assert::same("foo", $collection[0]->readonly);
     }
 

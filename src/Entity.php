@@ -6,7 +6,7 @@ use UniMapper\Entity\Collection;
 use UniMapper\Entity\Reflection;
 use UniMapper\Entity\Reflection\Property\Option\Computed;
 
-abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
+abstract class Entity implements \JsonSerializable, \Serializable, \IteratorAggregate
 {
 
     public static $dateFormat = "Y-m-d";
@@ -18,9 +18,6 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
 
     /** @var array $data Stored variables */
     private $data = [];
-
-    /** @var string $iteration List of property names */
-    private $iteration;
 
     /** @var \UniMapper\Validator $validator */
     private $validator;
@@ -39,8 +36,6 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         if ($values) {
             $this->_setProperties($values, true, true, true, true);
         }
-
-        $this->_resetIterator();
     }
 
     private function _setProperties(
@@ -60,12 +55,6 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
         $reflection = $this::getReflection();
 
         foreach ($values as $name => $value) {
-
-            // Public
-            if (in_array($name, $reflection->getPublicProperties())) {
-                $this->{$name} = $value;
-                continue;
-            }
 
             // Undefined
             if (!$reflection->hasProperty($name)) {
@@ -120,20 +109,6 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             // Set value
             $this->data[$name] = $value;
         }
-    }
-
-    /**
-     * Reset iterator
-     */
-    private function _resetIterator()
-    {
-        $reflection = $this::getReflection();
-
-        $this->iteration = array_merge(
-            array_keys($reflection->getProperties()),
-            $reflection->getPublicProperties()
-        );
-        $this->rewind();
     }
 
     private function _validateChangeType()
@@ -197,14 +172,11 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
      */
     public function serialize()
     {
-        return serialize(
-            array_merge($this->data, $this->_getPublicPropertyValues())
-        );
+        return serialize($this->data);
     }
 
     public function unserialize($data)
     {
-        $this->_resetIterator();
         foreach (unserialize($data) as $name => $value) {
             $this->{$name} = $value;
         }
@@ -436,16 +408,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             }
         }
 
-        return array_merge($output, $this->_getPublicPropertyValues());
-    }
-
-    private function _getPublicPropertyValues()
-    {
-        $result = [];
-        foreach ($this::getReflection()->getPublicProperties() as $name) {
-            $result[$name] = $this->{$name};
-        }
-        return $result;
+        return $output;
     }
 
     /**
@@ -471,32 +434,24 @@ abstract class Entity implements \JsonSerializable, \Serializable, \Iterator
             }
         }
 
-        return array_merge($output, $this->_getPublicPropertyValues());
+        return $output;
     }
 
-    public function rewind()
+    public function seek($position)
     {
-        reset($this->iteration);
+        foreach ($this->data as $name => $value) {
+            if ($name === $position) {
+                return;
+            }
+            $this->next();
+        }
+        throw new \OutOfBoundsException("Invalid seek position " . $position . "!");
     }
 
-    public function current()
-    {
-        return $this->{$this->key()};
-    }
 
-    public function key()
+    public function getIterator()
     {
-        return current($this->iteration);
-    }
-
-    public function next()
-    {
-        next($this->iteration);
-    }
-
-    public function valid()
-    {
-        return key($this->iteration) !== null;
+        return new \ArrayIterator($this->data);
     }
 
 }

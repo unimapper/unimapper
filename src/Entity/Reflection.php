@@ -18,9 +18,6 @@ class Reflection
     /** @var array */
     private $properties = [];
 
-    /** @var array $publicProperties List of public property names */
-    private $publicProperties = [];
-
     /** @var string */
     private $className;
 
@@ -48,25 +45,20 @@ class Reflection
             );
         }
 
-        $reflection = new \ReflectionClass($this->className);
-
-        $this->fileName = $reflection->getFileName();
-
-        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC)
-            as $property
-        ) {
-            if ($property->isStatic()) {
-                continue;
-            }
-            $this->publicProperties[] =  $property->getName();
-        }
-
         // Register reflection
         self::load($this);
 
-        $docComment = $reflection->getDocComment();
+        $reflectionClass = new \ReflectionClass($this->className);
 
-        // Parse adapter
+        $this->fileName = $reflectionClass->getFileName();
+
+        $docComment = $reflectionClass->getDocComment();
+        $this->_parseAdapter($docComment);
+        $this->_parseProperties($docComment, $reflectionClass);
+    }
+
+    private function _parseAdapter($docComment)
+    {
         try {
 
             $adapter = Reflection\Annotation::parseAdapter($docComment);
@@ -80,9 +72,6 @@ class Reflection
                 $e->getDefinition()
             );
         }
-
-        // Parse properties
-        $this->_parseProperties($docComment);
     }
 
     /**
@@ -157,11 +146,12 @@ class Reflection
     /**
      * Parse properties from annotations
      *
-     * @param string $docComment
+     * @param string           $docComment
+     * @param \ReflectionClass $reflectionClass
      *
      * @throws Exception\EntityException
      */
-    private function _parseProperties($docComment)
+    private function _parseProperties($docComment, \ReflectionClass $reflectionClass)
     {
         $properties = [];
         foreach (Reflection\Annotation::parseProperties($docComment) as $definition) {
@@ -190,10 +180,12 @@ class Reflection
                     $definition[0]
                 );
             }
-            if (in_array($property->getName(), $this->publicProperties)) {
+
+            // Prevent class property duplications
+            if ($reflectionClass->hasProperty($property->getName())) {
                 throw new Exception\EntityException(
-                    "Property '" . $property->getName()
-                    . "' already defined as public property!",
+                    "Property '" . $property->getName() . "' already defined as"
+                    . " public property!",
                     $this->className,
                     $definition[0]
                 );
@@ -245,11 +237,6 @@ class Reflection
     public function getProperties()
     {
         return $this->properties;
-    }
-
-    public function getPublicProperties()
-    {
-        return $this->publicProperties;
     }
 
     /**
