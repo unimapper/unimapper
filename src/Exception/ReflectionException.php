@@ -2,7 +2,7 @@
 
 namespace UniMapper\Exception;
 
-class EntityException extends \UniMapper\Exception
+class ReflectionException extends \UniMapper\Exception
 {
 
     /** @var string */

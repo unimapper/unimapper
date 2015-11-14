@@ -32,7 +32,7 @@ class EntityReflectionTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\EntityException Property 'id' already defined as public property!
+     * @throws UniMapper\Exception\ReflectionException Property 'id' already defined as public property!
      */
     public function testDuplicatePublicProperty()
     {

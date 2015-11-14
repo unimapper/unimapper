@@ -48,42 +48,42 @@ class EntityReflectionPropertyOptionPrimaryTest extends \Tester\TestCase
             function() {
                 Entity\Reflection::load("PrimaryDate")->getProperty("id");
             },
-            "UniMapper\Exception\EntityException",
+            "UniMapper\Exception\ReflectionException",
             "Primary property can be only double,integer,string but '" . Entity\Reflection\Property::TYPE_DATE . "' given!"
         );
         Assert::exception(
             function() {
                 Entity\Reflection::load("PrimaryDateTime")->getProperty("id");
             },
-            "UniMapper\Exception\EntityException",
+            "UniMapper\Exception\ReflectionException",
             "Primary property can be only double,integer,string but '" . Entity\Reflection\Property::TYPE_DATETIME . "' given!"
         );
         Assert::exception(
             function() {
                 Entity\Reflection::load("PrimaryEntity")->getProperty("id");
             },
-            "UniMapper\Exception\EntityException",
+            "UniMapper\Exception\ReflectionException",
             "Primary property can be only double,integer,string but '" . Entity\Reflection\Property::TYPE_ENTITY . "' given!"
         );
         Assert::exception(
             function() {
                 Entity\Reflection::load("PrimaryCollection")->getProperty("id");
             },
-            "UniMapper\Exception\EntityException",
+            "UniMapper\Exception\ReflectionException",
             "Primary property can be only double,integer,string but '" . Entity\Reflection\Property::TYPE_COLLECTION . "' given!"
         );
         Assert::exception(
             function() {
                 Entity\Reflection::load("PrimaryBoolean")->getProperty("id");
             },
-            "UniMapper\Exception\EntityException",
+            "UniMapper\Exception\ReflectionException",
             "Primary property can be only double,integer,string but '" . Entity\Reflection\Property::TYPE_BOOLEAN . "' given!"
         );
         Assert::exception(
             function() {
                 Entity\Reflection::load("PrimaryArray")->getProperty("id");
             },
-            "UniMapper\Exception\EntityException",
+            "UniMapper\Exception\ReflectionException",
             "Primary property can be only double,integer,string but '" . Entity\Reflection\Property::TYPE_ARRAY . "' given!"
         );
     }

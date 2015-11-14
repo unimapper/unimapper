@@ -63,7 +63,7 @@ class EntityReflectionPropertyOptionEnumTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\EntityException Invalid enumeration definition!
+     * @throws UniMapper\Exception\ReflectionException Invalid enumeration definition!
      */
     public function testCreateInvalidDefinition()
     {
@@ -71,7 +71,7 @@ class EntityReflectionPropertyOptionEnumTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\EntityException Enumeration class Undefined not found!
+     * @throws UniMapper\Exception\ReflectionException Enumeration class Undefined not found!
      */
     public function testCreateClassNotFound()
     {

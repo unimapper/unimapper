@@ -89,7 +89,7 @@ class EntityReflectionPropertyOptionMapTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\EntityException You must define input/output filter!
+     * @throws UniMapper\Exception\ReflectionException You must define input/output filter!
      */
     public function testCreateWithEmptyFilter()
     {
@@ -97,7 +97,7 @@ class EntityReflectionPropertyOptionMapTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\EntityException Invalid input filter definition!
+     * @throws UniMapper\Exception\ReflectionException Invalid input filter definition!
      */
     public function testCreateUndefinedInputFilterMethod()
     {
@@ -105,7 +105,7 @@ class EntityReflectionPropertyOptionMapTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\EntityException Invalid output filter definition!
+     * @throws UniMapper\Exception\ReflectionException Invalid output filter definition!
      */
     public function testCreateUndefinedOutputFilterMethod()
     {
@@ -120,7 +120,7 @@ class EntityReflectionPropertyOptionMapTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\EntityException Can not configure mapping if option disabled!
+     * @throws UniMapper\Exception\ReflectionException Can not configure mapping if option disabled!
      */
     public function testCreateDisabledButConfigured()
     {
@@ -139,7 +139,7 @@ class EntityReflectionPropertyOptionMapTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\EntityException Mapping can not be disabled on primary property!
+     * @throws UniMapper\Exception\ReflectionException Mapping can not be disabled on primary property!
      */
     public function testCreateDisabledWithPrimary()
     {

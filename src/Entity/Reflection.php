@@ -31,7 +31,7 @@ class Reflection
      * @param string $class Entity class name
      *
      * @throws Exception\InvalidArgumentException
-     * @throws Exception\EntityException
+     * @throws Exception\ReflectionException
      */
     public function __construct($class)
     {
@@ -66,7 +66,7 @@ class Reflection
                 list($this->adapterName, $this->adapterResource) = $adapter;
             }
         } catch (Exception\AnnotationException $e) {
-            throw new Exception\EntityException(
+            throw new Exception\ReflectionException(
                 $e->getMessage(),
                 $this->className,
                 $e->getDefinition()
@@ -149,7 +149,7 @@ class Reflection
      * @param string           $docComment
      * @param \ReflectionClass $reflectionClass
      *
-     * @throws Exception\EntityException
+     * @throws Exception\ReflectionException
      */
     private function _parseProperties($docComment, \ReflectionClass $reflectionClass)
     {
@@ -165,7 +165,7 @@ class Reflection
                     $definition[4]
                 );
             } catch (Exception\PropertyException $e) {
-                throw new Exception\EntityException(
+                throw new Exception\ReflectionException(
                     $e->getMessage(),
                     $this->className,
                     $definition[0]
@@ -174,7 +174,7 @@ class Reflection
 
             // Prevent duplications
             if (isset($properties[$property->getName()])) {
-                throw new Exception\EntityException(
+                throw new Exception\ReflectionException(
                     "Duplicate property with name '" . $property->getName() . "'!",
                     $this->className,
                     $definition[0]
@@ -183,7 +183,7 @@ class Reflection
 
             // Prevent class property duplications
             if ($reflectionClass->hasProperty($property->getName())) {
-                throw new Exception\EntityException(
+                throw new Exception\ReflectionException(
                     "Property '" . $property->getName() . "' already defined as"
                     . " public property!",
                     $this->className,
