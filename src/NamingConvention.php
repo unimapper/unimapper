@@ -12,8 +12,8 @@ class NamingConvention
 
     /** @var string */
     private static $masks = [
-        self::ENTITY_MASK => "Model\Entity\*",
-        self::REPOSITORY_MASK => "Model\Repository\*Repository"
+        self::ENTITY_MASK => "*",
+        self::REPOSITORY_MASK => "*Repository"
     ];
 
     /**
