@@ -7,10 +7,10 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class QueryBuilderTest extends \Tester\TestCase
+class QueryBuilderTest extends TestCase
 {
 
-    private function createBuilder($entity = "Simple")
+    private function createBuilder($entity = "Entity")
     {
         return new UniMapper\QueryBuilder($entity);
     }
@@ -52,8 +52,8 @@ class QueryBuilderTest extends \Tester\TestCase
 
     public function testCustomQuery()
     {
-        \UniMapper\QueryBuilder::registerQuery("UniMapper\Tests\Fixtures\Query\Custom");
-        Assert::type("UniMapper\Tests\Fixtures\Query\Custom", $this->createBuilder()->custom());
+        \UniMapper\QueryBuilder::registerQuery("Custom");
+        Assert::type("Custom", $this->createBuilder()->custom());
     }
 
     /**
@@ -64,6 +64,21 @@ class QueryBuilderTest extends \Tester\TestCase
         $this->createBuilder()->unknown();
     }
 
+}
+
+/**
+ * @adapter Foo
+ *
+ * @property int $id m:primary
+ */
+class Entity extends \UniMapper\Entity {}
+
+class Custom extends \UniMapper\Query
+{
+    protected function onExecute(\UniMapper\Connection $connection)
+    {
+        return "foo";
+    }
 }
 
 $testCase = new QueryBuilderTest;

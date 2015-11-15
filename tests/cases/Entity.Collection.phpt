@@ -1,104 +1,141 @@
 <?php
 
 use Tester\Assert;
-use UniMapper\Tests\Fixtures;
-use UniMapper\Entity;
+use UniMapper\Entity\Collection;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class EntityCollectionTest extends \Tester\TestCase
+class EntityCollectionTest extends TestCase
 {
 
-    public function testCreateCollection()
+    public function testConstruct()
     {
-        $entity = new Fixtures\Entity\Simple(["text" => "test"]);
-
-        $collection = new Entity\Collection("Simple");
-
-        $collection[] = $entity;
-        Assert::same("test", $collection[0]->text);
-
-        $entity->text = "foo";
-        $collection[] = $entity;
-
-        foreach ($collection as $entity) {
-            Assert::type(get_class($entity), $entity);
-            Assert::same("foo", $entity->text);
-        }
+        $collection = new Collection("Foo", [["id" => 1]]);
+        Assert::same(1, count($collection));
+        Assert::same(1, $collection[0]->id);
     }
 
     /**
      * @throws UniMapper\Exception\InvalidArgumentException Values must be traversable data!
      */
-    public function testValuesNotTraversable()
+    public function testConstructValuesNotTraversable()
     {
-        new Entity\Collection("Simple", "foo");
+        new Collection("Foo", "foo");
     }
 
     /**
-     * @throws UniMapper\Exception\InvalidArgumentException Expected instance of entity UniMapper\Tests\Fixtures\Entity\Simple!
+     * @throws UniMapper\Exception\InvalidArgumentException Expected instance of entity Foo!
      */
-    public function testInvalidEntity()
+    public function testConstructInvalidEntity()
     {
-        new Entity\Collection("Simple", [new Fixtures\Entity\Remote]);
+        new Collection("Foo", [new Bar]);
     }
 
     public function testAdd()
     {
-        $entity = new Fixtures\Entity\Simple(["id" => 1]);
+        $entity = new Foo(["id" => 1]);
 
-        $collection = new Entity\Collection("Simple");
+        $collection = new Collection("Foo");
         $collection->add($entity);
 
-        Assert::same([$entity], $collection->getChanges()[Entity::CHANGE_ADD]);
+        Assert::same([$entity], $collection->getChanges()[Foo::CHANGE_ADD]);
     }
 
     public function testAttach()
     {
-        $entity = new Fixtures\Entity\Simple(["id" => 1]);
+        $entity = new Foo(["id" => 1]);
 
-        $collection = new Entity\Collection("Simple");
+        $collection = new Collection("Foo");
         $collection->attach($entity);
 
-        Assert::same([1], $collection->getChanges()[Entity::CHANGE_ATTACH]);
+        Assert::same([1], $collection->getChanges()[Foo::CHANGE_ATTACH]);
     }
 
     public function testDetach()
     {
-        $entity = new Fixtures\Entity\Simple(["id" => 1]);
+        $entity = new Foo(["id" => 1]);
 
-        $collection = new Entity\Collection("Simple");
+        $collection = new Collection("Foo");
         $collection->detach($entity);
 
-        Assert::same([1], $collection->getChanges()[Entity::CHANGE_DETACH]);
+        Assert::same([1], $collection->getChanges()[Foo::CHANGE_DETACH]);
     }
 
     public function testRemove()
     {
-        $entity = new Fixtures\Entity\Simple(["id" => 1]);
+        $entity = new Foo(["id" => 1]);
 
-        $collection = new Entity\Collection("Simple");
+        $collection = new Collection("Foo");
         $collection->remove($entity);
 
-        Assert::same([1], $collection->getChanges()[Entity::CHANGE_REMOVE]);
+        Assert::same([1], $collection->getChanges()[Foo::CHANGE_REMOVE]);
     }
 
     public function testJsonSerialize()
     {
-        $collection = new Entity\Collection("Simple");
-        Assert::same("[]", json_encode($collection));
+        $collection = new Collection("Foo");
+        $collection[] = new Foo(["id" => 1]);
+        Assert::same('[{"id":1,"entity":null,"collection":[]}]', json_encode($collection));
+    }
 
-        $collection[] = new Fixtures\Entity\Simple(["id" => 1]);
+    public function testGetIterator()
+    {
+        $foo = new Foo(["id" => 1]);
+        foreach (new Collection("Foo", [$foo]) as $index => $entity) {
+
+            Assert::same(0, $index);
+            Assert::same($foo, $entity);
+        }
+    }
+
+    public function testGetByPrimary()
+    {
+        $entity = new Foo(["id" => 1]);
+        $collection = new Collection("Foo", [$entity]);
+        Assert::same($entity, $collection->getByPrimary(1));
+    }
+
+    public function testToArray()
+    {
+        $barEntity = new Bar;
+        $barCollection = new Collection("Bar");
+        $collection = new Collection("Foo", [["collection" => $barCollection, "entity" => $barEntity]]);
+
         Assert::same(
-            '[{"id":1,"text":null,"empty":null,"url":null,"email":null,"time":null,"date":null,"year":null,"ip":null,"mark":null,"entity":null,"collection":[],"oneToMany":[],"oneToManyRemote":[],"manyToMany":[],"mmFilter":[],"manyToOne":null,"oneToOne":null,"ooFilter":null,"readonly":null,"storedData":null,"enumeration":null,"disabledMap":null}]',
-            json_encode($collection)
+            [
+                [
+                    "id" => null,
+                    "entity" => $barEntity,
+                    "collection" => $barCollection
+                ]
+            ],
+            $collection->toArray()
+        );
+        Assert::same(
+            [
+                [
+                    "id" => null,
+                    "entity" => [],
+                    "collection" => []
+                ]
+            ],
+            $collection->toArray(true)
         );
     }
 
 }
+
+/**
+ * @property int   $id         m:primary
+ * @property Bar   $entity
+ * @property Bar[] $collection
+ */
+class Foo extends \UniMapper\Entity {}
+
+class Bar extends \UniMapper\Entity {}
 
 $testCase = new EntityCollectionTest;
 $testCase->run();

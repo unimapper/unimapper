@@ -8,15 +8,15 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class NamingConventionTest extends \Tester\TestCase
+class NamingConventionTest extends TestCase
 {
 
     public function testSetMask()
     {
         UNC::setMask("*", UNC::ENTITY_MASK);
-        UNC::setMask("UniMapper\Tests\Fixtures\Entity\*", UNC::ENTITY_MASK);
-        UNC::setMask("UniMapper\Tests\Fixtures\Entity\*Entity", UNC::ENTITY_MASK);
-        UNC::setMask("UniMapper\Tests\Fixtures\Entity\Entity*", UNC::ENTITY_MASK);
+        UNC::setMask("Tests\*", UNC::ENTITY_MASK);
+        UNC::setMask("Tests\*Entity", UNC::ENTITY_MASK);
+        UNC::setMask("Tests\Entity*", UNC::ENTITY_MASK);
     }
 
     /**
@@ -28,25 +28,25 @@ class NamingConventionTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\InvalidArgumentException Invalid mask 'UniMapper\*\Fixtures\Entity\*'!
+     * @throws UniMapper\Exception\InvalidArgumentException Invalid mask 'Tests\*\Entity\*'!
      */
     public function testSetMaskInvalidMultipleReplacementChars()
     {
-        UNC::setMask("UniMapper\*\Fixtures\Entity\*", UNC::ENTITY_MASK);
+        UNC::setMask("Tests\*\Entity\*", UNC::ENTITY_MASK);
     }
 
     /**
-     * @throws UniMapper\Exception\InvalidArgumentException Invalid mask 'UniMapper\Tests\Fixtures\*\Entity'!
+     * @throws UniMapper\Exception\InvalidArgumentException Invalid mask 'Tests\*\Entity'!
      */
     public function testSetMaskInvalidWrongReplacementCharPosition()
     {
-        UNC::setMask("UniMapper\Tests\Fixtures\*\Entity", UNC::ENTITY_MASK);
+        UNC::setMask("Tests\*\Entity", UNC::ENTITY_MASK);
     }
 
     public function testNameToClass()
     {
-        Assert::same("UniMapper\Tests\Fixtures\Entity\Simple", UNC::nameToClass("Simple", UNC::ENTITY_MASK));
-        Assert::same("UniMapper\Tests\Fixtures\Repository\SimpleRepository", UNC::nameToClass("Simple", UNC::REPOSITORY_MASK));
+        Assert::same("Foo", UNC::nameToClass("Foo", UNC::ENTITY_MASK));
+        Assert::same("FooRepository", UNC::nameToClass("Foo", UNC::REPOSITORY_MASK));
     }
 
     /**
@@ -54,21 +54,21 @@ class NamingConventionTest extends \Tester\TestCase
      */
     public function testNameToClassInvalidMask()
     {
-        UNC::nameToClass("Simple", "foo");
+        UNC::nameToClass("Foo", "foo");
     }
 
     public function testClassToName()
     {
-        Assert::same("Simple", UNC::classToName("UniMapper\Tests\Fixtures\Entity\Simple", UNC::ENTITY_MASK));
-        Assert::same("Simple", UNC::classToName("UniMapper\Tests\Fixtures\Repository\SimpleRepository", UNC::REPOSITORY_MASK));
+        Assert::same("Foo", UNC::classToName("Foo", UNC::ENTITY_MASK));
+        Assert::same("Foo", UNC::classToName("FooRepository", UNC::REPOSITORY_MASK));
     }
 
     /**
-     * @throws UniMapper\Exception\InvalidArgumentException Class 'foo' not found!
+     * @throws UniMapper\Exception\InvalidArgumentException Class 'undefined' not found!
      */
     public function testClassToNameClassNotFound()
     {
-        UNC::classToName("foo", UNC::ENTITY_MASK);
+        UNC::classToName("undefined", UNC::ENTITY_MASK);
     }
 
     /**
@@ -76,13 +76,13 @@ class NamingConventionTest extends \Tester\TestCase
      */
     public function testClassToNameInvalidMask()
     {
-        UNC::classToName("UniMapper\Tests\Fixtures\Entity\Simple", "foo");
+        UNC::classToName("Foo", "foo");
     }
 
     public function testGetMask()
     {
-        Assert::same("UniMapper\Tests\Fixtures\Entity\*", UNC::getMask(UNC::ENTITY_MASK));
-        Assert::same("UniMapper\Tests\Fixtures\Repository\*Repository", UNC::getMask(UNC::REPOSITORY_MASK));
+        Assert::same("*", UNC::getMask(UNC::ENTITY_MASK));
+        Assert::same("*Repository", UNC::getMask(UNC::REPOSITORY_MASK));
     }
 
     /**
@@ -94,6 +94,9 @@ class NamingConventionTest extends \Tester\TestCase
     }
 
 }
+
+class Foo extends \UniMapper\Entity {}
+class FooRepository extends \UniMapper\Repository {}
 
 $testCase = new NamingConventionTest;
 $testCase->run();

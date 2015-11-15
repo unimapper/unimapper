@@ -9,18 +9,32 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class QuerySelectableTest extends \Tester\TestCase
+class QuerySelectableTest extends TestCase
 {
 
     public function testAssociate()
     {
-        Assert::same(["manyToMany"], array_keys($this->createQuery()->associate("manyToMany")->associations["remote"]));
-        Assert::same(["manyToMany", "manyToOne"], array_keys($this->createQuery()->associate(["manyToMany", "manyToOne"])->associations["remote"]));
-        Assert::same(["manyToMany", "manyToOne"], array_keys($this->createQuery()->associate("manyToMany", "manyToOne")->associations["remote"]));
+        Assert::same(
+            [
+                "local" => [
+                    "assoc" => Foo::getReflection()
+                        ->getProperty("assoc")
+                        ->getOption(Reflection\Property\Option\Assoc::KEY)
+                ],
+                "remote" => [
+                    "assocRemote" => Foo::getReflection()
+                        ->getProperty("assocRemote")
+                        ->getOption(Reflection\Property\Option\Assoc::KEY)
+                ]
+            ],
+            $this->createQuery()
+                ->associate("assoc", "assocRemote")
+                ->associations
+        );
     }
 
     /**
-     * @throws UniMapper\Exception\QueryException Property 'undefined' is not defined on entity UniMapper\Tests\Fixtures\Entity\Simple!
+     * @throws UniMapper\Exception\QueryException Property 'undefined' is not defined on entity Foo!
      */
     public function testAssociateUndefinedProperty()
     {
@@ -28,7 +42,7 @@ class QuerySelectableTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\QueryException Property 'id' is not defined as association on entity UniMapper\Tests\Fixtures\Entity\Simple!
+     * @throws UniMapper\Exception\QueryException Property 'id' is not defined as association on entity Foo!
      */
     public function testAssociateNonAssociation()
     {
@@ -38,12 +52,12 @@ class QuerySelectableTest extends \Tester\TestCase
     public function testSelect()
     {
         Assert::same(["id"], $this->createQuery()->select("id")->selection);
-        Assert::same(["id", "text"], $this->createQuery()->select(["id", "text"])->selection);
-        Assert::same(["id", "text"], $this->createQuery()->select("id", "text")->selection);
+        Assert::same(["id", "foo"], $this->createQuery()->select(["id", "foo"])->selection);
+        Assert::same(["id", "foo"], $this->createQuery()->select("id", "foo")->selection);
     }
 
     /**
-     * @throws UniMapper\Exception\QueryException Property 'undefined' is not defined on entity UniMapper\Tests\Fixtures\Entity\Simple!
+     * @throws UniMapper\Exception\QueryException Property 'undefined' is not defined on entity Foo!
      */
     public function testSelectUndefinedProperty()
     {
@@ -58,14 +72,30 @@ class QuerySelectableTest extends \Tester\TestCase
         $this->createQuery()->select("disabledMap");
     }
 
-    private function createQuery($entity = "Simple")
+    private function createQuery()
     {
-        return new Query\Select(
-            new Reflection("UniMapper\Tests\Fixtures\Entity\\" . $entity)
-        );
+        return Foo::query()->select();
     }
 
 }
+
+/**
+ * @adapter FooAdapter(fooResource)
+ *
+ * @property int    $id          m:primary
+ * @property string $foo
+ * @property Foo[]  $assoc       m:assoc(1:1) m:assoc-by(key)
+ * @property Bar[]  $assocRemote m:assoc(1:1) m:assoc-by(key)
+ * @property string $disabledMap m:map(false)
+ */
+class Foo extends \UniMapper\Entity {}
+
+/**
+ * @adapter BarAdapter(barResource)
+ *
+ * @property int $id m:primary m:map-by(barId)
+ */
+class Bar extends \UniMapper\Entity {}
 
 $testCase = new QuerySelectableTest;
 $testCase->run();

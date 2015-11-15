@@ -6,28 +6,10 @@ use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
-UNC::setMask("*", UNC::ENTITY_MASK);
-
-/** @property int $id m:enum(self::ENUMERATION_) */
-class InvalidDefinition extends Entity {}
-
-/** @property int $id m:enum(Undefined::TYPE_*) */
-class ClassNotFound extends Entity {}
-
-/**
- * @property int $self  m:enum(self::TYPE_*)
- * @property int $class m:enum(Enum::TYPE_*)
- */
-class Enum extends Entity
-{
-    const TYPE_ONE = 1;
-    const TYPE_TWO = 2;
-}
-
 /**
  * @testCase
  */
-class EntityReflectionPropertyOptionEnumTest extends \Tester\TestCase
+class EntityReflectionPropertyOptionEnumTest extends TestCase
 {
 
     public function testCreateWithSelfClass()
@@ -78,6 +60,22 @@ class EntityReflectionPropertyOptionEnumTest extends \Tester\TestCase
         Entity\Reflection::load("ClassNotFound");
     }
 
+}
+
+/** @property int $id m:enum(self::ENUMERATION_) */
+class InvalidDefinition extends Entity {}
+
+/** @property int $id m:enum(Undefined::TYPE_*) */
+class ClassNotFound extends Entity {}
+
+/**
+ * @property int $self  m:enum(self::TYPE_*)
+ * @property int $class m:enum(Enum::TYPE_*)
+ */
+class Enum extends Entity
+{
+    const TYPE_ONE = 1;
+    const TYPE_TWO = 2;
 }
 
 $testCase = new EntityReflectionPropertyOptionEnumTest;

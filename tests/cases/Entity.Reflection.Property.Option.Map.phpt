@@ -6,55 +6,10 @@ use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
-UNC::setMask("*", UNC::ENTITY_MASK);
-
-/**
- * @property int   $id         m:map-by(foo)
- * @property array $map        m:map-by(unmapped_id) m:map-filter(stringToArray|arrayToString)
- * @property array $fullFilter m:map-filter(Map::stringToArray|Map::arrayToString)
- */
-class Map extends Entity
-{
-    public static function stringToArray($value)
-    {
-        return explode(',', $value);
-    }
-
-    public static function arrayToString($value)
-    {
-        return implode(',', $value);
-    }
-}
-
-/** @property array $map m:map-filter() */
-class EmptyFilter extends Entity {}
-
-/** @property array $map m:map-filter(UndefinedInputFilterMethod|Map::arrayToString) */
-class UndefinedInputFilterMethod extends Entity {}
-
-/** @property array $map m:map-filter(Map::stringToArray|UndefinedOutputFilterMethod) */
-class UndefinedOutputFilterMethod extends Entity {}
-
-/**
- * @property int    $id
- * @property string $disabled m:map(false)
- */
-class Disabled extends Entity {}
-
-/**
- * @property string $disabled m:map(false) m:map-by(foo)
- */
-class DisabledButConfigured extends Entity {}
-
-/**
- * @property int $id m:primary m:map(false)
- */
-class DisabledPrimary extends Entity {}
-
 /**
  * @testCase
  */
-class EntityReflectionPropertyOptionMapTest extends \Tester\TestCase
+class EntityReflectionPropertyOptionMapTest extends TestCase
 {
 
     public function testCreateWithMapBy()
@@ -147,6 +102,49 @@ class EntityReflectionPropertyOptionMapTest extends \Tester\TestCase
     }
 
 }
+
+/**
+ * @property int   $id         m:map-by(foo)
+ * @property array $map        m:map-by(unmapped_id) m:map-filter(stringToArray|arrayToString)
+ * @property array $fullFilter m:map-filter(Map::stringToArray|Map::arrayToString)
+ */
+class Map extends Entity
+{
+    public static function stringToArray($value)
+    {
+        return explode(',', $value);
+    }
+
+    public static function arrayToString($value)
+    {
+        return implode(',', $value);
+    }
+}
+
+/** @property array $map m:map-filter() */
+class EmptyFilter extends Entity {}
+
+/** @property array $map m:map-filter(UndefinedInputFilterMethod|Map::arrayToString) */
+class UndefinedInputFilterMethod extends Entity {}
+
+/** @property array $map m:map-filter(Map::stringToArray|UndefinedOutputFilterMethod) */
+class UndefinedOutputFilterMethod extends Entity {}
+
+/**
+ * @property int    $id
+ * @property string $disabled m:map(false)
+ */
+class Disabled extends Entity {}
+
+/**
+ * @property string $disabled m:map(false) m:map-by(foo)
+ */
+class DisabledButConfigured extends Entity {}
+
+/**
+ * @property int $id m:primary m:map(false)
+ */
+class DisabledPrimary extends Entity {}
 
 $testCase = new EntityReflectionPropertyOptionMapTest;
 $testCase->run();

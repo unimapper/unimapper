@@ -1,7 +1,6 @@
 <?php
 
 use Tester\Assert;
-use UniMapper\Tests\Fixtures;
 use UniMapper\NamingConvention as UNC;
 
 require __DIR__ . '/../bootstrap.php';
@@ -9,7 +8,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class RepositoryTest extends \Tester\TestCase
+class RepositoryTest extends TestCase
 {
 
     /** @var \UniMapper\Repository $repository */
@@ -21,7 +20,7 @@ class RepositoryTest extends \Tester\TestCase
     public function setUp()
     {
         $this->adapterMock = Mockery::mock("UniMapper\Adapter");
-        $this->repository = $this->createRepository("Simple", ["FooAdapter" => $this->adapterMock]);
+        $this->repository = $this->createRepository("Entity", ["FooAdapter" => $this->adapterMock]);
     }
 
     private function createRepository($name, array $adapters = [])
@@ -37,34 +36,35 @@ class RepositoryTest extends \Tester\TestCase
 
     public function testGetName()
     {
-        Assert::same("Simple", $this->repository->getName());
+        Assert::same("Entity", $this->repository->getName());
     }
 
     public function testGetEntityName()
     {
-        Assert::same("Simple", $this->repository->getEntityName());
+        Assert::same("Entity", $this->repository->getEntityName());
     }
 
     public function testSaveUpdate()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $this->adapterMock->shouldReceive("createUpdateOne")
             ->once()
-            ->with("simple_resource", "simplePrimaryId", 2, ["text" => "foo"])
+            ->with("resource", "id", 1, ["foo" => "bar", "entity" => [], "collection" => [[]]])
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->once()
             ->with($adapterQueryMock)
             ->andReturn(true);
 
-        $entity = new Fixtures\Entity\Simple(["id" => 2, "text" => "foo"]);
-        $entity->manyToMany[] = new Fixtures\Entity\Remote(new \UniMapper\Entity\Reflection("UniMapper\Tests\Fixtures\Entity\Remote")); // Associations are ignored
+        $entity = new Entity;
+        $entity->id = 1;
+        $entity->foo = "bar";
+        $entity->entity = new Entity;
+        $entity->collection[] = new Entity;
+        $entity->assoc[] = new Entity;
 
-        $this->repository->save($entity);
-
-        Assert::same(2, $entity->id);
+        Assert::same($entity, $this->repository->save($entity));
     }
 
     /**
@@ -73,41 +73,42 @@ class RepositoryTest extends \Tester\TestCase
     public function testSaveUpdateFailed()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $this->adapterMock->shouldReceive("createUpdateOne")
             ->once()
-            ->with("simple_resource", "simplePrimaryId", 2, ["text" => "foo"])
+            ->with("resource", "id", 1, ["foo" => "bar"])
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->once()
             ->with($adapterQueryMock)
             ->andReturn(false);
 
-        $entity = new Fixtures\Entity\Simple(["id" => 2, "text" => "foo"]);
+        $entity = new Entity;
+        $entity->id = 1;
+        $entity->foo = "bar";
+
         $this->repository->save($entity);
     }
 
     public function testSaveInsert()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $this->adapterMock->shouldReceive("createInsert")
             ->once()
-            ->with("simple_resource", ["text" => "foo"], "simplePrimaryId")
+            ->with("resource", ["foo" => "bar"], "id")
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->once()
             ->with($adapterQueryMock)
-            ->andReturn(3);
+            ->andReturn(1);
 
-        $entity = new Fixtures\Entity\Simple(["simplePrimaryId" => null, "text" => "foo"]);
-        $entity->manyToMany[] = new Fixtures\Entity\Remote(new \UniMapper\Entity\Reflection("UniMapper\Tests\Fixtures\Entity\Remote")); // Associations are ignored
+        $entity = new Entity;
+        $entity->foo = "bar";
+        $entity->assoc[] = new Entity;
 
-        $this->repository->save($entity);
-
-        Assert::same(3, $entity->id);
+        Assert::same($entity, $this->repository->save($entity));
+        Assert::same(1, $entity->id);
     }
 
     /**
@@ -116,41 +117,33 @@ class RepositoryTest extends \Tester\TestCase
     public function testSaveInsertButEmptyPrimaryReturned()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $this->adapterMock->shouldReceive("createInsert")
             ->once()
-            ->with("simple_resource", ["text" => "foo"], "simplePrimaryId")
+            ->with("resource", ["foo" => "bar"], "id")
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->once()
             ->with($adapterQueryMock)
             ->andReturn(null);
 
-        $this->repository->save(new Fixtures\Entity\Simple(["simplePrimaryId" => null, "text" => "foo"]));
+        $entity = new Entity;
+        $entity->foo = "bar";
+        $this->repository->save($entity);
     }
 
-    public function testSaveInvalid()
+    /**
+     * @throws \UniMapper\Exception\ValidatorException
+     **/
+    public function testSaveWithValidation()
     {
-        $entity = new Fixtures\Entity\Simple(["email" => "invalidemail", "text" => "foo"]);
-        $entity->getValidator()->on("email")->addRule(\UniMapper\Validator::EMAIL, "Invalid e-mail format!");
+        $entity = new Entity;
+        $entity->foo = "bar";
+        $entity->getValidator()
+            ->on("foo")
+            ->addRule(\UniMapper\Validator::EMAIL, "Invalid e-mail format!");
 
-        try {
-            $this->repository->save($entity);
-        } catch (UniMapper\Exception\ValidatorException $e) {
-            $validator = $e->getValidator();
-        }
-
-        Assert::isEqual(
-            [
-                'properties' => [
-                    'email' => [
-                        new \UniMapper\Validator\Message('Invalid e-mail format!', 1)
-                    ]
-                ]
-            ],
-            (array) $validator->getMessages()
-        );
+        $this->repository->save($entity);
     }
 
     public function testUpdateBy()
@@ -158,22 +151,24 @@ class RepositoryTest extends \Tester\TestCase
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $adapterQueryMock->shouldReceive("setFilter")
             ->once()
-            ->with(["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => 1]]);
-        $adapterQueryMock->shouldReceive("getRaw")->once();
+            ->with(["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]);
 
         $this->adapterMock->shouldReceive("createUpdate")
             ->once()
-            ->with("simple_resource", ["text" => "foo"])
+            ->with("resource", ["foo" => "bar"])
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->once()
             ->with($adapterQueryMock)
-            ->andReturn(3);
+            ->andReturn(2);
+
+        $entity = new Entity;
+        $entity->foo = "bar";
 
         Assert::same(
-            3,
+            2,
             $this->repository->updateBy(
-                new Fixtures\Entity\Simple(["text" => "foo"]),
+                $entity,
                 ["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]
             )
         );
@@ -184,16 +179,15 @@ class RepositoryTest extends \Tester\TestCase
      */
     public function testDestroyNoPrimaryValue()
     {
-        $this->repository->destroy(new Fixtures\Entity\Simple);
+        $this->repository->destroy(new Entity);
     }
 
     public function testDestroy()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $this->adapterMock->shouldReceive("createDeleteOne")
-            ->with("simple_resource", "simplePrimaryId", 1)
+            ->with("resource", "id", 1)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
@@ -201,17 +195,18 @@ class RepositoryTest extends \Tester\TestCase
             ->once()
             ->andReturn(true);
 
-        $entity = new Fixtures\Entity\Simple(["id" => 1]);
-        $this->repository->destroy($entity);
+        $entity = new Entity;
+        $entity->id = 1;
+
+        Assert::true($this->repository->destroy($entity));
     }
 
     public function testDestroyFailed()
     {
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $adapterQueryMock->shouldReceive("getRaw")->once();
 
         $this->adapterMock->shouldReceive("createDeleteOne")
-            ->with("simple_resource", "simplePrimaryId", 1)
+            ->with("resource", "id", 1)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
@@ -219,7 +214,9 @@ class RepositoryTest extends \Tester\TestCase
             ->once()
             ->andReturn(false);
 
-        $entity = new Fixtures\Entity\Simple(["id" => 1]);
+        $entity = new Entity;
+        $entity->id = 1;
+
         Assert::false($this->repository->destroy($entity));
     }
 
@@ -228,19 +225,23 @@ class RepositoryTest extends \Tester\TestCase
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $adapterQueryMock->shouldReceive("setFilter")
             ->once()
-            ->with(["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => 1]]);
-        $adapterQueryMock->shouldReceive("getRaw")->once();
+            ->with(["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]);
 
         $this->adapterMock->shouldReceive("createDelete")
-            ->with("simple_resource")
+            ->with("resource")
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->with($adapterQueryMock)
             ->once()
-            ->andReturn(3);
+            ->andReturn(2);
 
-        Assert::same(3, $this->repository->destroyBy(["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]));
+        Assert::same(
+            2,
+            $this->repository->destroyBy(
+                ["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]
+            )
+        );
     }
 
     public function testFindOne()
@@ -248,18 +249,16 @@ class RepositoryTest extends \Tester\TestCase
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
 
         $this->adapterMock->shouldReceive("createSelectOne")
-            ->with("simple_resource", "simplePrimaryId", 1)
+            ->with("resource", "id", 1)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->with($adapterQueryMock)
             ->once()
-            ->andReturn(["simplePrimaryId" => 1]);
+            ->andReturn(["foo" => "bar"]);
 
-        $result = $this->repository->findOne(1);
-
-        Assert::type("UniMapper\Entity", $result);
-        Assert::same(1, $result->id);
+        Assert::type("UniMapper\Entity", $result = $this->repository->findOne(1));
+        Assert::same("bar", $result->foo);
     }
 
     public function testFindOneNotFound()
@@ -267,7 +266,7 @@ class RepositoryTest extends \Tester\TestCase
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
 
         $this->adapterMock->shouldReceive("createSelectOne")
-            ->with("simple_resource", "simplePrimaryId", 1)
+            ->with("resource", "id", 1)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
@@ -283,17 +282,16 @@ class RepositoryTest extends \Tester\TestCase
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $adapterQueryMock->shouldReceive("setFilter")
             ->once()
-            ->with(["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]]);
-        $adapterQueryMock->shouldReceive("getRaw")->once();
+            ->with(["id" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]]);
 
         $this->adapterMock->shouldReceive("createSelect")
-            ->with("simple_resource", ['simplePrimaryId', 'text', 'empty', 'link', 'email_address', 'time', 'date', 'ip', 'mark', 'entity', 'readonly', 'stored_data', 'enumeration'], [], null, null)
+            ->with("resource", ['id', 'foo', 'entity', 'collection'], [], null, null)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->with($adapterQueryMock)
             ->once()
-            ->andReturn([["simplePrimaryId" => 1], ["simplePrimaryId" => 2]]);
+            ->andReturn([["id" => 1], ["id" => 2]]);
 
         $result = $this->repository->findPrimaries([1, 2]);
 
@@ -319,6 +317,21 @@ class RepositoryTest extends \Tester\TestCase
     }
 
 }
+
+/**
+ * @adapter FooAdapter(resource)
+ *
+ * @property int      $id         m:primary
+ * @property string   $foo
+ * @property Entity   $entity
+ * @property Entity[] $assoc      m:assoc(1:N) m:assoc-by(key)
+ * @property Entity[] $collection
+ */
+class Entity extends \UniMapper\Entity {}
+class EntityRepository extends \UniMapper\Repository {}
+
+class NoPrimary extends \UniMapper\Entity {}
+class NoPrimaryRepository extends \UniMapper\Repository {}
 
 $testCase = new RepositoryTest;
 $testCase->run();

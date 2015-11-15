@@ -9,7 +9,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class QueryFilterableTest extends \Tester\TestCase
+class QueryFilterableTest extends TestCase
 {
 
     /**
@@ -17,7 +17,7 @@ class QueryFilterableTest extends \Tester\TestCase
      */
     private function createFilterableQuery()
     {
-        return new UniMapper\Query\Select(Reflection::load("Simple"));
+        return new UniMapper\Query\Select(Reflection::load("Entity"));
     }
 
     public function testSetFilter()
@@ -67,6 +67,14 @@ class QueryFilterableTest extends \Tester\TestCase
     }
 
 }
+
+/**
+ * @adapter Foo
+ *
+ * @property int    $id
+ * @property string $text
+ */
+class Entity extends \UniMapper\Entity {}
 
 $testCase = new QueryFilterableTest;
 $testCase->run();

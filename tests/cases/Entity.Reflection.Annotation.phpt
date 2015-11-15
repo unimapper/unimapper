@@ -5,31 +5,10 @@ use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
 
-class Option implements Reflection\Property\IOption
-{
-    public static function getKey()
-    {
-        return "option";
-    }
-
-    public static function create(
-        Reflection\Property $property,
-        $value = null,
-        array $parameters = []
-    )
-    {}
-
-    public static function afterCreate(Reflection\Property $property, $option)
-    {}
-}
-
-/** @param int $id m:option */
-class Entity extends \UniMapper\Entity {}
-
 /**
  * @testCase
  */
-class EntityReflectionAnnotationTest extends \Tester\TestCase
+class EntityReflectionAnnotationTest extends TestCase
 {
 
     public function testParseAdapter()
@@ -158,6 +137,27 @@ class EntityReflectionAnnotationTest extends \Tester\TestCase
     }
 
 }
+
+class Option implements Reflection\Property\IOption
+{
+    public static function getKey()
+    {
+        return "option";
+    }
+
+    public static function create(
+        Reflection\Property $property,
+        $value = null,
+        array $parameters = []
+    )
+    {}
+
+    public static function afterCreate(Reflection\Property $property, $option)
+    {}
+}
+
+/** @param int $id m:option */
+class Entity extends \UniMapper\Entity {}
 
 $testCase = new EntityReflectionAnnotationTest;
 $testCase->run();

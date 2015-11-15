@@ -125,7 +125,7 @@ class Filter
                         || $property->getType() === Reflection\Property::TYPE_ENTITY
                     ) {
                         throw new Exception\FilterException(
-                            "Filter can not be used with associations, computed, collections, entities and disabled mapping!"
+                            "Filter can not be used with computed, collections, entities and disabled mapping!"
                         );
                     }
 

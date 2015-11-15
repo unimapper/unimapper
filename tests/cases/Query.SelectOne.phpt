@@ -10,7 +10,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class QuerySelectOneTest extends \Tester\TestCase
+class QuerySelectOneTest extends TestCase
 {
 
     /** @var array $adapters */
@@ -25,21 +25,23 @@ class QuerySelectOneTest extends \Tester\TestCase
     public function setUp()
     {
         $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
-        $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter");
+        $this->adapters["BarAdapter"] = Mockery::mock("UniMapper\Adapter");
 
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $this->adapterQueryMock->shouldReceive("getRaw")->once();
-
         $this->connectionMock = Mockery::mock("UniMapper\Connection");
     }
 
     public function testOnExecute()
     {
-        $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getMapper")
+            ->andReturn(new UniMapper\Mapper);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
 
         $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
-            ->with("simple_resource", "simplePrimaryId", 1)
+            ->with("fooResource", "fooId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
@@ -47,27 +49,29 @@ class QuerySelectOneTest extends \Tester\TestCase
             ->once()
             ->andReturn(["id" => 1]);
 
-        Assert::type(
-            "UniMapper\Tests\Fixtures\Entity\Simple",
-            $this->createQuery(1)->run($this->connectionMock)
-        );
+        Assert::type("Foo", $this->createQuery(1)->run($this->connectionMock));
     }
 
     public function testAssociateManyToMany()
     {
-        $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getMapper")
+            ->once()
+            ->andReturn(new UniMapper\Mapper);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
 
         $this->adapterQueryMock->shouldReceive("setAssociations")
             ->with(
                 Mockery::on(function($arg) {
-                    return $arg["collection"] instanceof Association\ManyToMany;
+                    return $arg["manyToMany"] instanceof Association\ManyToMany;
                 })
             )
             ->once();
 
         $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
-            ->with("simple_resource", "simplePrimaryId", 1)
+            ->with("fooResource", "fooId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
@@ -75,29 +79,41 @@ class QuerySelectOneTest extends \Tester\TestCase
             ->once()
             ->andReturn(false);
 
-        Assert::false($this->createQuery(1)->associate("collection")->run($this->connectionMock));
+        Assert::false(
+            $this->createQuery(1)
+                ->associate("manyToMany")
+                ->run($this->connectionMock)
+        );
     }
 
     public function testAssociateManyToManyRemote()
     {
-        $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
-        $this->connectionMock->shouldReceive("getAdapter")->once()->with("RemoteAdapter")->andReturn($this->adapters["RemoteAdapter"]);
+        $this->connectionMock->shouldReceive("getMapper")
+            ->twice()
+            ->andReturn(new UniMapper\Mapper);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->twice()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("BarAdapter")
+            ->andReturn($this->adapters["BarAdapter"]);
 
         $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
-            ->with("simple_resource", "simplePrimaryId", 1)
+            ->with("fooResource", "fooId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
              ->once()
              ->with($this->adapterQueryMock)
-             ->andReturn(["simplePrimaryId" => 1]);
+             ->andReturn(["fooId" => 1]);
 
         $this->adapterQueryMock->shouldReceive("setFilter")
-            ->with(["simpleId" => [\UniMapper\Entity\Filter::EQUAL => [1]]])
+            ->with(["foo_fooId" => [\UniMapper\Entity\Filter::EQUAL => [1]]])
             ->once();
         $this->adapters["FooAdapter"]->shouldReceive("createSelect")
-            ->with("simple_remote", ['simpleId', 'remoteId'])
+            ->with("foo_bar", ['foo_fooId', 'bar_barId'])
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
@@ -105,126 +121,148 @@ class QuerySelectOneTest extends \Tester\TestCase
             ->once()
             ->andReturn(
                 [
-                    ["simpleId" => 1, "remoteId" => 2],
-                    ["simpleId" => 1, "remoteId" => 3]
+                    ["foo_fooId" => 1, "bar_barId" => 2],
+                    ["foo_fooId" => 1, "bar_barId" => 3]
                 ]
             );
 
-        $this->adapters["RemoteAdapter"]->shouldReceive("createSelect")
-            ->with("remote_resource", [], [], null, null)
+        $this->adapters["BarAdapter"]->shouldReceive("createSelect")
+            ->with("barResource", [], [], null, null)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapterQueryMock->shouldReceive("setFilter")
-            ->with(["id" => [\UniMapper\Entity\Filter::EQUAL => [2, 3]]])
+            ->with(["barId" => [\UniMapper\Entity\Filter::EQUAL => [2, 3]]])
             ->once();
-        $this->adapters["RemoteAdapter"]->shouldReceive("onExecute")
+        $this->adapters["BarAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
-            ->andReturn([["id" => 2], ["id" => 3]]);
+            ->andReturn([["barId" => 2], ["barId" => 3]]);
 
-        $result = $this->createQuery(1)->associate("manyToMany")->run($this->connectionMock);
+        $result = $this->createQuery(1)
+            ->associate("manyToManyRemote")
+            ->run($this->connectionMock);
 
         Assert::same(1, $result->id);
-        Assert::count(2, $result->manyToMany);
-        Assert::same(2, $result->manyToMany[0]->id);
-        Assert::same(3, $result->manyToMany[1]->id);
+        Assert::count(2, $result->manyToManyRemote);
+        Assert::same(2, $result->manyToManyRemote[0]->id);
+        Assert::same(3, $result->manyToManyRemote[1]->id);
     }
 
     public function testAssociateManyToOneRemote()
     {
-        $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
-        $this->connectionMock->shouldReceive("getAdapter")->once()->with("RemoteAdapter")->andReturn($this->adapters["RemoteAdapter"]);
+        $this->connectionMock->shouldReceive("getMapper")
+            ->twice()
+            ->andReturn(new UniMapper\Mapper);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("BarAdapter")
+            ->andReturn($this->adapters["BarAdapter"]);
 
         $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
-            ->with("simple_resource", "simplePrimaryId", 1)
+            ->with("fooResource", "fooId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
-            ->andReturn(["simplePrimaryId" => 1, "remoteId" => 2]);
+            ->andReturn(["fooId" => 1, "barId" => 2]);
 
         $this->adapterQueryMock->shouldReceive("setFilter")
-            ->with(["id" => [\UniMapper\Entity\Filter::EQUAL => [2]]])
+            ->with(["barId" => [\UniMapper\Entity\Filter::EQUAL => [2]]])
             ->once();
-        $this->adapters["RemoteAdapter"]->shouldReceive("createSelect")
-            ->with("remote_resource")
+        $this->adapters["BarAdapter"]->shouldReceive("createSelect")
+            ->with("barResource")
             ->once()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["RemoteAdapter"]->shouldReceive("onExecute")
+        $this->adapters["BarAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
-            ->andReturn([["id" => 2]]);
+            ->andReturn([["barId" => 2]]);
 
-        $result = $this->createQuery(1)->associate("manyToOne")->run($this->connectionMock);
+        $result = $this->createQuery(1)
+            ->associate("manyToOneRemote")
+            ->run($this->connectionMock);
 
         Assert::same(1, $result->id);
-        Assert::same(2, $result->manyToOne->id);
+        Assert::same(2, $result->manyToOneRemote->id);
     }
 
     public function testAssociateManyToManyRemoteNoDominance()
     {
-        $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
-        $this->connectionMock->shouldReceive("getAdapter")->once()->with("RemoteAdapter")->andReturn($this->adapters["RemoteAdapter"]);
-
-        $this->adapters["RemoteAdapter"]->shouldReceive("createSelectOne")
-            ->with("remote_resource", "id", 1)
+        $this->connectionMock->shouldReceive("getMapper")
+            ->twice()
+            ->andReturn(new UniMapper\Mapper);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->twice()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getAdapter")
             ->once()
-            ->andReturn($this->adapterQueryMock);
-        $this->adapters["RemoteAdapter"]->shouldReceive("onExecute")
-            ->with($this->adapterQueryMock)
-            ->once()
-            ->andReturn(["id" => 1]);
+            ->with("BarAdapter")
+            ->andReturn($this->adapters["BarAdapter"]);
 
-        $this->adapterQueryMock->shouldReceive("setFilter")
-            ->with(["remoteId" => [\UniMapper\Entity\Filter::EQUAL => [1]]])
-            ->once();
-        $this->adapters["FooAdapter"]->shouldReceive("createSelect")
-            ->with(
-                "simple_remote",
-                ['remoteId', 'simpleId']
-            )
+        $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
+            ->with("fooResource", "fooId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
+            ->with($this->adapterQueryMock)
+            ->once()
+            ->andReturn(["fooId" => 1]);
+
+        $this->adapterQueryMock->shouldReceive("setFilter")
+            ->with(["foo_fooId" => [\UniMapper\Entity\Filter::EQUAL => [1]]])
+            ->once();
+        $this->adapters["BarAdapter"]->shouldReceive("createSelect")
+            ->with("foo_bar", ['foo_fooId', 'bar_barId'])
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["BarAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(
                 [
-                    ["simpleId" => 2, "remoteId" => 1],
-                    ["simpleId" => 3, "remoteId" => 1]
+                    ["foo_fooId" => 1, "bar_barId" => 2],
+                    ["foo_fooId" => 1, "bar_barId" => 3]
                 ]
             );
 
-        $this->adapters["FooAdapter"]->shouldReceive("createSelect")
-            ->with("simple_resource", [], [], null, null)
+        $this->adapters["BarAdapter"]->shouldReceive("createSelect")
+            ->with("barResource", [], [], null, null)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapterQueryMock->shouldReceive("setFilter")
-             ->with(["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => [2, 3]]])
+             ->with(["barId" => [\UniMapper\Entity\Filter::EQUAL => [2, 3]]])
              ->once();
-        $this->adapters["FooAdapter"]->shouldReceive("onExecute")
+        $this->adapters["BarAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
-            ->andReturn([["simplePrimaryId" => 2], ["simplePrimaryId" => 3]]);
+            ->andReturn([["barId" => 2], ["barId" => 3]]);
 
-        $result = $this->createQuery(1, "Remote")
-            ->associate("manyToManyNoDominance")
+        $result = $this->createQuery(1)
+            ->associate("manyToManyRemoteNoDominance")
             ->run($this->connectionMock);
 
         Assert::same(1, $result->id);
-        Assert::count(2, $result->manyToManyNoDominance);
-        Assert::same(2, $result->manyToManyNoDominance[0]->id);
-        Assert::same(3, $result->manyToManyNoDominance[1]->id);
+        Assert::count(2, $result->manyToManyRemoteNoDominance);
+        Assert::same(2, $result->manyToManyRemoteNoDominance[0]->id);
+        Assert::same(3, $result->manyToManyRemoteNoDominance[1]->id);
     }
 
 
-    public function testAssociateOnoToMany()
+    public function testAssociateOneToMany()
     {
-        $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getMapper")
+            ->once()
+            ->andReturn(new UniMapper\Mapper);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
 
         $this->adapterQueryMock->shouldReceive("setAssociations")
             ->with(
@@ -235,7 +273,7 @@ class QuerySelectOneTest extends \Tester\TestCase
             ->once();
 
         $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
-            ->with("simple_resource", "simplePrimaryId", 1)
+            ->with("fooResource", "fooId", 1)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
@@ -243,65 +281,89 @@ class QuerySelectOneTest extends \Tester\TestCase
             ->once()
             ->andReturn(false);
 
-        Assert::false($this->createQuery(1)->associate("oneToMany")->run($this->connectionMock));
+        Assert::false(
+            $this->createQuery(1)
+                ->associate("oneToMany")
+                ->run($this->connectionMock)
+        );
     }
 
-    public function testAssociateOnoToManyRemote()
+    public function testAssociateOneToManyRemote()
     {
-        $this->connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
-        $this->connectionMock->shouldReceive("getAdapter")->once()->with("RemoteAdapter")->andReturn($this->adapters["RemoteAdapter"]);
-
-        $this->adapterQueryMock->shouldReceive("setAssociations")
-            ->with(
-                Mockery::on(function($arg) {
-                    return $arg["oneToManyRemote"] instanceof Association\OneToMany;
-                })
-            )
-            ->once();
+        $this->connectionMock->shouldReceive("getMapper")
+            ->twice()
+            ->andReturn(new UniMapper\Mapper);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("BarAdapter")
+            ->andReturn($this->adapters["BarAdapter"]);
 
         $this->adapters["FooAdapter"]->shouldReceive("createSelectOne")
-            ->with("simple_resource", "simplePrimaryId", 100)
+            ->with("fooResource", "fooId", 100)
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
-            ->andReturn(['simplePrimaryId' => 100]);
+            ->andReturn(['fooId' => 100]);
 
-        $this->adapters["RemoteAdapter"]->shouldReceive("createSelect")
-            ->with("remote_resource", [], [], null, null)
+        $this->adapters["BarAdapter"]->shouldReceive("createSelect")
+            ->with("barResource", [], [], null, null)
             ->once()
             ->andReturn($this->adapterQueryMock);
 
         $this->adapterQueryMock->shouldReceive("setFilter")
-            ->with(["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => [100]]])
+            ->with(["fooId" => [\UniMapper\Entity\Filter::EQUAL => [100]]])
             ->once();
 
-        $this->adapters["RemoteAdapter"]->shouldReceive("onExecute")
+        $this->adapters["BarAdapter"]->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
             ->andReturn(
                 [
-                    ['id' => 2, 'simplePrimaryId' => 100]
+                    ['barId' => 2, 'fooId' => 100]
                 ]
             );
 
-        $result = $this->createQuery(100)->associate("oneToManyRemote")->run($this->connectionMock);
+        $result = $this->createQuery(100)
+            ->associate("oneToManyRemote")
+            ->run($this->connectionMock);
+
         Assert::same(100, $result->id);
         Assert::count(1, $result->oneToManyRemote);
         Assert::same(2, $result->oneToManyRemote[0]->id);
     }
 
-    private function createQuery($id, $entity = "Simple")
+    private function createQuery($id)
     {
-        return new Query\SelectOne(
-            new Reflection("UniMapper\Tests\Fixtures\Entity\\" . $entity),
-            $id
-        );
+        return Foo::query()->selectOne($id);
     }
 
 }
+
+/**
+ * @adapter FooAdapter(fooResource)
+ *
+ * @property int   $id                          m:primary m:map-by(fooId)
+ * @property Foo[] $manyToMany                  m:assoc(M:N) m:assoc-by(one|foo_foo|two)
+ * @property Bar[] $manyToManyRemote            m:assoc(M:N) m:assoc-by(foo_fooId|foo_bar|bar_barId)
+ * @property Bar   $manyToOneRemote             m:assoc(N:1) m:assoc-by(barId)
+ * @property Bar[] $manyToManyRemoteNoDominance m:assoc(M<N) m:assoc-by(foo_fooId|foo_bar|bar_barId)
+ * @property Foo[] $oneToMany                   m:assoc(1:N) m:assoc-by(fooId)
+ * @property Bar[] $oneToManyRemote             m:assoc(1:N) m:assoc-by(fooId)
+ */
+class Foo extends \UniMapper\Entity {}
+
+/**
+ * @adapter BarAdapter(barResource)
+ *
+ * @property int $id m:primary m:map-by(barId)
+ */
+class Bar extends \UniMapper\Entity {}
 
 $testCase = new QuerySelectOneTest;
 $testCase->run();

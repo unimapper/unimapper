@@ -7,7 +7,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class QueryInsertTest extends \Tester\TestCase
+class QueryInsertTest extends TestCase
 {
 
     /** @var array $adapters */
@@ -19,16 +19,14 @@ class QueryInsertTest extends \Tester\TestCase
     public function setUp()
     {
         $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
-
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-        $this->adapterQueryMock->shouldReceive("getRaw")->once();
     }
 
     public function testSuccess()
     {
         $this->adapters["FooAdapter"]->shouldReceive("createInsert")
             ->once()
-            ->with("simple_resource", ['text'=>'foo'], "simplePrimaryId")
+            ->with("fooResource", ['text_unmapped' => 'foo'], "fooId")
             ->andReturn($this->adapterQueryMock);
 
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
@@ -37,11 +35,16 @@ class QueryInsertTest extends \Tester\TestCase
             ->andReturn("1");
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
-        $connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
-        $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
+        $connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+        $connectionMock->shouldReceive("getMapper")
+            ->once()
+            ->andReturn(new UniMapper\Mapper);
 
         $query = new \UniMapper\Query\Insert(
-            new \UniMapper\Entity\Reflection("UniMapper\Tests\Fixtures\Entity\Simple"),
+            Foo::getReflection(),
             ["text" => "foo", "oneToOne" => ["id" => 3]]
         );
         Assert::same(1, $query->run($connectionMock));
@@ -49,14 +52,11 @@ class QueryInsertTest extends \Tester\TestCase
 
     public function testNoValues()
     {
-        $query = new \UniMapper\Query\Insert(
-            new \UniMapper\Entity\Reflection("UniMapper\Tests\Fixtures\Entity\Simple"),
-            []
-        );
+        $query = new \UniMapper\Query\Insert(Foo::getReflection(), []);
 
         $this->adapters["FooAdapter"]->shouldReceive("createInsert")
             ->once()
-            ->with("simple_resource", [], "simplePrimaryId")
+            ->with("fooResource", [], "fooId")
             ->andReturn($this->adapterQueryMock);
 
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
@@ -65,13 +65,26 @@ class QueryInsertTest extends \Tester\TestCase
             ->andReturn("1");
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
-        $connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
-        $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
+        $connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+        $connectionMock->shouldReceive("getMapper")
+            ->once()
+            ->andReturn(new UniMapper\Mapper);
 
         Assert::same(1, $query->run($connectionMock));
     }
 
 }
+
+/**
+ * @adapter FooAdapter(fooResource)
+ *
+ * @property int    $id   m:primary m:map-by(fooId)
+ * @property string $text m:map-by(text_unmapped)
+ */
+class Foo extends \UniMapper\Entity {}
 
 $testCase = new QueryInsertTest;
 $testCase->run();

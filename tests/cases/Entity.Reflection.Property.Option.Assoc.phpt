@@ -6,59 +6,10 @@ use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
-UNC::setMask("*", UNC::ENTITY_MASK);
-
-/**
- * @adapter FooAdapter()
- *
- * @property int   $id          m:primary
- * @property Foo[] $manyToMany  m:assoc(M:N) m:assoc-by(sourceKey|source_target|targetKey)
- * @property Bar[] $notDominant m:assoc(M<N) m:assoc-by(sourceKey|source_target|targetKey)
- * @property Foo[] $oneToMany   m:assoc(1:N) m:assoc-by(sourceKey)
- * @property Foo   $oneToOne    m:assoc(1:1) m:assoc-by(targetKey)
- * @property Foo   $manyToOne   m:assoc(N:1) m:assoc-by(targetKey)
- */
-class Foo extends Entity {}
-
-/**
- * @adapter BarAdapter()
- *
- * @property int   $id         m:primary
- * @property Foo[] $manyToMany m:assoc(M:N) m:assoc-by(sourceKey|source_target|targetKey)
- */
-class Bar extends Entity {}
-
-/**
- * @adapter Foo()
- *
- * @property int $id  m:primary
- * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:map-by(foo)
- */
-class Map extends Entity {}
-
-/**
- * @adapter Foo()
- *
- * @property int $id  m:primary
- * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:enum(self::ENUM_*)
- */
-class Enum extends Entity {}
-
-/**
- * @adapter Foo()
- *
- * @property int  $id  m:primary
- * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:computed
- */
-class Computed extends Entity
-{
-    public function computeFoo() {}
-}
-
 /**
  * @testCase
  */
-class EntityReflectionPropertyOptionAssocTest extends \Tester\TestCase
+class EntityReflectionPropertyOptionAssocTest extends TestCase
 {
 
     public function testCreateManyToMany()
@@ -136,6 +87,53 @@ class EntityReflectionPropertyOptionAssocTest extends \Tester\TestCase
         Entity\Reflection::load("Computed");
     }
 
+}
+
+/**
+ * @adapter FooAdapter()
+ *
+ * @property int   $id          m:primary
+ * @property Foo[] $manyToMany  m:assoc(M:N) m:assoc-by(sourceKey|source_target|targetKey)
+ * @property Bar[] $notDominant m:assoc(M<N) m:assoc-by(sourceKey|source_target|targetKey)
+ * @property Foo[] $oneToMany   m:assoc(1:N) m:assoc-by(sourceKey)
+ * @property Foo   $oneToOne    m:assoc(1:1) m:assoc-by(targetKey)
+ * @property Foo   $manyToOne   m:assoc(N:1) m:assoc-by(targetKey)
+ */
+class Foo extends Entity {}
+
+/**
+ * @adapter BarAdapter()
+ *
+ * @property int   $id         m:primary
+ * @property Foo[] $manyToMany m:assoc(M:N) m:assoc-by(sourceKey|source_target|targetKey)
+ */
+class Bar extends Entity {}
+
+/**
+ * @adapter Foo()
+ *
+ * @property int $id  m:primary
+ * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:map-by(foo)
+ */
+class Map extends Entity {}
+
+/**
+ * @adapter Foo()
+ *
+ * @property int $id  m:primary
+ * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:enum(self::ENUM_*)
+ */
+class Enum extends Entity {}
+
+/**
+ * @adapter Foo()
+ *
+ * @property int  $id  m:primary
+ * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:computed
+ */
+class Computed extends Entity
+{
+    public function computeFoo() {}
 }
 
 $testCase = new EntityReflectionPropertyOptionAssocTest;

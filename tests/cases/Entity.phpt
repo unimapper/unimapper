@@ -1,70 +1,62 @@
 <?php
 
 use Tester\Assert;
-use UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class EntityTest extends \Tester\TestCase
+class EntityTest extends TestCase
 {
 
-    /** @var \UniMapper\Tests\Fixtures\Entity\Simple */
+    /** @var Entity */
     private $entity;
 
     public function setUp()
     {
-        $this->entity = new Fixtures\Entity\Simple(
-            [
-                "text" => "test",
-                "id" => 1,
-                "empty" => ""
-            ]
-        );
+        $this->entity = new Entity;
     }
 
     public function testConstruct()
     {
-        $entity = new Fixtures\Entity\Simple(
+        $entity = new Entity(
             [
-                "year" => "foo", // Skip comuted
-                "readonly" => "foo", // Set readonly
+                "computed" => 1, // Skip comuted
+                "readonly" => 1, // Set readonly
                 "undefined" => "foo", // Skip undefined,
-                "id" => "1", // Convert type automatically
+                "string" => 1, // Convert type automatically
             ]
         );
-
-        Assert::null($entity->year);
-        Assert::same("foo", $entity->readonly);
-        Assert::same(1, $entity->id);
+        Assert::null($entity->computed);
+        Assert::same(1, $entity->readonly);
+        Assert::same("1", $entity->string);
     }
 
     /**
-     * @throws UniMapper\Exception\InvalidArgumentException Can not convert value on property 'id' automatically!
+     * @throws UniMapper\Exception\InvalidArgumentException Can not convert value on property 'integer' automatically!
      */
     public function testConstructNotAbleToConvertType()
     {
-        new Fixtures\Entity\Simple(["id" => new DateTime]);
+        new Entity(["integer" => new DateTime]);
     }
 
     public function testCreateCollection()
     {
-        Assert::same(
-            "UniMapper\Tests\Fixtures\Entity\Simple",
-            Fixtures\Entity\Simple::createCollection([["id" => 1]])->getEntityClass()
-        );
+        Assert::same("Entity", Entity::createCollection()->getEntityClass());
     }
 
     public function testGetProperty()
     {
-        Assert::same("test", $this->entity->text);
-        Assert::same(1, $this->entity->id);
-        Assert::same("", $this->entity->empty);
-        Assert::type("UniMapper\Entity\Collection", $this->entity->manyToMany);
-        Assert::count(0, $this->entity->manyToMany);
-        Assert::null($this->entity->year); // Computed
+        Assert::null($this->entity->string);
+        Assert::null($this->entity->integer);
+        Assert::null($this->entity->entity);
+        Assert::null($this->entity->computed);
+        Assert::type("UniMapper\Entity\Collection", $this->entity->collection);
+        Assert::count(0, $this->entity->collection);
+
+        $this->entity->integer = 1;
+        Assert::same(1, $this->entity->computed);
     }
 
     /**
@@ -72,7 +64,6 @@ class EntityTest extends \Tester\TestCase
      */
     public function testGetUndefinedProperty()
     {
-
         $this->entity->undefined;
     }
 
@@ -81,26 +72,32 @@ class EntityTest extends \Tester\TestCase
      */
     public function testSetReadonly()
     {
-        $this->entity->readonly = "trytowrite";
+        $this->entity->readonly = "foo";
     }
 
     public function testIsset()
     {
-        Assert::true(isset($this->entity->id));
-        Assert::false(isset($this->entity->missing));
+        $this->entity->string = "foo";
+        Assert::true(isset($this->entity->string));
+        Assert::false(isset($this->entity->integer));
     }
 
     public function testEmpty()
     {
-        Assert::true(empty($this->entity->empty));
-        Assert::true(empty($this->entity->missing));
-        Assert::false(empty($this->entity->id));
+        Assert::true(empty($this->entity->string));
+
+        $this->entity->string = null;
+        Assert::true(empty($this->entity->string));
+
+        $this->entity->string = "foo";
+        Assert::false(empty($this->entity->string));
     }
 
     public function testUnset()
     {
-        unset($this->entity->id);
-        Assert::null($this->entity->id);
+        $this->entity->integer = 1;
+        unset($this->entity->integer);
+        Assert::null($this->entity->integer);
     }
 
     /**
@@ -113,70 +110,64 @@ class EntityTest extends \Tester\TestCase
 
     public function testSetProperty()
     {
-        $this->entity->id = 1;
-        Assert::equal(1, $this->entity->id);
-        $this->entity->collection[] = new Fixtures\Entity\Nested(["text" => "foo"]);
-        Assert::same("foo", $this->entity->collection[0]->text);
+        $this->entity->integer = 1;
+        Assert::same(1, $this->entity->integer);
+
+        $this->entity->collection[] = new Entity;
+        Assert::same(1, count($this->entity->collection));
+    }
+
+    /**
+     * @throws UniMapper\Exception\InvalidArgumentException Expected integer but string given on property integer!
+     */
+    public function testSetPropertyInvalidType()
+    {
+        $this->entity->integer = "foo";
     }
 
     public function testToArray()
     {
-        $this->entity->collection[] = new Fixtures\Entity\Nested(["text" => "foo"]);
-        $this->entity->manyToMany[] = new Fixtures\Entity\Remote(["id" => 1]);
-        $this->entity->entity = new Fixtures\Entity\Nested;
+        $this->entity->collection[] = new Entity;
+        $this->entity->entity = new Entity;
 
         Assert::type("array", $this->entity->toArray());
-        Assert::count(23, $this->entity->toArray());
-        Assert::same("test", $this->entity->toArray()["text"]);
-        Assert::same("", $this->entity->toArray()["empty"]);
-        Assert::same($this->entity->collection, $this->entity->toArray()["collection"]);
-        Assert::same($this->entity->entity, $this->entity->toArray()["entity"]);
-        Assert::same($this->entity->manyToMany, $this->entity->toArray()["manyToMany"]);
-    }
-
-    public function testToArrayRecursive()
-    {
-        $this->entity->collection[] = new Fixtures\Entity\Nested(["text" => "foo"]);
-        $this->entity->manyToMany[] = new Fixtures\Entity\Remote(["id" => 1]);
-        $this->entity->entity = new Fixtures\Entity\Nested;
+        Assert::count(9, $this->entity->toArray());
+        Assert::type("UniMapper\Entity\Collection", $this->entity->toArray()["collection"]);
+        Assert::type("Entity", $this->entity->toArray()["entity"]);
 
         Assert::same(
             array(
-                'id' => 1,
-                'text' => 'test',
-                'empty' => '',
-                'url' => NULL,
-                'email' => NULL,
-                'time' => NULL,
+                'integer' => NULL,
+                'string' => NULL,
+                'dateTime' => NULL,
                 'date' => NULL,
-                'year' => NULL,
-                'ip' => NULL,
-                'mark' => NULL,
-                'entity' => array(
-                    'id' => NULL,
-                    'text' => NULL,
-                    'collection' => array(),
-                    'entity' => NULL
-                ),
+                'computed' => NULL,
+                'enum' => NULL,
                 'collection' => array(
                     array(
-                        'id' => NULL,
-                        'text' => 'foo',
+                        'integer' => NULL,
+                        'string' => NULL,
+                        'dateTime' => NULL,
+                        'date' => NULL,
+                        'computed' => NULL,
+                        'enum' => NULL,
                         'collection' => array(),
-                        'entity' => NULL
+                        'entity' => NULL,
+                        'readonly' => NULL,
                     ),
                 ),
-                'oneToMany' => array(),
-                'oneToManyRemote' => array(),
-                'manyToMany' => array(array('id' => 1, 'manyToManyNoDominance' => array(), 'text' => NULL)),
-                'mmFilter' => array(),
-                'manyToOne' => NULL,
-                'oneToOne' => NULL,
-                'ooFilter' => NULL,
+                'entity' => array(
+                    'integer' => NULL,
+                    'string' => NULL,
+                    'dateTime' => NULL,
+                    'date' => NULL,
+                    'computed' => NULL,
+                    'enum' => NULL,
+                    'collection' => array(),
+                    'entity' => NULL,
+                    'readonly' => NULL,
+                ),
                 'readonly' => NULL,
-                'storedData' => NULL,
-                'enumeration' => NULL,
-                'disabledMap' => NULL
             ),
             $this->entity->toArray(true)
         );
@@ -184,79 +175,65 @@ class EntityTest extends \Tester\TestCase
 
     public function testGetData()
     {
-        $this->entity->empty = null;
+        $this->entity->integer = 1;
+        $this->entity->string = "foo";
         Assert::same(
-            ['text' => 'test', 'id' => 1, 'empty' => NULL],
+            array('integer' => 1, 'string' => 'foo'),
             $this->entity->getData()
         );
     }
 
     public function testJsonSerializable()
     {
-        $this->entity->time = new DateTime("2014-01-01");
-        $this->entity->date = new DateTime("2014-01-01");
+        $this->entity->dateTime = new DateTime("1999-12-31 12:00:00");
+        $this->entity->date = new DateTime("1999-12-31");
         Assert::same(
-            '{"id":1,"text":"test","empty":"","url":null,"email":null,"time":{"date":"2014-01-01 00:00:00.000000","timezone_type":3,"timezone":"Europe\/Prague"},"date":{"date":"2014-01-01","timezone_type":3,"timezone":"Europe\/Prague"},"year":2014,"ip":null,"mark":null,"entity":null,"collection":[],"oneToMany":[],"oneToManyRemote":[],"manyToMany":[],"mmFilter":[],"manyToOne":null,"oneToOne":null,"ooFilter":null,"readonly":null,"storedData":null,"enumeration":null,"disabledMap":null}',
+            '{"integer":null,"string":null,"dateTime":{"date":"1999-12-31 12:00:00.000000","timezone_type":3,"timezone":"Europe\/Prague"},"date":{"date":"1999-12-31","timezone_type":3,"timezone":"Europe\/Prague"},"computed":null,"enum":null,"collection":[],"entity":null,"readonly":null}',
             json_encode($this->entity)
         );
     }
 
-    /**
-     * @throws UniMapper\Exception\InvalidArgumentException Expected integer but string given on property id!
-     */
-    public function testSetPropertyWithInvalidType()
-    {
-        $this->entity->id = "invalidType";
-    }
-
     public function testQuery()
     {
-        Assert::type("UniMapper\Query\Select", Fixtures\Entity\Simple::query()->select());
+        Assert::type("UniMapper\QueryBuilder", Entity::query());
     }
 
     public function testSerializable()
     {
-        $serialized = 'C:38:"UniMapper\Tests\Fixtures\Entity\Simple":60:{a:3:{s:4:"text";s:4:"test";s:2:"id";i:1;s:5:"empty";s:0:"";}}';
+        $this->entity->string = "foo";
+        $serialized = 'C:6:"Entity":29:{a:1:{s:6:"string";s:3:"foo";}}';
         Assert::same($serialized, serialize($this->entity));
 
         $unserialized = unserialize($serialized);
-        Assert::isEqual($this->entity, $unserialized);
-        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $unserialized);
-        Assert::same(['text' => 'test', 'id' => 1, 'empty' => ''], $unserialized->getData());
+        Assert::type("Entity", $unserialized);
+        Assert::same(["string" => "foo"], $unserialized->getData());
     }
 
     public function testImport()
     {
-        $entityObject = new stdClass;
-        $entityObject->text = "foo";
+        $object = new stdClass;
 
         $this->entity->import(
             [
-                "id" => "2",
-                "text" => 3.0,
+                "integer" => "2",
+                "string" => 3.0,
                 "collection" => [],
-                "time" => "1999-01-12",
-                "empty" => null,
-                "entity" => $entityObject,
-                "collection" => [$entityObject],
-                "readonly" => "foo",
-                "undefined" => "foo",
-                "year" => 2000
+                "dateTime" => "1999-12-31 12:00:00",
+                "entity" => $object,
+                "collection" => [$object],
+                "readonly" => 1,
+                "undefined" => null,
+                "computed" => 1
             ]
         );
-        Assert::same(2, $this->entity->id);
-        Assert::same("3", $this->entity->text);
+        Assert::same(2, $this->entity->integer);
+        Assert::same("3", $this->entity->string);
         Assert::type("UniMapper\Entity\Collection", $this->entity->collection);
-        Assert::same("1999-01-12", $this->entity->time->format("Y-m-d"));
-        Assert::same(null, $this->entity->empty);
-        Assert::same("foo", $this->entity->entity->text);
-        Assert::same("foo", $this->entity->collection[0]->text);
+        Assert::type("DateTime", $this->entity->dateTime);
+        Assert::type("Entity", $this->entity->entity);
         Assert::same(1, count($this->entity->collection));
-        Assert::same(1999, $this->entity->year);
+        Assert::same($this->entity->integer, $this->entity->computed);
         Assert::null($this->entity->readonly);
-
-        $this->entity->import(["time" => ["date" => "1999-02-12"]]);
-        Assert::same("1999-02-12", $this->entity->time->format("Y-m-d"));
     }
 
     /**
@@ -276,39 +253,31 @@ class EntityTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\InvalidArgumentException Can not convert value on property 'time' automatically!
+     * @throws UniMapper\Exception\InvalidArgumentException Can not convert value on property 'dateTime' automatically!
      */
     public function testImportInvalidArgumentDateTime()
     {
-        $this->entity->import(["time" => []]);
-    }
-
-    public function testGetComputedProperty()
-    {
-        Assert::null($this->entity->year);
-        $this->entity->time = new DateTime;
-        Assert::same((int) date("Y"), $this->entity->year);
+        $this->entity->import(["dateTime" => []]);
     }
 
     public function testGetChanges()
     {
-        $entity = new Fixtures\Entity\Remote(["id" => 1]);
+        $this->entity->integer = 1;
 
-        $this->entity->manyToMany()->attach($entity);
-        $this->entity->manyToMany()->add($entity);
-        $this->entity->manyToMany()->detach($entity);
+        $entity = new Entity;
+        $entity->integer = 2;
 
-        $this->entity->manyToOne()->id = 2;
-        $this->entity->manyToOne()->attach();
+        $this->entity->collection()->attach($entity);
+        $this->entity->collection()->add($entity);
+        $this->entity->collection()->detach($entity);
 
-        $this->entity->oneToOne()->id = 3;
-        $this->entity->oneToOne()->detach();
+        $this->entity->entity()->integer = 3;
+        $this->entity->entity()->attach();
 
         Assert::same(
             [
-                "manyToMany" => $this->entity->manyToMany(),
-                "manyToOne" => $this->entity->manyToOne(),
-                "oneToOne" => $this->entity->oneToOne()
+                "collection" => $this->entity->collection(),
+                "entity" => $this->entity->entity()
             ],
             $this->entity->getChanges()
         );
@@ -319,61 +288,68 @@ class EntityTest extends \Tester\TestCase
      */
     public function testSetComputedProperty()
     {
-        $this->entity->year = 1999;
+        $this->entity->computed= 1;
     }
 
     public function testIterate()
     {
+        $this->entity->integer = 1;
+        $this->entity->string = "foo";
+
         $given = [];
         foreach ($this->entity as $name => $value) {
            $given[$name] = $value;
         }
 
-        Assert::same(array('text' => 'test', 'id' => 1, 'empty' => ''), $given);
+        Assert::same(array('integer' => 1, 'string' => 'foo'), $given);
     }
 
     public function testCallOnCollection()
     {
-        $collection = new UniMapper\Entity\Collection("Remote");
+        $collection = Entity::createCollection();
 
-        Assert::same($collection, $this->entity->manyToMany($collection));
-        Assert::same($collection, $this->entity->manyToMany());
-        Assert::same($collection, $this->entity->manyToMany(null));
-        Assert::notSame($collection, $this->entity->manyToMany(false));
+        Assert::same($collection, $this->entity->collection($collection));
+        Assert::same($collection, $this->entity->collection());
+        Assert::same($collection, $this->entity->collection(null));
+        Assert::notSame($collection, $this->entity->collection(false));
     }
 
     public function testCallOnEntity()
     {
-        $entity = new Fixtures\Entity\Remote;
+        $entity = new Entity;
 
-        Assert::same($entity, $this->entity->manyToOne($entity));
-        Assert::same($entity, $this->entity->manyToOne());
-        Assert::same($entity, $this->entity->manyToOne(null));
-        Assert::notSame($entity, $this->entity->manyToOne(false));
+        Assert::same($entity, $this->entity->entity($entity));
+        Assert::same($entity, $this->entity->entity());
+        Assert::same($entity, $this->entity->entity(null));
+        Assert::notSame($entity, $this->entity->entity(false));
     }
 
     public function testAttach()
     {
+        $this->entity->integer = 1;
         $this->entity->attach();
-        Assert::same(Fixtures\Entity\Simple::CHANGE_ATTACH, $this->entity->getChangeType());
+        Assert::same(Entity::CHANGE_ATTACH, $this->entity->getChangeType());
     }
 
     public function testAdd()
     {
+        $this->entity->integer = 1;
         $this->entity->add();
-        Assert::same(Fixtures\Entity\Simple::CHANGE_ADD, $this->entity->getChangeType());
+        Assert::same(Entity::CHANGE_ADD, $this->entity->getChangeType());
     }
 
     public function testDetach()
     {
+        $this->entity->integer = 1;
         $this->entity->detach();
-        Assert::same(Fixtures\Entity\Simple::CHANGE_DETACH, $this->entity->getChangeType());
+        Assert::same(Entity::CHANGE_DETACH, $this->entity->getChangeType());
     }
 
     public function testRemove()
     {
+        $this->entity->integer = 1;
         $this->entity->remove();
-        Assert::same(Fixtures\Entity\Simple::CHANGE_REMOVE, $this->entity->getChangeType());
+        Assert::same(Entity::CHANGE_REMOVE, $this->entity->getChangeType());
     }
 
     /**
@@ -389,7 +365,7 @@ class EntityTest extends \Tester\TestCase
      */
     public function testCallInvalidPropertyType()
     {
-        $this->entity->id();
+        $this->entity->string();
     }
 
     /**
@@ -397,14 +373,47 @@ class EntityTest extends \Tester\TestCase
      */
     public function testCallInvalidArgumentType()
     {
-        $this->entity->manyToMany("");
+        $this->entity->collection("");
     }
 
     public function testGetReflection()
     {
-        Assert::same("Simple", $this->entity->getReflection()->getName());
+        Assert::same("Entity", $this->entity->getReflection()->getName());
     }
 
+}
+
+/**
+ * @property int      $integer    m:primary
+ * @property string   $string
+ * @property DateTime $dateTime
+ * @property Date     $date
+ * @property int      $computed   m:computed
+ * @property int      $enum       m:enum(self::ENUMERATION_*)
+ * @property Entity[] $collection
+ * @property Entity   $entity
+ *
+ * @property-read int $readonly
+ */
+class Entity extends \UniMapper\Entity
+{
+    const ENUMERATION_ONE = 1;
+    const ENUMERATION_TWO = 2;
+
+    protected function computeComputed()
+    {
+        return $this->integer;
+    }
+
+    public static function stringToArray($value)
+    {
+        return explode(',', $value);
+    }
+
+    public static function arrayToString($value)
+    {
+        return implode(',', $value);
+    }
 }
 
 $testCase = new EntityTest;

@@ -9,7 +9,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class EntityFilterTest extends \Tester\TestCase
+class EntityFilterTest extends TestCase
 {
 
     public function testIsGroup()
@@ -202,7 +202,7 @@ class EntityFilterTest extends \Tester\TestCase
      */
     public function testValidateWithEmptyGroup()
     {
-        Filter::validate(Reflection::load("Simple"), [[]]);
+        Filter::validate(Reflection::load("Entity"), [[]]);
     }
 
     /**
@@ -210,7 +210,7 @@ class EntityFilterTest extends \Tester\TestCase
      */
     public function testValidateWithInvalidGroup()
     {
-        Filter::validate(Reflection::load("Simple"), ["foo" => "foo"]);
+        Filter::validate(Reflection::load("Entity"), ["foo" => "foo"]);
     }
 
     /**
@@ -219,7 +219,7 @@ class EntityFilterTest extends \Tester\TestCase
     public function testValidateInvalidFilterWithMixedGroupAndItems()
     {
         Filter::validate(
-            Reflection::load("Simple"),
+            Reflection::load("Entity"),
             [
                 "id" => [Filter::EQUAL => 1],
                 ["text" => [Filter::EQUAL => "foo"]]
@@ -233,7 +233,7 @@ class EntityFilterTest extends \Tester\TestCase
     public function testValidateInvalidFilterWithOrAndGroup()
     {
         Filter::validate(
-            Reflection::load("Simple"),
+            Reflection::load("Entity"),
             [
                 ["text" => [Filter::EQUAL => "foo"]],
                 Filter::_OR => [Filter::EQUAL => 1]
@@ -247,7 +247,7 @@ class EntityFilterTest extends \Tester\TestCase
     public function testValidateInvalidFilterGroupWithMixedOrAndItems()
     {
         Filter::validate(
-            Reflection::load("Simple"),
+            Reflection::load("Entity"),
             [
                 ["id" => [Filter::EQUAL => 1]],
                 Filter::_OR => [
@@ -263,7 +263,7 @@ class EntityFilterTest extends \Tester\TestCase
      */
     public function testValidateWithNoModifier()
     {
-        Filter::validate(Reflection::load("Simple"), ["foo"]);
+        Filter::validate(Reflection::load("Entity"), ["foo"]);
     }
 
     /**
@@ -271,7 +271,7 @@ class EntityFilterTest extends \Tester\TestCase
      */
     public function testValidateWithUndefinedProperty()
     {
-        Filter::validate(Reflection::load("Simple"), ["undefinedProperty" => [Filter::EQUAL => 1]]);
+        Filter::validate(Reflection::load("Entity"), ["undefinedProperty" => [Filter::EQUAL => 1]]);
     }
 
     /**
@@ -280,7 +280,7 @@ class EntityFilterTest extends \Tester\TestCase
     public function testValidateUndefinedPropertyWithNameIdenticalToOrModifier()
     {
         Filter::validate(
-            Reflection::load("Simple"),
+            Reflection::load("Entity"),
             [
                 Filter::_OR => [Filter::EQUAL => 1],
                 ["text" => [Filter::EQUAL => "foo"]]
@@ -289,48 +289,48 @@ class EntityFilterTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections, entities and disabled mapping!
+     * @throws UniMapper\Exception\FilterException Filter can not be used with computed, collections, entities and disabled mapping!
      */
-    public function testValidateWithNotAllowedComputed()
+    public function testValidateNotAllowedOnComputed()
     {
-        Filter::validate(Reflection::load("Simple"), ["year" => [Filter::EQUAL => new DateTime]]);
+        Filter::validate(Reflection::load("Entity"), ["computed" => [Filter::EQUAL => new DateTime]]);
     }
 
     /**
-     * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections, entities and disabled mapping!
+     * @throws UniMapper\Exception\FilterException Filter can not be used with computed, collections, entities and disabled mapping!
      */
-    public function testValidateWithNotAllowedAssociation()
+    public function testValidateNotAllowedOnEntityType()
     {
-        Filter::validate(Reflection::load("Simple"), ["collection" => [Filter::EQUAL => 1]]);
+        Filter::validate(Reflection::load("Entity"), ["entity" => [Filter::EQUAL => 1]]);
     }
 
     /**
-     * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections, entities and disabled mapping!
+     * @throws UniMapper\Exception\FilterException Filter can not be used with computed, collections, entities and disabled mapping!
      */
-    public function testValidateWithNotAllowedCollection()
+    public function testValidateNotAllowedOnCollectionType()
     {
-        Filter::validate(Reflection::load("Simple"), ["entity" => [Filter::EQUAL => 1]]);
+        Filter::validate(Reflection::load("Entity"), ["collection" => [Filter::EQUAL => 1]]);
     }
 
     /**
-     * @throws UniMapper\Exception\FilterException Filter can not be used with associations, computed, collections, entities and disabled mapping!
+     * @throws UniMapper\Exception\FilterException Filter can not be used with computed, collections, entities and disabled mapping!
      */
-    public function testValidateWithDisabledMapping()
+    public function testValidateMappingNotAllowedOnDsiabled()
     {
-        Filter::validate(Reflection::load("Simple"), ["disabledMap" => [Filter::EQUAL => 1]]);
+        Filter::validate(Reflection::load("Entity"), ["disabledMap" => [Filter::EQUAL => 1]]);
     }
 
     public function testValidateArray()
     {
-        Filter::validate(Reflection::load("Simple"), ["storedData" => [Filter::EQUAL => [1]]]);
+        Filter::validate(Reflection::load("Entity"), ["id" => [Filter::EQUAL => [1]]]);
     }
 
     /**
-     * @throws UniMapper\Exception\FilterException Expected array but integer given on property storedData!
+     * @throws UniMapper\Exception\FilterException Expected integer but string given on property id!
      */
     public function testValidateInvalidValueType()
     {
-        Filter::validate(Reflection::load("Simple"), ["storedData" => [Filter::EQUAL => 1]]);
+        Filter::validate(Reflection::load("Entity"), ["id" => [Filter::EQUAL => "foo"]]);
     }
 
     /**
@@ -338,9 +338,25 @@ class EntityFilterTest extends \Tester\TestCase
      */
     public function testValidateInvalidValueTypeInArray()
     {
-        Filter::validate(Reflection::load("Simple"), ["id" => [Filter::EQUAL => ["foo"]]]);
+        Filter::validate(Reflection::load("Entity"), ["id" => [Filter::EQUAL => ["foo"]]]);
     }
 
+}
+
+/**
+ * @adapter Foo
+ *
+ * @property int      $id          m:primary
+ * @property string   $text
+ * @property int      $computed    m:computed
+ * @property int      $disabledMap m:map(false)
+ * @property Entity   $entity
+ * @property Entity[] $collection
+ */
+class Entity extends \UniMapper\Entity
+{
+    public function computeComputed()
+    {}
 }
 
 $testCase = new EntityFilterTest;

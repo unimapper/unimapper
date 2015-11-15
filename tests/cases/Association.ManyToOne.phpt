@@ -3,14 +3,13 @@
 use Tester\Assert;
 use UniMapper\Association;
 use UniMapper\Entity\Reflection;
-use UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class AssociationManyToOneTest extends \Tester\TestCase
+class AssociationManyToOneTest extends TestCase
 {
 
     /** @var array $adapters */
@@ -36,7 +35,7 @@ class AssociationManyToOneTest extends \Tester\TestCase
     {
         $this->adapters["FooAdapter"]
             ->shouldReceive("createUpdateOne")
-            ->with("simple_resource", "simplePrimaryId", 1, ["remoteId" => 2])
+            ->with("fooResource", "fooId", 1, ["barId" => 2])
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]
@@ -45,12 +44,20 @@ class AssociationManyToOneTest extends \Tester\TestCase
             ->once()
             ->andReturn(null);
 
-        $this->connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
 
-        $entity = new Fixtures\Entity\Remote(["id" => 2]);
+        $entity = new Bar(["id" => 2]);
         $entity->attach();
 
-        $association = new Association\ManyToOne("manyToOne", Reflection::load("Simple"), Reflection::load("Remote"), ["remoteId"]);
+        $association = new Association\ManyToOne(
+            "manyToOne",
+            Foo::getReflection(),
+            Bar::getReflection(),
+            ["barId"]
+        );
 
         Assert::null($association->saveChanges(1, $this->connectionMock, $entity));
     }
@@ -60,17 +67,43 @@ class AssociationManyToOneTest extends \Tester\TestCase
      */
     public function testSaveChangesNoPrimary()
     {
-        $association = new Association\ManyToOne("manyToOne", Reflection::load("Simple"), Reflection::load("Remote"), ["remoteId"]);
-        $association->saveChanges(1, $this->connectionMock, new Fixtures\Entity\NoPrimary);
+        $association = new Association\ManyToOne(
+            "manyToOne",
+            Foo::getReflection(),
+            Bar::getReflection(),
+            ["barId"]
+        );
+        $association->saveChanges(1, $this->connectionMock, new NoPrimary);
     }
 
     public function testLoadWithEmptyPrimaries()
     {
-        $association = new Association\ManyToOne("manyToOne", Reflection::load("Simple"), Reflection::load("Remote"), ["remoteId"]);
+        $association = new Association\ManyToOne(
+            "manyToOne",
+            Foo::getReflection(),
+            Bar::getReflection(),
+            ["barId"]
+        );
         $association->load($this->connectionMock, [null, null]);
     }
 
 }
+
+/**
+ * @adapter FooAdapter(fooResource)
+ *
+ * @property int $id m:primary m:map-by(fooId)
+ */
+class Foo extends \UniMapper\Entity {}
+
+/**
+ * @adapter BarAdapter(barResource)
+ *
+ * @property int $id m:primary m:map-by(barId)
+ */
+class Bar extends \UniMapper\Entity {}
+
+class NoPrimary extends \UniMapper\Entity {}
 
 $testCase = new AssociationManyToOneTest;
 $testCase->run();

@@ -6,30 +6,10 @@ use UniMapper\NamingConvention as UNC;
 
 require __DIR__ . '/../bootstrap.php';
 
-UNC::setMask("*", UNC::ENTITY_MASK);
-
-/** @property Date $id m:primary */
-class PrimaryDate extends UniMapper\Entity {}
-
-/** @property DateTime $id m:primary */
-class PrimaryDateTime extends UniMapper\Entity {}
-
-/** @property PrimaryDate $id m:primary */
-class PrimaryEntity extends UniMapper\Entity {}
-
-/** @property PrimaryDate[] $id m:primary */
-class PrimaryCollection extends UniMapper\Entity {}
-
-/** @property array $id m:primary */
-class PrimaryArray extends UniMapper\Entity {}
-
-/** @property bool $id m:primary */
-class PrimaryBoolean extends UniMapper\Entity {}
-
 /**
  * @testCase
  */
-class EntityReflectionPropertyOptionPrimaryTest extends \Tester\TestCase
+class EntityReflectionPropertyOptionPrimaryTest extends TestCase
 {
 
     public function testIsEmpty()
@@ -89,6 +69,24 @@ class EntityReflectionPropertyOptionPrimaryTest extends \Tester\TestCase
     }
 
 }
+
+/** @property Date $id m:primary */
+class PrimaryDate extends UniMapper\Entity {}
+
+/** @property DateTime $id m:primary */
+class PrimaryDateTime extends UniMapper\Entity {}
+
+/** @property PrimaryDate $id m:primary */
+class PrimaryEntity extends UniMapper\Entity {}
+
+/** @property PrimaryDate[] $id m:primary */
+class PrimaryCollection extends UniMapper\Entity {}
+
+/** @property array $id m:primary */
+class PrimaryArray extends UniMapper\Entity {}
+
+/** @property bool $id m:primary */
+class PrimaryBoolean extends UniMapper\Entity {}
 
 $testCase = new EntityReflectionPropertyOptionPrimaryTest;
 $testCase->run();

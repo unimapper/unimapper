@@ -1,7 +1,6 @@
 <?php
 
 use Tester\Assert;
-use UniMapper\Tests\Fixtures;
 use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
@@ -9,7 +8,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class MapperTest extends \Tester\TestCase
+class MapperTest extends TestCase
 {
 
     /** @var \UniMapper\Mapper */
@@ -23,23 +22,21 @@ class MapperTest extends \Tester\TestCase
     public function testMapEntity()
     {
         $entity = $this->mapper->mapEntity(
-            "Simple",
+            "Entity",
             [
-                "email_address" => "john.doe@example.com",
-                "publicProperty" => "foo",
+                "integer" => "1",
                 "undefined" => 1,
-                "link" => "http://example.com",
-                "readonly" => "foo",
-                "stored_data" => "one,two,three",
-                "disabledMap" => 1
+                "readonly" => 1,
+                "custom_filter" => "one,two,three",
+                "disabled" => 1
             ]
         );
 
-        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity);
-        Assert::same("john.doe@example.com", $entity->email);
-        Assert::same("http://example.com", $entity->url);
-        Assert::same("foo", $entity->readonly);
-        Assert::same(["one", "two", "three"], $entity->storedData);
+        Assert::type("Entity", $entity);
+        Assert::same(1, $entity->integer);
+        Assert::null($entity->disabled);
+        Assert::same(1, $entity->readonly);
+        Assert::same(["one", "two", "three"], $entity->filter);
     }
 
     /**
@@ -48,7 +45,7 @@ class MapperTest extends \Tester\TestCase
     public function testMapValueArrayToString()
     {
         $this->mapper->mapValue(
-            Reflection::load("Simple")->getProperty("text"),
+            Reflection::load("Entity")->getProperty("string"),
             []
         );
     }
@@ -59,79 +56,59 @@ class MapperTest extends \Tester\TestCase
     public function testMapValueObjectToString()
     {
         $this->mapper->mapValue(
-            Reflection::load("Simple")->getProperty("text"),
+            Reflection::load("Entity")->getProperty("string"),
             new stdClass
         );
     }
 
     /**
-     * @throws \UniMapper\Exception\InvalidArgumentException Mapping disabled on property disabledMap!
+     * @throws \UniMapper\Exception\InvalidArgumentException Mapping disabled on property disabled!
      */
     public function testMapValueMappingDisabled()
     {
-        $this->mapper->mapValue(Reflection::load("Simple")->getProperty("disabledMap"), 1);
+        $this->mapper->mapValue(Reflection::load("Entity")->getProperty("disabled"), 1);
     }
 
     public function testUnmapEntity()
     {
-        $entity = new Fixtures\Entity\Simple(
-            [
-                "email" => "john.doe@example.com",
-                "url" => "http://example.com",
-                "empty" => null,
-                "storedData" => ["one", "two", "three"],
-                "oneToOne" => ["id" => 3],
-                "readonly" => "readonlyValue",
-                "disabledMap" => 1
-            ]
-        );
-
         Assert::same(
-            [
-                "email_address" => $entity->email,
-                "link" => $entity->url,
-                "empty" => null,
-                "stored_data" => "one,two,three"
-            ],
-            $this->mapper->unmapEntity($entity)
+            array(
+                'string' => 'foo',
+                'custom_filter' => '1,2,3',
+                'entity' => array('integer' => 1)
+            ),
+            $this->mapper->unmapEntity(
+                new Entity(
+                    [
+                        "string" => "foo",
+                        "filter" => [1, 2, 3],
+                        "entity" => new Entity(["integer" => 1]),
+                        "readonly" => "foo",
+                        "disabled" => 1
+                    ]
+                )
+            )
         );
     }
 
     public function testMapCollection()
     {
         $collection = $this->mapper->mapCollection(
-            "Simple",
-            [
-                [
-                    "email_address" => "john.doe@example.com",
-                    "publicProperty" => "foo",
-                    "undefined" => 1,
-                    "readonly" => "foo"
-                ]
-            ]
+            "Entity",
+            [["integer" => "1"]]
         );
         Assert::type("UniMapper\Entity\Collection", $collection);
         Assert::count(1, $collection);
-        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $collection[0]);
-        Assert::same("john.doe@example.com", $collection[0]->email);
-        Assert::same("foo", $collection[0]->readonly);
+        Assert::type("Entity", $collection[0]);
+        Assert::same(1, $collection[0]->integer);
     }
 
     public function testUnmapCollection()
     {
-        $entity = new Fixtures\Entity\Simple(
-            [
-                "email" => "john.doe@example.com",
-                "url" => "http://example.com",
-                "publicProperty" => "foo"
-            ]
-        );
-
-        $collection = new UniMapper\Entity\Collection("Simple");
-        $collection[] = $entity;
+        $collection = Entity::createCollection([["integer" => 1]]);
 
         Assert::same(
-            [['email_address' => $entity->email, 'link' => $entity->url]],
+            [["integer" => 1]],
             $this->mapper->unmapCollection($collection)
         );
     }
@@ -139,10 +116,10 @@ class MapperTest extends \Tester\TestCase
     public function testUnmapFilter()
     {
         Assert::same(
-            ["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => 1]],
+            ["custom_filter" => [\UniMapper\Entity\Filter::EQUAL => "1,2"]],
             $this->mapper->unmapFilter(
-                Reflection::load("Simple"),
-                ["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]
+                Reflection::load("Entity"),
+                ["filter" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]]
             )
         );
     }
@@ -150,14 +127,39 @@ class MapperTest extends \Tester\TestCase
     public function testUnmapFilterGroup()
     {
         Assert::same(
-            [["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => 1]]],
+            [["custom_filter" => [\UniMapper\Entity\Filter::EQUAL => "1,2"]]],
             $this->mapper->unmapFilter(
-                Reflection::load("Simple"),
-                [["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]]
+                Reflection::load("Entity"),
+                [["filter" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]]]
             )
         );
     }
 
+}
+
+/**
+ * @adapter Foo
+ *
+ * @property int      $integer
+ * @property string   $string
+ * @property string   $disabled   m:map(false)
+ * @property array    $filter     m:map-filter(stringToArray|arrayToString) m:map-by(custom_filter)
+ * @property Entity   $entity
+ * @property Entity[] $collection
+ *
+ * @property-read int $readonly
+ */
+class Entity extends \UniMapper\Entity
+{
+    public static function stringToArray($value)
+    {
+        return explode(',', $value);
+    }
+
+    public static function arrayToString($value)
+    {
+        return implode(',', $value);
+    }
 }
 
 $testCase = new MapperTest;

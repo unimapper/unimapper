@@ -9,7 +9,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class QueryUpdateTest extends \Tester\TestCase
+class QueryUpdateTest extends TestCase
 {
 
     /** @var array $adapters */
@@ -26,9 +26,11 @@ class QueryUpdateTest extends \Tester\TestCase
     public function testNoValues()
     {
         $connectionMock = Mockery::mock("UniMapper\Connection");
-        $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
+        $connectionMock->shouldReceive("getMapper")
+            ->once()
+            ->andReturn(new UniMapper\Mapper);
 
-        $query = new Update(new Reflection("UniMapper\Tests\Fixtures\Entity\Simple"), []);
+        $query = new Update(new Reflection("Entity"), []);
         $query->run($connectionMock);
     }
 
@@ -37,12 +39,11 @@ class QueryUpdateTest extends \Tester\TestCase
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
         $adapterQueryMock->shouldReceive("setFilter")
             ->once()
-            ->with(["simplePrimaryId" => [\UniMapper\Entity\Filter::EQUAL => 1]]);
-        $adapterQueryMock->shouldReceive("getRaw")->once();
+            ->with(["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]);
 
         $this->adapters["FooAdapter"]->shouldReceive("createUpdate")
             ->once()
-            ->with("simple_resource", ['text'=>'foo'])
+            ->with("resource", ['foo' => 'bar'])
             ->andReturn($adapterQueryMock);
 
         $this->adapters["FooAdapter"]->shouldReceive("onExecute")
@@ -51,18 +52,29 @@ class QueryUpdateTest extends \Tester\TestCase
             ->andReturn("2");
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
-        $connectionMock->shouldReceive("getMapper")->once()->andReturn(new UniMapper\Mapper);
-        $connectionMock->shouldReceive("getAdapter")->once()->with("FooAdapter")->andReturn($this->adapters["FooAdapter"]);
+        $connectionMock->shouldReceive("getMapper")
+            ->once()
+            ->andReturn(new UniMapper\Mapper);
+        $connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
 
-        $query = new Update(
-            new Reflection("UniMapper\Tests\Fixtures\Entity\Simple"),
-            ["text" => "foo", "oneToOne" => ["id" => 3]]
-        );
+        $query = new Update(Entity::getReflection(), ["foo" => "bar"]);
         $query->setFilter(["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]);
+
         Assert::same(2, $query->run($connectionMock));
     }
 
 }
+
+/**
+ * @adapter FooAdapter(resource)
+ *
+ * @property int    $id  m:primary
+ * @property string $foo
+ */
+class Entity extends \UniMapper\Entity {}
 
 $testCase = new QueryUpdateTest;
 $testCase->run();

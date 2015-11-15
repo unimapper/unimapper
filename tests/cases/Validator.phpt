@@ -2,25 +2,24 @@
 
 use Tester\Assert;
 use UniMapper\Validator;
-use UniMapper\Tests\Fixtures;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class ValidatorTest extends \Tester\TestCase
+class ValidatorTest extends TestCase
 {
 
     /** @var \UniMapper\Validator $validator */
     private $validator;
 
-    /** @var \UniMapper\Tests\Fixtures\Entity\Simple */
+    /** @var Entity */
     private $entity;
 
     public function setUp()
     {
-        $this->entity = new Fixtures\Entity\Simple;
+        $this->entity = new Entity;
         $this->validator = new Validator($this->entity);
     }
 
@@ -108,8 +107,8 @@ class ValidatorTest extends \Tester\TestCase
                 }, "Collection must contain two items at least!");
 
         $entity = $this->validator->getEntity();
-        $entity->collection[] = new Fixtures\Entity\Nested;
-        $entity->collection['testIndex'] = new Fixtures\Entity\Nested;
+        $entity->collection[] = new Entity;
+        $entity->collection['testIndex'] = new Entity;
         $this->validator->validate();
 
         Assert::isEqual(
@@ -137,16 +136,14 @@ class ValidatorTest extends \Tester\TestCase
 
     public function testGetMessages()
     {
-        $this->entity->manyToMany[] = new Fixtures\Entity\Remote;
+        $this->entity->collection[] = new Entity;
 
         $this->validator
             ->on("id")
                 ->addRule(Validator::FILLED, "Id is required!")
-            ->on("collection")
-                ->addRule(Validator::FILLED, "Collection can not be empty!", Validator\Rule::DEBUG)
-            ->on("manyToMany", "text")
+            ->on("collection", "text")
                 ->addRule(Validator::FILLED, "Text on nested collection must be filled!", Validator\Rule::WARNING)
-            ->on("email")
+            ->on("text")
                 ->addRule(Validator::EMAIL, "This is just info!", Validator\Rule::INFO);
         $this->validator->validate();
 
@@ -165,17 +162,13 @@ class ValidatorTest extends \Tester\TestCase
         Assert::same(Validator\Rule::ERROR, $messages[0]->severity);
         Assert::same(["id"], $messages[0]->path);
 
-        Assert::same("Collection can not be empty!", $messages[1]->message);
-        Assert::same(Validator\Rule::DEBUG, $messages[1]->severity);
-        Assert::same(["collection"], $messages[1]->path);
+        Assert::same("Text on nested collection must be filled!", $messages[1]->message);
+        Assert::same(Validator\Rule::WARNING, $messages[1]->severity);
+        Assert::same(["collection", 0, "text"], $messages[1]->path);
 
-        Assert::same("Text on nested collection must be filled!", $messages[2]->message);
-        Assert::same(Validator\Rule::WARNING, $messages[2]->severity);
-        Assert::same(["manyToMany", 0, "text"], $messages[2]->path);
-
-        Assert::same("This is just info!", $messages[3]->message);
-        Assert::same(Validator\Rule::INFO, $messages[3]->severity);
-        Assert::same(["email"], $messages[3]->path);
+        Assert::same("This is just info!", $messages[2]->message);
+        Assert::same(Validator\Rule::INFO, $messages[2]->severity);
+        Assert::same(["text"], $messages[2]->path);
     }
 
     /**
@@ -183,8 +176,7 @@ class ValidatorTest extends \Tester\TestCase
      */
     public function testConditionMustBeOnProperty()
     {
-        $validator = new Validator(new Fixtures\Entity\Simple);
-        $validator->addCondition(Validator::FILLED);
+        $this->validator->addCondition(Validator::FILLED);
     }
 
     /**
@@ -192,8 +184,7 @@ class ValidatorTest extends \Tester\TestCase
      */
     public function testOnUndefined()
     {
-        $validator = new Validator(new Fixtures\Entity\Simple);
-        $validator->on("undefined");
+        $this->validator->on("undefined");
     }
 
     /**
@@ -201,8 +192,7 @@ class ValidatorTest extends \Tester\TestCase
      */
     public function testOnComputed()
     {
-        $validator = new Validator(new Fixtures\Entity\Simple);
-        $validator->on("year");
+        $this->validator->on("computed");
     }
 
     public function testAddCondition()
@@ -219,11 +209,11 @@ class ValidatorTest extends \Tester\TestCase
                 ->addCondition(Validator::FILLED)
                     ->addRule(Validator::URL, "Invalid URL format!")
                 ->endCondition()
-            ->on("mark")
+            ->on("number")
                 ->addCondition(Validator::FILLED)
                     ->addRule(function($value) {
                         return $value >= 1 && $value <= 5;
-                    }, "Mark must be a number from 1 to 5!");
+                    }, "Number must be a from 1 to 5!");
 
         // Success
         $entity = $this->validator->getEntity();
@@ -235,7 +225,7 @@ class ValidatorTest extends \Tester\TestCase
         $entity->email = "wrongemail";
         $entity->ip = "wrongip";
         $entity->url = "wrongurl";
-        $entity->mark = 35;
+        $entity->number = 6;
         Assert::false($this->validator->validate());
         Assert::isEqual(
             array(
@@ -249,8 +239,8 @@ class ValidatorTest extends \Tester\TestCase
                     'url' => array(
                         new Validator\Message('Invalid URL format!', 1)
                     ),
-                    'mark' => array(
-                        new Validator\Message('Mark must be a number from 1 to 5!', 1)
+                    'number' => array(
+                        new Validator\Message('Number must be a number from 1 to 5!', 1)
                     )
                 )
             ),
@@ -260,13 +250,13 @@ class ValidatorTest extends \Tester\TestCase
 
     public function testNestedValidators()
     {
-        $nested = new Fixtures\Entity\Nested;
+        $nested = new Entity;
         $nested->getValidator()
             ->on("text")
                 ->addRule(Validator::EMAIL, "Text must be e-mail!");
 
         // Get even deeper
-        $nested->entity = new Fixtures\Entity\Simple;
+        $nested->entity = new Entity;
         $nested->entity->getValidator()
                 ->on("url")
                     ->addRule(Validator::URL, "Invalid URL!");
@@ -283,6 +273,25 @@ class ValidatorTest extends \Tester\TestCase
         Assert::same("Invalid URL!", $messages[1]->getText());
     }
 
+}
+
+/**
+ * @property int      $id
+ * @property string   $text
+ * @property string   $ip
+ * @property string   $url
+ * @property string   $email
+ * @property int      $number
+ * @property Entity[] $collection
+ * @property Entity   $entity
+ * @property int      $computed   m:computed
+ */
+class Entity extends \UniMapper\Entity
+{
+    private function computeComputed()
+    {
+        return 1;
+    }
 }
 
 $testCase = new ValidatorTest;

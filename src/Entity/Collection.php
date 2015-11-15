@@ -27,6 +27,8 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
     /**
      * @param string|Entity $name   Entity name, class or entity object
      * @param mixed         $values
+     *
+     * @throws Exception\InvalidArgumentException
      */
     public function __construct($name, $values = null)
     {

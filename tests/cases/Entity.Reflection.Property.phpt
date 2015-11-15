@@ -8,7 +8,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class EntityReflectionPropertyTest extends \Tester\TestCase
+class EntityReflectionPropertyTest extends TestCase
 {
 
     const ENUM1 = 1,
@@ -19,7 +19,7 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
         $name,
         $options = null,
         $readonly = false,
-        $entityClass = "UniMapper\Tests\Fixtures\Entity\Simple"
+        $entityClass = "Foo"
     ) {
         return new Entity\Reflection\Property(
             $type,
@@ -44,9 +44,9 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
             ->validateValueType(new DateTime);
 
         // Collection
-        $this->_createReflection('NoAdapter[]', 'collection')
+        $this->_createReflection('Foo[]', 'collection')
             ->validateValueType(
-                new Entity\Collection("NoAdapter")
+                new Entity\Collection("Foo")
             );
 
         // Enumeration
@@ -54,7 +54,7 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
             ->validateValueType(1);
 
         // Primary
-        Entity\Reflection::load("Simple")->getProperty("id")->validateValueType(0);
+        Entity\Reflection::load("Foo")->getProperty("id")->validateValueType(0);
     }
 
     /**
@@ -72,7 +72,9 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
      */
     public function testValidateValueTypePrimaryNull()
     {
-        Entity\Reflection::load("Simple")->getProperty("id")->validateValueType(null);
+        Entity\Reflection::load("Foo")
+            ->getProperty("id")
+            ->validateValueType(null);
     }
 
     /**
@@ -80,17 +82,25 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
      */
     public function testValidateValueTypePrimaryEmptyString()
     {
-        Entity\Reflection::load("Simple")->getProperty("id")->validateValueType("");
+        Entity\Reflection::load("Foo")->getProperty("id")->validateValueType("");
     }
 
     public function testConvertValue()
     {
         // string -> integer
-        Assert::same(1, $this->_createReflection('integer',  'id')->convertValue("1"));
-        Assert::null($this->_createReflection('integer', 'id')->convertValue(""));
+        Assert::same(
+            1,
+            $this->_createReflection('integer',  'id')->convertValue("1")
+        );
+        Assert::null(
+            $this->_createReflection('integer', 'id')->convertValue("")
+        );
 
         // integer -> string
-        Assert::same("1", $this->_createReflection('string', 'test')->convertValue(1));
+        Assert::same(
+            "1",
+            $this->_createReflection('string', 'test')->convertValue(1)
+        );
 
         // string -> datetime
         Assert::same(
@@ -99,7 +109,9 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
                 ->convertValue("2012-02-01")
                 ->format("m. d. Y")
         );
-        Assert::null($this->_createReflection('DateTime', 'time')->convertValue(""));
+        Assert::null(
+            $this->_createReflection('DateTime', 'time')->convertValue("")
+        );
 
         // array -> datetime
         Assert::type(
@@ -144,21 +156,17 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
         );
 
         // array -> collection
-        $data = [
-            ["url" => "http://example.com"],
-            ["url" => "http://johndoe.com"]
-        ];
-        $collection = $this->_createReflection('Simple[]', 'collection')
-            ->convertValue($data);
+        $collection = $this->_createReflection('Foo[]', 'collection')
+            ->convertValue([["id" => 1]]);
         Assert::type("UniMapper\Entity\Collection", $collection);
-        Assert::same(2, count($collection));
-        Assert::isEqual("http://example.com", $collection[0]->url);
-        Assert::isEqual("http://johndoe.com", $collection[1]->url);
+        Assert::same(1, count($collection));
+        Assert::same(1, $collection[0]->id);
 
         // array -> entity
-        $entity = $this->_createReflection('Simple', 'entity')
+        $entity = $this->_createReflection('Foo', 'entity')
             ->convertValue(["id" => "8"]);
-        Assert::type("UniMapper\Tests\Fixtures\Entity\Simple", $entity);
+
+        Assert::type("Foo", $entity);
         Assert::same(8, $entity->id);
     }
 
@@ -168,8 +176,8 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
         Assert::null($this->_createReflection('integer', 'id')->convertValue(null));
         Assert::null($this->_createReflection('array', 'id')->convertValue(null));
         Assert::null($this->_createReflection('boolean', 'id')->convertValue(null));
-        Assert::null($this->_createReflection('Simple', 'id')->convertValue(null));
-        Assert::null($this->_createReflection('Simple[]', 'id')->convertValue(null));
+        Assert::null($this->_createReflection('Foo', 'id')->convertValue(null));
+        Assert::null($this->_createReflection('Foo[]', 'id')->convertValue(null));
         Assert::null($this->_createReflection('DateTime', 'id')->convertValue(null));
     }
 
@@ -178,18 +186,14 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
      */
     public function testConvertValueFailed()
     {
-        $this->_createReflection('Simple[]', 'collection')->convertValue("foo");
+        $this->_createReflection('Foo[]', 'collection')->convertValue("foo");
     }
 
     public function testGetRelatedFiles()
     {
         Assert::same(
-            array(
-                Entity\Reflection::load("Simple")->getFileName(),
-                Entity\Reflection::load("Nested")->getFileName(),
-                Entity\Reflection::load("Remote")->getFileName()
-            ),
-            Entity\Reflection::load("Simple")->getRelatedFiles()
+            [Entity\Reflection::load("Foo")->getFileName()],
+            Entity\Reflection::load("Foo")->getRelatedFiles()
         );
     }
 
@@ -226,21 +230,18 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
     }
 
     /**
-     * @throws UniMapper\Exception\PropertyException Unsupported type 'UniMapper\Tests\Fixtures\Entity\Simple'!
+     * @throws UniMapper\Exception\PropertyException Unsupported type 'Test\Foo'!
      */
-    public function testTypeUnsupportedClasses()
+    public function testTypeUnsupportedClass()
     {
-        $this->_createReflection(
-            'UniMapper\Tests\Fixtures\Entity\Simple',
-            'entity'
-        );
+        $this->_createReflection('Test\Foo', 'entity');
     }
 
     public function testTypeEntity()
     {
         Assert::same(
             Entity\Reflection\Property::TYPE_ENTITY,
-            $this->_createReflection('Simple', 'entity')->getType()
+            $this->_createReflection('Foo', 'entity')->getType()
         );
         Assert::false(
             $this->_createReflection('integer', 'id')->getType() === Entity\Reflection\Property::TYPE_ENTITY
@@ -249,10 +250,22 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
 
     public function testTypeAliases()
     {
-        Assert::same(Entity\Reflection\Property::TYPE_INTEGER, $this->_createReflection('int', 'name')->getType());
-        Assert::same(Entity\Reflection\Property::TYPE_BOOLEAN, $this->_createReflection('bool', 'name')->getType());
-        Assert::same(Entity\Reflection\Property::TYPE_DOUBLE, $this->_createReflection('real', 'name')->getType());
-        Assert::same(Entity\Reflection\Property::TYPE_DOUBLE, $this->_createReflection('float', 'name')->getType());
+        Assert::same(
+            Entity\Reflection\Property::TYPE_INTEGER,
+            $this->_createReflection('int', 'name')->getType()
+        );
+        Assert::same(
+            Entity\Reflection\Property::TYPE_BOOLEAN,
+            $this->_createReflection('bool', 'name')->getType()
+        );
+        Assert::same(
+            Entity\Reflection\Property::TYPE_DOUBLE,
+            $this->_createReflection('real', 'name')->getType()
+        );
+        Assert::same(
+            Entity\Reflection\Property::TYPE_DOUBLE,
+            $this->_createReflection('float', 'name')->getType()
+        );
     }
 
     /**
@@ -281,10 +294,17 @@ class EntityReflectionPropertyTest extends \Tester\TestCase
      */
     public function testGetUnmapped()
     {
-        Assert::same("id", $this->_createReflection("int", "disabledMap", "m:map(false)")->getUnmapped());
+        Assert::same(
+            "id",
+            $this->_createReflection("int", "disabledMap", "m:map(false)")
+                ->getUnmapped()
+        );
     }
 
 }
+
+/** @property int $id m:primary */
+class Foo extends \UniMapper\Entity {}
 
 $testCase = new EntityReflectionPropertyTest;
 $testCase->run();
