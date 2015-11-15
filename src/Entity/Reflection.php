@@ -62,15 +62,20 @@ class Reflection
         try {
 
             $adapter = Reflection\Annotation::parseAdapter($docComment);
-            if ($adapter) {
-                list($this->adapterName, $this->adapterResource) = $adapter;
-            }
         } catch (Exception\AnnotationException $e) {
             throw new Exception\ReflectionException(
                 $e->getMessage(),
                 $this->className,
                 $e->getDefinition()
             );
+        }
+
+        if ($adapter) {
+            list($this->adapterName, $this->adapterResource) = $adapter;
+        }
+
+        if (empty($this->adapterResource)) {
+            $this->adapterResource = $this->getName();
         }
     }
 

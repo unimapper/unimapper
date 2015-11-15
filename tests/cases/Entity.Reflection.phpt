@@ -135,6 +135,14 @@ class EntityReflectionTest extends TestCase
         Reflection::load("Undefined")->getClassName();
     }
 
+    public function testParseAdapter()
+    {
+        Assert::same(
+            "NoAdapterResource",
+            NoAdapterResource::getReflection()->getAdapterResource()
+        );
+    }
+
 }
 
 /**
@@ -155,6 +163,10 @@ class DuplicatePublicProperty extends \UniMapper\Entity
 
 /** @property int $id m:primary */
 class Primary extends \UniMapper\Entity
+{}
+
+/** @adapter Foo */
+class NoAdapterResource extends \UniMapper\Entity
 {}
 
 $testCase = new EntityReflectionTest;
