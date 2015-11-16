@@ -3,7 +3,7 @@
 namespace UniMapper\Query;
 
 use UniMapper\Entity\Reflection;
-use UniMapper\NamingConvention as UNC;
+use UniMapper\Convention;
 use UniMapper\Cache\ICache;
 use UniMapper\Association;
 
@@ -191,8 +191,8 @@ class Select extends \UniMapper\Query
             serialize(
                 [
                     "name" => $this->getName(),
-                    "entity" => UNC::classToName(
-                        $this->reflection->getClassName(), UNC::ENTITY_MASK
+                    "entity" => Convention::classToName(
+                        $this->reflection->getClassName(), Convention::ENTITY_MASK
                     ),
                     "limit" => $this->limit,
                     "offset" => $this->offset,

@@ -2,7 +2,7 @@
 
 use Tester\Assert;
 use UniMapper\Entity;
-use UniMapper\NamingConvention as UNC;
+use UniMapper\Convention;
 
 require __DIR__ . '/../bootstrap.php';
 

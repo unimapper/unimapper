@@ -6,7 +6,7 @@ use UniMapper\Entity\Filter;
 use UniMapper\Entity\Reflection\Property;
 use UniMapper\Exception\QueryException;
 use UniMapper\Exception\RepositoryException;
-use UniMapper\NamingConvention as UNC;
+use UniMapper\Convention;
 
 abstract class Repository
 {
@@ -30,7 +30,7 @@ abstract class Repository
      */
     public function save(Entity $entity)
     {
-        $requiredClass = UNC::nameToClass($this->getEntityName(), UNC::ENTITY_MASK);
+        $requiredClass = Convention::nameToClass($this->getEntityName(), Convention::ENTITY_MASK);
         if (!$entity instanceof $requiredClass) {
             throw new Exception\RepositoryException(
                 "Entity must be instance of ". $requiredClass . "!"
@@ -179,7 +179,7 @@ abstract class Repository
      */
     public function destroy(Entity $entity)
     {
-        $requiredClass = UNC::nameToClass($this->getEntityName(), UNC::ENTITY_MASK);
+        $requiredClass = Convention::nameToClass($this->getEntityName(), Convention::ENTITY_MASK);
         if (!$entity instanceof $requiredClass) {
             throw new Exception\RepositoryException(
                 "Entity must be instance of ". $requiredClass . "!"
@@ -346,7 +346,7 @@ abstract class Repository
 
     public function getName()
     {
-        return UNC::classToName(get_called_class(), UNC::REPOSITORY_MASK);
+        return Convention::classToName(get_called_class(), Convention::REPOSITORY_MASK);
     }
 
     /**
@@ -356,7 +356,7 @@ abstract class Repository
      */
     protected function query()
     {
-        $class = UNC::nameToClass($this->getEntityName(), UNC::ENTITY_MASK);
+        $class = Convention::nameToClass($this->getEntityName(), Convention::ENTITY_MASK);
         return $class::query();
     }
 

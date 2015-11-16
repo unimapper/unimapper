@@ -1,7 +1,7 @@
 <?php
 
 use UniMapper\Entity;
-use UniMapper\NamingConvention as UNC;
+use UniMapper\Convention;
 use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';

@@ -4,7 +4,7 @@ namespace UniMapper\Entity;
 
 use UniMapper\Entity;
 use UniMapper\Exception;
-use UniMapper\NamingConvention as UNC;
+use UniMapper\Convention;
 
 class Reflection
 {
@@ -111,7 +111,7 @@ class Reflection
         }
 
         if (!is_subclass_of($class, "UniMapper\Entity")) {
-            $class = UNC::nameToClass($arg, UNC::ENTITY_MASK);
+            $class = Convention::nameToClass($arg, Convention::ENTITY_MASK);
         }
 
         if (!class_exists($class)) {
@@ -145,7 +145,7 @@ class Reflection
 
     public function getName()
     {
-        return UNC::classToName($this->className, UNC::ENTITY_MASK);
+        return Convention::classToName($this->className, Convention::ENTITY_MASK);
     }
 
     /**

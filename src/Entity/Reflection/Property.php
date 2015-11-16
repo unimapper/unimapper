@@ -3,7 +3,7 @@
 namespace UniMapper\Entity\Reflection;
 
 use UniMapper\Validator,
-    UniMapper\NamingConvention as UNC,
+    UniMapper\Convention,
     UniMapper\Exception;
 use UniMapper\Entity;
 
@@ -214,7 +214,7 @@ class Property
             // Scalar, array, date, datetime
 
             $this->type = $definition;
-        } elseif (class_exists(UNC::nameToClass($definition, UNC::ENTITY_MASK))) {
+        } elseif (class_exists(Convention::nameToClass($definition, Convention::ENTITY_MASK))) {
             // Entity
 
             $this->type = self::TYPE_ENTITY;
@@ -287,7 +287,7 @@ class Property
         if ($this->type === self::TYPE_ENTITY) {
             // Entity
 
-            $expectedEntityClass = UNC::nameToClass($this->typeOption, UNC::ENTITY_MASK);
+            $expectedEntityClass = Convention::nameToClass($this->typeOption, Convention::ENTITY_MASK);
             if ($value instanceof $expectedEntityClass) {
                 return;
             } else {
@@ -300,7 +300,7 @@ class Property
         } elseif ($this->type === self::TYPE_COLLECTION) {
             // Collection
 
-            $entityClass = UNC::nameToClass($this->typeOption, UNC::ENTITY_MASK);
+            $entityClass = Convention::nameToClass($this->typeOption, Convention::ENTITY_MASK);
             if (!$value instanceof Entity\Collection) {
 
                 throw new Exception\InvalidArgumentException(

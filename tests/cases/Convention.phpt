@@ -1,22 +1,22 @@
 <?php
 
 use Tester\Assert;
-use UniMapper\NamingConvention as UNC;
+use UniMapper\Convention;
 
 require __DIR__ . '/../bootstrap.php';
 
 /**
  * @testCase
  */
-class NamingConventionTest extends TestCase
+class ConventionTest extends TestCase
 {
 
     public function testSetMask()
     {
-        UNC::setMask("*", UNC::ENTITY_MASK);
-        UNC::setMask("Tests\*", UNC::ENTITY_MASK);
-        UNC::setMask("Tests\*Entity", UNC::ENTITY_MASK);
-        UNC::setMask("Tests\Entity*", UNC::ENTITY_MASK);
+        Convention::setMask("*", Convention::ENTITY_MASK);
+        Convention::setMask("Tests\*", Convention::ENTITY_MASK);
+        Convention::setMask("Tests\*Entity", Convention::ENTITY_MASK);
+        Convention::setMask("Tests\Entity*", Convention::ENTITY_MASK);
     }
 
     /**
@@ -24,7 +24,7 @@ class NamingConventionTest extends TestCase
      */
     public function testSetMaskInvalidNoReplacementChar()
     {
-        UNC::setMask("foo", UNC::ENTITY_MASK);
+        Convention::setMask("foo", Convention::ENTITY_MASK);
     }
 
     /**
@@ -32,7 +32,7 @@ class NamingConventionTest extends TestCase
      */
     public function testSetMaskInvalidMultipleReplacementChars()
     {
-        UNC::setMask("Tests\*\Entity\*", UNC::ENTITY_MASK);
+        Convention::setMask("Tests\*\Entity\*", Convention::ENTITY_MASK);
     }
 
     /**
@@ -40,13 +40,13 @@ class NamingConventionTest extends TestCase
      */
     public function testSetMaskInvalidWrongReplacementCharPosition()
     {
-        UNC::setMask("Tests\*\Entity", UNC::ENTITY_MASK);
+        Convention::setMask("Tests\*\Entity", Convention::ENTITY_MASK);
     }
 
     public function testNameToClass()
     {
-        Assert::same("Foo", UNC::nameToClass("Foo", UNC::ENTITY_MASK));
-        Assert::same("FooRepository", UNC::nameToClass("Foo", UNC::REPOSITORY_MASK));
+        Assert::same("Foo", Convention::nameToClass("Foo", Convention::ENTITY_MASK));
+        Assert::same("FooRepository", Convention::nameToClass("Foo", Convention::REPOSITORY_MASK));
     }
 
     /**
@@ -54,13 +54,13 @@ class NamingConventionTest extends TestCase
      */
     public function testNameToClassInvalidMask()
     {
-        UNC::nameToClass("Foo", "foo");
+        Convention::nameToClass("Foo", "foo");
     }
 
     public function testClassToName()
     {
-        Assert::same("Foo", UNC::classToName("Foo", UNC::ENTITY_MASK));
-        Assert::same("Foo", UNC::classToName("FooRepository", UNC::REPOSITORY_MASK));
+        Assert::same("Foo", Convention::classToName("Foo", Convention::ENTITY_MASK));
+        Assert::same("Foo", Convention::classToName("FooRepository", Convention::REPOSITORY_MASK));
     }
 
     /**
@@ -68,7 +68,7 @@ class NamingConventionTest extends TestCase
      */
     public function testClassToNameClassNotFound()
     {
-        UNC::classToName("undefined", UNC::ENTITY_MASK);
+        Convention::classToName("undefined", Convention::ENTITY_MASK);
     }
 
     /**
@@ -76,13 +76,13 @@ class NamingConventionTest extends TestCase
      */
     public function testClassToNameInvalidMask()
     {
-        UNC::classToName("Foo", "foo");
+        Convention::classToName("Foo", "foo");
     }
 
     public function testGetMask()
     {
-        Assert::same("*", UNC::getMask(UNC::ENTITY_MASK));
-        Assert::same("*Repository", UNC::getMask(UNC::REPOSITORY_MASK));
+        Assert::same("*", Convention::getMask(Convention::ENTITY_MASK));
+        Assert::same("*Repository", Convention::getMask(Convention::REPOSITORY_MASK));
     }
 
     /**
@@ -90,7 +90,7 @@ class NamingConventionTest extends TestCase
      */
     public function testGetMaskInvalidType()
     {
-        UNC::getMask("foo");
+        Convention::getMask("foo");
     }
 
 }
@@ -98,5 +98,5 @@ class NamingConventionTest extends TestCase
 class Foo extends \UniMapper\Entity {}
 class FooRepository extends \UniMapper\Repository {}
 
-$testCase = new NamingConventionTest;
+$testCase = new ConventionTest;
 $testCase->run();

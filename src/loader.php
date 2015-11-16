@@ -7,6 +7,7 @@ if (version_compare(phpversion(), '5.4.0', '<')) {
 require_once __DIR__ . '/Adapter.php';
 require_once __DIR__ . '/Association.php';
 require_once __DIR__ . '/Connection.php';
+require_once __DIR__ . '/Convention.php';
 require_once __DIR__ . '/Entity.php';
 require_once __DIR__ . '/Entity/Collection.php';
 require_once __DIR__ . '/Entity/Filter.php';
@@ -21,7 +22,6 @@ require_once __DIR__ . '/Entity/Reflection/Property/Option/Map.php';
 require_once __DIR__ . '/Entity/Reflection/Property/Option/Primary.php';
 require_once __DIR__ . '/Exception.php';
 require_once __DIR__ . '/Mapper.php';
-require_once __DIR__ . '/NamingConvention.php';
 require_once __DIR__ . '/Query.php';
 require_once __DIR__ . '/QueryBuilder.php';
 require_once __DIR__ . '/Repository.php';

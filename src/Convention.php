@@ -4,7 +4,7 @@ namespace UniMapper;
 
 use UniMapper\Exception\InvalidArgumentException;
 
-class NamingConvention
+class Convention
 {
 
     const ENTITY_MASK = 1;

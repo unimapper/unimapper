@@ -1,7 +1,7 @@
 <?php
 
 use Tester\Assert;
-use UniMapper\NamingConvention as UNC;
+use UniMapper\Convention;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -30,7 +30,7 @@ class RepositoryTest extends TestCase
             $connection->registerAdapter($adapterName, $adapter);
         }
 
-        $class = UNC::nameToClass($name, UNC::REPOSITORY_MASK);
+        $class = Convention::nameToClass($name, Convention::REPOSITORY_MASK);
         return new $class($connection);
     }
 
