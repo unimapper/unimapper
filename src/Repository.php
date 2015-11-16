@@ -289,11 +289,9 @@ abstract class Repository
      */
     public function findPrimaries(array $primaryValues, array $associate = [])
     {
-        $entityReflection = Entity\Reflection::load(
-            $this->getEntityName()
-        );
+        $reflection = Entity\Reflection::load($this->getEntityName());
 
-        if (!$entityReflection->hasPrimary()) {
+        if (!$reflection->hasPrimary()) {
             throw new Exception\RepositoryException(
                 "Method can not be used because entity " . $this->getEntityName()
                 . " has no primary property defined!"
@@ -312,7 +310,7 @@ abstract class Repository
                 ->select()
                 ->setFilter(
                     [
-                        $entityReflection->getPrimaryProperty()->getName() => [
+                        $reflection->getPrimaryProperty()->getName() => [
                             Filter::EQUAL => $primaryValues
                         ]
                     ]

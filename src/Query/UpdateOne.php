@@ -15,31 +15,31 @@ class UpdateOne extends \UniMapper\Query
     protected $primaryValue;
 
     public function __construct(
-        Reflection $entityReflection,
+        Reflection $reflection,
         $primaryValue,
         array $data
     ) {
-        parent::__construct($entityReflection);
+        parent::__construct($reflection);
 
         $this->primaryValue = $primaryValue;
 
         // Primary value update is not allowed
-        if (!$entityReflection->hasPrimary()) {
+        if (!$reflection->hasPrimary()) {
             throw new Exception\QueryException(
-                "Entity '" . $entityReflection->getClassName() . "' has no "
+                "Entity '" . $reflection->getClassName() . "' has no "
                 . "primary property!"
             );
         }
 
         // Do not change primary value
-        unset($data[$entityReflection->getPrimaryProperty()->getName()]);
+        unset($data[$reflection->getPrimaryProperty()->getName()]);
 
-        $this->entity = $entityReflection->createEntity($data);
+        $this->entity = $reflection->createEntity($data);
     }
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
-        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
+        $adapter = $connection->getAdapter($this->reflection->getAdapterName());
         $mapper = $connection->getMapper();
 
         $values = $mapper->unmapEntity($this->entity);
@@ -50,10 +50,10 @@ class UpdateOne extends \UniMapper\Query
         }
 
         $query = $adapter->createUpdateOne(
-            $this->entityReflection->getAdapterResource(),
-            $this->entityReflection->getPrimaryProperty()->getUnmapped(),
+            $this->reflection->getAdapterResource(),
+            $this->reflection->getPrimaryProperty()->getUnmapped(),
             $mapper->unmapValue(
-                $this->entityReflection->getPrimaryProperty(),
+                $this->reflection->getPrimaryProperty(),
                 $this->primaryValue
             ),
             $values

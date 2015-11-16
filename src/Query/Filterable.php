@@ -15,7 +15,7 @@ trait Filterable
     public function setFilter(array $filter = [])
     {
         try {
-            Entity\Filter::validate($this->entityReflection, $filter);
+            Entity\Filter::validate($this->reflection, $filter);
         } catch (Exception\FilterException $e) {
             throw new Exception\QueryException($e->getMessage());
         }
@@ -26,7 +26,7 @@ trait Filterable
     public function where(array $filter)
     {
         try {
-            Entity\Filter::validate($this->entityReflection, $filter);
+            Entity\Filter::validate($this->reflection, $filter);
         } catch (Exception\FilterException $e) {
             throw new Exception\QueryException($e->getMessage());
         }

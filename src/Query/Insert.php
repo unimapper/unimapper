@@ -11,30 +11,30 @@ class Insert extends \UniMapper\Query
     protected $entity;
 
     public function __construct(
-        Reflection $entityReflection,
+        Reflection $reflection,
         array $data
     ) {
-        parent::__construct($entityReflection);
-        $this->entity = $entityReflection->createEntity($data);
+        parent::__construct($reflection);
+        $this->entity = $reflection->createEntity($data);
     }
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
-        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
+        $adapter = $connection->getAdapter($this->reflection->getAdapterName());
         $mapper = $connection->getMapper();
 
         $query = $adapter->createInsert(
-            $this->entityReflection->getAdapterResource(),
+            $this->reflection->getAdapterResource(),
             $mapper->unmapEntity($this->entity),
-            $this->entityReflection->hasPrimary() ? $this->entityReflection->getPrimaryProperty()->getUnmapped() : null
+            $this->reflection->hasPrimary() ? $this->reflection->getPrimaryProperty()->getUnmapped() : null
         );
 
         $primaryValue = $adapter->execute($query);
 
-        if ($this->entityReflection->hasPrimary()) {
+        if ($this->reflection->hasPrimary()) {
 
             $t = $mapper->mapValue(
-                $this->entityReflection->getPrimaryProperty(),
+                $this->reflection->getPrimaryProperty(),
                 $primaryValue
             );
             return $t;

@@ -57,7 +57,7 @@ class Assoc implements IOption
 
             $association = new $class(
                 $property->getName(),
-                $property->getEntityReflection(),
+                $property->getReflection(),
                 Reflection::load($property->getTypeOption()),
                 explode("|", $parameters[self::KEY . "-by"]),
                 $value === "M<N" ? false : true

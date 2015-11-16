@@ -27,18 +27,18 @@ trait Selectable
 
             foreach ($arg as $name) {
 
-                if (!$this->entityReflection->hasProperty($name)) {
+                if (!$this->reflection->hasProperty($name)) {
                     throw new Exception\QueryException(
                         "Property '" . $name . "' is not defined on entity "
-                        . $this->entityReflection->getClassName() . "!"
+                        . $this->reflection->getClassName() . "!"
                     );
                 }
 
-                $property = $this->entityReflection->getProperty($name);
+                $property = $this->reflection->getProperty($name);
                 if (!$property->hasOption(Reflection\Property\Option\Assoc::KEY)) {
                     throw new Exception\QueryException(
                         "Property '" . $name . "' is not defined as association"
-                        . " on entity " . $this->entityReflection->getClassName()
+                        . " on entity " . $this->reflection->getClassName()
                         . "!"
                     );
                 }
@@ -65,14 +65,14 @@ trait Selectable
 
             foreach ($arg as $name) {
 
-                if (!$this->entityReflection->hasProperty($name)) {
+                if (!$this->reflection->hasProperty($name)) {
                     throw new Exception\QueryException(
                         "Property '" . $name . "' is not defined on entity "
-                        . $this->entityReflection->getClassName() . "!"
+                        . $this->reflection->getClassName() . "!"
                     );
                 }
 
-                $property = $this->entityReflection->getProperty($name);
+                $property = $this->reflection->getProperty($name);
                 if ($property->hasOption(Reflection\Property\Option\Assoc::KEY)
                     || $property->hasOption(Reflection\Property\Option\Computed::KEY)
                     || ($property->hasOption(Reflection\Property\Option\Map::KEY)

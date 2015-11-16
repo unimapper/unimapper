@@ -16,10 +16,10 @@ class Computed implements Reflection\Property\IOption
     public function __construct(Reflection\Property $property)
     {
         $this->name = "compute" . ucfirst($property->getName());
-        if (!method_exists($property->getEntityReflection()->getClassName(), $this->name)) {
+        if (!method_exists($property->getReflection()->getClassName(), $this->name)) {
             throw new OptionException(
                 "Computed method " . $this->name . " not found in "
-                . $property->getEntityReflection()->getClassName() . "!"
+                . $property->getReflection()->getClassName() . "!"
             );
         }
     }

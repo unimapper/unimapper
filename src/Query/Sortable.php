@@ -12,7 +12,7 @@ trait Sortable
 
     public function orderBy($name, $direction = Select::ASC)
     {
-        if (!$this->entityReflection->hasProperty($name)) {
+        if (!$this->reflection->hasProperty($name)) {
             throw new Exception\QueryException(
                 "Invalid property name '" . $name . "'!"
             );
@@ -23,14 +23,14 @@ trait Sortable
             throw new Exception\QueryException("Order direction must be '" . Select::ASC . "' or '" . Select::DESC . "'!");
         }
 
-        $property = $this->entityReflection->getProperty($name);
+        $property = $this->reflection->getProperty($name);
         if ($property->hasOption(Map::KEY) && !$property->getOption(Map::KEY)) {
             throw new Exception\QueryException(
                 "Order can not be used on properties with disabled mapping!"
             );
         }
 
-        $this->orderBy[$this->entityReflection->getProperty($name)->getUnmapped()] = $direction;
+        $this->orderBy[$this->reflection->getProperty($name)->getUnmapped()] = $direction;
         return $this;
     }
 

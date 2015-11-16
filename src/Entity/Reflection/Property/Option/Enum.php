@@ -62,7 +62,7 @@ class Enum implements Reflection\Property\IOption
 
         // Find out enumeration class
         if ($matched[1] === 'self') {
-            $matched[1] = $property->getEntityReflection()->getClassName();
+            $matched[1] = $property->getReflection()->getClassName();
         }
 
         if (!class_exists($matched[1])) {

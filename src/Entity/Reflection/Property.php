@@ -46,7 +46,7 @@ class Property
     ];
 
     /** @var Entity\Reflection */
-    private $entityReflection;
+    private $reflection;
 
     /** @var boolean $readonly */
     private $readonly = false;
@@ -57,18 +57,18 @@ class Property
     /**
      * @param string            $type
      * @param string            $name
-     * @param Entity\Reflection $entityReflection
+     * @param Entity\Reflection $reflection
      * @param bool              $readonly
      * @param string            $options
      */
     public function __construct(
         $type,
         $name,
-        Entity\Reflection $entityReflection,
+        Entity\Reflection $reflection,
         $readonly = false,
         $options = null
     ) {
-        $this->entityReflection = $entityReflection;
+        $this->reflection = $reflection;
         $this->name = $name;
         $this->readonly = (bool) $readonly;
         $this->_initType($type);
@@ -149,9 +149,9 @@ class Property
      *
      * @return Entity\Reflection
      */
-    public function getEntityReflection()
+    public function getReflection()
     {
-        return $this->entityReflection;
+        return $this->reflection;
     }
 
     /**
@@ -445,7 +445,7 @@ class Property
         if (!$this->hasOption($key)) {
             throw new Exception\InvalidArgumentException(
                 "Option " . $key . " not defined on "
-                . $this->entityReflection->getClassName() . "::$"
+                . $this->reflection->getClassName() . "::$"
                 . $this->name . "!"
             );
         }

@@ -9,14 +9,14 @@ class Count extends \UniMapper\Query
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
-        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
+        $adapter = $connection->getAdapter($this->reflection->getAdapterName());
         $query = $adapter->createCount(
-            $this->entityReflection->getAdapterResource()
+            $this->reflection->getAdapterResource()
         );
         if ($this->filter) {
             $query->setFilter(
                 $connection->getMapper()->unmapFilter(
-                    $this->entityReflection,
+                    $this->reflection,
                     $this->filter
                 )
             );

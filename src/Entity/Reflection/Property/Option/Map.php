@@ -85,7 +85,7 @@ class Map implements Reflection\Property\IOption
                 throw new OptionException("You must define input/output filter!");
             }
 
-            $class = $property->getEntityReflection()->getClassName();
+            $class = $property->getReflection()->getClassName();
 
             $filterIn = self::createCallback($class, $filter[0]);
             if (!$filterIn) {

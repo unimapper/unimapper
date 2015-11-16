@@ -15,11 +15,11 @@ class Update extends \UniMapper\Query
     protected $entity;
 
     public function __construct(
-        Reflection $entityReflection,
+        Reflection $reflection,
         array $data
     ) {
-        parent::__construct($entityReflection);
-        $this->entity = $entityReflection->createEntity($data);
+        parent::__construct($reflection);
+        $this->entity = $reflection->createEntity($data);
     }
 
     protected function onExecute(\UniMapper\Connection $connection)
@@ -32,16 +32,16 @@ class Update extends \UniMapper\Query
             throw new Exception\QueryException("Nothing to update!");
         }
 
-        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
+        $adapter = $connection->getAdapter($this->reflection->getAdapterName());
 
         $query = $adapter->createUpdate(
-            $this->entityReflection->getAdapterResource(),
+            $this->reflection->getAdapterResource(),
             $values
         );
         if ($this->filter) {
             $query->setFilter(
                 $mapper->unmapFilter(
-                    $this->entityReflection,
+                    $this->reflection,
                     $this->filter
                 )
             );

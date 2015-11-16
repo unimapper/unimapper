@@ -8,7 +8,7 @@ abstract class Query
 {
 
     /** @var Entity\Reflection */
-    protected $entityReflection;
+    protected $reflection;
 
     public function __construct(Entity\Reflection $reflection)
     {
@@ -19,7 +19,7 @@ abstract class Query
             );
         }
 
-        $this->entityReflection = $reflection;
+        $this->reflection = $reflection;
     }
 
     public function __get($name)
@@ -29,8 +29,8 @@ abstract class Query
 
     public static function getName()
     {
-        $reflection = new \ReflectionClass(get_called_class());
-        return lcfirst($reflection->getShortName());
+        $reflectionClass = new \ReflectionClass(get_called_class());
+        return lcfirst($reflectionClass->getShortName());
     }
 
     /**

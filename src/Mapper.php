@@ -35,14 +35,14 @@ class Mapper
     public function mapValue(Entity\Reflection\Property $property, $value)
     {
         // Call adapter's mapping if needed
-        if (!$property->getEntityReflection()->hasAdapter()) {
+        if (!$property->getReflection()->hasAdapter()) {
             throw new Exception\InvalidArgumentException(
-                "Entity " . $property->getEntityReflection()->getClassName()
+                "Entity " . $property->getReflection()->getClassName()
                 . " has no adapter defined!"
             );
         }
-        if (isset($this->adapterMappings[$property->getEntityReflection()->getAdapterName()])) {
-            $value = $this->adapterMappings[$property->getEntityReflection()->getAdapterName()]
+        if (isset($this->adapterMappings[$property->getReflection()->getAdapterName()])) {
+            $value = $this->adapterMappings[$property->getReflection()->getAdapterName()]
                 ->mapValue($property, $value);
         }
 
@@ -262,15 +262,15 @@ class Mapper
         }
 
         // Call adapter's mapping if needed
-        if (!$property->getEntityReflection()->hasAdapter()) {
+        if (!$property->getReflection()->hasAdapter()) {
             throw new Exception\InvalidArgumentException(
-                "Entity " . $property->getEntityReflection()->getClassName()
+                "Entity " . $property->getReflection()->getClassName()
                 . " has no adapter defined!"
             );
         }
 
-        if (isset($this->adapterMappings[$property->getEntityReflection()->getAdapterName()])) {
-            return $this->adapterMappings[$property->getEntityReflection()->getAdapterName()]
+        if (isset($this->adapterMappings[$property->getReflection()->getAdapterName()])) {
+            return $this->adapterMappings[$property->getReflection()->getAdapterName()]
                 ->unmapValue($property, $value);
         }
 

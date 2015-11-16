@@ -10,7 +10,7 @@ abstract class Association
      *
      * @todo quick fix for traits
      */
-    protected $entityReflection;
+    protected $reflection;
 
     /** @var Entity\Reflection */
     protected $sourceReflection;
@@ -35,7 +35,7 @@ abstract class Association
         $dominant = true
     ) {
         $this->propertyName = $propertyName;
-        $this->sourceReflection = $this->entityReflection = $sourceReflection; // @todo quick fix for traits
+        $this->sourceReflection = $this->reflection = $sourceReflection; // @todo quick fix for traits
         $this->targetReflection = $targetReflection;
         $this->dominant = (bool) $dominant;
         $this->mapBy = $mapBy;

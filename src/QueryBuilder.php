@@ -34,15 +34,15 @@ class QueryBuilder
     /** @var array */
     private static $beforeRun = [];
 
-    /** @var Entity\Reflection $entityReflection */
-    private $entityReflection;
+    /** @var Entity\Reflection $reflection */
+    private $reflection;
 
     /**
      * @param mixed $entity Entity object, class or name
      */
     public function __construct($entity)
     {
-        $this->entityReflection = Entity\Reflection::load($entity);
+        $this->reflection = Entity\Reflection::load($entity);
     }
 
     public function __call($name, $arguments)
@@ -53,7 +53,7 @@ class QueryBuilder
             );
         }
 
-        array_unshift($arguments, $this->entityReflection);
+        array_unshift($arguments, $this->reflection);
 
         $class = new \ReflectionClass(self::$queries[$name]);
         return $class->newInstanceArgs($arguments);

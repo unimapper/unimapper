@@ -12,12 +12,12 @@ class DeleteOne extends \UniMapper\Query
     protected $primaryValue;
 
     public function __construct(
-        Reflection $entityReflection,
+        Reflection $reflection,
         $primaryValue
     ) {
-        parent::__construct($entityReflection);
+        parent::__construct($reflection);
 
-        if (!$entityReflection->hasPrimary()) {
+        if (!$reflection->hasPrimary()) {
             throw new Exception\QueryException(
                 "Can not use deleteOne() on entity without primary property!"
             );
@@ -30,7 +30,7 @@ class DeleteOne extends \UniMapper\Query
         }
 
         try {
-            $entityReflection->getPrimaryProperty()->validateValueType($primaryValue);
+            $reflection->getPrimaryProperty()->validateValueType($primaryValue);
         } catch (Exception\InvalidArgumentException $e) {
             throw new Exception\QueryException($e->getMessage());
         }
@@ -40,12 +40,12 @@ class DeleteOne extends \UniMapper\Query
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
-        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
+        $adapter = $connection->getAdapter($this->reflection->getAdapterName());
 
-        $primaryProperty = $this->entityReflection->getPrimaryProperty();
+        $primaryProperty = $this->reflection->getPrimaryProperty();
 
         $query = $adapter->createDeleteOne(
-            $this->entityReflection->getAdapterResource(),
+            $this->reflection->getAdapterResource(),
             $primaryProperty->getUnmapped(),
             $connection->getMapper()->unmapValue(
                 $primaryProperty,

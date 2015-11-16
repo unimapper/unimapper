@@ -21,9 +21,9 @@ class Select extends \UniMapper\Query
     protected $cached = false;
     protected $cachedOptions = [];
 
-    public function __construct(Reflection $entityReflection)
+    public function __construct(Reflection $reflection)
     {
-        parent::__construct($entityReflection);
+        parent::__construct($reflection);
         $this->select(array_slice(func_get_args(), 3));
     }
 
@@ -36,7 +36,7 @@ class Select extends \UniMapper\Query
 
     protected function onExecute(\UniMapper\Connection $connection)
     {
-        $adapter = $connection->getAdapter($this->entityReflection->getAdapterName());
+        $adapter = $connection->getAdapter($this->reflection->getAdapterName());
         $mapper = $connection->getMapper();
         $cache = null;
 
@@ -49,14 +49,14 @@ class Select extends \UniMapper\Query
             $cachedResult = $cache->load($this->_getQueryChecksum());
             if ($cachedResult) {
                 return $mapper->mapCollection(
-                    $this->entityReflection->getName(),
+                    $this->reflection->getName(),
                     $cachedResult
                 );
             }
         }
 
         $query = $adapter->createSelect(
-            $this->entityReflection->getAdapterResource(),
+            $this->reflection->getAdapterResource(),
             $this->createSelection(),
             $this->orderBy,
             $this->limit,
@@ -66,7 +66,7 @@ class Select extends \UniMapper\Query
         if ($this->filter) {
             $query->setFilter(
                 $mapper->unmapFilter(
-                    $this->entityReflection,
+                    $this->reflection,
                     $this->filter
                 )
             );
@@ -126,9 +126,9 @@ class Select extends \UniMapper\Query
 
             // Cache invalidation should depend on entity changes
             if (isset($cachedOptions[ICache::FILES])) {
-                $cachedOptions[ICache::FILES] += $this->entityReflection->getRelatedFiles();
+                $cachedOptions[ICache::FILES] += $this->reflection->getRelatedFiles();
             } else {
-                $cachedOptions[ICache::FILES] = $this->entityReflection->getRelatedFiles();
+                $cachedOptions[ICache::FILES] = $this->reflection->getRelatedFiles();
             }
 
             $cache->save(
@@ -139,7 +139,7 @@ class Select extends \UniMapper\Query
         }
 
         return $mapper->mapCollection(
-            $this->entityReflection->getName(),
+            $this->reflection->getName(),
             empty($result) ? [] : $result
         );
     }
@@ -192,7 +192,7 @@ class Select extends \UniMapper\Query
                 [
                     "name" => $this->getName(),
                     "entity" => UNC::classToName(
-                        $this->entityReflection->getClassName(), UNC::ENTITY_MASK
+                        $this->reflection->getClassName(), UNC::ENTITY_MASK
                     ),
                     "limit" => $this->limit,
                     "offset" => $this->offset,
@@ -212,7 +212,7 @@ class Select extends \UniMapper\Query
 
         if (empty($this->selection)) {
 
-            foreach ($this->entityReflection->getProperties() as $property) {
+            foreach ($this->reflection->getProperties() as $property) {
 
                 // Exclude associations & computed properties & disabled mapping
                 if (!$property->hasOption(Reflection\Property\Option\Assoc::KEY)
@@ -229,9 +229,9 @@ class Select extends \UniMapper\Query
             $selection = $this->selection;
 
             // Include primary automatically if not provided
-            if ($this->entityReflection->hasPrimary()) {
+            if ($this->reflection->hasPrimary()) {
 
-                $primaryName = $this->entityReflection
+                $primaryName = $this->reflection
                     ->getPrimaryProperty()
                     ->getName();
 
@@ -242,7 +242,7 @@ class Select extends \UniMapper\Query
 
             // Unmap all names
             foreach ($selection as $index => $name) {
-                $selection[$index] = $this->entityReflection->getProperty($name)->getUnmapped();
+                $selection[$index] = $this->reflection->getProperty($name)->getUnmapped();
             }
         }
 

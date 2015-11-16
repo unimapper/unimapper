@@ -145,7 +145,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate,
      *
      * @deprecated
      */
-    public function getEntityReflection()
+    public function getReflection()
     {
         return Entity\Reflection::load($this->entityClass);
     }
