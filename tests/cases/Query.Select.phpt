@@ -352,7 +352,7 @@ class QuerySelectTest extends TestCase
                 "1467971bc97a9e255c92bc5e2c4904a3",
                 [["fooId" => 3], ["fooId" => 4]],
                 [
-                    Cache\ICache::TAGS => ["myTag", Cache\ICache::TAG_QUERY],
+                    Cache\ICache::TAGS => ["myTag"],
                     Cache\ICache::FILES => [$reflectionClass->getFileName()]
                 ]
             );

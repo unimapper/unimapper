@@ -14,9 +14,6 @@ interface ICache
           SLIDING = "sliding",
           TAGS = "tags";
 
-    const TAG_QUERY = "query",
-          TAG_REFLECTION = "reflection";
-
     public function load($key);
 
     public function save($key, $data, array $options = []);

@@ -117,13 +117,6 @@ class Select extends \UniMapper\Query
 
             $cachedOptions = $this->cachedOptions;
 
-            // Add default cache tag
-            if (isset($cachedOptions[ICache::TAGS])) {
-                $cachedOptions[ICache::TAGS][] = ICache::TAG_QUERY; // @todo is it really array?
-            } else {
-                $cachedOptions[ICache::TAGS] = [ICache::TAG_QUERY];
-            }
-
             // Cache invalidation should depend on entity changes
             if (isset($cachedOptions[ICache::FILES])) {
                 $cachedOptions[ICache::FILES] += $this->reflection->getRelatedFiles();
