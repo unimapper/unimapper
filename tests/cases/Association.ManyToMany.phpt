@@ -128,6 +128,30 @@ class AssociationManyToManyTest extends TestCase
         Assert::null($association->saveChanges(1, $connectionMock, $collection));
     }
 
+    public function testSaveChangesEmptyWithNoChanges()
+    {
+        $connectionMock = Mockery::mock("UniMapper\Connection");
+        $connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+        $connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("BarAdapter")
+            ->andReturn($this->adapters["BarAdapter"]);
+
+        $collection = Bar::createCollection();
+
+        $association = new Association\ManyToMany(
+            "manyToMany",
+            Foo::getReflection(),
+            Bar::getReflection(),
+            ["foo_fooId", "foo_bar", "bar_barId"]
+        );
+
+        Assert::null($association->saveChanges(1, $connectionMock, $collection));
+    }
+
 }
 
 /**

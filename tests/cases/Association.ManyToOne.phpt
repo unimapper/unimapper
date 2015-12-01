@@ -62,6 +62,23 @@ class AssociationManyToOneTest extends TestCase
         Assert::null($association->saveChanges(1, $this->connectionMock, $entity));
     }
 
+    public function testSaveChangesWithNoChange()
+    {
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+
+        $association = new Association\ManyToOne(
+            "manyToOne",
+            Foo::getReflection(),
+            Bar::getReflection(),
+            ["barId"]
+        );
+
+        Assert::null($association->saveChanges(1, $this->connectionMock, new Bar(["id" => 2])));
+    }
+
     /**
      * @throws UniMapper\Exception\InvalidArgumentException Only entity with primary can save changes!
      */

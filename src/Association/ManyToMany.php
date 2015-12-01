@@ -184,6 +184,10 @@ class ManyToMany extends Multi
         Entity\Collection $collection,
         $action = Adapter\IAdapter::ASSOC_ADD
     ) {
+        if (count($collection->getChanges()) === 0) {
+            return;
+        }
+
         if ($action === Adapter\IAdapter::ASSOC_REMOVE) {
 
             $assocKeys = $collection->getChanges()[Entity::CHANGE_DETACH];
