@@ -78,10 +78,11 @@ class OneToMany extends Multi
         Connection $connection,
         Entity\Collection $collection
     ) {
-        $changes = $collection->getChanges();
-        if (empty(array_filter($changes))) {
+        $changes = array_filter($collection->getChanges());
+        if (empty($changes)) {
             return;
         }
+        $changes = $collection->getChanges();
 
         $targetAdapter = $connection->getAdapter(
             $this->targetReflection->getAdapterName()

@@ -160,8 +160,8 @@ class ManyToMany extends Multi
      */
     public function saveChanges($primaryValue, Connection $connection, Entity\Collection $collection)
     {
-        $changes = $collection->getChanges();
-        if (empty(array_filter($changes))) {
+        $changes = array_filter($collection->getChanges());
+        if (empty($changes)) {
             return;
         }
 
