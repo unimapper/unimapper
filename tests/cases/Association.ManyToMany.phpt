@@ -30,7 +30,11 @@ class AssociationManyToManyTest extends TestCase
     {
         $this->adapters["BarAdapter"]
             ->shouldReceive("createInsert")
-            ->with("barResource", [], "barId")
+            ->with(
+                "barResource",
+                ["text" => "foo"],
+                "barId"
+            )
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["BarAdapter"]
@@ -39,20 +43,22 @@ class AssociationManyToManyTest extends TestCase
             ->once()
             ->andReturn(2);
         $this->adapters["FooAdapter"]
-            ->shouldReceive("createModifyManyToMany")
+            ->shouldReceive("createManyToManyAdd")
             ->with(
-                Mockery::type("UniMapper\Association\ManyToMany"),
+                "fooResource",
+                "foo_bar",
+                "barResource",
+                "foo_fooId",
+                "bar_barId",
                 1,
-                [2],
-                \UniMapper\Adapter\IAdapter::ASSOC_ADD
+                [2]
             )
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]
             ->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
-            ->once()
-            ->andReturn(null);
+            ->once();
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
         $connectionMock->shouldReceive("getAdapter")
@@ -87,23 +93,24 @@ class AssociationManyToManyTest extends TestCase
         $this->adapters["BarAdapter"]
             ->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
-            ->once()
-            ->andReturn(2);
+            ->once();
         $this->adapters["FooAdapter"]
-            ->shouldReceive("createModifyManyToMany")
+            ->shouldReceive("createManyToManyRemove")
             ->with(
-                Mockery::type("UniMapper\Association\ManyToMany"),
+                "fooResource",
+                "foo_bar",
+                "barResource",
+                "foo_fooId",
+                "bar_barId",
                 1,
-                [3],
-                \UniMapper\Adapter\IAdapter::ASSOC_REMOVE
+                [3]
             )
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]
             ->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
-            ->once()
-            ->andReturn(null);
+            ->once();
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
         $connectionMock->shouldReceive("getAdapter")
@@ -130,18 +137,6 @@ class AssociationManyToManyTest extends TestCase
 
     public function testSaveChangesEmptyWithNoChanges()
     {
-        $connectionMock = Mockery::mock("UniMapper\Connection");
-        $connectionMock->shouldReceive("getAdapter")
-            ->once()
-            ->with("FooAdapter")
-            ->andReturn($this->adapters["FooAdapter"]);
-        $connectionMock->shouldReceive("getAdapter")
-            ->once()
-            ->with("BarAdapter")
-            ->andReturn($this->adapters["BarAdapter"]);
-
-        $collection = Bar::createCollection();
-
         $association = new Association\ManyToMany(
             "manyToMany",
             Foo::getReflection(),
@@ -149,7 +144,13 @@ class AssociationManyToManyTest extends TestCase
             ["foo_fooId", "foo_bar", "bar_barId"]
         );
 
-        Assert::null($association->saveChanges(1, $connectionMock, $collection));
+        Assert::null(
+            $association->saveChanges(
+                1,
+                Mockery::mock("UniMapper\Connection"),
+                Bar::createCollection()
+            )
+        );
     }
 
 }
@@ -164,7 +165,8 @@ class Foo extends \UniMapper\Entity {}
 /**
  * @adapter BarAdapter(barResource)
  *
- * @property int $id m:primary m:map-by(barId)
+ * @property int    $id   m:primary m:map-by(barId)
+ * @property string $text
  */
 class Bar extends \UniMapper\Entity {}
 

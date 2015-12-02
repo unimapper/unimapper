@@ -2,13 +2,8 @@
 
 namespace UniMapper\Adapter;
 
-use UniMapper\Association\ManyToMany;
-
 interface IAdapter
 {
-
-    const ASSOC_REMOVE = "remove",
-          ASSOC_ADD = "add";
 
     public function createDelete($resource);
 
@@ -24,7 +19,9 @@ interface IAdapter
 
     public function createUpdateOne($resource, $column, $primaryValue, array $values);
 
-    public function createModifyManyToMany(ManyToMany $association, $primaryValue, array $keys, $action = self::ASSOC_ADD);
+    public function createManyToManyAdd($sourceResource, $joinResource, $targetResource, $joinKey, $referencingKey,  $primaryValue, array $keys);
+
+    public function createManyToManyRemove($sourceResource, $joinResource, $targetResource, $joinKey, $referencingKey, $primaryValue, array $keys);
 
     public function execute(IQuery $query);
 

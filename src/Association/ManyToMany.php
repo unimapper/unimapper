@@ -160,6 +160,11 @@ class ManyToMany extends Multi
      */
     public function saveChanges($primaryValue, Connection $connection, Entity\Collection $collection)
     {
+        $changes = $collection->getChanges();
+        if (empty(array_filter($changes))) {
+            return;
+        }
+
         $sourceAdapter = $connection->getAdapter($this->sourceReflection->getAdapterName());
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
 
@@ -167,63 +172,82 @@ class ManyToMany extends Multi
             $sourceAdapter = $targetAdapter;
         }
 
-        $this->_save($primaryValue, $sourceAdapter, $targetAdapter, $collection);
-        $this->_save(
+        $this->_saveAdd(
             $primaryValue,
             $sourceAdapter,
             $targetAdapter,
-            $collection,
-            Adapter\IAdapter::ASSOC_REMOVE
+            $collection
+        );
+        $this->_saveRemove(
+            $primaryValue,
+            $sourceAdapter,
+            $targetAdapter,
+            $collection
         );
     }
 
-    private function _save(
+    private function _saveRemove(
         $primaryValue,
         Adapter $joinAdapter,
         Adapter $targetAdapter,
-        Entity\Collection $collection,
-        $action = Adapter\IAdapter::ASSOC_ADD
+        Entity\Collection $collection
     ) {
-        if (count($collection->getChanges()) === 0) {
-            return;
-        }
+        $assocKeys = $collection->getChanges()[Entity::CHANGE_DETACH];
+        foreach ($collection->getChanges()[Entity::CHANGE_REMOVE] as $targetPrimary) {
 
-        if ($action === Adapter\IAdapter::ASSOC_REMOVE) {
-
-            $assocKeys = $collection->getChanges()[Entity::CHANGE_DETACH];
-            foreach ($collection->getChanges()[Entity::CHANGE_REMOVE] as $targetPrimary) {
-
-                $targetAdapter->execute(
-                    $targetAdapter->createDeleteOne(
-                        $this->targetReflection->getAdapterResource(),
-                        $this->targetReflection->getPrimaryProperty()->getUnmapped(),
-                        $targetPrimary
-                    )
-                );
-                $assocKeys[] = $targetPrimary;
-            }
-        } else {
-
-            $assocKeys = $collection->getChanges()[Entity::CHANGE_ATTACH];
-            foreach ($collection->getChanges()[Entity::CHANGE_ADD] as $entity) {
-
-                $assocKeys[] = $targetAdapter->execute(
-                    $targetAdapter->createInsert(
-                        $this->targetReflection->getAdapterResource(),
-                        $entity->getData(),
-                        $this->targetReflection->getPrimaryProperty()->getUnmapped()
-                    )
-                );
-            }
+            $targetAdapter->execute(
+                $targetAdapter->createDeleteOne(
+                    $this->targetReflection->getAdapterResource(),
+                    $this->targetReflection->getPrimaryProperty()->getUnmapped(),
+                    $targetPrimary
+                )
+            );
+            $assocKeys[] = $targetPrimary;
         }
 
         if ($assocKeys) {
 
-            $adapterQuery = $joinAdapter->createModifyManyToMany(
-                $this,
+            $adapterQuery = $joinAdapter->createManyToManyRemove(
+                $this->getSourceResource(),
+                $this->getJoinResource(),
+                $this->getTargetResource(),
+                $this->getJoinKey(),
+                $this->getReferencingKey(),
                 $primaryValue,
-                array_unique($assocKeys),
-                $action
+                array_unique($assocKeys)
+            );
+            $joinAdapter->execute($adapterQuery);
+        }
+    }
+
+    private function _saveAdd(
+        $primaryValue,
+        Adapter $joinAdapter,
+        Adapter $targetAdapter,
+        Entity\Collection $collection
+    ) {
+        $assocKeys = $collection->getChanges()[Entity::CHANGE_ATTACH];
+        foreach ($collection->getChanges()[Entity::CHANGE_ADD] as $entity) {
+
+            $assocKeys[] = $targetAdapter->execute(
+                $targetAdapter->createInsert(
+                    $this->targetReflection->getAdapterResource(),
+                    $entity->getData(),
+                    $this->targetReflection->getPrimaryProperty()->getUnmapped()
+                )
+            );
+        }
+
+        if ($assocKeys) {
+
+            $adapterQuery = $joinAdapter->createManyToManyAdd(
+                $this->getSourceResource(),
+                $this->getJoinResource(),
+                $this->getTargetResource(),
+                $this->getJoinKey(),
+                $this->getReferencingKey(),
+                $primaryValue,
+                array_unique($assocKeys)
             );
             $joinAdapter->execute($adapterQuery);
         }
