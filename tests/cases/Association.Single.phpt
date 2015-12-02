@@ -9,7 +9,7 @@ require __DIR__ . '/../bootstrap.php';
 /**
  * @testCase
  */
-class AssociationManyToOneTest extends TestCase
+class AssociationSingleTest extends TestCase
 {
 
     /** @var array $adapters */
@@ -53,7 +53,7 @@ class AssociationManyToOneTest extends TestCase
         $entity->attach();
 
         $association = new Association\ManyToOne(
-            "manyToOne",
+            "propertyName",
             Foo::getReflection(),
             Bar::getReflection(),
             ["barId"]
@@ -99,7 +99,7 @@ class AssociationManyToOneTest extends TestCase
         $entity->add();
 
         $association = new Association\ManyToOne(
-            "manyToOne",
+            "propertyName",
             Foo::getReflection(),
             Bar::getReflection(),
             ["barId"]
@@ -130,7 +130,7 @@ class AssociationManyToOneTest extends TestCase
         $entity->detach();
 
         $association = new Association\ManyToOne(
-            "manyToOne",
+            "propertyName",
             Foo::getReflection(),
             Bar::getReflection(),
             ["barId"]
@@ -176,7 +176,7 @@ class AssociationManyToOneTest extends TestCase
         $entity->remove();
 
         $association = new Association\ManyToOne(
-            "manyToOne",
+            "propertyName",
             Foo::getReflection(),
             Bar::getReflection(),
             ["barId"]
@@ -193,7 +193,7 @@ class AssociationManyToOneTest extends TestCase
             ->andReturn($this->adapters["FooAdapter"]);
 
         $association = new Association\ManyToOne(
-            "manyToOne",
+            "propertyName",
             Foo::getReflection(),
             Bar::getReflection(),
             ["barId"]
@@ -208,7 +208,7 @@ class AssociationManyToOneTest extends TestCase
     public function testSaveChangesNoPrimary()
     {
         $association = new Association\ManyToOne(
-            "manyToOne",
+            "propertyName",
             Foo::getReflection(),
             Bar::getReflection(),
             ["barId"]
@@ -219,7 +219,7 @@ class AssociationManyToOneTest extends TestCase
     public function testLoadWithEmptyPrimaries()
     {
         $association = new Association\ManyToOne(
-            "manyToOne",
+            "propertyName",
             Foo::getReflection(),
             Bar::getReflection(),
             ["barId"]
@@ -246,5 +246,5 @@ class Bar extends \UniMapper\Entity {}
 
 class NoPrimary extends \UniMapper\Entity {}
 
-$testCase = new AssociationManyToOneTest;
+$testCase = new AssociationSingleTest;
 $testCase->run();

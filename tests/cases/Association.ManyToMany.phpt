@@ -75,7 +75,7 @@ class AssociationManyToManyTest extends TestCase
         $collection->add(new Bar(["text" => "foo"]));
 
         $association = new Association\ManyToMany(
-            "manyToMany",
+            "propertyName",
             Foo::getReflection(),
             Bar::getReflection(),
             ["foo_fooId", "foo_bar", "bar_barId"]
@@ -119,7 +119,7 @@ class AssociationManyToManyTest extends TestCase
         $collection->attach(new Bar(["id" => 3]));
 
         $association = new Association\ManyToMany(
-            "manyToMany",
+            "propertyName",
             Foo::getReflection(),
             Bar::getReflection(),
             ["foo_fooId", "foo_bar", "bar_barId"]
@@ -177,7 +177,7 @@ class AssociationManyToManyTest extends TestCase
         $collection->remove(new Bar(["id" => 3]));
 
         $association = new Association\ManyToMany(
-            "manyToMany",
+            "propertyName",
             Foo::getReflection(),
             Bar::getReflection(),
             ["foo_fooId", "foo_bar", "bar_barId"]
@@ -221,7 +221,7 @@ class AssociationManyToManyTest extends TestCase
         $collection->detach(new Bar(["id" => 3]));
 
         $association = new Association\ManyToMany(
-            "manyToMany",
+            "propertyName",
             Foo::getReflection(),
             Bar::getReflection(),
             ["foo_fooId", "foo_bar", "bar_barId"]
@@ -233,7 +233,7 @@ class AssociationManyToManyTest extends TestCase
     public function testSaveChangesEmptyWithNoChanges()
     {
         $association = new Association\ManyToMany(
-            "manyToMany",
+            "propertyName",
             Foo::getReflection(),
             Bar::getReflection(),
             ["foo_fooId", "foo_bar", "bar_barId"]
