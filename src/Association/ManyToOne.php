@@ -96,13 +96,76 @@ class ManyToOne extends Single
         switch ($entity->getChangeType()) {
         case Entity::CHANGE_ATTACH:
 
-            $adapterQuery = $sourceAdapter->createUpdateOne(
-                $this->getSourceResource(),
-                $this->getPrimaryKey(),
-                $primaryValue,
-                [$this->getReferencingKey() => $entity->{$primaryName}]
+            $sourceAdapter->execute(
+                $adapterQuery = $sourceAdapter->createUpdateOne(
+                    $this->getSourceResource(),
+                    $this->getPrimaryKey(),
+                    $primaryValue,
+                    [$this->getReferencingKey() => $entity->{$primaryName}]
+                )
             );
-            $sourceAdapter->execute($adapterQuery);
+            break;
+        case Entity::CHANGE_ADD:
+
+            $targetAdapter = $connection->getAdapter(
+                $this->targetReflection->getAdapterName()
+            );
+
+            $sourceAdapter->execute(
+                $sourceAdapter->createUpdateOne(
+                    $this->getSourceResource(),
+                    $this->getPrimaryKey(),
+                    $primaryValue,
+                    [
+                        $this->getReferencingKey() => $targetAdapter->execute(
+                            $targetAdapter->createInsert(
+                                $this->getTargetResource(),
+                                $entity->getData(),
+                                $this->getTargetReflection()
+                                    ->getPrimaryProperty()
+                                    ->getUnmapped()
+                            )
+                        )
+                    ]
+                )
+            );
+
+            break;
+        case Entity::CHANGE_REMOVE:
+
+            $targetAdapter = $connection->getAdapter(
+                $this->targetReflection->getAdapterName()
+            );
+
+            $targetAdapter->execute(
+                $targetAdapter->createDeleteOne(
+                    $this->getTargetResource(),
+                    $this->getTargetReflection()
+                        ->getPrimaryProperty()
+                        ->getUnmapped(),
+                    $entity->{$primaryName}
+                )
+            );
+
+            $sourceAdapter->execute(
+                $sourceAdapter->createUpdateOne(
+                    $this->getSourceResource(),
+                    $this->getPrimaryKey(),
+                    $primaryValue,
+                    [$this->getReferencingKey() => null]
+                )
+            );
+            break;
+        case Entity::CHANGE_DETACH:
+
+            $sourceAdapter->execute(
+                $adapterQuery = $sourceAdapter->createUpdateOne(
+                    $this->getSourceResource(),
+                    $this->getPrimaryKey(),
+                    $primaryValue,
+                    [$this->getReferencingKey() => null]
+                )
+            );
             break;
         default:
             break;

@@ -24,7 +24,7 @@ class AssociationManyToOneTest extends TestCase
     public function setUp()
     {
         $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
-        $this->adapters["RemoteAdapter"] = Mockery::mock("UniMapper\Adapter");
+        $this->adapters["BarAdapter"] = Mockery::mock("UniMapper\Adapter");
 
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
 
@@ -51,6 +51,129 @@ class AssociationManyToOneTest extends TestCase
 
         $entity = new Bar(["id" => 2]);
         $entity->attach();
+
+        $association = new Association\ManyToOne(
+            "manyToOne",
+            Foo::getReflection(),
+            Bar::getReflection(),
+            ["barId"]
+        );
+
+        Assert::null($association->saveChanges(1, $this->connectionMock, $entity));
+    }
+
+    public function testSaveChangesAdd()
+    {
+        $this->adapters["BarAdapter"]
+            ->shouldReceive("createInsert")
+            ->with("barResource", ["text" => "foo"], "barId")
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["BarAdapter"]
+            ->shouldReceive("onExecute")
+            ->with($this->adapterQueryMock)
+            ->once()
+            ->andReturn(2);
+
+        $this->adapters["FooAdapter"]
+            ->shouldReceive("createUpdateOne")
+            ->with("fooResource", "fooId", 1, ["barId" => 2])
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]
+            ->shouldReceive("onExecute")
+            ->with($this->adapterQueryMock)
+            ->once()
+            ->andReturn(null);
+
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("BarAdapter")
+            ->andReturn($this->adapters["BarAdapter"]);
+
+        $entity = new Bar(["text" => "foo"]);
+        $entity->add();
+
+        $association = new Association\ManyToOne(
+            "manyToOne",
+            Foo::getReflection(),
+            Bar::getReflection(),
+            ["barId"]
+        );
+
+        Assert::null($association->saveChanges(1, $this->connectionMock, $entity));
+    }
+
+    public function testSaveChangesDetach()
+    {
+        $this->adapters["FooAdapter"]
+            ->shouldReceive("createUpdateOne")
+            ->with("fooResource", "fooId", 1, ["barId" => null])
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]
+            ->shouldReceive("onExecute")
+            ->with($this->adapterQueryMock)
+            ->once()
+            ->andReturn(null);
+
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+
+        $entity = new Bar;
+        $entity->detach();
+
+        $association = new Association\ManyToOne(
+            "manyToOne",
+            Foo::getReflection(),
+            Bar::getReflection(),
+            ["barId"]
+        );
+
+        Assert::null($association->saveChanges(1, $this->connectionMock, $entity));
+    }
+
+    public function testSaveChangesRemove()
+    {
+        $this->adapters["BarAdapter"]
+            ->shouldReceive("createDeleteOne")
+            ->with("barResource", "barId", 2)
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["BarAdapter"]
+            ->shouldReceive("onExecute")
+            ->with($this->adapterQueryMock)
+            ->once()
+            ->andReturn(null);
+
+        $this->adapters["FooAdapter"]
+            ->shouldReceive("createUpdateOne")
+            ->with("fooResource", "fooId", 1, ["barId" => null])
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]
+            ->shouldReceive("onExecute")
+            ->with($this->adapterQueryMock)
+            ->once()
+            ->andReturn(null);
+
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("BarAdapter")
+            ->andReturn($this->adapters["BarAdapter"]);
+
+        $entity = new Bar(["id" => 2]);
+        $entity->remove();
 
         $association = new Association\ManyToOne(
             "manyToOne",
@@ -116,7 +239,8 @@ class Foo extends \UniMapper\Entity {}
 /**
  * @adapter BarAdapter(barResource)
  *
- * @property int $id m:primary m:map-by(barId)
+ * @property int    $id   m:primary m:map-by(barId)
+ * @property string $text
  */
 class Bar extends \UniMapper\Entity {}
 
