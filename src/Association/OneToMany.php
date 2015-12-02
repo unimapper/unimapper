@@ -92,8 +92,7 @@ class OneToMany extends Multi
         if ($changes[Entity::CHANGE_REMOVE]) {
 
             $adapterQuery = $targetAdapter->createDelete(
-                $this->targetReflection->getAdapterResource(),
-                $this->targetReflection->getPrimaryProperty()->getUnmapped()
+                $this->targetReflection->getAdapterResource()
             );
             $adapterQuery->setFilter(
                 [

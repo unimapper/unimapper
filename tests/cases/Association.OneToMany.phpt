@@ -33,17 +33,17 @@ class AssociationOneToManyTest extends TestCase
             ->with(
                 "barResource",
                 [
-                    "foo_fooId" => 1,
-                    "text" => "foo"
+                    "text" => "foo",
+                    "foo_fooId" => 1
                 ],
                 "barId"
             )
-            ->once()
+            ->twice()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["BarAdapter"]
             ->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
-            ->once();
+            ->twice();
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
         $connectionMock->shouldReceive("getAdapter")
@@ -52,6 +52,7 @@ class AssociationOneToManyTest extends TestCase
             ->andReturn($this->adapters["BarAdapter"]);
 
         $collection = Bar::createCollection();
+        $collection->add(new Bar(["text" => "foo"]));
         $collection->add(new Bar(["text" => "foo"]));
 
         $association = new Association\OneToMany(
@@ -78,7 +79,7 @@ class AssociationOneToManyTest extends TestCase
 
         $this->adapterQueryMock->shouldReceive("setFilter")
             ->once()
-            ->with(["foo_fooId" => [\UniMapper\Entity\Filter::EQUAL => [1]]]);
+            ->with(["foo_fooId" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]]);
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
         $connectionMock->shouldReceive("getAdapter")
@@ -87,7 +88,8 @@ class AssociationOneToManyTest extends TestCase
             ->andReturn($this->adapters["BarAdapter"]);
 
         $collection = Bar::createCollection();
-        $collection->attach(new Bar(["id" => 1, "text" => "foo"]));
+        $collection->attach(new Bar(["id" => 1]));
+        $collection->attach(new Bar(["id" => 2]));
 
         $association = new Association\OneToMany(
             "oneToMany",
@@ -113,7 +115,7 @@ class AssociationOneToManyTest extends TestCase
 
         $this->adapterQueryMock->shouldReceive("setFilter")
             ->once()
-            ->with(["foo_fooId" => [\UniMapper\Entity\Filter::EQUAL => [1]]]);
+            ->with(["foo_fooId" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]]);
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
         $connectionMock->shouldReceive("getAdapter")
@@ -122,7 +124,8 @@ class AssociationOneToManyTest extends TestCase
             ->andReturn($this->adapters["BarAdapter"]);
 
         $collection = Bar::createCollection();
-        $collection->detach(new Bar(["id" => 1, "text" => "foo"]));
+        $collection->detach(new Bar(["id" => 1]));
+        $collection->detach(new Bar(["id" => 2]));
 
         $association = new Association\OneToMany(
             "oneToMany",
@@ -138,7 +141,7 @@ class AssociationOneToManyTest extends TestCase
     {
         $this->adapters["BarAdapter"]
             ->shouldReceive("createDelete")
-            ->with("barResource", "barId")
+            ->with("barResource")
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["BarAdapter"]
@@ -148,7 +151,7 @@ class AssociationOneToManyTest extends TestCase
 
         $this->adapterQueryMock->shouldReceive("setFilter")
             ->once()
-            ->with(["foo_fooId" => [\UniMapper\Entity\Filter::EQUAL => [1]]]);
+            ->with(["foo_fooId" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]]);
 
         $connectionMock = Mockery::mock("UniMapper\Connection");
         $connectionMock->shouldReceive("getAdapter")
@@ -157,7 +160,8 @@ class AssociationOneToManyTest extends TestCase
             ->andReturn($this->adapters["BarAdapter"]);
 
         $collection = Bar::createCollection();
-        $collection->remove(new Bar(["id" => 1, "text" => "foo"]));
+        $collection->remove(new Bar(["id" => 1]));
+        $collection->remove(new Bar(["id" => 2]));
 
         $association = new Association\OneToMany(
             "oneToMany",

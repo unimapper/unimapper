@@ -192,19 +192,24 @@ class ManyToMany extends Multi
         Adapter $targetAdapter,
         Entity\Collection $collection
     ) {
-        $assocKeys = $collection->getChanges()[Entity::CHANGE_DETACH];
-        foreach ($collection->getChanges()[Entity::CHANGE_REMOVE] as $targetPrimary) {
+        $changes = $collection->getChanges();
 
-            $targetAdapter->execute(
-                $targetAdapter->createDeleteOne(
-                    $this->targetReflection->getAdapterResource(),
-                    $this->targetReflection->getPrimaryProperty()->getUnmapped(),
-                    $targetPrimary
-                )
+        if ($changes[Entity::CHANGE_REMOVE]) {
+
+            $adapterQuery = $targetAdapter->createDelete(
+                $this->targetReflection->getAdapterResource()
             );
-            $assocKeys[] = $targetPrimary;
+            $adapterQuery->setFilter(
+                [
+                    $this->targetReflection->getPrimaryProperty()->getUnmapped() => [
+                        Entity\Filter::EQUAL => $changes[Entity::CHANGE_REMOVE]
+                    ]
+                ]
+            );
+            $targetAdapter->execute($adapterQuery);
         }
 
+        $assocKeys = $changes[Entity::CHANGE_DETACH] + $changes[Entity::CHANGE_REMOVE];
         if ($assocKeys) {
 
             $adapterQuery = $joinAdapter->createManyToManyRemove(

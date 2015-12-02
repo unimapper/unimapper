@@ -35,13 +35,13 @@ class AssociationManyToManyTest extends TestCase
                 ["text" => "foo"],
                 "barId"
             )
-            ->once()
+            ->twice()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["BarAdapter"]
             ->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
-            ->once()
-            ->andReturn(2);
+            ->twice()
+            ->andReturn(2, 3);
         $this->adapters["FooAdapter"]
             ->shouldReceive("createManyToManyAdd")
             ->with(
@@ -51,7 +51,7 @@ class AssociationManyToManyTest extends TestCase
                 "foo_fooId",
                 "bar_barId",
                 1,
-                [2]
+                [2, 3]
             )
             ->once()
             ->andReturn($this->adapterQueryMock);
@@ -72,6 +72,7 @@ class AssociationManyToManyTest extends TestCase
 
         $collection = Bar::createCollection();
         $collection->add(new Bar(["text" => "foo"]));
+        $collection->add(new Bar(["text" => "foo"]));
 
         $association = new Association\ManyToMany(
             "manyToMany",
@@ -83,19 +84,10 @@ class AssociationManyToManyTest extends TestCase
         Assert::null($association->saveChanges(1, $connectionMock, $collection));
     }
 
-    public function testSaveChangesRemove()
+    public function testSaveChangesAttach()
     {
-        $this->adapters["BarAdapter"]
-            ->shouldReceive("createDeleteOne")
-            ->with("barResource", "barId", 3)
-            ->once()
-            ->andReturn($this->adapterQueryMock);
-        $this->adapters["BarAdapter"]
-            ->shouldReceive("onExecute")
-            ->with($this->adapterQueryMock)
-            ->once();
         $this->adapters["FooAdapter"]
-            ->shouldReceive("createManyToManyRemove")
+            ->shouldReceive("createManyToManyAdd")
             ->with(
                 "fooResource",
                 "foo_bar",
@@ -103,7 +95,7 @@ class AssociationManyToManyTest extends TestCase
                 "foo_fooId",
                 "bar_barId",
                 1,
-                [3]
+                [2, 3]
             )
             ->once()
             ->andReturn($this->adapterQueryMock);
@@ -123,7 +115,110 @@ class AssociationManyToManyTest extends TestCase
             ->andReturn($this->adapters["BarAdapter"]);
 
         $collection = Bar::createCollection();
-        $collection->remove(new Bar(["id" => 3, "text" => "foo"]));
+        $collection->attach(new Bar(["id" => 2]));
+        $collection->attach(new Bar(["id" => 3]));
+
+        $association = new Association\ManyToMany(
+            "manyToMany",
+            Foo::getReflection(),
+            Bar::getReflection(),
+            ["foo_fooId", "foo_bar", "bar_barId"]
+        );
+
+        Assert::null($association->saveChanges(1, $connectionMock, $collection));
+    }
+
+    public function testSaveChangesRemove()
+    {
+        $this->adapters["BarAdapter"]
+            ->shouldReceive("createDelete")
+            ->with("barResource")
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+
+        $this->adapterQueryMock->shouldReceive("setFilter")
+            ->once()
+            ->with(["barId" => [\UniMapper\Entity\Filter::EQUAL => [2, 3]]]);
+
+        $this->adapters["BarAdapter"]
+            ->shouldReceive("onExecute")
+            ->with($this->adapterQueryMock)
+            ->once();
+        $this->adapters["FooAdapter"]
+            ->shouldReceive("createManyToManyRemove")
+            ->with(
+                "fooResource",
+                "foo_bar",
+                "barResource",
+                "foo_fooId",
+                "bar_barId",
+                1,
+                [2, 3]
+            )
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]
+            ->shouldReceive("onExecute")
+            ->with($this->adapterQueryMock)
+            ->once();
+
+        $connectionMock = Mockery::mock("UniMapper\Connection");
+        $connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+        $connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("BarAdapter")
+            ->andReturn($this->adapters["BarAdapter"]);
+
+        $collection = Bar::createCollection();
+        $collection->remove(new Bar(["id" => 2]));
+        $collection->remove(new Bar(["id" => 3]));
+
+        $association = new Association\ManyToMany(
+            "manyToMany",
+            Foo::getReflection(),
+            Bar::getReflection(),
+            ["foo_fooId", "foo_bar", "bar_barId"]
+        );
+
+        Assert::null($association->saveChanges(1, $connectionMock, $collection));
+    }
+
+    public function testSaveChangesDetach()
+    {
+        $this->adapters["FooAdapter"]
+            ->shouldReceive("createManyToManyRemove")
+            ->with(
+                "fooResource",
+                "foo_bar",
+                "barResource",
+                "foo_fooId",
+                "bar_barId",
+                1,
+                [2, 3]
+            )
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+        $this->adapters["FooAdapter"]
+            ->shouldReceive("onExecute")
+            ->with($this->adapterQueryMock)
+            ->once();
+
+        $connectionMock = Mockery::mock("UniMapper\Connection");
+        $connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("FooAdapter")
+            ->andReturn($this->adapters["FooAdapter"]);
+        $connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("BarAdapter")
+            ->andReturn($this->adapters["BarAdapter"]);
+
+        $collection = Bar::createCollection();
+        $collection->detach(new Bar(["id" => 2]));
+        $collection->detach(new Bar(["id" => 3]));
 
         $association = new Association\ManyToMany(
             "manyToMany",
