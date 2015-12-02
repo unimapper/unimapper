@@ -7,6 +7,8 @@ interface IAdapter
 
     public function createDelete($resource);
 
+    public function createDeleteOne($resource, $column, $primaryValue);
+
     public function createSelectOne($resource, $column, $primaryValue);
 
     public function createSelect($resource, array $selection = [], array $orderBy = [], $limit = 0, $offset = 0);
