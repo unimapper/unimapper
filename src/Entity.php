@@ -111,7 +111,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \IteratorAggr
         }
     }
 
-    private function _validateChangeType()
+    private function _validateChangeType($primaryRequired = false)
     {
         $reflection = $this::getReflection();
 
@@ -122,7 +122,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \IteratorAggr
         }
 
         $primaryName = $reflection->getPrimaryProperty()->getName();
-        if (empty($this->{$primaryName})) {
+        if ($primaryRequired && empty($this->{$primaryName})) {
             throw new Exception\InvalidArgumentException(
                 "Primary value can not be empty!"
             );
@@ -143,7 +143,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \IteratorAggr
 
     public function attach()
     {
-        $this->_validateChangeType();
+        $this->_validateChangeType(true);
         $this->changeType = self::CHANGE_ATTACH;
     }
 
@@ -161,7 +161,7 @@ abstract class Entity implements \JsonSerializable, \Serializable, \IteratorAggr
 
     public function remove()
     {
-        $this->_validateChangeType();
+        $this->_validateChangeType(true);
         $this->changeType = self::CHANGE_REMOVE;
     }
 
