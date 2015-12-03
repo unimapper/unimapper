@@ -315,7 +315,7 @@ class EntityFilterTest extends TestCase
     /**
      * @throws UniMapper\Exception\FilterException Filter can not be used with computed, collections, entities and disabled mapping!
      */
-    public function testValidateMappingNotAllowedOnDsiabled()
+    public function testValidateMappingNotAllowedOnDisabled()
     {
         Filter::validate(Reflection::load("Entity"), ["disabledMap" => [Filter::EQUAL => 1]]);
     }
