@@ -27,7 +27,8 @@ class MapperTest extends TestCase
                 "integer" => "1",
                 "undefined" => 1,
                 "readonly" => 1,
-                "custom_filter" => "one,two,three",
+                "filter_array" => "one,two,three",
+                "filter_int" => "1",
                 "disabled" => 1
             ]
         );
@@ -36,7 +37,8 @@ class MapperTest extends TestCase
         Assert::same(1, $entity->integer);
         Assert::null($entity->disabled);
         Assert::same(1, $entity->readonly);
-        Assert::same(["one", "two", "three"], $entity->filter);
+        Assert::same(["one", "two", "three"], $entity->filterArray);
+        Assert::same(1, $entity->filterInt);
     }
 
     /**
@@ -74,14 +76,16 @@ class MapperTest extends TestCase
         Assert::same(
             array(
                 'string' => 'foo',
-                'custom_filter' => '1,2,3',
+                'filter_array' => '1,2,3',
+                'filter_int' => '1',
                 'entity' => array('integer' => 1)
             ),
             $this->mapper->unmapEntity(
                 new Entity(
                     [
                         "string" => "foo",
-                        "filter" => [1, 2, 3],
+                        "filterArray" => [1, 2, 3],
+                        "filterInt" => 1,
                         "entity" => new Entity(["integer" => 1]),
                         "readonly" => "foo",
                         "disabled" => 1
@@ -116,10 +120,18 @@ class MapperTest extends TestCase
     public function testUnmapFilter()
     {
         Assert::same(
-            ["custom_filter" => [\UniMapper\Entity\Filter::EQUAL => "1,2"]],
+            [
+                "filter_array" => [\UniMapper\Entity\Filter::EQUAL => "1,2"],
+                "filter_int" => [\UniMapper\Entity\Filter::EQUAL => ["1"]],
+                "integer" => [\UniMapper\Entity\Filter::EQUAL => [1]]
+            ],
             $this->mapper->unmapFilter(
                 Reflection::load("Entity"),
-                ["filter" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]]
+                [
+                    "filterArray" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]],
+                    "filterInt" => [\UniMapper\Entity\Filter::EQUAL => [1]],
+                    "integer" => [\UniMapper\Entity\Filter::EQUAL => [1]]
+                ]
             )
         );
     }
@@ -127,10 +139,10 @@ class MapperTest extends TestCase
     public function testUnmapFilterGroup()
     {
         Assert::same(
-            [["custom_filter" => [\UniMapper\Entity\Filter::EQUAL => "1,2"]]],
+            [["filter_array" => [\UniMapper\Entity\Filter::EQUAL => "1,2"]]],
             $this->mapper->unmapFilter(
                 Reflection::load("Entity"),
-                [["filter" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]]]
+                [["filterArray" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]]]
             )
         );
     }
@@ -142,8 +154,10 @@ class MapperTest extends TestCase
  *
  * @property int      $integer
  * @property string   $string
- * @property string   $disabled   m:map(false)
- * @property array    $filter     m:map-filter(stringToArray|arrayToString) m:map-by(custom_filter)
+ * @property string   $disabled    m:map(false)
+ * @property array    $filterArray m:map-filter(stringToArray|arrayToString) m:map-by(filter_array)
+ * @property int      $filterInt   m:map-filter(toInt|toString) m:map-by(filter_int)
+ * @property array    $array
  * @property Entity   $entity
  * @property Entity[] $collection
  *
@@ -159,6 +173,16 @@ class Entity extends \UniMapper\Entity
     public static function arrayToString($value)
     {
         return implode(',', $value);
+    }
+
+    public static function toInt($value)
+    {
+        return (int) $value;
+    }
+
+    public static function toString($value)
+    {
+        return (string) $value;
     }
 }
 
