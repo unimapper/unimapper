@@ -6,6 +6,7 @@ use UniMapper\Adapter;
 use UniMapper\Connection;
 use UniMapper\Entity;
 use UniMapper\Exception;
+use UniMapper\Mapper;
 
 class ManyToMany extends Multi
 {
@@ -167,22 +168,32 @@ class ManyToMany extends Multi
 
         $sourceAdapter = $connection->getAdapter($this->sourceReflection->getAdapterName());
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
+        $mapper = $connection->getMapper();
 
         if ($this->isRemote() && !$this->isDominant()) {
             $sourceAdapter = $targetAdapter;
         }
 
+        // Unmap primary value
+        $primaryValue = $mapper->unmapValue(
+            $this->sourceReflection->getPrimaryProperty(),
+            $primaryValue
+        );
+
         $this->_saveAdd(
             $primaryValue,
             $sourceAdapter,
             $targetAdapter,
-            $collection
+            $collection->getChanges(),
+            $mapper
         );
+
         $this->_saveRemove(
             $primaryValue,
             $sourceAdapter,
             $targetAdapter,
-            $collection
+            $collection->getChanges(),
+            $mapper
         );
     }
 
@@ -190,26 +201,32 @@ class ManyToMany extends Multi
         $primaryValue,
         Adapter $joinAdapter,
         Adapter $targetAdapter,
-        Entity\Collection $collection
+        array $changes,
+        Mapper $mapper
     ) {
-        $changes = $collection->getChanges();
-
         if ($changes[Entity::CHANGE_REMOVE]) {
 
             $adapterQuery = $targetAdapter->createDelete(
                 $this->targetReflection->getAdapterResource()
             );
             $adapterQuery->setFilter(
-                [
-                    $this->targetReflection->getPrimaryProperty()->getUnmapped() => [
-                        Entity\Filter::EQUAL => $changes[Entity::CHANGE_REMOVE]
+                $mapper->unmapFilter(
+                    $this->targetReflection,
+                    [
+                        $this->targetReflection->getPrimaryProperty()->getName() => [
+                            Entity\Filter::EQUAL => $changes[Entity::CHANGE_REMOVE]
+                        ]
                     ]
-                ]
+                )
             );
             $targetAdapter->execute($adapterQuery);
         }
 
-        $assocKeys = $changes[Entity::CHANGE_DETACH] + $changes[Entity::CHANGE_REMOVE];
+        $assocKeys = $this->_unmapAssocKeys(
+            $mapper,
+            $changes[Entity::CHANGE_DETACH] + $changes[Entity::CHANGE_REMOVE]
+        );
+
         if ($assocKeys) {
 
             $adapterQuery = $joinAdapter->createManyToManyRemove(
@@ -229,20 +246,22 @@ class ManyToMany extends Multi
         $primaryValue,
         Adapter $joinAdapter,
         Adapter $targetAdapter,
-        Entity\Collection $collection
+        array $changes,
+        Mapper $mapper
     ) {
-        $assocKeys = $collection->getChanges()[Entity::CHANGE_ATTACH];
-        foreach ($collection->getChanges()[Entity::CHANGE_ADD] as $entity) {
+        $assocKeys = $changes[Entity::CHANGE_ATTACH];
+        foreach ($changes[Entity::CHANGE_ADD] as $entity) {
 
             $assocKeys[] = $targetAdapter->execute(
                 $targetAdapter->createInsert(
                     $this->targetReflection->getAdapterResource(),
-                    $entity->getData(),
+                    $mapper->unmapEntity($entity),
                     $this->targetReflection->getPrimaryProperty()->getUnmapped()
                 )
             );
         }
 
+        $assocKeys = $this->_unmapAssocKeys($mapper, $assocKeys);
         if ($assocKeys) {
 
             $adapterQuery = $joinAdapter->createManyToManyAdd(
@@ -256,6 +275,17 @@ class ManyToMany extends Multi
             );
             $joinAdapter->execute($adapterQuery);
         }
+    }
+
+    private function _unmapAssocKeys(Mapper $mapper, array $keys)
+    {
+        return array_map(function ($val) use ($mapper) {
+
+            return $mapper->unmapValue(
+                $this->targetReflection->getPrimaryProperty(),
+                $val
+            );
+        }, $keys);
     }
 
 }

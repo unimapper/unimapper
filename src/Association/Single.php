@@ -92,11 +92,27 @@ abstract class Single extends \UniMapper\Association
             );
         }
 
-        $sourceAdapter = $connection->getAdapter($this->sourceReflection->getAdapterName());
+        if (!$entity->getChangeType()) {
+            return;
+        }
 
-        $primaryName = $reflection->getPrimaryProperty()->getName();
+        $sourceAdapter = $connection->getAdapter(
+            $this->sourceReflection->getAdapterName()
+        );
+
+        $primaryProperty = $reflection->getPrimaryProperty();
+        $primaryName = $primaryProperty->getName();
+
+        $mapper = $connection->getMapper();
+
+        // Unmap primary value
+        $primaryValue = $mapper->unmapValue(
+            $this->sourceReflection->getPrimaryProperty(),
+            $primaryValue
+        );
 
         switch ($entity->getChangeType()) {
+
             case Entity::CHANGE_ATTACH:
 
                 $sourceAdapter->execute(
@@ -104,10 +120,16 @@ abstract class Single extends \UniMapper\Association
                         $this->getSourceResource(),
                         $this->getPrimaryKey(),
                         $primaryValue,
-                        [$this->getReferencingKey() => $entity->{$primaryName}]
+                        [
+                            $this->getReferencingKey() => $mapper->unmapValue(
+                                $primaryProperty,
+                                $entity->{$primaryName}
+                            )
+                        ]
                     )
                 );
                 break;
+
             case Entity::CHANGE_ADD:
 
                 $targetAdapter = $connection->getAdapter(
@@ -123,7 +145,7 @@ abstract class Single extends \UniMapper\Association
                             $this->getReferencingKey() => $targetAdapter->execute(
                                 $targetAdapter->createInsert(
                                     $this->getTargetResource(),
-                                    $entity->getData(),
+                                    $mapper->unmapEntity($entity),
                                     $this->getTargetReflection()
                                         ->getPrimaryProperty()
                                         ->getUnmapped()
@@ -134,6 +156,7 @@ abstract class Single extends \UniMapper\Association
                 );
 
                 break;
+
             case Entity::CHANGE_REMOVE:
 
                 $targetAdapter = $connection->getAdapter(
@@ -146,7 +169,10 @@ abstract class Single extends \UniMapper\Association
                         $this->getTargetReflection()
                             ->getPrimaryProperty()
                             ->getUnmapped(),
-                        $entity->{$primaryName}
+                        $mapper->unmapValue(
+                            $primaryProperty,
+                            $entity->{$primaryName}
+                        )
                     )
                 );
 
@@ -159,6 +185,7 @@ abstract class Single extends \UniMapper\Association
                     )
                 );
                 break;
+
             case Entity::CHANGE_DETACH:
 
                 $sourceAdapter->execute(
@@ -170,6 +197,7 @@ abstract class Single extends \UniMapper\Association
                     )
                 );
                 break;
+
             default:
                 break;
         }

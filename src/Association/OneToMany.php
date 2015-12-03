@@ -2,9 +2,11 @@
 
 namespace UniMapper\Association;
 
+use UniMapper\Adapter;
 use UniMapper\Connection;
 use UniMapper\Exception;
 use UniMapper\Entity;
+use UniMapper\Mapper;
 
 class OneToMany extends Multi
 {
@@ -88,69 +90,130 @@ class OneToMany extends Multi
             $this->targetReflection->getAdapterName()
         );
 
+        $mapper = $connection->getMapper();
+
         // Delete removed entities
         if ($changes[Entity::CHANGE_REMOVE]) {
-
-            $adapterQuery = $targetAdapter->createDelete(
-                $this->targetReflection->getAdapterResource()
+            $this->_saveRemove(
+                $targetAdapter,
+                $mapper,
+                $changes[Entity::CHANGE_REMOVE]
             );
-            $adapterQuery->setFilter(
-                [
-                    $this->getReferencedKey() => [
-                        Entity\Filter::EQUAL => $changes[Entity::CHANGE_REMOVE]
-                    ]
-                ]
-            );
-            $targetAdapter->execute($adapterQuery);
         }
 
         // Detach entities
-        $keys = $changes[Entity::CHANGE_DETACH];
-        if ($keys) {
-
-            $adapterQuery = $targetAdapter->createUpdate(
-                $this->getTargetResource(),
-                [$this->getReferencedKey() => null]
+        if ($changes[Entity::CHANGE_DETACH]) {
+            $this->_saveDetach(
+                $targetAdapter,
+                $mapper,
+                $changes[Entity::CHANGE_DETACH]
             );
-            $adapterQuery->setFilter(
-                [
-                    $this->getReferencedKey() => [
-                        Entity\Filter::EQUAL => $keys
-                    ]
-                ]
-            );
-            $targetAdapter->execute($adapterQuery);
         }
 
-        // Add entities
-        foreach ($changes[Entity::CHANGE_ADD] as $entity) {
+        // Unmap primary value
+        $primaryValue = $mapper->unmapValue(
+            $this->sourceReflection->getPrimaryProperty(),
+            $primaryValue
+        );
 
-            $targetAdapter->execute(
-                $targetAdapter->createInsert(
+        // Add entities
+        $this->_saveAdd(
+            $targetAdapter,
+            $mapper,
+            $changes[Entity::CHANGE_ADD],
+            $primaryValue
+        );
+
+        // Attach entities
+        if ($changes[Entity::CHANGE_ATTACH]) {
+            $this->_saveAttach(
+                $targetAdapter,
+                $mapper,
+                $changes[Entity::CHANGE_ATTACH],
+                $primaryValue
+            );
+        }
+    }
+
+    private function _saveRemove(Adapter $adapter, Mapper $mapper, array $keys)
+    {
+        $adapterQuery = $adapter->createDelete(
+            $this->targetReflection->getAdapterResource()
+        );
+
+        $adapterQuery->setFilter(
+            [
+                $this->getReferencedKey() => [
+                    Entity\Filter::EQUAL => $this->_unmapKeys($mapper, $keys)
+                ]
+            ]
+        );
+        $adapter->execute($adapterQuery);
+    }
+
+    private function _saveDetach(Adapter $adapter, Mapper $mapper, array $keys)
+    {
+        $adapterQuery = $adapter->createUpdate(
+            $this->getTargetResource(),
+            [$this->getReferencedKey() => null]
+        );
+        $adapterQuery->setFilter(
+            [
+                $this->getReferencedKey() => [
+                    Entity\Filter::EQUAL => $this->_unmapKeys($mapper, $keys)
+                ]
+            ]
+        );
+        $adapter->execute($adapterQuery);
+    }
+
+    private function _saveAdd(
+        Adapter $adapter,
+        Mapper $mapper,
+        array $entities,
+        $primaryValue
+    ) {
+        foreach ($entities as $entity) {
+
+            $adapter->execute(
+                $adapter->createInsert(
                     $this->targetReflection->getAdapterResource(),
-                    $entity->getData() + [$this->getReferencedKey() => $primaryValue],
+                    $mapper->unmapEntity($entity) + [$this->getReferencedKey() => $primaryValue],
                     $this->targetReflection->getPrimaryProperty()->getUnmapped()
                 )
             );
         }
+    }
 
-        // Attach entities
-        $keys = $changes[Entity::CHANGE_ATTACH];
-        if ($keys ) {
-
-            $adapterQuery = $targetAdapter->createUpdate(
-                $this->getTargetResource(),
-                [$this->getReferencedKey() => $primaryValue]
-            );
-            $adapterQuery->setFilter(
-                [
-                    $this->getReferencedKey() => [
-                        Entity\Filter::EQUAL => $keys
-                    ]
+    private function _saveAttach(
+        Adapter $adapter,
+        Mapper $mapper,
+        array $keys,
+        $primaryValue
+    ) {
+        $adapterQuery = $adapter->createUpdate(
+            $this->getTargetResource(),
+            [$this->getReferencedKey() => $primaryValue]
+        );
+        $adapterQuery->setFilter(
+            [
+                $this->getReferencedKey() => [
+                    Entity\Filter::EQUAL => $this->_unmapKeys($mapper, $keys)
                 ]
+            ]
+        );
+        $adapter->execute($adapterQuery);
+    }
+
+    private function _unmapKeys(Mapper $mapper, array $keys)
+    {
+        return array_map(function ($val) use ($mapper) {
+
+            return $mapper->unmapValue(
+                $this->targetReflection->getPrimaryProperty(),
+                $val
             );
-            $targetAdapter->execute($adapterQuery);
-        }
+        }, $keys);
     }
 
 }

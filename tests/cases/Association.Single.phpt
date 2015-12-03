@@ -35,7 +35,7 @@ class AssociationSingleTest extends TestCase
     {
         $this->adapters["FooAdapter"]
             ->shouldReceive("createUpdateOne")
-            ->with("fooResource", "fooId", 1, ["barId" => 2])
+            ->with("fooResource", "fooId", \Mockery::mustBe("1"), \Mockery::mustBe(["barId" => "2"]))
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]
@@ -48,6 +48,9 @@ class AssociationSingleTest extends TestCase
             ->once()
             ->with("FooAdapter")
             ->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getMapper")
+            ->once()
+            ->andReturn(new \UniMapper\Mapper());
 
         $entity = new Bar(["id" => 2]);
         $entity->attach();
@@ -73,11 +76,11 @@ class AssociationSingleTest extends TestCase
             ->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once()
-            ->andReturn(2);
+            ->andReturn("2");
 
         $this->adapters["FooAdapter"]
             ->shouldReceive("createUpdateOne")
-            ->with("fooResource", "fooId", 1, ["barId" => 2])
+            ->with("fooResource", "fooId", \Mockery::mustBe("1"), \Mockery::mustBe(["barId" => "2"]))
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]
@@ -94,6 +97,9 @@ class AssociationSingleTest extends TestCase
             ->once()
             ->with("BarAdapter")
             ->andReturn($this->adapters["BarAdapter"]);
+        $this->connectionMock->shouldReceive("getMapper")
+            ->once()
+            ->andReturn(new \UniMapper\Mapper());
 
         $entity = new Bar(["text" => "foo"]);
         $entity->add();
@@ -112,7 +118,7 @@ class AssociationSingleTest extends TestCase
     {
         $this->adapters["FooAdapter"]
             ->shouldReceive("createUpdateOne")
-            ->with("fooResource", "fooId", 1, ["barId" => null])
+            ->with("fooResource", "fooId", \Mockery::mustBe("1"), ["barId" => null])
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]
@@ -125,6 +131,9 @@ class AssociationSingleTest extends TestCase
             ->once()
             ->with("FooAdapter")
             ->andReturn($this->adapters["FooAdapter"]);
+        $this->connectionMock->shouldReceive("getMapper")
+            ->once()
+            ->andReturn(new \UniMapper\Mapper());
 
         $entity = new Bar;
         $entity->detach();
@@ -143,7 +152,7 @@ class AssociationSingleTest extends TestCase
     {
         $this->adapters["BarAdapter"]
             ->shouldReceive("createDeleteOne")
-            ->with("barResource", "barId", 2)
+            ->with("barResource", "barId", \Mockery::mustBe("2"))
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["BarAdapter"]
@@ -154,7 +163,7 @@ class AssociationSingleTest extends TestCase
 
         $this->adapters["FooAdapter"]
             ->shouldReceive("createUpdateOne")
-            ->with("fooResource", "fooId", 1, ["barId" => null])
+            ->with("fooResource", "fooId", \Mockery::mustBe("1"), ["barId" => null])
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["FooAdapter"]
@@ -171,6 +180,9 @@ class AssociationSingleTest extends TestCase
             ->once()
             ->with("BarAdapter")
             ->andReturn($this->adapters["BarAdapter"]);
+        $this->connectionMock->shouldReceive("getMapper")
+            ->once()
+            ->andReturn(new \UniMapper\Mapper());
 
         $entity = new Bar(["id" => 2]);
         $entity->remove();
@@ -187,11 +199,6 @@ class AssociationSingleTest extends TestCase
 
     public function testSaveChangesWithNoChange()
     {
-        $this->connectionMock->shouldReceive("getAdapter")
-            ->once()
-            ->with("FooAdapter")
-            ->andReturn($this->adapters["FooAdapter"]);
-
         $association = new Association\ManyToOne(
             "propertyName",
             Foo::getReflection(),
@@ -232,17 +239,39 @@ class AssociationSingleTest extends TestCase
 /**
  * @adapter FooAdapter(fooResource)
  *
- * @property int $id m:primary m:map-by(fooId)
+ * @property int $id m:primary m:map-by(fooId) m:map-filter(in|out)
  */
-class Foo extends \UniMapper\Entity {}
+class Foo extends \UniMapper\Entity
+{
+    public static function out($val)
+    {
+        return (string) $val;
+    }
+
+    public static function in($val)
+    {
+        return (int) $val;
+    }
+}
 
 /**
  * @adapter BarAdapter(barResource)
  *
- * @property int    $id   m:primary m:map-by(barId)
- * @property string $text
+ * @property int    $id   m:primary m:map-by(barId) m:map-filter(in|out)
+ * @property string $text m:map(text_unmapped)
  */
-class Bar extends \UniMapper\Entity {}
+class Bar extends \UniMapper\Entity
+{
+    public static function out($val)
+    {
+        return (string) $val;
+    }
+
+    public static function in($val)
+    {
+        return (int) $val;
+    }
+}
 
 class NoPrimary extends \UniMapper\Entity {}
 
