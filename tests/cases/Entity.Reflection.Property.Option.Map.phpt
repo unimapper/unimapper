@@ -89,7 +89,7 @@ class EntityReflectionPropertyOptionMapTest extends TestCase
             Map::getReflection()
                 ->getProperty("id")
                 ->getOption(Entity\Reflection\Property\Option\Map::KEY)
-                ->getUnMapped()
+                ->getUnmapped()
         );
     }
 
