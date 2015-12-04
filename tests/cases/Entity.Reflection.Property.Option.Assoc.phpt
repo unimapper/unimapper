@@ -90,7 +90,7 @@ class EntityReflectionPropertyOptionAssocTest extends TestCase
 }
 
 /**
- * @adapter FooAdapter()
+ * @adapter FooAdapter
  *
  * @property int   $id          m:primary
  * @property Foo[] $manyToMany  m:assoc(M:N) m:assoc-by(sourceKey|source_target|targetKey)
@@ -102,7 +102,7 @@ class EntityReflectionPropertyOptionAssocTest extends TestCase
 class Foo extends Entity {}
 
 /**
- * @adapter BarAdapter()
+ * @adapter BarAdapter
  *
  * @property int   $id         m:primary
  * @property Foo[] $manyToMany m:assoc(M:N) m:assoc-by(sourceKey|source_target|targetKey)
@@ -110,7 +110,7 @@ class Foo extends Entity {}
 class Bar extends Entity {}
 
 /**
- * @adapter Foo()
+ * @adapter Foo
  *
  * @property int $id  m:primary
  * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:map-by(foo)
@@ -118,7 +118,7 @@ class Bar extends Entity {}
 class Map extends Entity {}
 
 /**
- * @adapter Foo()
+ * @adapter Foo
  *
  * @property int $id  m:primary
  * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:enum(self::ENUM_*)
@@ -126,7 +126,7 @@ class Map extends Entity {}
 class Enum extends Entity {}
 
 /**
- * @adapter Foo()
+ * @adapter Foo
  *
  * @property int  $id  m:primary
  * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:computed
