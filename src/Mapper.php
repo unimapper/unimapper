@@ -166,31 +166,18 @@ class Mapper
             // Map property name if needed
             foreach ($reflection->getProperties() as $property) {
 
-                if ($property->hasOption(Reflection\Property\Option\Map::KEY)) {
-                    // Option mapping
+                if ($property->hasOption(Reflection\Property\Option\Map::KEY) && !$property->getOption(Reflection\Property\Option\Map::KEY)) {
 
-                    $option = $property->getOption(Reflection\Property\Option\Map::KEY);
-                    if (!$option) {
-
-                        if ($property->getName() === $name) {
-                            continue 2;
-                        }
-                        continue; // Skip disabled
+                    if ($property->getName() === $name) {
+                        continue 2; // Skip disabled
                     }
+                    continue;
+                }
 
-                    if ($option->getUnmapped() === $name) {
+                if ($property->getUnmapped() === $name) {
 
-                        $name = $property->getName();
-                        break;
-                    }
-                } else {
-                    // Auto-mapping
-
-                    if ($name === $property->getName()) {
-                        break;
-                    } else {
-                        continue;
-                    }
+                    $name = $property->getName();
+                    break;
                 }
             }
 
