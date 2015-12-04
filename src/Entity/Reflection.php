@@ -75,7 +75,14 @@ class Reflection
         }
 
         if (empty($this->adapterResource)) {
+
             $this->adapterResource = $this->getName();
+            if (Convention::hasAdapterConvention($this->adapterName)) {
+
+                $this->adapterResource = Convention::getAdapterConvention(
+                    $this->adapterName
+                )->mapResource($this->adapterResource);
+            }
         }
     }
 

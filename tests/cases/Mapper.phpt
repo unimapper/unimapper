@@ -4,6 +4,7 @@ use Tester\Assert;
 use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
+require __DIR__ . '/common/AdapterConvention.php';
 
 /**
  * @testCase
@@ -16,6 +17,7 @@ class MapperTest extends TestCase
 
     public function setUp()
     {
+        \UniMapper\Convention::registerAdapterConvention("Foo", new AdapterConvention);
         $this->mapper = new UniMapper\Mapper;
     }
 
@@ -156,10 +158,11 @@ class MapperTest extends TestCase
  * @property string   $string
  * @property string   $disabled    m:map(false)
  * @property array    $filterArray m:map-filter(stringToArray|arrayToString) m:map-by(filter_array)
- * @property int      $filterInt   m:map-filter(toInt|toString) m:map-by(filter_int)
+ * @property int      $filterInt   m:map-filter(toInt|toString)
  * @property array    $array
  * @property Entity   $entity
  * @property Entity[] $collection
+ * @property int      $fooBar
  *
  * @property-read int $readonly
  */

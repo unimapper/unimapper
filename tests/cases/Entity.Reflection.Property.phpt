@@ -4,6 +4,7 @@ use Tester\Assert;
 use UniMapper\Entity;
 
 require __DIR__ . '/../bootstrap.php';
+require __DIR__ . '/common/AdapterConvention.php';
 
 /**
  * @testCase
@@ -292,7 +293,7 @@ class EntityReflectionPropertyTest extends TestCase
     /**
      * @throws Exception Mapping is disabled!
      */
-    public function testGetUnmapped()
+    public function testGetUnmappedDisabledMapping()
     {
         Assert::same(
             "id",
@@ -301,9 +302,19 @@ class EntityReflectionPropertyTest extends TestCase
         );
     }
 
+    public function testGetUnmappedConvention()
+    {
+        \UniMapper\Convention::registerAdapterConvention("Foo", new AdapterConvention);
+        Assert::same("foo_bar", $this->_createReflection("int", "fooBar")->getUnmapped());
+    }
+
 }
 
-/** @property int $id m:primary */
+/**
+ * @adapter Foo
+ *
+ * @property int $id m:primary
+ */
 class Foo extends \UniMapper\Entity {}
 
 $testCase = new EntityReflectionPropertyTest;

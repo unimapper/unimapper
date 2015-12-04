@@ -4,6 +4,7 @@ use Tester\Assert;
 use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
+require __DIR__ . '/common/AdapterConvention.php';
 
 /**
  * @testCase
@@ -30,6 +31,10 @@ class EntityReflectionTest extends TestCase
     {
         $reflection = new Reflection("Adapter");
         Assert::same("bar", $reflection->getAdapterResource());
+
+        \UniMapper\Convention::registerAdapterConvention("Foo", new AdapterConvention);
+        $reflection = new Reflection("NoAdapterResource");
+        Assert::same("no_adapter_resource", $reflection->getAdapterResource());
     }
 
     /**
@@ -135,20 +140,11 @@ class EntityReflectionTest extends TestCase
         Reflection::load("Undefined")->getClassName();
     }
 
-    public function testParseAdapter()
-    {
-        Assert::same(
-            "NoAdapterResource",
-            NoAdapterResource::getReflection()->getAdapterResource()
-        );
-    }
-
 }
 
 /**
- * @property string $foo
- *
- * @property-read int $readonly
+ * @property      string $foo
+ * @property-read int    $readonly
  */
 class Entity extends \UniMapper\Entity {}
 

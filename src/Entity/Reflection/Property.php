@@ -171,7 +171,15 @@ class Property
         ) {
             throw new \Exception("Mapping is disabled!");
         }
-        return $this->hasOption(Entity\Reflection\Property\Option\Map::KEY) ? $this->getOption(Entity\Reflection\Property\Option\Map::KEY)->getUnmapped() : $this->name;
+
+        $name = $this->hasOption(Entity\Reflection\Property\Option\Map::KEY) ? $this->getOption(Entity\Reflection\Property\Option\Map::KEY)->getUnmapped() : $this->name;
+
+        $adapterName = $this->reflection->getAdapterName();
+        if (Convention::hasAdapterConvention($adapterName)) {
+            return Convention::getAdapterConvention($adapterName)->mapProperty($name);
+        }
+
+        return $name;
     }
 
     /**

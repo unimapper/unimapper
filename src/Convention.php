@@ -2,6 +2,7 @@
 
 namespace UniMapper;
 
+use UniMapper\Adapter\IConvention;
 use UniMapper\Exception\InvalidArgumentException;
 
 class Convention
@@ -15,6 +16,43 @@ class Convention
         self::ENTITY_MASK => "*",
         self::REPOSITORY_MASK => "*Repository"
     ];
+
+    private static $adapterConventions = [];
+
+    /**
+     * Register adapter naming convention
+     *
+     * @param string      $name
+     * @param IConvention $convention
+     */
+    public static function registerAdapterConvention($name, IConvention $convention)
+    {
+        self::$adapterConventions[$name] = $convention;
+    }
+
+    /**
+     * Has adapter naming convention registered
+     *
+     * @param $name
+     *
+     * @return bool
+     */
+    public static function hasAdapterConvention($name)
+    {
+        return isset(self::$adapterConventions[$name]);
+    }
+
+    /**
+     * Get adapter naming convention
+     *
+     * @param $name
+     *
+     * @return IConvention
+     */
+    public static function getAdapterConvention($name)
+    {
+        return self::$adapterConventions[$name];
+    }
 
     /**
      * Converts class to name
