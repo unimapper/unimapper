@@ -24,11 +24,19 @@ class Association
     /**
      * @param Reflection $sourceReflection
      * @param Reflection $targetReflection
+     *
+     * @throws AssociationException
      */
     public function __construct(
         Reflection $sourceReflection,
         Reflection $targetReflection
     ) {
+        if ($sourceReflection->getAdapterName() === $targetReflection->getAdapterName()) {
+            throw new AssociationException(
+                "Associations with same adapters should be managed by relevant adapter!"
+            );
+        }
+
         $this->sourceReflection = $sourceReflection;
         $this->targetReflection = $targetReflection;
     }

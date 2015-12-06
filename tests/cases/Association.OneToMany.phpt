@@ -223,6 +223,11 @@ class AssociationOneToManyTest extends TestCase
         );
     }
 
+    public function testGetKey()
+    {
+        Assert::same("id", $this->create()->getKey());
+    }
+
     private function create()
     {
         return new Association\OneToMany(Foo::getReflection(), Bar::getReflection());

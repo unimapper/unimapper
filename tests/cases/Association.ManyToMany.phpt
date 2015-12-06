@@ -385,6 +385,11 @@ class AssociationManyToManyTest extends TestCase
         );
     }
 
+    public function testGetKey()
+    {
+        Assert::same("id", $this->create()->getKey());
+    }
+
     private function create($dominant = true)
     {
         return new Association\ManyToMany(Foo::getReflection(), Bar::getReflection(), [], $dominant);

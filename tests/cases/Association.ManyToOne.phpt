@@ -34,6 +34,11 @@ class AssociationManyToOneTest extends TestCase
         $this->connectionMock = Mockery::mock("UniMapper\Connection");
     }
 
+    public function testGetKey()
+    {
+        Assert::same("Bar_id", $this->create()->getKey());
+    }
+
     public function testLoad()
     {
         $this->connectionMock->shouldReceive("getAdapter")
