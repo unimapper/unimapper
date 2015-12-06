@@ -71,13 +71,11 @@ class ManyToMany extends Association
 
     /**
      * @param Connection $connection
-     * @param array $primaryValues
+     * @param array      $primaryValues
      *
      * @return array
      *
      * @throws AssociationException
-     * @throws \Exception
-     * @throws \UniMapper\Exception\ConnectionException
      *
      * @todo should be optimized with 1 query only on same adapters
      */
