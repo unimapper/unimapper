@@ -5,6 +5,7 @@ use UniMapper\Association;
 use UniMapper\Entity\Reflection;
 
 require __DIR__ . '/../bootstrap.php';
+require __DIR__ . '/common/AssociationEntities.php';
 
 /**
  * @testCase
@@ -12,8 +13,11 @@ require __DIR__ . '/../bootstrap.php';
 class AssociationOneToManyTest extends TestCase
 {
 
-    /** @var array $adapters */
-    private $adapters = [];
+    /** @var \Mockery\Mock */
+    private $fooAdapterMock;
+
+    /** @var \Mockery\Mock */
+    private $barAdapterMock;
 
     /** @var \Mockery\Mock */
     private $adapterQueryMock;
@@ -23,37 +27,68 @@ class AssociationOneToManyTest extends TestCase
 
     public function setUp()
     {
-        $this->adapters["FooAdapter"] = Mockery::mock("UniMapper\Adapter");
-        $this->adapters["BarAdapter"] = Mockery::mock("UniMapper\Adapter");
-
+        $this->fooAdapterMock = Mockery::mock("UniMapper\Adapter");
+        $this->barAdapterMock = Mockery::mock("UniMapper\Adapter");
         $this->adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
-
         $this->connectionMock = Mockery::mock("UniMapper\Connection");
+    }
+
+    public function testLoad()
+    {
+        $this->connectionMock->shouldReceive("getAdapter")
+            ->once()
+            ->with("BarAdapter")
+            ->andReturn($this->barAdapterMock);
+
+        $this->barAdapterMock->shouldReceive("createSelect")
+            ->with("Bar")
+            ->once()
+            ->andReturn($this->adapterQueryMock);
+
+        $this->adapterQueryMock->shouldReceive("setFilter")
+            ->with(["Foo_id" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]])
+            ->once();
+
+        $this->barAdapterMock->shouldReceive("onExecute")
+            ->with($this->adapterQueryMock)
+            ->once()
+            ->andReturn(
+                [
+                    ['id' => 3, 'Foo_id' => 1],
+                    ['id' => 4, 'Foo_id' => 2]
+                ]
+            );
+
+        Assert::same(
+            [
+                1 => [['id' => 3, 'Foo_id' => 1]],
+                2 => [['id' => 4, 'Foo_id' => 2]]
+            ],
+            $this->create()->load($this->connectionMock, [1, 2])
+        );
     }
 
     public function testSaveChangesAdd()
     {
-        $this->adapters["BarAdapter"]
-            ->shouldReceive("createInsert")
+        $this->barAdapterMock->shouldReceive("createInsert")
             ->with(
-                "barResource",
+                "Bar",
                 \Mockery::mustBe([
                     "text" => "foo",
-                    "foo_fooId" => "1"
+                    "Foo_id" => "1"
                 ]),
-                "barId"
+                "id"
             )
             ->twice()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["BarAdapter"]
-            ->shouldReceive("onExecute")
+        $this->barAdapterMock->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->twice();
 
         $this->connectionMock->shouldReceive("getAdapter")
             ->once()
             ->with("BarAdapter")
-            ->andReturn($this->adapters["BarAdapter"]);
+            ->andReturn($this->barAdapterMock);
         $this->connectionMock->shouldReceive("getMapper")
             ->once()
             ->andReturn(new \UniMapper\Mapper);
@@ -62,24 +97,16 @@ class AssociationOneToManyTest extends TestCase
         $collection->add(new Bar(["text" => "foo"]));
         $collection->add(new Bar(["text" => "foo"]));
 
-        $association = new Association\OneToMany(
-            "propertyName",
-            Foo::getReflection(),
-            Bar::getReflection(),
-            ["foo_fooId"]
-        );
-
-        Assert::null($association->saveChanges(1, $this->connectionMock, $collection));
+        Assert::null($this->create()->saveChanges(1, $this->connectionMock, $collection));
     }
 
     public function testSaveChangesAttach()
     {
-        $this->adapters["BarAdapter"]
-            ->shouldReceive("createUpdate")
-            ->with("barResource", \Mockery::mustBe(["foo_fooId" => "1"]))
+        $this->barAdapterMock->shouldReceive("createUpdate")
+            ->with("Bar", \Mockery::mustBe(["Foo_id" => "1"]))
             ->once()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["BarAdapter"]
+        $this->barAdapterMock
             ->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once();
@@ -89,7 +116,7 @@ class AssociationOneToManyTest extends TestCase
             ->with(
                 \Mockery::mustBe(
                     [
-                        "foo_fooId" => [
+                        "Foo_id" => [
                             \UniMapper\Entity\Filter::EQUAL => ["1", "2"]
                         ]
                     ]
@@ -99,7 +126,7 @@ class AssociationOneToManyTest extends TestCase
         $this->connectionMock->shouldReceive("getAdapter")
             ->once()
             ->with("BarAdapter")
-            ->andReturn($this->adapters["BarAdapter"]);
+            ->andReturn($this->barAdapterMock);
         $this->connectionMock->shouldReceive("getMapper")
             ->once()
             ->andReturn(new \UniMapper\Mapper);
@@ -108,25 +135,16 @@ class AssociationOneToManyTest extends TestCase
         $collection->attach(new Bar(["id" => 1]));
         $collection->attach(new Bar(["id" => 2]));
 
-        $association = new Association\OneToMany(
-            "propertyName",
-            Foo::getReflection(),
-            Bar::getReflection(),
-            ["foo_fooId"]
-        );
-
-        Assert::null($association->saveChanges(1, $this->connectionMock, $collection));
+        Assert::null($this->create()->saveChanges(1, $this->connectionMock, $collection));
     }
 
     public function testSaveChangesDetach()
     {
-        $this->adapters["BarAdapter"]
-            ->shouldReceive("createUpdate")
-            ->with("barResource", ["foo_fooId" => null])
+        $this->barAdapterMock->shouldReceive("createUpdate")
+            ->with("Bar", ["Foo_id" => null])
             ->once()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["BarAdapter"]
-            ->shouldReceive("onExecute")
+        $this->barAdapterMock->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once();
 
@@ -135,7 +153,7 @@ class AssociationOneToManyTest extends TestCase
             ->with(
                 \Mockery::mustBe(
                     [
-                        "foo_fooId" => [
+                        "Foo_id" => [
                             \UniMapper\Entity\Filter::EQUAL => ["1", "2"]
                         ]
                     ]
@@ -145,7 +163,7 @@ class AssociationOneToManyTest extends TestCase
         $this->connectionMock->shouldReceive("getAdapter")
             ->once()
             ->with("BarAdapter")
-            ->andReturn($this->adapters["BarAdapter"]);
+            ->andReturn($this->barAdapterMock);
         $this->connectionMock->shouldReceive("getMapper")
             ->once()
             ->andReturn(new \UniMapper\Mapper);
@@ -154,25 +172,16 @@ class AssociationOneToManyTest extends TestCase
         $collection->detach(new Bar(["id" => 1]));
         $collection->detach(new Bar(["id" => 2]));
 
-        $association = new Association\OneToMany(
-            "propertyName",
-            Foo::getReflection(),
-            Bar::getReflection(),
-            ["foo_fooId"]
-        );
-
-        Assert::null($association->saveChanges(1, $this->connectionMock, $collection));
+        Assert::null($this->create()->saveChanges(1, $this->connectionMock, $collection));
     }
 
     public function testSaveChangesRemove()
     {
-        $this->adapters["BarAdapter"]
-            ->shouldReceive("createDelete")
-            ->with("barResource")
+        $this->barAdapterMock->shouldReceive("createDelete")
+            ->with("Bar")
             ->once()
             ->andReturn($this->adapterQueryMock);
-        $this->adapters["BarAdapter"]
-            ->shouldReceive("onExecute")
+        $this->barAdapterMock->shouldReceive("onExecute")
             ->with($this->adapterQueryMock)
             ->once();
 
@@ -181,7 +190,7 @@ class AssociationOneToManyTest extends TestCase
             ->with(
                 \Mockery::mustBe(
                     [
-                        "foo_fooId" => [
+                        "Foo_id" => [
                             \UniMapper\Entity\Filter::EQUAL => ["1", "2"]
                         ]
                     ]
@@ -191,7 +200,7 @@ class AssociationOneToManyTest extends TestCase
         $this->connectionMock->shouldReceive("getAdapter")
             ->once()
             ->with("BarAdapter")
-            ->andReturn($this->adapters["BarAdapter"]);
+            ->andReturn($this->barAdapterMock);
         $this->connectionMock->shouldReceive("getMapper")
             ->once()
             ->andReturn(new \UniMapper\Mapper);
@@ -200,27 +209,13 @@ class AssociationOneToManyTest extends TestCase
         $collection->remove(new Bar(["id" => 1]));
         $collection->remove(new Bar(["id" => 2]));
 
-        $association = new Association\OneToMany(
-            "propertyName",
-            Foo::getReflection(),
-            Bar::getReflection(),
-            ["foo_fooId"]
-        );
-
-        Assert::null($association->saveChanges(1, $this->connectionMock, $collection));
+        Assert::null($this->create()->saveChanges(1, $this->connectionMock, $collection));
     }
 
     public function testSaveChangesEmptyWithNoChanges()
     {
-        $association = new Association\OneToMany(
-            "propertyName",
-            Foo::getReflection(),
-            Bar::getReflection(),
-            ["foo_fooId"]
-        );
-
         Assert::null(
-            $association->saveChanges(
+            $this->create()->saveChanges(
                 1,
                 Mockery::mock("UniMapper\Connection"),
                 Bar::createCollection()
@@ -228,43 +223,11 @@ class AssociationOneToManyTest extends TestCase
         );
     }
 
-}
-
-/**
- * @adapter FooAdapter(fooResource)
- *
- * @property int $id m:primary m:map-by(fooId) m:map-filter(in|out)
- */
-class Foo extends \UniMapper\Entity
-{
-    public static function out($val)
+    private function create()
     {
-        return (string) $val;
+        return new Association\OneToMany(Foo::getReflection(), Bar::getReflection());
     }
 
-    public static function in($val)
-    {
-        return (int) $val;
-    }
-}
-
-/**
- * @adapter BarAdapter(barResource)
- *
- * @property int    $id   m:primary m:map-by(barId) m:map-filter(in|out)
- * @property string $text m:map(text_unmapped)
- */
-class Bar extends \UniMapper\Entity
-{
-    public static function out($val)
-    {
-        return (string) $val;
-    }
-
-    public static function in($val)
-    {
-        return (int) $val;
-    }
 }
 
 $testCase = new AssociationOneToManyTest;

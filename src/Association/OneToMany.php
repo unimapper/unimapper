@@ -3,55 +3,55 @@
 namespace UniMapper\Association;
 
 use UniMapper\Adapter;
+use UniMapper\Association;
 use UniMapper\Connection;
-use UniMapper\Exception;
+use UniMapper\Exception\AssociationException;
 use UniMapper\Entity;
+use UniMapper\Entity\Collection;
+use UniMapper\Entity\Filter;
+use UniMapper\Entity\Reflection;
 use UniMapper\Mapper;
 
-class OneToMany extends Multi
+class OneToMany extends Association
 {
 
+    /** @var string */
+    private $referencedKey;
+
     public function __construct(
-        $propertyName,
-        Entity\Reflection $sourceReflection,
-        Entity\Reflection $targetReflection,
-        array $mapBy
+        Reflection $sourceReflection,
+        Reflection $targetReflection,
+        $referencedKey = null
     ) {
-        parent::__construct(
-            $propertyName,
-            $sourceReflection,
-            $targetReflection,
-            $mapBy
-        );
+        parent::__construct($sourceReflection, $targetReflection);
 
-        if (!isset($mapBy[0])) {
-            throw new Exception\AssociationException(
-                "You must define referenced key!"
-            );
+        if (!$referencedKey) {
+
+            $referencedKey = $sourceReflection->getAdapterResource()
+                . self::JOINER
+                . $sourceReflection->getPrimaryProperty()->getUnmapped();
         }
-    }
 
-    public function getReferencedKey()
-    {
-        return $this->mapBy[0];
+        $this->referencedKey = $referencedKey;
     }
 
     public function load(Connection $connection, array $primaryValues)
     {
-        $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
-
-        $query = $targetAdapter->createSelect(
-            $this->getTargetResource(),
-            [],
-            $this->orderBy,
-            $this->limit,
-            $this->offset
+        $targetAdapter = $connection->getAdapter(
+            $this->targetReflection->getAdapterName()
         );
 
-        // Set target conditions
-        $filter = $this->filter;
-        $filter[$this->getReferencedKey()][Entity\Filter::EQUAL] = array_values($primaryValues);
-        $query->setFilter($filter);
+        $query = $targetAdapter->createSelect(
+            $this->targetReflection->getAdapterResource()
+        );
+
+        $query->setFilter(
+            [
+                $this->referencedKey => [
+                    Entity\Filter::EQUAL => array_values($primaryValues)
+                ]
+            ]
+        );
 
         $result = $targetAdapter->execute($query);
 
@@ -61,25 +61,34 @@ class OneToMany extends Multi
 
         $return = [];
         foreach ($result as $row) {
-            $return[$row[$this->getReferencedKey()]][] = $row;
+            $return[$row[$this->referencedKey]][] = $row;
         }
 
         return $return;
     }
 
-
     /**
      * Save changes in target collection
      *
-     * @param string            $primaryValue Primary value from source entity
-     * @param Connection        $connection
-     * @param Entity\Collection $collection   Target collection
+     * @param string     $primaryValue Primary value from source entity
+     * @param Connection $connection
+     * @param Collection $collection   Target collection
+     *
+     * @throws AssociationException
      */
     public function saveChanges(
         $primaryValue,
         Connection $connection,
-        Entity\Collection $collection
+        Collection $collection
     ) {
+        if ($collection->getEntityClass() !== $this->targetReflection->getClassName()) {
+            throw new AssociationException(
+                "Input collection should be type of "
+                . $this->targetReflection->getClassName()
+                . " but type of " . $collection->getEntityClass() . " given!"
+            );
+        }
+
         $changes = array_filter($collection->getChanges());
         if (empty($changes)) {
             return;
@@ -143,8 +152,8 @@ class OneToMany extends Multi
 
         $adapterQuery->setFilter(
             [
-                $this->getReferencedKey() => [
-                    Entity\Filter::EQUAL => $this->_unmapKeys($mapper, $keys)
+                $this->referencedKey => [
+                    Filter::EQUAL => $this->_unmapKeys($mapper, $keys)
                 ]
             ]
         );
@@ -154,12 +163,12 @@ class OneToMany extends Multi
     private function _saveDetach(Adapter $adapter, Mapper $mapper, array $keys)
     {
         $adapterQuery = $adapter->createUpdate(
-            $this->getTargetResource(),
-            [$this->getReferencedKey() => null]
+            $this->targetReflection->getAdapterResource(),
+            [$this->referencedKey => null]
         );
         $adapterQuery->setFilter(
             [
-                $this->getReferencedKey() => [
+                $this->referencedKey => [
                     Entity\Filter::EQUAL => $this->_unmapKeys($mapper, $keys)
                 ]
             ]
@@ -178,7 +187,7 @@ class OneToMany extends Multi
             $adapter->execute(
                 $adapter->createInsert(
                     $this->targetReflection->getAdapterResource(),
-                    $mapper->unmapEntity($entity) + [$this->getReferencedKey() => $primaryValue],
+                    $mapper->unmapEntity($entity) + [$this->referencedKey => $primaryValue],
                     $this->targetReflection->getPrimaryProperty()->getUnmapped()
                 )
             );
@@ -192,13 +201,13 @@ class OneToMany extends Multi
         $primaryValue
     ) {
         $adapterQuery = $adapter->createUpdate(
-            $this->getTargetResource(),
-            [$this->getReferencedKey() => $primaryValue]
+            $this->targetReflection->getAdapterResource(),
+            [$this->referencedKey => $primaryValue]
         );
         $adapterQuery->setFilter(
             [
-                $this->getReferencedKey() => [
-                    Entity\Filter::EQUAL => $this->_unmapKeys($mapper, $keys)
+                $this->referencedKey => [
+                    Filter::EQUAL => $this->_unmapKeys($mapper, $keys)
                 ]
             ]
         );

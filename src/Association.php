@@ -2,63 +2,35 @@
 
 namespace UniMapper;
 
-abstract class Association
+use UniMapper\Association\ManyToMany;
+use UniMapper\Association\ManyToOne;
+use UniMapper\Association\OneToMany;
+use UniMapper\Association\OneToOne;
+use UniMapper\Entity\Reflection;
+use UniMapper\Entity\Reflection\Property\Option\Assoc;
+use UniMapper\Exception\AssociationException;
+
+class Association
 {
 
-    /**
-     * @var Entity\Reflection
-     *
-     * @todo quick fix for traits
-     */
-    protected $reflection;
+    const JOINER = "_";
 
-    /** @var Entity\Reflection */
+    /** @var Reflection */
     protected $sourceReflection;
 
-    /** @var Entity\Reflection */
+    /** @var Reflection */
     protected $targetReflection;
 
-    /** @var bool */
-    protected $dominant = true;
-
-    /** @var array */
-    protected $mapBy = [];
-
-    /** @var string */
-    protected $propertyName;
-
+    /**
+     * @param Reflection $sourceReflection
+     * @param Reflection $targetReflection
+     */
     public function __construct(
-        $propertyName,
-        Entity\Reflection $sourceReflection,
-        Entity\Reflection $targetReflection,
-        array $mapBy,
-        $dominant = true
+        Reflection $sourceReflection,
+        Reflection $targetReflection
     ) {
-        $this->propertyName = $propertyName;
-        $this->sourceReflection = $this->reflection = $sourceReflection; // @todo quick fix for traits
+        $this->sourceReflection = $sourceReflection;
         $this->targetReflection = $targetReflection;
-        $this->dominant = (bool) $dominant;
-        $this->mapBy = $mapBy;
-
-        if (!$this->sourceReflection->hasAdapter()) {
-            throw new Exception\AssociationException(
-                "Can not use associations while source entity "
-                . $sourceReflection->getName()
-                . " has no adapter defined!"
-            );
-        }
-
-        if (!$this->targetReflection->hasAdapter()) {
-            throw new Exception\AssociationException(
-                "Can not use associations while target entity "
-                . $targetReflection->getName() . " has no adapter defined!"
-            );
-        }
-    }
-
-    public function getPrimaryKey()
-    {
-        return $this->sourceReflection->getPrimaryProperty()->getUnmapped();
     }
 
     /**
@@ -68,38 +40,51 @@ abstract class Association
      */
     public function getKey()
     {
-        return $this->getPrimaryKey();
+        return $this->sourceReflection->getPrimaryProperty()->getUnmapped();
     }
 
-    public function getTargetReflection()
+    /**
+     * @param Assoc $option
+     *
+     * @return Association
+     *
+     * @throws AssociationException
+     */
+    public static function create(Assoc $option)
     {
-        return $this->targetReflection;
-    }
+        $definition = $option->getDefinition();
 
-    public function getTargetResource()
-    {
-        return $this->targetReflection->getAdapterResource();
-    }
-
-    public function getSourceResource()
-    {
-        return $this->sourceReflection->getAdapterResource();
-    }
-
-    public function getTargetAdapterName()
-    {
-        return $this->targetReflection->getAdapterName();
-    }
-
-    public function isRemote()
-    {
-        return $this->sourceReflection->getAdapterName()
-            !== $this->targetReflection->getAdapterName();
-    }
-
-    public function getPropertyName()
-    {
-        return $this->propertyName;
+        switch ($option->getType()) {
+            case "m:n":
+            case "m>n":
+            case "m<n":
+                return new ManyToMany(
+                    $option->getSourceReflection(),
+                    $option->getTargetReflection(),
+                    $definition,
+                    $option->getType() === "m<n" ? false : true
+                );
+            case "1:1":
+                return new OneToOne(
+                    $option->getSourceReflection(),
+                    $option->getTargetReflection(),
+                    isset($definition[0]) ? $definition[0] : null
+                );
+            case "1:n":
+                return new OneToMany(
+                    $option->getSourceReflection(),
+                    $option->getTargetReflection(),
+                    isset($definition[0]) ? $definition[0] : null
+                );
+            case "n:1":
+                return new ManyToOne(
+                    $option->getSourceReflection(),
+                    $option->getTargetReflection(),
+                    isset($definition[0]) ? $definition[0] : null
+                );
+            default:
+                throw new AssociationException("Unsupported association type");
+        }
     }
 
     /**
@@ -115,7 +100,7 @@ abstract class Association
      *
      * @throws \Exception
      */
-    protected function groupResult(array $original, array $keys, $level = 0)
+    public static function groupResult(array $original, array $keys, $level = 0)
     {
         $converted = [];
         $key = $keys[$level];
@@ -128,7 +113,7 @@ abstract class Association
 
             $subArray = (array) $subArray;
             if (!isset($subArray[$key])) {
-                throw new \Exception(
+                throw new AssociationException(
                     "Index '" . $key . "' not found on level '" . $level . "'!"
                 );
             }
@@ -149,7 +134,7 @@ abstract class Association
 
         if (!$isDeepest) {
             foreach (array_keys($converted) as $value) {
-                $converted[$value] = $this->groupResult(
+                $converted[$value] = self::groupResult(
                     $filtered[$value],
                     $keys,
                     $level

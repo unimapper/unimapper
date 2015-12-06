@@ -53,8 +53,8 @@ class SelectOne extends \UniMapper\Query
             )
         );
 
-        if ($this->associations["local"]) {
-            $query->setAssociations($this->associations["local"]);
+        if ($this->adapterAssociations) {
+            $query->setAssociations($this->adapterAssociations);
         }
 
         $result = $adapter->execute($query);
@@ -64,11 +64,11 @@ class SelectOne extends \UniMapper\Query
         }
 
         // Get remote associations
-        if ($this->associations["remote"]) {
+        if ($this->remoteAssociations) {
 
             settype($result, "array");
 
-            foreach ($this->associations["remote"] as $colName => $association) {
+            foreach ($this->remoteAssociations as $colName => $association) {
 
                 $assocValue = $result[$association->getKey()];
 

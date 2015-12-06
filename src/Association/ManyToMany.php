@@ -3,97 +3,103 @@
 namespace UniMapper\Association;
 
 use UniMapper\Adapter;
+use UniMapper\Association;
 use UniMapper\Connection;
 use UniMapper\Entity;
-use UniMapper\Exception;
+use UniMapper\Entity\Collection;
+use UniMapper\Entity\Filter;
+use UniMapper\Exception\AssociationException;
 use UniMapper\Mapper;
 
-class ManyToMany extends Multi
+class ManyToMany extends Association
 {
 
+    /** @var string */
+    private $joinKey;
+
+    /** @var string */
+    private $joinResource;
+
+    /** @var string */
+    private $referencingKey;
+
+    /** @var bool */
+    private $dominant = true;
+
     public function __construct(
-        $propertyName,
         Entity\Reflection $sourceReflection,
         Entity\Reflection $targetReflection,
-        array $mapBy,
+        array $arguments = [],
         $dominant = true
     ) {
-        parent::__construct(
-            $propertyName,
-            $sourceReflection,
-            $targetReflection,
-            $mapBy,
-            $dominant
-        );
+        parent::__construct($sourceReflection, $targetReflection);
 
         if (!$targetReflection->hasPrimary()) {
-            throw new Exception\AssociationException(
+            throw new AssociationException(
                 "Target entity must have defined primary when M:N relation used!"
             );
         }
 
-        if (!isset($mapBy[0])) {
-            throw new Exception\AssociationException(
-                "You must define join key!"
-            );
+        // Auto-detection
+        if (!isset($arguments[0])) {
+
+            $arguments[0] = $sourceReflection->getAdapterResource()
+                . self::JOINER
+                . $sourceReflection->getPrimaryProperty()->getUnmapped();
+        }
+        if (!isset($arguments[1])) {
+
+            $firstRes = $sourceReflection->getAdapterResource();
+            $secondRes = $targetReflection->getAdapterResource();
+            if (strnatcasecmp($firstRes, $secondRes) > 0) {
+                list($secondRes, $firstRes) = [$firstRes, $secondRes];
+            }
+            $arguments[1] = $firstRes . self::JOINER . $secondRes;
+        }
+        if (!isset($arguments[2])) {
+
+            $arguments[2] = $targetReflection->getAdapterResource()
+                . self::JOINER
+                . $targetReflection->getPrimaryProperty()->getUnmapped();
         }
 
-        if (!isset($mapBy[1])) {
-            throw new Exception\AssociationException(
-                "You must define join resource!"
-            );
-        }
-
-        if (!isset($mapBy[2])) {
-            throw new Exception\AssociationException(
-                "You must define referencing key!!"
-            );
-        }
-    }
-
-    public function getJoinKey()
-    {
-        return $this->mapBy[0];
-    }
-
-    public function getJoinResource()
-    {
-        return$this->mapBy[1];
-    }
-
-    public function getReferencingKey()
-    {
-        return $this->mapBy[2];
-    }
-
-    public function getTargetPrimaryKey()
-    {
-        return $this->targetReflection->getPrimaryProperty()->getUnmapped();
-    }
-
-    public function isDominant()
-    {
-        return $this->dominant;
+        $this->joinKey = $arguments[0];
+        $this->joinResource = $arguments[1];
+        $this->referencingKey = $arguments[2];
+        $this->dominant = (bool) $dominant;
     }
 
     /**
+     * @param Connection $connection
+     * @param array $primaryValues
+     *
+     * @return array
+     *
+     * @throws AssociationException
+     * @throws \Exception
+     * @throws \UniMapper\Exception\ConnectionException
+     *
      * @todo should be optimized with 1 query only on same adapters
      */
     public function load(Connection $connection, array $primaryValues)
     {
-        $currentAdapter = $connection->getAdapter($this->sourceReflection->getAdapterName());
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
 
-        if (!$this->isDominant()) {
+        if ($this->dominant) {
+
+            $currentAdapter = $connection->getAdapter(
+                $this->sourceReflection->getAdapterName()
+            );
+        } else{
             $currentAdapter = $targetAdapter;
         }
 
         $joinQuery = $currentAdapter->createSelect(
-            $this->getJoinResource(),
-            [$this->getJoinKey(), $this->getReferencingKey()]
+            $this->joinResource,
+            [$this->joinKey, $this->referencingKey]
         );
         $joinQuery->setFilter(
-            [$this->getJoinKey() => [Entity\Filter::EQUAL => $primaryValues]]
+            [$this->joinKey => [Filter::EQUAL => $primaryValues]]
         );
 
         $joinResult = $currentAdapter->execute($joinQuery);
@@ -102,35 +108,30 @@ class ManyToMany extends Multi
             return [];
         }
 
-        $joinResult = $this->groupResult(
+        $joinResult = Association::groupResult(
             $joinResult,
-            [
-                $this->getReferencingKey(),
-                $this->getJoinKey()
-            ]
+            [$this->referencingKey, $this->joinKey]
         );
 
         $targetQuery = $targetAdapter->createSelect(
-            $this->getTargetResource(),
-            [],
-            $this->orderBy,
-            $this->limit,
-            $this->offset
+            $this->targetReflection->getAdapterResource()
         );
-
-        // Set target conditions
-        $filter = $this->filter;
-        $filter[$this->getTargetPrimaryKey()][Entity\Filter::EQUAL] = array_keys($joinResult);
-        $targetQuery->setFilter($filter);
+        $targetQuery->setFilter(
+            [
+                $this->targetReflection->getPrimaryProperty()->getUnmapped() => [
+                    Entity\Filter::EQUAL => array_keys($joinResult)
+                ]
+            ]
+        );
 
         $targetResult = $targetAdapter->execute($targetQuery);
         if (!$targetResult) {
             return [];
         }
 
-        $targetResult = $this->groupResult(
+        $targetResult = Association::groupResult(
             $targetResult,
-            [$this->getTargetPrimaryKey()]
+            [$this->targetReflection->getPrimaryProperty()->getUnmapped()]
         );
 
         $result = [];
@@ -138,10 +139,10 @@ class ManyToMany extends Multi
 
             foreach ($join as $originKey => $data) {
                 if (!isset($targetResult[$targetKey])) {
-                    throw new \Exception(
+                    throw new AssociationException(
                         "Can not merge associated result key '" . $targetKey
                         . "' not found in result from '"
-                        . $this->getTargetResource()
+                        . $this->targetReflection->getAdapterResource()
                         . "'! Maybe wrong value in join resource."
                     );
                 }
@@ -155,12 +156,22 @@ class ManyToMany extends Multi
     /**
      * Save changes in target collection
      *
-     * @param string            $primaryValue Primary value from source entity
-     * @param Connection        $connection
-     * @param Entity\Collection $collection   Target collection
+     * @param string     $primaryValue Primary value from source entity
+     * @param Connection $connection
+     * @param Collection $collection   Target collection
+     *
+     * @throws AssociationException
      */
-    public function saveChanges($primaryValue, Connection $connection, Entity\Collection $collection)
+    public function saveChanges($primaryValue, Connection $connection, Collection $collection)
     {
+        if ($collection->getEntityClass() !== $this->targetReflection->getClassName()) {
+            throw new AssociationException(
+                "Input collection should be type of "
+                . $this->targetReflection->getClassName()
+                . " but type of " . $collection->getEntityClass() . " given!"
+            );
+        }
+
         $changes = array_filter($collection->getChanges());
         if (empty($changes)) {
             return;
@@ -170,7 +181,7 @@ class ManyToMany extends Multi
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
         $mapper = $connection->getMapper();
 
-        if ($this->isRemote() && !$this->isDominant()) {
+        if (!$this->dominant) {
             $sourceAdapter = $targetAdapter;
         }
 
@@ -214,7 +225,7 @@ class ManyToMany extends Multi
                     $this->targetReflection,
                     [
                         $this->targetReflection->getPrimaryProperty()->getName() => [
-                            Entity\Filter::EQUAL => $changes[Entity::CHANGE_REMOVE]
+                            Filter::EQUAL => $changes[Entity::CHANGE_REMOVE]
                         ]
                     ]
                 )
@@ -230,11 +241,11 @@ class ManyToMany extends Multi
         if ($assocKeys) {
 
             $adapterQuery = $joinAdapter->createManyToManyRemove(
-                $this->getSourceResource(),
-                $this->getJoinResource(),
-                $this->getTargetResource(),
-                $this->getJoinKey(),
-                $this->getReferencingKey(),
+                $this->sourceReflection->getAdapterResource(),
+                $this->joinResource,
+                $this->targetReflection->getAdapterResource(),
+                $this->joinKey,
+                $this->referencingKey,
                 $primaryValue,
                 array_unique($assocKeys)
             );
@@ -265,11 +276,11 @@ class ManyToMany extends Multi
         if ($assocKeys) {
 
             $adapterQuery = $joinAdapter->createManyToManyAdd(
-                $this->getSourceResource(),
-                $this->getJoinResource(),
-                $this->getTargetResource(),
-                $this->getJoinKey(),
-                $this->getReferencingKey(),
+                $this->sourceReflection->getAdapterResource(),
+                $this->joinResource,
+                $this->targetReflection->getAdapterResource(),
+                $this->joinKey,
+                $this->referencingKey,
                 $primaryValue,
                 array_unique($assocKeys)
             );

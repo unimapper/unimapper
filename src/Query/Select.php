@@ -72,19 +72,19 @@ class Select extends \UniMapper\Query
             );
         }
 
-        if ($this->associations["local"]) {
-            $query->setAssociations($this->associations["local"]);
+        if ($this->adapterAssociations) {
+            $query->setAssociations($this->adapterAssociations);
         }
 
         // Execute adapter query
         $result = $adapter->execute($query);
 
         // Get remote associations
-        if ($this->associations["remote"] && !empty($result)) {
+        if ($this->remoteAssociations && !empty($result)) {
 
             settype($result, "array");
 
-            foreach ($this->associations["remote"] as $colName => $association) {
+            foreach ($this->remoteAssociations as $colName => $association) {
 
                 $assocKey = $association->getKey();
 
@@ -191,8 +191,8 @@ class Select extends \UniMapper\Query
                     "offset" => $this->offset,
                     "selection" => $this->selection,
                     "orderBy" => $this->orderBy,
-                    "localAssociations" => array_keys($this->associations["local"]),
-                    "remoteAssociations" => array_keys($this->associations["remote"]),
+                    "adapterAssociations" => array_keys($this->adapterAssociations),
+                    "remoteAssociations" => array_keys($this->remoteAssociations),
                     "conditions" => $this->filter
                 ]
             )
@@ -240,12 +240,12 @@ class Select extends \UniMapper\Query
         }
 
         // Add required keys from remote associations
-        foreach ($this->associations["remote"] as $association) {
+        foreach ($this->remoteAssociations as $association) {
 
             if (($association instanceof Association\ManyToOne || $association instanceof Association\OneToOne)
-                && !in_array($association->getReferencingKey(), $selection, true)
+                && !in_array($association->getKey(), $selection, true)
             ) {
-                $selection[] = $association->getReferencingKey();
+                $selection[] = $association->getKey();
             }
         }
 

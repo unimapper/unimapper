@@ -3,6 +3,7 @@
 use Tester\Assert;
 use UniMapper\Query;
 use UniMapper\Entity\Reflection;
+use UniMapper\Entity\Reflection\Property\Option\Assoc;
 
 require __DIR__ . '/../bootstrap.php';
 
@@ -14,22 +15,14 @@ class QuerySelectableTest extends TestCase
 
     public function testAssociate()
     {
+        $query = $this->createQuery()->associate("adapterAssoc", "remoteAssoc");
         Assert::same(
-            [
-                "local" => [
-                    "assoc" => Foo::getReflection()
-                        ->getProperty("assoc")
-                        ->getOption(Reflection\Property\Option\Assoc::KEY)
-                ],
-                "remote" => [
-                    "assocRemote" => Foo::getReflection()
-                        ->getProperty("assocRemote")
-                        ->getOption(Reflection\Property\Option\Assoc::KEY)
-                ]
-            ],
-            $this->createQuery()
-                ->associate("assoc", "assocRemote")
-                ->associations
+            Foo::getReflection()->getProperty("adapterAssoc")->getOption(Assoc::KEY),
+            $query->adapterAssociations["adapterAssoc"]
+        );
+        Assert::type(
+            "UniMapper\Association\OneToOne",
+            $query->remoteAssociations["remoteAssoc"]
         );
     }
 
@@ -80,20 +73,20 @@ class QuerySelectableTest extends TestCase
 }
 
 /**
- * @adapter FooAdapter(fooResource)
+ * @adapter FooAdapter
  *
- * @property int    $id          m:primary
+ * @property int    $id           m:primary
  * @property string $foo
- * @property Foo[]  $assoc       m:assoc(1:1) m:assoc-by(key)
- * @property Bar[]  $assocRemote m:assoc(1:1) m:assoc-by(key)
- * @property string $disabledMap m:map(false)
+ * @property Foo[]  $adapterAssoc m:assoc(type)
+ * @property Bar[]  $remoteAssoc  m:assoc(1:1)
+ * @property string $disabledMap  m:map(false)
  */
 class Foo extends \UniMapper\Entity {}
 
 /**
- * @adapter BarAdapter(barResource)
+ * @adapter BarAdapter
  *
- * @property int $id m:primary m:map-by(barId)
+ * @property int $id m:primary
  */
 class Bar extends \UniMapper\Entity {}
 

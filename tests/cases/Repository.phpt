@@ -50,7 +50,7 @@ class RepositoryTest extends TestCase
 
         $this->adapterMock->shouldReceive("createUpdateOne")
             ->once()
-            ->with("resource", "id", 1, ["foo" => "bar", "entity" => [], "collection" => [[]]])
+            ->with("Entity", "id", 1, ["foo" => "bar", "entity" => [], "collection" => [[]]])
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->once()
@@ -76,7 +76,7 @@ class RepositoryTest extends TestCase
 
         $this->adapterMock->shouldReceive("createUpdateOne")
             ->once()
-            ->with("resource", "id", 1, ["foo" => "bar"])
+            ->with("Entity", "id", 1, ["foo" => "bar"])
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->once()
@@ -96,7 +96,7 @@ class RepositoryTest extends TestCase
 
         $this->adapterMock->shouldReceive("createInsert")
             ->once()
-            ->with("resource", ["foo" => "bar"], "id")
+            ->with("Entity", ["foo" => "bar"], "id")
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->once()
@@ -120,7 +120,7 @@ class RepositoryTest extends TestCase
 
         $this->adapterMock->shouldReceive("createInsert")
             ->once()
-            ->with("resource", ["foo" => "bar"], "id")
+            ->with("Entity", ["foo" => "bar"], "id")
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->once()
@@ -155,7 +155,7 @@ class RepositoryTest extends TestCase
 
         $this->adapterMock->shouldReceive("createUpdate")
             ->once()
-            ->with("resource", ["foo" => "bar"])
+            ->with("Entity", ["foo" => "bar"])
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
             ->once()
@@ -187,7 +187,7 @@ class RepositoryTest extends TestCase
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
 
         $this->adapterMock->shouldReceive("createDeleteOne")
-            ->with("resource", "id", 1)
+            ->with("Entity", "id", 1)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
@@ -206,7 +206,7 @@ class RepositoryTest extends TestCase
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
 
         $this->adapterMock->shouldReceive("createDeleteOne")
-            ->with("resource", "id", 1)
+            ->with("Entity", "id", 1)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
@@ -228,7 +228,7 @@ class RepositoryTest extends TestCase
             ->with(["id" => [\UniMapper\Entity\Filter::EQUAL => 1]]);
 
         $this->adapterMock->shouldReceive("createDelete")
-            ->with("resource")
+            ->with("Entity")
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
@@ -249,7 +249,7 @@ class RepositoryTest extends TestCase
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
 
         $this->adapterMock->shouldReceive("createSelectOne")
-            ->with("resource", "id", 1)
+            ->with("Entity", "id", 1)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
@@ -266,7 +266,7 @@ class RepositoryTest extends TestCase
         $adapterQueryMock = Mockery::mock("UniMapper\Adapter\IQuery");
 
         $this->adapterMock->shouldReceive("createSelectOne")
-            ->with("resource", "id", 1)
+            ->with("Entity", "id", 1)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
@@ -285,7 +285,7 @@ class RepositoryTest extends TestCase
             ->with(["id" => [\UniMapper\Entity\Filter::EQUAL => [1, 2]]]);
 
         $this->adapterMock->shouldReceive("createSelect")
-            ->with("resource", ['id', 'foo', 'entity', 'collection'], [], null, null)
+            ->with("Entity", ['id', 'foo', 'entity', 'collection'], [], null, null)
             ->once()
             ->andReturn($adapterQueryMock);
         $this->adapterMock->shouldReceive("onExecute")
@@ -319,12 +319,12 @@ class RepositoryTest extends TestCase
 }
 
 /**
- * @adapter FooAdapter(resource)
+ * @adapter FooAdapter
  *
  * @property int      $id         m:primary
  * @property string   $foo
  * @property Entity   $entity
- * @property Entity[] $assoc      m:assoc(1:N) m:assoc-by(key)
+ * @property Entity[] $assoc      m:assoc(type)
  * @property Entity[] $collection
  */
 class Entity extends \UniMapper\Entity {}

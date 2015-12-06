@@ -1,7 +1,7 @@
 <?php
 
-use UniMapper\Entity;
-use UniMapper\Convention;
+use UniMapper\Entity\Reflection\Property;
+use UniMapper\Entity\Reflection\Property\Option\Assoc;
 use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
@@ -12,79 +12,88 @@ require __DIR__ . '/../bootstrap.php';
 class EntityReflectionPropertyOptionAssocTest extends TestCase
 {
 
-    public function testCreateManyToMany()
+    private function createProperty($options = null, $type = "Foo")
     {
-        $association = Entity\Reflection::load("Foo")->getProperty("manyToMany")->getOption(Entity\Reflection\Property\Option\Assoc::KEY);
-        Assert::type("UniMapper\Association\ManyToMany", $association);
-        Assert::false($association->isRemote());
-        Assert::same("sourceKey", $association->getJoinKey());
-        Assert::same("source_target", $association->getJoinResource());
-        Assert::same("targetKey", $association->getReferencingKey());
+        return new Property($type, "name", Foo::getReflection(), false, $options);
     }
 
-    public function testCreateManyToManyRemote()
+    public function testCreate()
     {
-        $association = Entity\Reflection::load("Bar")->getProperty("manyToMany")->getOption(Entity\Reflection\Property\Option\Assoc::KEY);
-        Assert::true($association->isRemote());
-        Assert::true($association->isDominant());
-        Assert::same("sourceKey", $association->getJoinKey());
-        Assert::same("source_target", $association->getJoinResource());
-        Assert::same("targetKey", $association->getReferencingKey());
-    }
-
-    public function testCreateManyToManyRemoteNotDominant()
-    {
-        $association = Entity\Reflection::load("Foo")->getProperty("notDominant")->getOption(Entity\Reflection\Property\Option\Assoc::KEY);
-        Assert::true($association->isRemote());
-        Assert::false($association->isDominant());
-        Assert::same("sourceKey", $association->getJoinKey());
-        Assert::same("source_target", $association->getJoinResource());
-        Assert::same("targetKey", $association->getReferencingKey());
-    }
-
-    public function testCreateOneToMany()
-    {
-        $association = Entity\Reflection::load("Foo")->getProperty("oneToMany")->getOption(Entity\Reflection\Property\Option\Assoc::KEY);
-        Assert::type("UniMapper\Association\OneToMany", $association);
-        Assert::same("sourceKey", $association->getReferencedKey());
-    }
-
-    public function testCreateOneToOne()
-    {
-        $association = Entity\Reflection::load("Foo")->getProperty("oneToOne")->getOption(Entity\Reflection\Property\Option\Assoc::KEY);
-        Assert::type("UniMapper\Association\OneToOne", $association);
-        Assert::same("targetKey", $association->getReferencingKey());
-    }
-
-    public function testCreateManyToOne()
-    {
-        $association = Entity\Reflection::load("Foo")->getProperty("manyToOne")->getOption(Entity\Reflection\Property\Option\Assoc::KEY);
-        Assert::type("UniMapper\Association\ManyToOne", $association);
-        Assert::same("targetKey", $association->getReferencingKey());
+        $assoc = Assoc::create($this->createProperty(), "value", ["assoc-by" => "arg1|arg2"]);
+        Assert::type("UniMapper\Entity\Reflection\Property\Option\Assoc", $assoc);
+        Assert::same("value", $assoc->getType());
+        Assert::same(["arg1", "arg2"], $assoc->getDefinition());
     }
 
     /**
-     * @throws UniMapper\Exception\ReflectionException Association can not be combined with mapping, computed or enumeration!
+     * @throws UniMapper\Exception\OptionException Association definition required!
      */
-    public function testCreateMapNotAllowed()
+    public function testCreateNoValue()
     {
-        Entity\Reflection::load("Map");
+        Assoc::create($this->createProperty());
     }
 
     /**
-     * @throws UniMapper\Exception\ReflectionException Association can not be combined with mapping, computed or enumeration!
+     * @throws UniMapper\Exception\OptionException Association can not be combined with mapping, computed or enumeration!
      */
-    public function testCreateEnumNotAllowed()
+    public function testAfterCreateMapping()
     {
-        Entity\Reflection::load("Enum");
+        $property = $this->createProperty("m:map-by");
+        Assoc::afterCreate(
+            $property,
+            Assoc::create($property, "value")
+        );
     }
 
     /**
-     * @throws UniMapper\Exception\ReflectionException Association can not be combined with mapping, computed or enumeration!
+     * @throws UniMapper\Exception\OptionException Association can not be combined with mapping, computed or enumeration!
      */
-    public function testCreateComputedNotAllowed()
+    public function testAfterCreateEnumeration()
     {
-        Entity\Reflection::load("Computed");
+        $property = $this->createProperty("m:enum(self::ENUM_*)");
+        Assoc::afterCreate(
+            $property,
+            Assoc::create($property, "value")
+        );
+    }
+
+    /**
+     * @throws UniMapper\Exception\OptionException Association can not be combined with mapping, computed or enumeration!
+     */
+    public function testAfterCreateComputed()
+    {
+        $property = $this->createProperty("m:computed");
+        Assoc::afterCreate(
+            $property,
+            Assoc::create($property, "value")
+        );
+    }
+
+    public function testConstruct()
+    {
+        $reflection = Foo::getReflection();
+        $class = new Assoc("1:N", $reflection, $reflection, $this->createProperty(), []);
+        Assert::same("1:n", $class->getType());
+        Assert::same([], $class->getDefinition());
+    }
+
+    /**
+     * @throws UniMapper\Exception\OptionException Can not use associations while source entity NoAdapter has no adapter defined!
+     */
+    public function testConstructSourceHasNoAdapter()
+    {
+        $reflection = NoAdapter::getReflection();
+        new Assoc("type", $reflection, $reflection, $this->createProperty(), []);
+    }
+
+
+    /**
+     * @throws UniMapper\Exception\OptionException Property type must be collection or entity if association defined!
+     */
+    public function testConstructTargetHasNoAdapter()
+    {
+        $reflection = Foo::getReflection();
+        new Assoc("type", $reflection, $reflection, $this->createProperty(null, "int"), []);
     }
 
 }
@@ -92,49 +101,19 @@ class EntityReflectionPropertyOptionAssocTest extends TestCase
 /**
  * @adapter FooAdapter
  *
- * @property int   $id          m:primary
- * @property Foo[] $manyToMany  m:assoc(M:N) m:assoc-by(sourceKey|source_target|targetKey)
- * @property Bar[] $notDominant m:assoc(M<N) m:assoc-by(sourceKey|source_target|targetKey)
- * @property Foo[] $oneToMany   m:assoc(1:N) m:assoc-by(sourceKey)
- * @property Foo   $oneToOne    m:assoc(1:1) m:assoc-by(targetKey)
- * @property Foo   $manyToOne   m:assoc(N:1) m:assoc-by(targetKey)
+ * @property int $id m:primary
  */
-class Foo extends Entity {}
+class Foo extends \UniMapper\Entity
+{
+    public function computeName() {}
+}
 
 /**
  * @adapter BarAdapter
- *
- * @property int   $id         m:primary
- * @property Foo[] $manyToMany m:assoc(M:N) m:assoc-by(sourceKey|source_target|targetKey)
  */
-class Bar extends Entity {}
+class Bar extends \UniMapper\Entity {}
 
-/**
- * @adapter Foo
- *
- * @property int $id  m:primary
- * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:map-by(foo)
- */
-class Map extends Entity {}
-
-/**
- * @adapter Foo
- *
- * @property int $id  m:primary
- * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:enum(self::ENUM_*)
- */
-class Enum extends Entity {}
-
-/**
- * @adapter Foo
- *
- * @property int  $id  m:primary
- * @property Map $foo m:assoc(1:1) m:assoc-by(targetKey) m:computed
- */
-class Computed extends Entity
-{
-    public function computeFoo() {}
-}
+class NoAdapter extends \UniMapper\Entity {}
 
 $testCase = new EntityReflectionPropertyOptionAssocTest;
 $testCase->run();

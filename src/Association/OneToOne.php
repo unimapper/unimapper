@@ -2,7 +2,7 @@
 
 namespace UniMapper\Association;
 
-class OneToOne extends Single
+class OneToOne extends ManyToOne
 {
 
 }
