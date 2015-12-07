@@ -275,12 +275,29 @@ class Mapper
                 $property = $reflection->getProperty($name);
                 $unmappedName = $property->getName(true);
 
+
                 foreach ($item as $modifier => $value) {
 
-                    $result[$unmappedName][$modifier] = $this->unmapValue(
-                        $property,
-                        $value
-                    );
+                    if ($property->getType() !== Reflection\Property::TYPE_ARRAY
+                        && in_array($modifier, [Filter::EQUAL, Filter::NOT], true)
+                        && is_array($value)
+                    ) {
+                        // IN/NOT IN cases
+
+                        $result[$unmappedName][$modifier] = [];
+                        foreach ($value as $key => $valueVal) {
+                            $result[$unmappedName][$modifier][$key] = $this->unmapValue(
+                                $property,
+                                $valueVal
+                            );
+                        }
+                    } else {
+
+                        $result[$unmappedName][$modifier] = $this->unmapValue(
+                            $property,
+                            $value
+                        );
+                    }
                 }
             }
         }
