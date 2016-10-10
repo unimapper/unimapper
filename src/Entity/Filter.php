@@ -101,6 +101,9 @@ class Filter
                 }
 
                 if (!$reflection->hasProperty($name)) {
+                    if (strpos($name, '.' ) !== false) {
+                        continue;
+                    }
                     throw new Exception\FilterException(
                         "Undefined property name '" . $name . "' used in filter!"
                     );

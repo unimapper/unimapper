@@ -2,7 +2,10 @@
 
 namespace UniMapper;
 
+use UniMapper\Adapter\IQuery;
+use UniMapper\Adapter\IQueryWithJoins;
 use UniMapper\Exception\QueryException;
+use UniMapper\Query\Filterable;
 
 abstract class Query
 {
@@ -58,6 +61,29 @@ abstract class Query
         }
 
         return $result;
+    }
+    
+    protected function setQueryFilters($filter, IQuery $query, Connection $connection)
+    {
+        if ($filter) {
+            $query->setFilter(
+                $connection->getMapper()->unmapFilter(
+                    $this->entityReflection,
+                    $filter
+                )
+            );
+
+            if ($query instanceof IQueryWithJoins) {
+                $joins = $connection->getMapper()->unmapFilterJoins(
+                    $this->entityReflection,
+                    $filter
+                );
+
+                if ($joins) {
+                    $query->setJoins($joins);
+                }
+            }
+        }
     }
 
 }
