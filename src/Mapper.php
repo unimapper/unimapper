@@ -85,6 +85,10 @@ class Mapper
         } elseif ($property->getType() === Entity\Reflection\Property::TYPE_ENTITY) {
             // Entity
 
+            if ($value instanceof Entity && $property->hasOption(Entity\Reflection\Property::OPTION_MAP_FILTER)) {
+                // if value is entity created by filter don't map it again
+                return $value;
+            }
             return $this->mapEntity($property->getTypeOption(), $value);
         } elseif ($property->getType() === Entity\Reflection\Property::TYPE_DATETIME
             || $property->getType() === Entity\Reflection\Property::TYPE_DATE
