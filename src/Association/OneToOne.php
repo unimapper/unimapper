@@ -54,10 +54,16 @@ class OneToOne extends Single
     {
         $targetAdapter = $connection->getAdapter($this->targetReflection->getAdapterName());
 
-        $query = $targetAdapter->createSelect($this->getTargetResource());
+        $query = $targetAdapter->createSelect($this->getTargetResource(), $this->getTargetSelection());
 
         $filter = $this->filter;
         $filter[$this->getTargetPrimaryKey()][Entity\Filter::EQUAL] = $primaryValues;
+        if ($this->getTargetFilter()) {
+            $filter = array_merge(
+                $connection->getMapper()->unmapFilter($this->getTargetReflection(), $this->getTargetFilter()),
+                $filter
+            );
+        }
         $query->setFilter($filter);
 
         $result = $targetAdapter->execute($query);

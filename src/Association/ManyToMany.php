@@ -111,7 +111,7 @@ class ManyToMany extends Multi
 
         $targetQuery = $targetAdapter->createSelect(
             $this->getTargetResource(),
-            [],
+            $this->getTargetSelection(),
             $this->orderBy,
             $this->limit,
             $this->offset
@@ -120,6 +120,9 @@ class ManyToMany extends Multi
         // Set target conditions
         $filter = $this->filter;
         $filter[$this->getTargetPrimaryKey()][Entity\Filter::EQUAL] = array_keys($joinResult);
+        if ($this->getTargetFilter()) {
+            $filter = array_merge($connection->getMapper()->unmapFilter($this->getTargetReflection(), $this->getTargetFilter()), $filter);
+        }
         $targetQuery->setFilter($filter);
 
         $targetResult = $targetAdapter->execute($targetQuery);

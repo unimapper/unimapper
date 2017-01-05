@@ -40,7 +40,7 @@ class OneToMany extends Multi
 
         $query = $targetAdapter->createSelect(
             $this->getTargetResource(),
-            [],
+            $this->getTargetSelection(),
             $this->orderBy,
             $this->limit,
             $this->offset
@@ -49,6 +49,12 @@ class OneToMany extends Multi
         // Set target conditions
         $filter = $this->filter;
         $filter[$this->getReferencedKey()][Entity\Filter::EQUAL] = array_values($primaryValues);
+        if ($this->getTargetFilter()) {
+            $filter = array_merge(
+                $connection->getMapper()->unmapFilter($this->getTargetReflection(), $this->getTargetFilter()),
+                $filter
+            );
+        }
         $query->setFilter($filter);
 
         $result = $targetAdapter->execute($query);

@@ -20,6 +20,12 @@ abstract class Association
     /** @var string */
     protected $propertyName;
 
+    /** @var  array */
+    protected $targetSelection = [];
+
+    /** @var array array */
+    protected $targetFilter = [];
+
     public function __construct(
         $propertyName,
         Entity\Reflection $sourceReflection,
@@ -93,6 +99,26 @@ abstract class Association
     public function getPropertyName()
     {
         return $this->propertyName;
+    }
+
+    public function getTargetSelection()
+    {
+        return $this->targetSelection;
+    }
+
+    public function setTargetSelection(array $targetSelection)
+    {
+        $this->targetSelection = $targetSelection;
+    }
+
+    public function getTargetFilter()
+    {
+        return $this->targetFilter;
+    }
+
+    public function setTargetFilter(array $filter)
+    {
+        $this->targetFilter = $filter;
     }
 
     /**
