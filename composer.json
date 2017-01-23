@@ -1,5 +1,5 @@
 {
-    "name": "bauer01/unimapper",
+    "name": "unimapper/unimapper",
     "type": "library",
     "description": "Universal mapping tool for collecting data from different sources",
     "keywords": ["php", "mapping", "data", "orm", "database"],
@@ -17,6 +17,9 @@
         "nette/tester": "~1.0",
         "squizlabs/php_codesniffer": "~2.0",
         "mockery/mockery": "~0.9.0"
+    },
+    "replace": {
+        "bauer01/unimapper": "self.version"
     },
     "autoload": {
         "psr-4": {"UniMapper\\": "src/"}
