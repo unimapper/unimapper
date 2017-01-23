@@ -86,6 +86,14 @@ abstract class Association
 
     public function isRemote()
     {
+        // optional checkout through annotation parameter
+        $sourceProperty = $this->sourceReflection->getProperty($this->getPropertyName());
+        if ($sourceProperty->hasOption('assoc-remote')) {
+            $assocRemote = $sourceProperty->getOption('assoc-remote');
+            return $assocRemote === 'true' || is_int($assocRemote) ? (bool) $assocRemote : false;
+        }
+        // default behaviour
+
         return $this->sourceReflection->getAdapterName()
             !== $this->targetReflection->getAdapterName();
     }
