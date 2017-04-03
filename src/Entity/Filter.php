@@ -138,10 +138,10 @@ class Filter
                             // Array values
 
                             foreach ($value as $index => $valueItem) {
-                                $property->validateValueType($valueItem);
+                                $property->validateValueType($property->convertValue($valueItem));
                             }
                         } else {
-                            $property->validateValueType($value);
+                            $property->validateValueType($property->convertValue($value));
                         }
                     } catch (Exception\InvalidArgumentException $e) {
                         throw new Exception\FilterException($e->getMessage());
