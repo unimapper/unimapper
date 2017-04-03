@@ -339,6 +339,24 @@ class EntityFilterTest extends \Tester\TestCase
         Filter::validate(Reflection::load("Simple"), ["nested.id" => [Filter::EQUAL => ["foo"]]]);
     }
 
+    public function testValidateInvalidValueTypeConverted()
+    {
+        $reflection = Reflection::load("Simple");
+        Filter::validate(
+            $reflection,
+            Filter::convertFilterValues($reflection, ["storedData" => [Filter::EQUAL => 1]])
+        );
+    }
+
+    public function testValidateInvalidValueTypeInArrayConveted()
+    {
+        $reflection = Reflection::load("Simple");
+        Filter::validate(
+            $reflection,
+            Filter::convertFilterValues($reflection, ["id" => [Filter::EQUAL => ["foo"]]])
+        );
+    }
+
 }
 
 $testCase = new EntityFilterTest;
