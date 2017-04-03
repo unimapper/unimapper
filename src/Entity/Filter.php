@@ -65,7 +65,7 @@ class Filter
     }
 
     /**
-     * Merge two filters
+     * Validate filter
      *
      * @param Reflection $reflection
      * @param array      $filter
@@ -135,10 +135,10 @@ class Filter
                             // Array values
 
                             foreach ($value as $index => $valueItem) {
-                                $property->validateValueType($property->convertValue($valueItem));
+                                $property->validateValueType($valueItem);
                             }
                         } else {
-                            $property->validateValueType($property->convertValue($value));
+                            $property->validateValueType($value);
                         }
                     } catch (Exception\InvalidArgumentException $e) {
                         throw new Exception\FilterException($e->getMessage());
@@ -146,6 +146,83 @@ class Filter
                 }
             }
         }
+    }
+
+    /**
+     * Convert filter values
+     *
+     * @param Reflection $reflection
+     * @param array      $filter
+     *
+     * @return array
+     */
+    public static function convertFilterValues(Reflection $reflection, array $filter)
+    {
+        $converted = [];
+        if (self::isGroup($filter)) {
+            // Filter group
+
+            foreach ($filter as $modifier => $item) {
+
+                if (!is_array($item) || empty($item)) {
+                    $converted[$modifier] = $item;
+                    continue;
+                }
+
+                $converted[$modifier] = self::convertFilterValues($reflection, $item);
+            }
+        } else {
+            // Filter item
+
+            foreach ($filter as $name => $item) {
+
+                if (!is_array($item) || !is_string($name)) {
+                    $converted[$name] = $item;
+                    continue;
+                }
+
+                if (!$reflection->hasProperty($name)) {
+                    $converted[$name] = $item;
+                    continue;
+                }
+                $property = $reflection->getProperty($name);
+
+                foreach ($item as $modifier => $value) {
+
+                    if (!in_array($modifier, self::$modifiers, true)) {
+                        $converted[$name][$modifier] = $value;
+                        continue;
+                    }
+
+                    if ($property->hasOption(Reflection\Property::OPTION_ASSOC)
+                        || $property->hasOption(Reflection\Property::OPTION_COMPUTED)
+                        || $property->getType() === Reflection\Property::TYPE_COLLECTION
+                        || $property->getType() === Reflection\Property::TYPE_ENTITY
+                    ) {
+                        $converted[$name][$modifier] = $value;
+                        continue;
+                    }
+
+                    // Convert values
+
+                    if (is_array($value)
+                        && $property->getType() !== Reflection\Property::TYPE_ARRAY
+                        && in_array($modifier, [self::EQUAL, self::NOT], true)
+                    ) {
+                        // Array values
+
+                        foreach ($value as $index => $valueItem) {
+                            $converted[$name][$modifier][$index] = $property->convertValue($valueItem);
+                        }
+                    } else {
+                        $converted[$name][$modifier] = $property->convertValue($value);
+                    }
+
+                }
+            }
+        }
+
+        return $converted;
     }
 
 }
