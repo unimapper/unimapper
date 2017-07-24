@@ -9,7 +9,11 @@ use UniMapper\Entity\Reflection;
 
 trait Selectable
 {
-
+    
+    public static $KEY_SELECTION = 'selection';
+    public static $KEY_FILTER = 'filter';
+    public static $KEY_SELECTION_FULL = 'full';
+    
     /** @var array */
     protected $associations = [
         "local" => [],
@@ -27,7 +31,15 @@ trait Selectable
                 $arg = [$arg];
             }
 
-            foreach ($arg as $name) {
+            foreach ($arg as $key => $name) {
+
+                $selection = null;
+                $filter = null;
+                if (is_string($key) && is_array($name)) {
+                    $selection = isset($name[self::$KEY_SELECTION]) ? $name[self::$KEY_SELECTION] : [];
+                    $filter = isset($name[self::$KEY_FILTER]) ? $name[self::$KEY_FILTER] : [];
+                    $name = $key;
+                }
 
                 if (!$this->entityReflection->hasProperty($name)) {
                     throw new Exception\QueryException(
@@ -46,6 +58,25 @@ trait Selectable
                 }
 
                 $association = $property->getOption(Reflection\Property::OPTION_ASSOC);
+                if ($selection) {
+                    if (is_string($selection)) {
+                        if (is_string($selection)) {
+                            switch ($selection) {
+                                case self::$KEY_SELECTION_FULL:
+                                    $selection = [];
+                                    foreach ($association->getTargetReflection()->getProperties() as $property) {
+                                        $selection[] = $property->getName(true);
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                    $association->setTargetSelection($selection);
+                }
+                
+                if ($filter) {
+                    $association->setTargetFilter($filter);
+                }
                 if ($association->isRemote()) {
                     $this->associations["remote"][$name] = $association;
                 } else {

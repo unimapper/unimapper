@@ -85,6 +85,10 @@ class Mapper
         } elseif ($property->getType() === Entity\Reflection\Property::TYPE_ENTITY) {
             // Entity
 
+            if ($value instanceof Entity && $property->hasOption(Entity\Reflection\Property::OPTION_MAP_FILTER)) {
+                // if value is entity created by filter don't map it again
+                return $value;
+            }
             return $this->mapEntity($property->getTypeOption(), $value);
         } elseif ($property->getType() === Entity\Reflection\Property::TYPE_DATETIME
             || $property->getType() === Entity\Reflection\Property::TYPE_DATE
@@ -271,21 +275,81 @@ class Mapper
         } else {
 
             foreach ($filter as $name => $item) {
-
-                $property = $reflection->getProperty($name);
-                $unmappedName = $property->getName(true);
-
-                foreach ($item as $modifier => $value) {
-
-                    $result[$unmappedName][$modifier] = $this->unmapValue(
-                        $property,
-                        $value
-                    );
+                $assocDelimiterPos = strpos($name, '.');
+                if ($assocDelimiterPos !== false) {
+                    if (isset($this->adapterMappings[$reflection->getAdapterName()])) {
+                        $assocPropertyName = substr($name, 0, $assocDelimiterPos);
+                        $assocPropertyTargetName = substr($name, $assocDelimiterPos + 1);
+                        $assocProperty = $reflection->getProperty($assocPropertyName);
+                        $assocEntityReflection = \UniMapper\Entity\Reflection::load($assocProperty->getTypeOption());
+                        $property = $assocEntityReflection->getProperty($assocPropertyTargetName);
+                        $unmappedName = $this->adapterMappings[$reflection->getAdapterName()]
+                            ->unmapFilterJoinProperty($reflection, $name);
+                    } else {
+                        throw new Exception\InvalidArgumentException(
+                            "Unknown filter property " . $name . "!"
+                        );
+                    }
+                } else {
+                    $property = $reflection->getProperty($name);
+                    $unmappedName = $property->getName(true);
                 }
+                $this->unmapFilterProperty($property, $unmappedName, $item, $result);
             }
         }
 
         return $result;
+    }
+
+    /**
+     * @param \UniMapper\Entity\Reflection\Property $property
+     * @param string                                $unmappedName
+     * @param array                                 $item
+     * @param array                                 $result
+     *
+     * @throws \UniMapper\Exception\InvalidArgumentException
+     */
+    protected function unmapFilterProperty(Reflection\Property $property, $unmappedName, array $item, &$result)
+    {
+        foreach ($item as $modifier => $value) {
+
+            if ($property->getType() !== Reflection\Property::TYPE_ARRAY
+                && in_array($modifier, [Filter::EQUAL, Filter::NOT], true)
+                && is_array($value)
+            ) {
+                // IN/NOT IN cases
+
+                $result[$unmappedName][$modifier] = [];
+                foreach ($value as $key => $valueVal) {
+                    $result[$unmappedName][$modifier][$key] = $this->unmapValue(
+                        $property,
+                        $valueVal
+                    );
+                }
+            } else {
+
+                $result[$unmappedName][$modifier] = $this->unmapValue(
+                    $property,
+                    $value
+                );
+            }
+        }
+    }
+
+    /**
+     * @param \UniMapper\Entity\Reflection $reflection
+     * @param array                        $filter
+     *
+     * @return mixed
+     */
+    public function unmapFilterJoins(Reflection $reflection, array $filter)
+    {
+        if (isset($this->adapterMappings[$reflection->getAdapterName()])) {
+            return $this->adapterMappings[$reflection->getAdapterName()]
+                ->unmapFilterJoins($reflection, $filter);
+        }
+        
+        return [];
     }
 
 }

@@ -121,7 +121,7 @@ class QuerySelectTest extends \Tester\TestCase
             ->with(["id" => [\UniMapper\Entity\Filter::EQUAL => [3, 4]]])
             ->once();
         $this->adapters["RemoteAdapter"]->shouldReceive("createSelect")
-            ->with("remote_resource")
+            ->with("remote_resource", [])
             ->once()
             ->andReturn($this->adapterQueryMock);
         $this->adapters["RemoteAdapter"]->shouldReceive("onExecute")
