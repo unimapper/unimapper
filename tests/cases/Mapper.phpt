@@ -150,6 +150,20 @@ class MapperTest extends \Tester\TestCase
         );
     }
 
+    public function testUnmapFilterWithJoins()
+    {
+        $fooMapping = Mockery::mock('\UniMapper\Adapter\Mapping');
+        $fooMapping->shouldReceive('unmapFilterJoinProperty')->once()->andReturn('foo');
+        $this->mapper->registerAdapterMapping('FooAdapter', $fooMapping);
+        Assert::same(
+            ["foo" => [\UniMapper\Entity\Filter::EQUAL => 1]],
+            $this->mapper->unmapFilter(
+                Reflection::load("Simple"),
+                ["oneToOne.id" => [\UniMapper\Entity\Filter::EQUAL => 1]]
+            )
+        );
+    }
+
 }
 
 $testCase = new MapperTest;

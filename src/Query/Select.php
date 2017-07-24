@@ -62,14 +62,7 @@ class Select extends \UniMapper\Query
             $this->offset
         );
 
-        if ($this->filter) {
-            $query->setFilter(
-                $mapper->unmapFilter(
-                    $this->entityReflection,
-                    $this->filter
-                )
-            );
-        }
+        $this->setQueryFilters($this->filter, $query, $connection);
 
         if ($this->associations["local"]) {
             $query->setAssociations($this->associations["local"]);

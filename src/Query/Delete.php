@@ -16,14 +16,7 @@ class Delete extends \UniMapper\Query
             $this->entityReflection->getAdapterResource()
         );
 
-        if ($this->filter) {
-            $query->setFilter(
-                $connection->getMapper()->unmapFilter(
-                    $this->entityReflection,
-                    $this->filter
-                )
-            );
-        }
+        $this->setQueryFilters($this->filter, $query, $connection);
 
         return (int) $adapter->execute($query);
     }
